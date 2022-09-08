@@ -8,7 +8,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
   gdr::engine Engine;
   
   // Units
-
   Engine.AddUnit(new gdr::unit_base());
 
   // math smoke test

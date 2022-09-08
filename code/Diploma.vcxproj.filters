@@ -28,6 +28,12 @@
     <Filter Include="Source Files\Utils\Math">
       <UniqueIdentifier>{fe6366ae-2a45-4bf0-a954-1b7582b296fb}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Render">
+      <UniqueIdentifier>{9acdb617-43ce-48c7-b158-0c8271e83613}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Render\Device">
+      <UniqueIdentifier>{24d1557a-bbd3-4439-b058-ecb18ea33830}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\main.cpp">
@@ -44,6 +50,12 @@
     </ClCompile>
     <ClCompile Include="source\engine\eng.cpp">
       <Filter>Source Files\Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="source\render\render.cpp">
+      <Filter>Source Files\Render</Filter>
+    </ClCompile>
+    <ClCompile Include="source\render\device\device.cpp">
+      <Filter>Source Files\Render\Device</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -85,6 +97,12 @@
     </ClInclude>
     <ClInclude Include="source\utils\math\mth_vec.h">
       <Filter>Source Files\Utils\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="source\render\render.h">
+      <Filter>Source Files\Render</Filter>
+    </ClInclude>
+    <ClInclude Include="source\render\device\device.h">
+      <Filter>Source Files\Render\Device</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

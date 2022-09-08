@@ -8,13 +8,16 @@
 namespace gdr
 {
   /* Engine class declaration */
-  class engine : public win
+  class engine : public win, public render
   {
     private:
       /* Vector of all units we will draw */
       std::vector<unit_base*> Units;
     public:
       
+      // Default constructor
+      engine();
+
       /* Add new Unit function.
        * ARGUMENTS:
        *   - pointer on Engine
@@ -25,5 +28,49 @@ namespace gdr
 
       /* Destructor */
       ~engine();
+
+      /* Window Message Cracks */
+
+      /* Change window size handle function.
+       * ARGUMENTS: None.
+       * RETURNS: None.
+       */
+      VOID Resize(VOID) override;
+
+      /* Erase background handle function.
+       * ARGUMENTS:
+       *   - device context of client area:
+       *       HDC hDC;
+       * RETURNS: None.
+       */
+      VOID Erase(HDC hDC) override;
+
+      /* Paint window content function.
+       * ARGUMENTS:
+       *   - device context of client area:
+       *       HDC hDC;
+       * RETURNS: None.
+       */
+      VOID Paint(HDC hDC) override;
+
+      /* Activate handle function.
+       * ARGUMENTS:
+       *   - activation window flag:
+       *       BOOL IsActive;
+       * RETURNS: None.
+       */
+      VOID Activate(BOOL IsActive) override;
+
+      /* Timer handle function.
+       * ARGUMENTS: None.
+       * RETURNS: None.
+       */
+      VOID Timer(VOID) override;
+
+      /* Free CPU time handling function.
+       * ARGUMENTS: None.
+       * RETURNS: None.
+       */
+      VOID Idle(VOID) override;
   };
 }

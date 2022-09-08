@@ -19,6 +19,15 @@
     <Filter Include="Source Files\Window">
       <UniqueIdentifier>{4a00e6d8-720e-44d0-91e9-1962c44501b6}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Units">
+      <UniqueIdentifier>{cf16f6f2-7b7a-4a93-91bd-2d163137be24}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Utils">
+      <UniqueIdentifier>{70784fde-cc98-4c6f-80a7-7de7e6c28b61}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Utils\Math">
+      <UniqueIdentifier>{fe6366ae-2a45-4bf0-a954-1b7582b296fb}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\main.cpp">
@@ -33,6 +42,9 @@
     <ClCompile Include="source\window\win_msg.cpp">
       <Filter>Source Files\Window</Filter>
     </ClCompile>
+    <ClCompile Include="source\engine\eng.cpp">
+      <Filter>Source Files\Engine</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\p_header.h">
@@ -43,6 +55,36 @@
     </ClInclude>
     <ClInclude Include="source\def.h">
       <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\engine\eng.h">
+      <Filter>Source Files\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="source\units\unit_base.h">
+      <Filter>Source Files\Units</Filter>
+    </ClInclude>
+    <ClInclude Include="source\utils\utils.h">
+      <Filter>Source Files\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="source\utils\ring_buffer.h">
+      <Filter>Source Files\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="source\utils\math\mth.h">
+      <Filter>Source Files\Utils\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="source\utils\math\mth_def.h">
+      <Filter>Source Files\Utils\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="source\utils\math\mth_matr.h">
+      <Filter>Source Files\Utils\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="source\utils\math\mth_operators.h">
+      <Filter>Source Files\Utils\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="source\utils\math\mth_quat.h">
+      <Filter>Source Files\Utils\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="source\utils\math\mth_vec.h">
+      <Filter>Source Files\Utils\Math</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

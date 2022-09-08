@@ -79,7 +79,7 @@ namespace gdr
      */
     VOID WriteHeader( const std::string &Str );
 
-        /* Set keyboard adapter input char function 
+    /* Set keyboard adapter input char function 
      * ARGUMENTS:
      *   - pointer on function
      *       VOID (* Adapter)( CHAR Char )

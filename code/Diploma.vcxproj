@@ -20,10 +20,21 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\def.h" />
+    <ClInclude Include="source\engine\eng.h" />
     <ClInclude Include="source\p_header.h" />
+    <ClInclude Include="source\units\unit_base.h" />
+    <ClInclude Include="source\utils\math\mth.h" />
+    <ClInclude Include="source\utils\math\mth_def.h" />
+    <ClInclude Include="source\utils\math\mth_matr.h" />
+    <ClInclude Include="source\utils\math\mth_operators.h" />
+    <ClInclude Include="source\utils\math\mth_quat.h" />
+    <ClInclude Include="source\utils\math\mth_vec.h" />
+    <ClInclude Include="source\utils\ring_buffer.h" />
+    <ClInclude Include="source\utils\utils.h" />
     <ClInclude Include="source\window\win.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="source\engine\eng.cpp" />
     <ClCompile Include="source\main.cpp" />
     <ClCompile Include="source\p_header.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>

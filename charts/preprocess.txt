@@ -1,0 +1,11 @@
+graph TD
+    Preprocess[Preprocess]
+    Cull1[Culling]
+    Cull2[Culling]
+    DrawZ1[Indirect Draw depth only]
+    DrawZ2[Indirect Draw depth only]
+
+    Preprocess --> |For each lightsource|Cull1
+    Preprocess --> |For camera| Cull2
+    Cull1 --> DrawZ1
+    Cull2 --> DrawZ2

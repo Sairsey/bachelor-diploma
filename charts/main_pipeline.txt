@@ -1,0 +1,12 @@
+graph TD
+    Start(Frame Start)
+    Preprocess[Preprocess]
+    Pass[Main pass]
+    Transparents[Transparents]
+    Postprocess[Postprocess]
+    Finish(Draw on screen)
+    Start --> Preprocess
+    Preprocess --> Pass
+    Pass --> Transparents
+    Transparents --> Postprocess
+    Postprocess --> Finish

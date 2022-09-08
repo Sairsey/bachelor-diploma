@@ -1,0 +1,7 @@
+graph TD
+    Transparents[Transparents]
+    Cull[Culling]
+    Draw[Indirect Draw]
+
+    Transparents --> Cull
+    Cull --> |using ''order independent transparency''|Draw

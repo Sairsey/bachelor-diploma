@@ -1,0 +1,7 @@
+graph TD
+    Pass[Main pass]
+    Cull[Culling]
+    Draw[Indirect Draw]
+
+    Pass --> Cull
+    Cull --> Draw

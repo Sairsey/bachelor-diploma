@@ -16,5 +16,5 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
   auto res = V1 cross V2;
   assert(res == mth::vec3f(0, 0, 1));
 
-  return Engine.Run();
+  return (int)Engine.Run();
 }

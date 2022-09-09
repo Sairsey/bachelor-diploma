@@ -5,6 +5,7 @@
 #include "window/win.h"
 
 #include "render/device/command_queue.h"
+#include "render/device/gpu_ring_buffer.h"
 #include "render/device/device.h"
 #include "render/render.h"
 

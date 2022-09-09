@@ -377,26 +377,45 @@ void gdr::device::TermSwapchain(void)
 // Init GPU Memory Allocator
 bool gdr::device::InitGPUMemoryAllocator(void)
 {
-  return true;
+  D3D12MA::ALLOCATOR_DESC desc;
+  desc.pAdapter = DxgiAdapter;
+  desc.pDevice = D3DDevice;
+  desc.pAllocationCallbacks = nullptr;
+  desc.PreferredBlockSize = 0;
+  desc.Flags = D3D12MA::ALLOCATOR_FLAG_SINGLETHREADED;
+
+  HRESULT hr = S_OK;
+  D3D_CHECK(D3D12MA::CreateAllocator(&desc, &D3DGPUMemAllocator));
+
+  return SUCCEEDED(hr);
 }
 
 // Terminate GPU Memory Allocator
 void gdr::device::TermGPUMemoryAllocator(void)
 {
-
+  D3D_RELEASE(D3DGPUMemAllocator);
 }
 
 // Init Descriptor Heap
 // ARGUMENTS: Total Amount of descriptors
 bool gdr::device::InitDescriptorHeap(UINT DescCount)
 {
+  D3D12_DESCRIPTOR_HEAP_DESC heapDesc = {};
+  heapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
+  heapDesc.NodeMask = 0;
+  heapDesc.NumDescriptors = DescCount;
+  heapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
+
+  HRESULT hr = S_OK;
+  D3D_CHECK(D3DDevice->CreateDescriptorHeap(&heapDesc, __uuidof(ID3D12DescriptorHeap), (void**)&D3DDescriptorHeap));
+
   return true;
 }
 
 // Terminate Descriptor Heap
 void gdr::device::TermDescriptorHeap(void)
 {
-
+  D3D_RELEASE(D3DDescriptorHeap);
 }
 
 /* Init Upload Engine
@@ -410,13 +429,35 @@ void gdr::device::TermDescriptorHeap(void)
  */
 bool gdr::device::InitUploadEngine(UINT64 UploadHeapSize, UINT64 DynamicHeapSize, UINT DynamicDescCount)
 {
-  return true;
+  bool res = true;
+  if (res)
+  {
+    UploadBuffer = new heap_ring_buffer();
+    res = UploadBuffer->Init(D3DDevice, D3D12_HEAP_TYPE_UPLOAD, UploadHeapSize);
+  }
+  if (res)
+  {
+    DynamicBuffer = new heap_ring_buffer();
+    res = DynamicBuffer->Init(D3DDevice, D3D12_HEAP_TYPE_UPLOAD, DynamicHeapSize);
+  }
+  if (res)
+  {
+    DynamicDescBuffer = new descriptor_ring_buffer();
+    res = DynamicDescBuffer->Init(D3DDevice, DynamicDescCount, D3DDescriptorHeap);
+  }
+  if (res)
+  {
+    this->DynamicDescCount = DynamicDescCount;
+  }
+  return res;
 }
 
 // Terminate Upload Engine
 void gdr::device::TermUploadEngine(void)
 {
-
+  RELEASE(DynamicDescBuffer);
+  RELEASE(DynamicBuffer);
+  RELEASE(UploadBuffer);
 }
 
 /* Init RenderTargetViewHeap
@@ -424,13 +465,33 @@ void gdr::device::TermUploadEngine(void)
  */
 bool gdr::device::InitRenderTargetViewHeap(UINT Count)
 {
-  return true;
+  HRESULT hr = S_OK;
+  if (SUCCEEDED(hr))
+  {
+    D3D12_DESCRIPTOR_HEAP_DESC desc;
+    desc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
+    desc.NumDescriptors = Count;
+    desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
+    desc.NodeMask = 0;
+
+    D3D_CHECK(D3DDevice->CreateDescriptorHeap(&desc, __uuidof(ID3D12DescriptorHeap), (void**)&RenderTargetViews));
+  }
+  if (SUCCEEDED(hr))
+  {
+    MaxRTViews = Count;
+    CurrentRTView = 0;
+  }
+
+  return SUCCEEDED(hr);
 }
 
 // Terminate RenderTargetViewHeap
 void gdr::device::TermRenderTargetViewHeap(void)
 {
+  MaxRTViews = 0;
+  CurrentRTView = 0;
 
+  D3D_RELEASE(RenderTargetViews);
 }
 
 /* Init Readback Engine
@@ -438,13 +499,20 @@ void gdr::device::TermRenderTargetViewHeap(void)
  */
 bool gdr::device::InitReadbackEngine(UINT64 ReadbackHeapSize)
 {
-  return true;
+  bool res = true;
+  if (res)
+  {
+    ReadbackBuffer = new heap_ring_buffer();
+    res = ReadbackBuffer->Init(D3DDevice, D3D12_HEAP_TYPE_READBACK, ReadbackHeapSize);
+  }
+
+  return res;
 }
 
 // Terminate Readback Engine
 void gdr::device::TermReadbackEngine(void)
 {
-
+  RELEASE(ReadbackBuffer);
 }
 
 /* Init Queries
@@ -452,11 +520,19 @@ void gdr::device::TermReadbackEngine(void)
  */
 bool gdr::device::InitQueries(UINT Count)
 {
-  return true;
+  QueryBuffer = new query_ring_buffer();
+  if (QueryBuffer->Init(D3DDevice, D3DGPUMemAllocator, D3D12_QUERY_HEAP_TYPE_TIMESTAMP, Count))
+  {
+    return true;
+  }
+
+  RELEASE(QueryBuffer);
+
+  return false;
 }
 
 // Terminate Queries
 void gdr::device::TermQueries(void)
 {
-
+  RELEASE(QueryBuffer);
 }

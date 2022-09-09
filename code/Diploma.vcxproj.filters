@@ -60,6 +60,9 @@
     <ClCompile Include="source\render\device\command_queue.cpp">
       <Filter>Source Files\Render\Device</Filter>
     </ClCompile>
+    <ClCompile Include="source\utils\D3D12MemAlloc.cpp">
+      <Filter>Source Files\Utils</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\p_header.h">
@@ -108,6 +111,9 @@
       <Filter>Source Files\Render\Device</Filter>
     </ClInclude>
     <ClInclude Include="source\render\device\command_queue.h">
+      <Filter>Source Files\Render\Device</Filter>
+    </ClInclude>
+    <ClInclude Include="source\render\device\gpu_ring_buffer.h">
       <Filter>Source Files\Render\Device</Filter>
     </ClInclude>
   </ItemGroup>

@@ -15,6 +15,9 @@
 #include <d3dcompiler.h>
 #include <d3dx12.h>
 
+#include <functional>
+
+#include "D3D12MemAlloc.h"
 #include "utils/math/mth.h"
 
 

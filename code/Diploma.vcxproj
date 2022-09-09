@@ -24,6 +24,7 @@
     <ClInclude Include="source\p_header.h" />
     <ClInclude Include="source\render\device\command_queue.h" />
     <ClInclude Include="source\render\device\device.h" />
+    <ClInclude Include="source\render\device\gpu_ring_buffer.h" />
     <ClInclude Include="source\render\render.h" />
     <ClInclude Include="source\units\unit_base.h" />
     <ClInclude Include="source\utils\math\mth.h" />
@@ -46,6 +47,7 @@
     <ClCompile Include="source\render\device\command_queue.cpp" />
     <ClCompile Include="source\render\device\device.cpp" />
     <ClCompile Include="source\render\render.cpp" />
+    <ClCompile Include="source\utils\D3D12MemAlloc.cpp" />
     <ClCompile Include="source\window\win.cpp" />
     <ClCompile Include="source\window\win_msg.cpp" />
   </ItemGroup>

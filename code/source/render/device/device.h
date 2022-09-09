@@ -1,7 +1,6 @@
 #pragma once
 
 #include "def.h"
-#include "D3D12MemAlloc.h"
 
 struct IDXGISwapChain3;
 
@@ -128,11 +127,21 @@ namespace gdr
       UINT DsvDescSize; // size of DSV descriptor
       UINT SrvDescSize; // size of SRV descriptor
 
+      // Descriptors of Render Target Views
+      ID3D12DescriptorHeap* RenderTargetViews;
+      // Maximum amount of Render Target Views
+      UINT MaxRTViews;
+      // Current Render Target View
+      UINT CurrentRTView;
+
       // Swapchain
       IDXGISwapChain3* Swapchain;
 
       // Present Queue
       present_command_queue* PresentQueue;
+      
+      // Upload engine support
+      // -->
       // Upload Queue
       upload_command_queue* UploadQueue;
       // State Transition Queue
@@ -141,8 +150,26 @@ namespace gdr
       ID3D12GraphicsCommandList* CurrentUploadCmdList;
       // vector of barriers
       std::vector<PendingBarrier> UploadBarriers;
+      heap_ring_buffer* UploadBuffer;
+      // <--
 
+      // Readback engine support
+      // -->
+      heap_ring_buffer* ReadbackBuffer;
+      // <--
 
+      // Dynamic resources support
+      // -->
+      heap_ring_buffer* DynamicBuffer;
+      descriptor_ring_buffer* DynamicDescBuffer;
+      UINT DynamicDescCount;
+      // <--
+      
+      // Queries support
+      // -->
+      query_ring_buffer* QueryBuffer;
+      // <--
+      
       // Vector of allocated BackBuffers
       std::vector<ID3D12Resource*> BackBuffers;
       // Vector of allocated BackBuffers Views
@@ -151,6 +178,8 @@ namespace gdr
       UINT CurrentBackBufferIdx;
       // Amount of backBuffers
       UINT BackBufferCount;
+
+
     public:
       
       // Default constructor

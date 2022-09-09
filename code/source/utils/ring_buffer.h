@@ -7,7 +7,7 @@ namespace gdr
 {
 
   // Enum of RingBuffer Results
-  enum class RingBufferResult
+  enum class ring_buffer_result
   {
     Ok = 0,             // Space allocated
     NoRoom,             // No room for data of such size (it is needed to free some data)
@@ -22,10 +22,10 @@ namespace gdr
 
   // Ring buffer implementation struct
   template <typename T, typename AllocType>
-  struct RingBuffer
+  struct ring_buffer
   {
     // Default constuctor
-    RingBuffer() : allocStart(0), allocEnd(0), allocMaxSize(0) {}
+    ring_buffer() : allocStart(0), allocEnd(0), allocMaxSize(0) {}
     /* Initialization function
      * ARGUMENTS: (UINT64) - maximum allocation size
      * RETURNS: (bool) return true if init success and false otherwise 
@@ -60,13 +60,13 @@ namespace gdr
      *    - Allocation type
      *       (AllocType&) allocation
      */
-    RingBufferResult Alloc(UINT64 allocSize, UINT64& allocStartOffset, AllocType& allocation, UINT align)
+    ring_buffer_result Alloc(UINT64 allocSize, UINT64& allocStartOffset, AllocType& allocation, UINT align)
     {
       UINT64 alignedAllocEnd = Align(allocEnd, (UINT64)align);
 
       if (allocSize > allocMaxSize)
       {
-        return RingBufferResult::AllocTooLarge;
+        return ring_buffer_result::AllocTooLarge;
       }
 
       if (allocStart <= allocEnd)
@@ -75,7 +75,7 @@ namespace gdr
         if (allocSize > allocSizeLeft) // we have some troubles
         {
           if (allocStart < allocSize) // we have no space left
-            return RingBufferResult::NoRoom;
+            return ring_buffer_result::NoRoom;
           alignedAllocEnd = 0;
         }
       }
@@ -83,7 +83,7 @@ namespace gdr
       {
         if (allocSize > allocStart - alignedAllocEnd)
         {
-          return RingBufferResult::NoRoom;
+          return ring_buffer_result::NoRoom;
         }
       }
 
@@ -93,7 +93,7 @@ namespace gdr
 
       allocEnd = alignedAllocEnd + allocSize;
 
-      return RingBufferResult::Ok;
+      return ring_buffer_result::Ok;
     }
 
     /* Store Pending Fence function

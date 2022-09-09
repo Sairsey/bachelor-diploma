@@ -93,6 +93,15 @@ namespace gdr
       // Terminate Queries
       void TermQueries(void);
       
+      /* Init Back buffers
+       * ARGUMENTS: Amount of BackBuffers
+       * RETURNS: (HRESULT) return code of creation 
+       */
+      HRESULT CreateBackBuffers(UINT Count);
+
+      // Terminate back buffers
+      void TermBackBuffers();
+
       // Pending Barrier representation type
       struct PendingBarrier
       {
@@ -119,13 +128,29 @@ namespace gdr
       UINT DsvDescSize; // size of DSV descriptor
       UINT SrvDescSize; // size of SRV descriptor
 
+      // Swapchain
+      IDXGISwapChain3* Swapchain;
+
       // Present Queue
       present_command_queue* PresentQueue;
-      
+      // Upload Queue
       upload_command_queue* UploadQueue;
+      // State Transition Queue
       command_queue* UploadStateTransitionQueue;
+      // Current Upload Queue
       ID3D12GraphicsCommandList* CurrentUploadCmdList;
+      // vector of barriers
       std::vector<PendingBarrier> UploadBarriers;
+
+
+      // Vector of allocated BackBuffers
+      std::vector<ID3D12Resource*> BackBuffers;
+      // Vector of allocated BackBuffers Views
+      ID3D12DescriptorHeap* BackBufferViews;
+      // Current BackBuffer index
+      UINT CurrentBackBufferIdx;
+      // Amount of backBuffers
+      UINT BackBufferCount;
     public:
       
       // Default constructor

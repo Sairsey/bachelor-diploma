@@ -260,13 +260,118 @@ void gdr::device::TermCommandQueue(void)
 // ARGUEMTNS: Amount of swapchains and hWnd
 bool gdr::device::InitSwapchain(int Count, HWND hWnd)
 {
-  return true;
+  DXGI_MODE_DESC bufferDesc;
+  bufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+  bufferDesc.Height = 0;
+  bufferDesc.Width = 0;
+  bufferDesc.RefreshRate.Numerator = 0;
+  bufferDesc.RefreshRate.Denominator = 1;
+  bufferDesc.ScanlineOrdering = DXGI_MODE_SCANLINE_ORDER_PROGRESSIVE;
+  bufferDesc.Scaling = DXGI_MODE_SCALING_UNSPECIFIED;
+
+  DXGI_SWAP_CHAIN_DESC desc;
+  desc.BufferCount = Count;
+  desc.BufferDesc = bufferDesc;
+  desc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
+  desc.OutputWindow = hWnd;
+  desc.Windowed = TRUE;
+  desc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
+  desc.Flags = 0;
+  desc.SampleDesc.Count = 1;
+  desc.SampleDesc.Quality = 0;
+
+  IDXGISwapChain* pSwapchain = nullptr;
+
+  HRESULT hr = S_OK;
+  D3D_CHECK(DxgiFactory->CreateSwapChain(PresentQueue->GetQueue(), &desc, &pSwapchain));
+  D3D_CHECK(pSwapchain->QueryInterface(__uuidof(IDXGISwapChain3), (void**)&Swapchain));
+  if (hr != S_OK)
+  {
+    OutputDebugString(_T("DXGI Swapchain version 1.4 is not supported\n"));
+  }
+  D3D_RELEASE(pSwapchain);
+
+  if (SUCCEEDED(hr))
+  {
+    D3D12_DESCRIPTOR_HEAP_DESC desc;
+    desc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
+    desc.NumDescriptors = Count;
+    desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
+    desc.NodeMask = 0;
+
+    D3D_CHECK(D3DDevice->CreateDescriptorHeap(&desc, __uuidof(ID3D12DescriptorHeap), (void**)&BackBufferViews));
+  }
+
+  D3D_CHECK(CreateBackBuffers(Count));
+
+  return SUCCEEDED(hr);
+}
+
+/* Init Back buffers
+ * ARGUMENTS: Amount of BackBuffers
+ * RETURNS: (HRESULT) return code of creation
+ */
+HRESULT gdr::device::CreateBackBuffers(UINT Count)
+{
+  HRESULT hr = S_OK;
+
+  for (UINT i = 0; i < Count && SUCCEEDED(hr); i++)
+  {
+    ID3D12Resource* pBackBuffer = nullptr;
+    D3D_CHECK(Swapchain->GetBuffer(i, __uuidof(ID3D12Resource), (void**)&pBackBuffer));
+    BackBuffers.push_back(pBackBuffer);
+  }
+
+  if (SUCCEEDED(hr))
+  {
+    D3D12_CPU_DESCRIPTOR_HANDLE rtvHandle(BackBufferViews->GetCPUDescriptorHandleForHeapStart());
+
+    D3D12_RENDER_TARGET_VIEW_DESC desc;
+    desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+    desc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
+    desc.Texture2D.MipSlice = 0;
+    desc.Texture2D.PlaneSlice = 0;
+
+    for (UINT i = 0; i < Count; i++)
+    {
+      D3DDevice->CreateRenderTargetView(BackBuffers[i], &desc, rtvHandle);
+
+      rtvHandle.ptr += RtvDescSize;
+    }
+  }
+
+  if (SUCCEEDED(hr))
+  {
+    BackBufferCount = Count;
+
+    // We actually should point at previous to grab current at new frame
+    CurrentBackBufferIdx = (Swapchain->GetCurrentBackBufferIndex() + BackBufferCount - 1) % BackBufferCount;
+  }
+
+  return hr;
+}
+
+// Terminate back buffers
+void gdr::device::TermBackBuffers()
+{
+  for (auto pBackBuffer : BackBuffers)
+  {
+    D3D_RELEASE(pBackBuffer);
+  }
+  BackBuffers.clear();
+
+  BackBufferCount = 0;
+  CurrentBackBufferIdx = 0;
 }
 
 // Terminate Swapchain
 void gdr::device::TermSwapchain(void)
 {
+  D3D_RELEASE(BackBufferViews);
 
+  TermBackBuffers();
+
+  D3D_RELEASE(Swapchain);
 }
 
 // Init GPU Memory Allocator

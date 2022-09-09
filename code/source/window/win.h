@@ -43,7 +43,7 @@ namespace gdr
      */
     VOID SetFullScreen( VOID );
 
-  protected:
+  public:
     /* Initialization flag */
     BOOL IsInit;
 

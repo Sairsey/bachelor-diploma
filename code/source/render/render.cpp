@@ -17,7 +17,10 @@ bool gdr::render::Init(engine* Eng)
 
   IsInited = true;
   
-  IsInited = Device.Init(gdr::device_create_params());
+  gdr::device_create_params params;
+  params.hWnd = Eng->hWnd;
+
+  IsInited = Device.Init(params);
 
   return IsInited;
 }

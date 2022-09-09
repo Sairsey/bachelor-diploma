@@ -16,6 +16,10 @@ namespace gdr
       bool IsInited;
       // Device
       device Device;
+      // Viewport
+      D3D12_VIEWPORT Viewport;
+      // Scissor rect
+      D3D12_RECT Rect;
 
     public:
     /* Default Contructor */
@@ -29,6 +33,8 @@ namespace gdr
      */
     bool Init(engine *Eng);
 
+    /* Draw frame function */
+    void DrawFrame(void);
 
     /* Terminate function
      * ARGUMENTS: None

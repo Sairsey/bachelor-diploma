@@ -28,7 +28,6 @@ namespace gdr
   class device
   {
     private:
-
       // Init D3D12 Device
       // ARGUMENTS: (bool) is enable debug 
       bool InitD3D12Device(bool DebugDevice);
@@ -170,6 +169,14 @@ namespace gdr
       query_ring_buffer* QueryBuffer;
       // <--
       
+      // Static descriptor heap
+      // -->
+      UINT StaticDescCount;
+      UINT CurrentStaticDescIndex;
+      // <--
+
+      // BackBuffer support
+      // -->
       // Vector of allocated BackBuffers
       std::vector<ID3D12Resource*> BackBuffers;
       // Vector of allocated BackBuffers Views
@@ -178,7 +185,7 @@ namespace gdr
       UINT CurrentBackBufferIdx;
       // Amount of backBuffers
       UINT BackBufferCount;
-
+      // <--
 
     public:
       
@@ -198,6 +205,26 @@ namespace gdr
        * RETURNS: None
        */
       void Term(void);
+
+      // Begin command list for rendering
+      bool BeginRenderCommandList(ID3D12GraphicsCommandList** ppCommandList, ID3D12Resource** ppBackBuffer, D3D12_CPU_DESCRIPTOR_HANDLE* pBackBufferDesc);
+      // Close rendering command list and submit it
+      bool CloseSubmitAndPresentRenderCommandList(bool vsync = true);
+
+      // Change state of resource with resource barrier
+      bool TransitResourceState(ID3D12GraphicsCommandList* pCommandList, ID3D12Resource* pResource, D3D12_RESOURCE_STATES before, D3D12_RESOURCE_STATES after, UINT subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES);
+
+      // Check if module initialized
+      inline bool IsInitialized() const { return IsInited; }
+      // Get D3D Device
+      inline ID3D12Device* GetDXDevice() const { return D3DDevice; }
+
+      // Get size of SRV
+      inline UINT GetSRVDescSize() const { return SrvDescSize; }
+      // Get size of DSV
+      inline UINT GetDSVDescSize() const { return DsvDescSize; }
+      // Get size of Render target view
+      inline UINT GetRTVDescSize() const { return RtvDescSize; }
 
       // Default destructor
       ~device();

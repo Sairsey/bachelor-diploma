@@ -55,7 +55,9 @@ VOID gdr::engine::Erase(HDC hDC)
  */
 VOID gdr::engine::Paint(HDC hDC)
 {
+  render::DrawFrame();
 
+  InvalidateRect(win::hWnd, NULL, TRUE);
 }
 
 /* Activate handle function.

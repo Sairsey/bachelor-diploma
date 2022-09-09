@@ -43,6 +43,19 @@ bool gdr::device::Init(const device_create_params& params)
   IsInited = IsInited && InitReadbackEngine((UINT64)1 * params.ReadbackHeapSizeMb * 1024 * 1024);
   IsInited = IsInited && InitQueries(params.QueryCount);
 
+  if (IsInited)
+  {
+    PresentQueue->SetSwapchain(Swapchain);
+
+    IsDebugShaders = params.DebugShaders;
+
+    StaticDescCount = params.StaticDescCount;
+  }
+  else
+  {
+    Term();
+  }
+
   return IsInited;
 }
 
@@ -113,7 +126,7 @@ bool gdr::device::InitD3D12Device(bool DebugDevice)
   UINT adapterIdx = 0;
   IDXGIAdapter* pAdapter = nullptr;
   UINT maxAdapterIdx = 0;
-  UINT maxMemory = 0;
+  size_t maxMemory = 0;
   while (DxgiFactory->EnumAdapters(adapterIdx, &pAdapter) == S_OK)
   {
     bool skip = false;
@@ -535,4 +548,112 @@ bool gdr::device::InitQueries(UINT Count)
 void gdr::device::TermQueries(void)
 {
   RELEASE(QueryBuffer);
+}
+
+/* Function for execution of all thing we need to do on frame start*/
+bool gdr::device::BeginRenderCommandList(ID3D12GraphicsCommandList** ppCommandList, ID3D12Resource** ppBackBuffer, D3D12_CPU_DESCRIPTOR_HANDLE* pBackBufferDesc)
+{
+  CurrentBackBufferIdx = (CurrentBackBufferIdx + 1) % BackBufferCount;
+
+  UINT64 finishedFenceValue = NoneValue;
+
+  HRESULT hr = PresentQueue->OpenCommandList(ppCommandList, finishedFenceValue);
+  if (finishedFenceValue != NoneValue)
+  {
+    DynamicBuffer->FlashFenceValue(finishedFenceValue);
+    DynamicDescBuffer->FlashFenceValue(finishedFenceValue);
+    QueryBuffer->FlashFenceValue(finishedFenceValue);
+  }
+  if (SUCCEEDED(hr))
+  {
+    D3D12_CPU_DESCRIPTOR_HANDLE rtvHandle(BackBufferViews->GetCPUDescriptorHandleForHeapStart());
+    rtvHandle.ptr += RtvDescSize * CurrentBackBufferIdx;
+    *pBackBufferDesc = rtvHandle;
+    *ppBackBuffer = BackBuffers[CurrentBackBufferIdx];
+  }
+
+  return SUCCEEDED(hr);
+}
+
+/* Function for execution of all thing we need to do on frame End*/
+bool gdr::device::CloseSubmitAndPresentRenderCommandList(bool vsync)
+{
+  // Close command list
+  HRESULT hr = S_OK;
+
+  // Submit update command list, if needed
+  UINT64 uploadFenceValue = NoneValue;
+  D3D_CHECK(UploadQueue->SubmitCommandList(&uploadFenceValue));
+
+  // while upload buffer has fences to submit
+  while (uploadFenceValue != NoneValue)
+  {
+    // Add fence to pending
+    UploadBuffer->AddPendingFence(uploadFenceValue);
+    // if we have barrier
+    if (!UploadBarriers.empty())
+    {
+      // Sync fence
+      ID3D12GraphicsCommandList* pBarrierCmdList = nullptr;
+      D3D_CHECK(UploadStateTransitionQueue->GetQueue()->Wait(UploadQueue->GetCurrentCommandList()->GetFence(), uploadFenceValue));
+
+      // Open command list
+      UINT64 finishedFenceValue = NoneValue;
+      D3D_CHECK(UploadStateTransitionQueue->OpenCommandList(&pBarrierCmdList, finishedFenceValue));
+
+      // change state of all objects to Common
+      for (auto barrier : UploadBarriers)
+      {
+        if (barrier.stateAfter != D3D12_RESOURCE_STATE_COMMON)
+        {
+          TransitResourceState(pBarrierCmdList, barrier.pResource, D3D12_RESOURCE_STATE_COMMON, barrier.stateAfter);
+        }
+      }
+      UploadBarriers.clear();
+
+      D3D_CHECK(UploadStateTransitionQueue->CloseAndSubmitCommandList(&uploadFenceValue));
+
+      // sync this state transition queue
+      D3D_CHECK(PresentQueue->GetQueue()->Wait(UploadStateTransitionQueue->GetCurrentCommandList()->GetFence(), uploadFenceValue));
+    }
+    else
+    {
+      // sync just command list
+      D3D_CHECK(PresentQueue->GetQueue()->Wait(UploadQueue->GetCurrentCommandList()->GetFence(), uploadFenceValue));
+    }
+    // submit upload list
+    D3D_CHECK(UploadQueue->SubmitCommandList(&uploadFenceValue));
+  }
+
+  // Set Vsync
+  PresentQueue->SetVSync(vsync);
+
+  D3D_CHECK(QueryBuffer->Resolve(PresentQueue->GetCurrentCommandList()->GetGraphicsCommandList()));
+
+  UINT64 presentFenceValue = NoneValue;
+  D3D_CHECK(PresentQueue->CloseAndSubmitCommandList(&presentFenceValue));
+  // Add fences for every buffer
+  if (SUCCEEDED(hr))
+  {
+    DynamicBuffer->AddPendingFence(presentFenceValue);
+    DynamicDescBuffer->AddPendingFence(presentFenceValue);
+    QueryBuffer->AddPendingFence(presentFenceValue);
+  }
+
+  return SUCCEEDED(hr);
+}
+
+bool gdr::device::TransitResourceState(ID3D12GraphicsCommandList* pCommandList, ID3D12Resource* pResource, D3D12_RESOURCE_STATES before, D3D12_RESOURCE_STATES after, UINT subresource)
+{
+  D3D12_RESOURCE_BARRIER barrier;
+  barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+  barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
+  barrier.Transition.pResource = pResource;
+  barrier.Transition.Subresource = subresource;
+  barrier.Transition.StateBefore = before;
+  barrier.Transition.StateAfter = after;
+
+  pCommandList->ResourceBarrier(1, &barrier);
+
+  return true;
 }

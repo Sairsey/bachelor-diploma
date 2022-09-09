@@ -1,12 +1,20 @@
 #include "p_header.h"
 
+#define RELEASE(a)\
+if ((a) != nullptr)\
+{\
+    (a)->Term();\
+    delete (a);\
+    (a) = nullptr;\
+}
+
 // Default constructor
 gdr::device::device() : 
   IsInited(false),
   D3DGPUMemAllocator(nullptr),
   DxgiFactory(nullptr),
   DxgiAdapter(nullptr),
-  DxgiDevice(nullptr),
+  D3DDevice(nullptr),
   D3DDescriptorHeap(nullptr),
   IsDebugShaders(false),
   IsDebugDevice(false),
@@ -117,7 +125,7 @@ bool gdr::device::InitD3D12Device(bool DebugDevice)
     
     if (!skip)
     {
-      skip = D3D12CreateDevice(pAdapter, D3D_FEATURE_LEVEL_12_0, __uuidof(ID3D12Device), (void**)&DxgiDevice) != S_OK;
+      skip = D3D12CreateDevice(pAdapter, D3D_FEATURE_LEVEL_12_0, __uuidof(ID3D12Device), (void**)&D3DDevice) != S_OK;
       
       // Fall back to 11_1 feature level, if 12_0 is not supported
       if (skip)
@@ -125,7 +133,7 @@ bool gdr::device::InitD3D12Device(bool DebugDevice)
         OutputDebugString(_T("Feature level 12_0 is not supported on "));
         OutputDebugStringW(desc.Description);
         OutputDebugString(_T(", fall back to 11_1\n"));
-        skip = D3D12CreateDevice(pAdapter, D3D_FEATURE_LEVEL_11_1, __uuidof(ID3D12Device), (void**)&DxgiDevice) != S_OK;
+        skip = D3D12CreateDevice(pAdapter, D3D_FEATURE_LEVEL_11_1, __uuidof(ID3D12Device), (void**)&D3DDevice) != S_OK;
       }
     }
 
@@ -136,7 +144,7 @@ bool gdr::device::InitD3D12Device(bool DebugDevice)
         maxAdapterIdx = adapterIdx;
         maxMemory = desc.DedicatedVideoMemory;
       }
-      DxgiDevice->Release();
+      D3DDevice->Release();
     }
 
     pAdapter->Release();
@@ -145,13 +153,13 @@ bool gdr::device::InitD3D12Device(bool DebugDevice)
   }
 
   DxgiFactory->EnumAdapters(maxAdapterIdx, &pAdapter);
-  bool skip = D3D12CreateDevice(pAdapter, D3D_FEATURE_LEVEL_12_0, __uuidof(ID3D12Device), (void**)&DxgiDevice) != S_OK;
+  bool skip = D3D12CreateDevice(pAdapter, D3D_FEATURE_LEVEL_12_0, __uuidof(ID3D12Device), (void**)&D3DDevice) != S_OK;
 
   // Fall back to 11_1 feature level, if 12_0 is not supported
   if (skip)
   {
     OutputDebugString(_T("Feature level 12_0 is not supported, fall back to 11_1\n"));
-    skip = D3D12CreateDevice(pAdapter, D3D_FEATURE_LEVEL_11_1, __uuidof(ID3D12Device), (void**)&DxgiDevice) != S_OK;
+    skip = D3D12CreateDevice(pAdapter, D3D_FEATURE_LEVEL_11_1, __uuidof(ID3D12Device), (void**)&D3DDevice) != S_OK;
   }
 
   DxgiAdapter = pAdapter;
@@ -171,20 +179,20 @@ bool gdr::device::InitD3D12Device(bool DebugDevice)
     }
   }
 
-  if (DxgiDevice != nullptr)
+  if (D3DDevice != nullptr)
   {
-    SrvDescSize = DxgiDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
-    DsvDescSize = DxgiDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
-    RtvDescSize = DxgiDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
+    SrvDescSize = D3DDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+    DsvDescSize = D3DDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
+    RtvDescSize = D3DDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
   }
 
-  if (DxgiDevice != nullptr && DebugDevice)
+  if (D3DDevice != nullptr && DebugDevice)
   {
     ID3D12InfoQueue* pInfoQueue = nullptr;
 
     HRESULT hr = S_OK;
 
-    D3D_CHECK(DxgiDevice->QueryInterface(__uuidof(ID3D12InfoQueue), (void**)&pInfoQueue));
+    D3D_CHECK(D3DDevice->QueryInterface(__uuidof(ID3D12InfoQueue), (void**)&pInfoQueue));
     if (strictDebug)
     {
       D3D_CHECK(pInfoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_WARNING, TRUE));
@@ -194,19 +202,19 @@ bool gdr::device::InitD3D12Device(bool DebugDevice)
     D3D_RELEASE(pInfoQueue);
   }
 
-  return DxgiDevice != nullptr;
+  return D3DDevice != nullptr;
 }
 
 // Terminate D3D12 Device
 void gdr::device::TermD3D12Device(void)
 {
   ULONG refs = 0;
-  if (DxgiDevice != nullptr)
+  if (D3DDevice != nullptr)
   {
-    refs = DxgiDevice->Release();
-    DxgiDevice = nullptr;
+    refs = D3DDevice->Release();
+    D3DDevice = nullptr;
   }
-  /*
+  
   if (IsDebugDevice && refs)
   {
     IDXGIDebug1* pDxgiDebug = nullptr;
@@ -216,8 +224,7 @@ void gdr::device::TermD3D12Device(void)
       D3D_RELEASE(pDxgiDebug);
     }
   }
-  */
-
+  
   D3D_RELEASE(DxgiAdapter);
   D3D_RELEASE(DxgiFactory);
 }
@@ -226,13 +233,27 @@ void gdr::device::TermD3D12Device(void)
 // ARGUEMTNS: Amount of command queues and amount of Upload command queues
 bool gdr::device::InitCommandQueue(int Count, int UploadCount)
 {
-  return true;
+  PresentQueue = new present_command_queue();
+  bool res = PresentQueue->Init(D3DDevice, D3D12_COMMAND_LIST_TYPE_DIRECT, Count);
+  if (res)
+  {
+    UploadQueue = new upload_command_queue();
+    res = UploadQueue->Init(D3DDevice, D3D12_COMMAND_LIST_TYPE_COPY, UploadCount);
+  }
+  if (res)
+  {
+    UploadStateTransitionQueue = new command_queue();
+    res = UploadStateTransitionQueue->Init(D3DDevice, D3D12_COMMAND_LIST_TYPE_DIRECT, Count);
+  }
+  return res;
 }
 
 // Terminate Command buffer
 void gdr::device::TermCommandQueue(void)
 {
-
+  RELEASE(UploadStateTransitionQueue);
+  RELEASE(UploadQueue);
+  RELEASE(PresentQueue);
 }
 
 // Init Swapchain

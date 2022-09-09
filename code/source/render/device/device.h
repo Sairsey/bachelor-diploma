@@ -8,6 +8,7 @@ struct IDXGISwapChain3;
 /* Project namespace */
 namespace gdr
 {
+  // Device creation parameters
   struct device_create_params
   {
     bool DebugLayer = false;
@@ -101,20 +102,30 @@ namespace gdr
 
       // Is device inited correctly
       bool IsInited;
+      // Memory allocator
       D3D12MA::Allocator* D3DGPUMemAllocator;
 
-      IDXGIFactory* DxgiFactory;
-      IDXGIAdapter* DxgiAdapter;
-      ID3D12Device* DxgiDevice;
+      IDXGIFactory* DxgiFactory; // factory for retrieving an adapter
+      IDXGIAdapter* DxgiAdapter; // Current graphics adapter
+      ID3D12Device* D3DDevice;  // Current device
 
+      // Heap with all descriptors
       ID3D12DescriptorHeap* D3DDescriptorHeap;
 
-      bool IsDebugShaders;
-      bool IsDebugDevice;
+      bool IsDebugShaders; // flag if we build debug shaders
+      bool IsDebugDevice; //  flag if we in "debug" device mode
 
-      UINT RtvDescSize;
-      UINT DsvDescSize;
-      UINT SrvDescSize;
+      UINT RtvDescSize; // size of render target descriptor
+      UINT DsvDescSize; // size of DSV descriptor
+      UINT SrvDescSize; // size of SRV descriptor
+
+      // Present Queue
+      present_command_queue* PresentQueue;
+      
+      upload_command_queue* UploadQueue;
+      command_queue* UploadStateTransitionQueue;
+      ID3D12GraphicsCommandList* CurrentUploadCmdList;
+      std::vector<PendingBarrier> UploadBarriers;
     public:
       
       // Default constructor

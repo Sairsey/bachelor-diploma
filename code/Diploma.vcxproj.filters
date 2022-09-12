@@ -90,6 +90,9 @@
     <ClCompile Include="source\units\unit_triangle.cpp">
       <Filter>Source Files\Units</Filter>
     </ClCompile>
+    <ClCompile Include="source\render\subsystems\transforms_support.cpp">
+      <Filter>Source Files\Render\SubSystems</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\p_header.h">
@@ -169,6 +172,9 @@
     </ClInclude>
     <ClInclude Include="source\units\unit_triangle.h">
       <Filter>Source Files\Units</Filter>
+    </ClInclude>
+    <ClInclude Include="source\render\subsystems\transforms_support.h">
+      <Filter>Source Files\Render\SubSystems</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -98,6 +98,7 @@ bool gdr::render::Init(engine* Eng)
     GeometrySystem = new gdr::geometry_support(this);
     ObjectSystem = new gdr::object_support(this);
     GlobalsSystem = new gdr::globals_support(this);
+    TransformsSystem = new gdr::transforms_support(this);
   }
 
   IsInited = localIsInited;
@@ -148,6 +149,7 @@ void gdr::render::DrawFrame(void)
 
   // Update all subsytems
   GlobalsSystem->UpdateGPUData();
+  TransformsSystem->UpdateGPUData();
 
   ID3D12GraphicsCommandList* pCommandList = nullptr;
   ID3D12Resource* pBackBuffer = nullptr;
@@ -166,6 +168,7 @@ void gdr::render::DrawFrame(void)
     {
       FLOAT clearColor[4] = { 0.3f, 0.5f, 0.7f, 1.0f };
       pCommandList->ClearRenderTargetView(rtvHandle, clearColor, 1, &Rect);
+      pCommandList->ClearDepthStencilView(dsvHandle, D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.0f, 0, 1, &Rect);
 
       assert(Passes.size() >= 1);
       PROFILE_BEGIN(pCommandList, (Passes[0]->GetName() + " compute call").c_str());
@@ -212,7 +215,7 @@ void gdr::render::DrawFrame(void)
       Device.TransitResourceState(pCommandList, pBackBuffer, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
     }
 
-    Device.CloseSubmitAndPresentRenderCommandList();
+    Device.CloseSubmitAndPresentRenderCommandList(false);
   }
 
 }
@@ -228,6 +231,7 @@ void gdr::render::Term(void)
   if (!IsInited)
     return;
 
+  delete TransformsSystem;
   delete ObjectSystem;
   delete GeometrySystem;
   delete GlobalsSystem;

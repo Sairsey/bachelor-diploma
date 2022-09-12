@@ -13,6 +13,7 @@
 
 #include "render/subsystems/globals_support.h"
 #include "render/subsystems/geometry_support.h"
+#include "render/subsystems/transforms_support.h"
 #include "render/subsystems/object_support.h"
 
 #include "render/passes/base_pass.h"

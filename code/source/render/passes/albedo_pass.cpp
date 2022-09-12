@@ -23,6 +23,13 @@ void gdr::albedo_pass::Initialize(void)
     params.push_back(param);
   }
 
+  {
+    CD3DX12_ROOT_PARAMETER param;
+    param.InitAsShaderResourceView(
+      albedo_texture_registers::object_transform_pool_register);
+    params.push_back(param);
+  }
+
   if (params.size() != 0)
   {
     CD3DX12_ROOT_SIGNATURE_DESC rootSignatureDesc;
@@ -83,13 +90,17 @@ void gdr::albedo_pass::CallDirectDraw(ID3D12GraphicsCommandList* currentCommandL
     currentCommandList->IASetVertexBuffers(0, 1, &geom.VertexBufferView);
     currentCommandList->IASetIndexBuffer(&geom.IndexBufferView);
     {
-    currentCommandList->SetGraphicsRootConstantBufferView(
-      root_parameters_draw_indices::globals_buffer_index,
-      Render->GlobalsSystem->GPUData.Resource->GetGPUVirtualAddress());
-    currentCommandList->SetGraphicsRoot32BitConstants(
-      root_parameters_draw_indices::index_buffer_index, 
-      sizeof(ObjectIndices) / sizeof(int32_t),
-      &Render->ObjectSystem->CPUPool[i], 0);
+      currentCommandList->SetGraphicsRootConstantBufferView(
+        root_parameters_draw_indices::globals_buffer_index,
+        Render->GlobalsSystem->GPUData.Resource->GetGPUVirtualAddress());
+      currentCommandList->SetGraphicsRoot32BitConstants(
+        root_parameters_draw_indices::index_buffer_index, 
+        sizeof(ObjectIndices) / sizeof(int32_t),
+        &Render->ObjectSystem->CPUPool[i], 0);
+      currentCommandList->SetGraphicsRootShaderResourceView(
+        root_parameters_draw_indices::transform_pool_index,
+        Render->TransformsSystem->GPUData.Resource->GetGPUVirtualAddress());
+
     }
 
     currentCommandList->DrawIndexedInstanced(geom.IndexCount, 1, 0, 0, 0);

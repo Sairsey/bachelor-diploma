@@ -10,6 +10,7 @@ namespace gdr
   class geometry_support;
   class globals_support;
   class object_support;
+  class transforms_support;
 
   struct render_runtime_params
   {
@@ -81,6 +82,7 @@ namespace gdr
       // Subsystems
       globals_support *GlobalsSystem; // Store camera info and other important stuff
       geometry_support *GeometrySystem; // support of geometry creation
+      transforms_support* TransformsSystem; // support of object Transforms
       object_support *ObjectSystem; // Helper of every subsystem
   };
 }

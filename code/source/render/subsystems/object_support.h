@@ -22,7 +22,7 @@ namespace gdr
       gdr_object CreateObject(const vertex* pVertex, size_t vertexCount, const UINT32* pIndices, size_t indexCount);
 
       // function which will return transfroms by object index
-      //transforms &GetTransforms(gdr_object object);
+      ObjectTransform &GetTransforms(gdr_object object);
 
       // function which will return material by object index
       //material &GetMaterial(gdr_object object);

@@ -34,6 +34,12 @@
     <Filter Include="Source Files\Render\Device">
       <UniqueIdentifier>{24d1557a-bbd3-4439-b058-ecb18ea33830}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Render\Passes">
+      <UniqueIdentifier>{5ce82c29-3e15-4f7c-907a-9d8a754dcc36}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Render\SubSystems">
+      <UniqueIdentifier>{175b7bc7-787f-4b66-9151-4eba0e3d1750}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\main.cpp">
@@ -62,6 +68,21 @@
     </ClCompile>
     <ClCompile Include="source\utils\D3D12MemAlloc.cpp">
       <Filter>Source Files\Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="source\utils\read_file.cpp">
+      <Filter>Source Files\Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="source\render\device\d3dinclude.cpp">
+      <Filter>Source Files\Render\Device</Filter>
+    </ClCompile>
+    <ClCompile Include="source\render\passes\albedo_pass.cpp">
+      <Filter>Source Files\Render\Passes</Filter>
+    </ClCompile>
+    <ClCompile Include="source\render\subsystems\geometry_support.cpp">
+      <Filter>Source Files\Render\SubSystems</Filter>
+    </ClCompile>
+    <ClCompile Include="source\units\unit_base.cpp">
+      <Filter>Source Files\Units</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -115,6 +136,21 @@
     </ClInclude>
     <ClInclude Include="source\render\device\gpu_ring_buffer.h">
       <Filter>Source Files\Render\Device</Filter>
+    </ClInclude>
+    <ClInclude Include="source\render\passes\base_pass.h">
+      <Filter>Source Files\Render\Passes</Filter>
+    </ClInclude>
+    <ClInclude Include="source\utils\read_file.h">
+      <Filter>Source Files\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="source\render\device\d3dinclude.h">
+      <Filter>Source Files\Render\Device</Filter>
+    </ClInclude>
+    <ClInclude Include="source\render\passes\albedo_pass.h">
+      <Filter>Source Files\Render\Passes</Filter>
+    </ClInclude>
+    <ClInclude Include="source\render\subsystems\geometry_support.h">
+      <Filter>Source Files\Render\SubSystems</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

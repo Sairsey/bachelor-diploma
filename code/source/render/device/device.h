@@ -10,8 +10,8 @@ namespace gdr
   // Device creation parameters
   struct device_create_params
   {
-    bool DebugLayer = false;
-    bool DebugShaders = false;
+    bool DebugLayer = true;
+    bool DebugShaders = true;
     int  CmdListCount = 2;
     int  UploadListCount = 2;
     HWND hWnd = nullptr;
@@ -22,6 +22,14 @@ namespace gdr
     int  StaticDescCount = 16384 * 16;
     int  RenderTargetViewCount = 256;
     int  QueryCount = 128;
+  };
+
+  // Avaliable for compilatior shader stages
+  enum shader_stage
+  {
+    Vertex = 0,
+    Pixel,
+    Compute
   };
 
   /* Device representation class */
@@ -211,8 +219,32 @@ namespace gdr
       // Close rendering command list and submit it
       bool CloseSubmitAndPresentRenderCommandList(bool vsync = true);
 
+      // Begin command list for uploading
+      bool BeginUploadCommandList(ID3D12GraphicsCommandList** ppCommandList);
+      // Update GPU buffer
+      HRESULT UpdateBuffer(ID3D12GraphicsCommandList* pCommandList, ID3D12Resource* pBuffer, const void* pData, size_t dataSize);
+      // Update GPU Texture
+      HRESULT UpdateTexture(ID3D12GraphicsCommandList* pCommandList, ID3D12Resource* pTexture, const void* pData, size_t dataSize);
+      // Close command list for uploading
+      void CloseUploadCommandList();
+
       // Change state of resource with resource barrier
       bool TransitResourceState(ID3D12GraphicsCommandList* pCommandList, ID3D12Resource* pResource, D3D12_RESOURCE_STATES before, D3D12_RESOURCE_STATES after, UINT subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES);
+
+      // Create some resource on GPU
+      bool CreateGPUResource(const D3D12_RESOURCE_DESC& desc, D3D12_RESOURCE_STATES initialResourceState, const D3D12_CLEAR_VALUE* pOptimizedClearValue, GPUResource& resource, const void* pInitialData = nullptr, size_t initialDataSize = 0);
+      // Release GPU Resource
+      void ReleaseGPUResource(GPUResource& resource);
+
+      // Compile shader into bytecode
+      bool CompileShader(LPCTSTR srcFilename, const std::vector<LPCSTR>& defines, const shader_stage& stage, ID3DBlob** ppShaderBinary, std::set<std::tstring>* pIncludes = nullptr);
+      // Create root signature
+      bool CreateRootSignature(const D3D12_ROOT_SIGNATURE_DESC& rsDesc, ID3D12RootSignature** ppRootSignature);
+      // Create Pipeline state object 
+      bool CreatePSO(const D3D12_GRAPHICS_PIPELINE_STATE_DESC& psoDesc, ID3D12PipelineState** ppPSO);
+
+      // Resize backbuffers size
+      bool ResizeSwapchain(UINT width, UINT height);
 
       // Check if module initialized
       inline bool IsInitialized() const { return IsInited; }
@@ -225,6 +257,9 @@ namespace gdr
       inline UINT GetDSVDescSize() const { return DsvDescSize; }
       // Get size of Render target view
       inline UINT GetRTVDescSize() const { return RtvDescSize; }
+
+      // Wait GPU for Idle
+      void WaitGPUIdle();
 
       // Default destructor
       ~device();

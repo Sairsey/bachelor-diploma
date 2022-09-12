@@ -11,6 +11,7 @@
 namespace mth
 {
   using vec3f = vec3<float>;
+  using vec2f = vec2<float>;
   using vec4f = vec4<float>;
   using matr4f = matr4<float>;
   using matr = matr4f;

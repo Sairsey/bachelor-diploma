@@ -8,7 +8,9 @@
 namespace gdr
 {
   /* Engine class declaration */
-  class engine : public win, public render
+  class engine : 
+    public win,
+    public render
   {
     private:
       /* Vector of all units we will draw */
@@ -30,6 +32,12 @@ namespace gdr
       ~engine();
 
       /* Window Message Cracks */
+
+      /* Initialization function.
+       * ARGUMENTS: None.
+       * RETURNS: None.
+       */
+      virtual VOID Init(VOID) override;
 
       /* Change window size handle function.
        * ARGUMENTS: None.

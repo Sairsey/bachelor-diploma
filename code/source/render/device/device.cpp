@@ -643,6 +643,136 @@ bool gdr::device::CloseSubmitAndPresentRenderCommandList(bool vsync)
   return SUCCEEDED(hr);
 }
 
+bool gdr::device::BeginUploadCommandList(ID3D12GraphicsCommandList** ppCommandList)
+{
+  // Wait for previous commit completion
+  UINT64 finishedFenceValue = NoneValue;
+  HRESULT hr = S_OK;
+  D3D_CHECK(UploadQueue->OpenCommandList(ppCommandList, finishedFenceValue));
+  if (finishedFenceValue != NoneValue)
+  {
+    UploadBuffer->FlashFenceValue(finishedFenceValue);
+  }
+
+  CurrentUploadCmdList = *ppCommandList;
+
+  return SUCCEEDED(hr);
+}
+
+HRESULT gdr::device::UpdateBuffer(ID3D12GraphicsCommandList* pCommandList, ID3D12Resource* pBuffer, const void* pData, size_t dataSize)
+{
+#ifdef _DEBUG
+  D3D12_RESOURCE_DESC desc = pBuffer->GetDesc();
+  assert(desc.Dimension == D3D12_RESOURCE_DIMENSION_BUFFER);
+  assert(desc.Width >= dataSize);
+#endif
+
+  assert(CurrentUploadCmdList == pCommandList);
+
+  UINT64 allocStartOffset = 0;
+  UINT8* pAlloc = nullptr;
+  auto allocRes = UploadBuffer->Alloc(dataSize, allocStartOffset, pAlloc, D3D12_CONSTANT_BUFFER_DATA_PLACEMENT_ALIGNMENT);
+  assert(allocRes == ring_buffer_result::Ok);
+  if (allocRes == ring_buffer_result::Ok)
+  {
+    memcpy(pAlloc, pData, dataSize);
+
+    pCommandList->CopyBufferRegion(pBuffer, 0, UploadBuffer->GetBuffer(), allocStartOffset, dataSize);
+
+    return S_OK;
+  }
+
+  return E_FAIL;
+}
+
+HRESULT gdr::device::UpdateTexture(ID3D12GraphicsCommandList* pCommandList, ID3D12Resource* pTexture, const void* pData, size_t dataSize)
+{
+  D3D12_RESOURCE_DESC desc = pTexture->GetDesc();
+  assert(desc.Dimension == D3D12_RESOURCE_DIMENSION_TEXTURE2D);
+
+  UINT64 total = 0;
+  std::vector<UINT> numRows(desc.MipLevels);
+  std::vector<UINT64> rowSize(desc.MipLevels);
+  std::vector<D3D12_PLACED_SUBRESOURCE_FOOTPRINT> placedFootprint(desc.MipLevels);
+
+  D3DDevice->GetCopyableFootprints(&desc, 0, desc.MipLevels, 0, placedFootprint.data(), numRows.data(), rowSize.data(), &total);
+
+  assert(CurrentUploadCmdList == pCommandList);
+
+  UINT64 width = desc.Width;
+  UINT64 height = desc.Height;
+  const UINT8* pSrcData = static_cast<const UINT8*>(pData);
+
+  UINT64 allocStartOffset = 0;
+
+  UINT8* pAlloc = nullptr;
+  auto allocRes = UploadBuffer->Alloc(total, allocStartOffset, pAlloc, D3D12_TEXTURE_DATA_PLACEMENT_ALIGNMENT);
+  assert(allocRes == ring_buffer_result::Ok);
+  if (allocRes != ring_buffer_result::Ok)
+  {
+    return E_FAIL;
+  }
+
+  UINT pixelSize = 0;
+  switch (desc.Format)
+  {
+  case DXGI_FORMAT_R8G8B8A8_UNORM:
+  case DXGI_FORMAT_R8G8B8A8_UNORM_SRGB:
+    pixelSize = 4;
+    break;
+
+  case DXGI_FORMAT_A8_UNORM:
+    pixelSize = 1;
+    break;
+
+  case DXGI_FORMAT_R32G32B32_FLOAT:
+    pixelSize = 12;
+    break;
+
+  case DXGI_FORMAT_R32G32B32A32_FLOAT:
+    pixelSize = 16;
+    break;
+
+  default:
+    assert(0); // Unknown format
+    break;
+  }
+
+  UINT8* pDstData = static_cast<UINT8*>(pAlloc);
+
+  for (int i = 0; i < desc.MipLevels; i++)
+  {
+    // Copy from pData
+    for (UINT j = 0; j < height; j++)
+    {
+      memcpy(pDstData, pSrcData, width * pixelSize);
+      pDstData += placedFootprint[i].Footprint.RowPitch;
+      pSrcData += width * pixelSize;
+    }
+
+    placedFootprint[i].Offset += allocStartOffset;
+
+    const auto& dst = CD3DX12_TEXTURE_COPY_LOCATION(pTexture, i);
+    const auto& src = CD3DX12_TEXTURE_COPY_LOCATION(UploadBuffer->GetBuffer(), placedFootprint[i]);
+    pCommandList->CopyTextureRegion(
+      &dst,
+      0, 0, 0,
+      &src,
+      nullptr);
+
+    width /= 2;
+    height /= 2;
+  }
+
+  return S_OK;
+}
+
+void gdr::device::CloseUploadCommandList()
+{
+  UploadQueue->CloseCommandList();
+  CurrentUploadCmdList = nullptr;
+}
+
 bool gdr::device::TransitResourceState(ID3D12GraphicsCommandList* pCommandList, ID3D12Resource* pResource, D3D12_RESOURCE_STATES before, D3D12_RESOURCE_STATES after, UINT subresource)
 {
   D3D12_RESOURCE_BARRIER barrier;
@@ -656,4 +786,181 @@ bool gdr::device::TransitResourceState(ID3D12GraphicsCommandList* pCommandList, 
   pCommandList->ResourceBarrier(1, &barrier);
 
   return true;
+}
+
+bool gdr::device::CreateGPUResource(const D3D12_RESOURCE_DESC& desc, D3D12_RESOURCE_STATES initialResourceState, const D3D12_CLEAR_VALUE* pOptimizedClearValue, GPUResource& resource, const void* pInitialData, size_t initialDataSize)
+{
+  D3D12MA::ALLOCATION_DESC allocDesc;
+  allocDesc.HeapType = D3D12_HEAP_TYPE_DEFAULT;
+  allocDesc.CustomPool = nullptr;
+  allocDesc.ExtraHeapFlags = D3D12_HEAP_FLAG_NONE;
+  allocDesc.Flags = D3D12MA::ALLOCATION_FLAG_NONE;
+
+  HRESULT hr = S_OK;
+  if (pInitialData == nullptr)
+  {
+    D3D_CHECK(D3DGPUMemAllocator->CreateResource(&allocDesc, &desc, initialResourceState, pOptimizedClearValue, &resource.Allocation, __uuidof(ID3D12Resource), (void**)&resource.Resource));
+  }
+  else
+  {
+    assert(CurrentUploadCmdList != nullptr);
+
+    D3D_CHECK(D3DGPUMemAllocator->CreateResource(&allocDesc, &desc, D3D12_RESOURCE_STATE_COMMON, pOptimizedClearValue, &resource.Allocation, __uuidof(ID3D12Resource), (void**)&resource.Resource));
+    switch (desc.Dimension)
+    {
+    case D3D12_RESOURCE_DIMENSION_BUFFER:
+      D3D_CHECK(UpdateBuffer(CurrentUploadCmdList, resource.Resource, pInitialData, initialDataSize));
+      break;
+
+    case D3D12_RESOURCE_DIMENSION_TEXTURE2D:
+      D3D_CHECK(UpdateTexture(CurrentUploadCmdList, resource.Resource, pInitialData, initialDataSize));
+      break;
+    }
+
+    if (SUCCEEDED(hr) && initialResourceState != D3D12_RESOURCE_STATE_COMMON)
+    {
+      UploadBarriers.push_back({ resource.Resource, initialResourceState });
+    }
+  }
+
+  return SUCCEEDED(hr);
+}
+
+void gdr::device::ReleaseGPUResource(GPUResource& resource)
+{
+  D3D_RELEASE(resource.Resource);
+  D3D_RELEASE(resource.Allocation);
+}
+
+// Compile shader into bytecode
+bool gdr::device::CompileShader(LPCTSTR srcFilename, const std::vector<LPCSTR>& defines, const shader_stage& stage, ID3DBlob** ppShaderBinary, std::set<std::tstring>* pIncludes)
+{
+  std::vector<char> data;
+  bool res = ReadFileContent(srcFilename, data);
+  if (res)
+  {
+    std::vector<D3D_SHADER_MACRO> macros;
+    for (int i = 0; i < defines.size(); i++)
+    {
+      macros.push_back({ defines[i], nullptr });
+    }
+    macros.push_back({ nullptr, nullptr });
+
+    UINT flags = D3DCOMPILE_ENABLE_UNBOUNDED_DESCRIPTOR_TABLES;
+
+    if (IsDebugShaders)
+    {
+      flags |= D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION;
+    }
+
+    ID3DBlob* pErrMsg = nullptr;
+
+    HRESULT hr = S_OK;
+
+    d3dinclude includeCallback;
+
+    switch (stage)
+    {
+    case Vertex:
+      hr = D3DCompile(data.data(), data.size(), "", macros.data(), &includeCallback, "VS", "vs_5_1", flags, 0, ppShaderBinary, &pErrMsg);
+      break;
+
+    case Pixel:
+      hr = D3DCompile(data.data(), data.size(), "", macros.data(), &includeCallback, "PS", "ps_5_1", flags, 0, ppShaderBinary, &pErrMsg);
+      break;
+
+    case Compute:
+      hr = D3DCompile(data.data(), data.size(), "", macros.data(), &includeCallback, "CS", "cs_5_1", flags, 0, ppShaderBinary, &pErrMsg);
+      break;
+    }
+    if (pErrMsg != nullptr)
+    {
+      if (!SUCCEEDED(hr))
+      {
+        const char* pMsg = (const char*)pErrMsg->GetBufferPointer();
+        OutputDebugStringA(pMsg);
+        OutputDebugString(_T("\n"));
+      }
+      D3D_RELEASE(pErrMsg);
+    }
+    assert(SUCCEEDED(hr));
+
+    res = SUCCEEDED(hr);
+
+    if (res && pIncludes != nullptr)
+    {
+      std::swap(*pIncludes, includeCallback.includeFiles);
+    }
+  }
+  return res;
+}
+
+// Create root signature
+bool gdr::device::CreateRootSignature(const D3D12_ROOT_SIGNATURE_DESC& rsDesc, ID3D12RootSignature** ppRootSignature)
+{
+  ID3DBlob* pSignatureBlob = nullptr;
+  ID3DBlob* pErrMsg = nullptr;
+
+  HRESULT hr = S_OK;
+  D3D_CHECK(D3D12SerializeRootSignature(&rsDesc, D3D_ROOT_SIGNATURE_VERSION_1, &pSignatureBlob, &pErrMsg));
+  if (pErrMsg != nullptr)
+  {
+    if (!SUCCEEDED(hr))
+    {
+      const char* pMsg = (const char*)pErrMsg->GetBufferPointer();
+      OutputDebugStringA(pMsg);
+      OutputDebugString(_T("\n"));
+    }
+    D3D_RELEASE(pErrMsg);
+  }
+
+  D3D_CHECK(D3DDevice->CreateRootSignature(0, pSignatureBlob->GetBufferPointer(), pSignatureBlob->GetBufferSize(), __uuidof(ID3D12RootSignature), (void**)ppRootSignature));
+
+  D3D_RELEASE(pSignatureBlob);
+
+  return SUCCEEDED(hr);
+}
+
+// Create Pipeline state object 
+bool gdr::device::CreatePSO(const D3D12_GRAPHICS_PIPELINE_STATE_DESC& psoDesc, ID3D12PipelineState** ppPSO)
+{
+  HRESULT hr = S_OK;
+  D3DDevice->CreateGraphicsPipelineState(&psoDesc, __uuidof(ID3D12PipelineState), (void**)ppPSO);
+  return SUCCEEDED(hr);
+}
+
+bool gdr::device::ResizeSwapchain(UINT width, UINT height)
+{
+  if (width == 0 || height == 0)
+  {
+    return false;
+  }
+
+  WaitGPUIdle();
+
+  HRESULT hr = S_OK;
+  DXGI_SWAP_CHAIN_DESC desc;
+  D3D_CHECK(Swapchain->GetDesc(&desc));
+  if (desc.BufferDesc.Width != width || desc.BufferDesc.Height != height)
+  {
+    UINT count = (UINT)BackBuffers.size();
+
+    TermBackBuffers();
+
+    D3D_CHECK(Swapchain->ResizeBuffers(count, width, height, DXGI_FORMAT_R8G8B8A8_UNORM, 0));
+    D3D_CHECK(CreateBackBuffers(count));
+  }
+
+  return SUCCEEDED(hr);
+}
+
+void gdr::device::WaitGPUIdle()
+{
+  UINT64 finishedFenceValue = NoneValue;
+  PresentQueue->WaitIdle(finishedFenceValue);
+  if (finishedFenceValue != NoneValue)
+  {
+    DynamicBuffer->FlashFenceValue(finishedFenceValue);
+    DynamicDescBuffer->FlashFenceValue(finishedFenceValue);
+  }
 }

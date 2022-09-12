@@ -27,13 +27,25 @@ gdr::engine::~engine()
   Units.clear();
 }
 
+/* Initialization function.
+ * ARGUMENTS: None.
+ * RETURNS: None.
+ */
+VOID gdr::engine::Init(VOID)
+{
+  for (auto &unit : Units)
+  {
+    unit->Initialize();
+  }
+}
+
 /* Change window size handle function.
-      * ARGUMENTS: None.
-      * RETURNS: None.
-      */
+ * ARGUMENTS: None.
+ * RETURNS: None.
+ */
 VOID gdr::engine::Resize(VOID)
 {
-
+  render::Resize(win::Width, win::Height);
 }
 
 /* Erase background handle function.

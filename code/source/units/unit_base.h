@@ -34,9 +34,7 @@ namespace gdr
        * ARGUMENTS: None.
        * RETURNS: None.
        */
-      virtual void Initialize(void)
-      {
-      }
+      virtual void Initialize(void);
 
       /* Response function which will be called on every frame.
        * ARGUMENTS: None.

@@ -5,6 +5,7 @@
 #include <windows.h>
 
 #include <tchar.h>
+#include <set>
 #include <assert.h>
 #include <comdef.h>
 
@@ -15,6 +16,7 @@
 #include <d3dcompiler.h>
 #include <d3dx12.h>
 
+#include <string>
 #include <functional>
 
 #include "D3D12MemAlloc.h"
@@ -46,3 +48,15 @@ if (SUCCEEDED(hr))\
     hr = (a); \
 }
 #endif // _DEBUG || _RELEASE
+
+#ifdef _UNICODE
+namespace std
+{
+  using tstring = wstring;
+}
+#else
+namespace std
+{
+  using tstring = string;
+}
+#endif // !UNICODE

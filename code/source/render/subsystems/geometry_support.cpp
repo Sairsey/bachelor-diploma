@@ -12,6 +12,7 @@ bool gdr::geometry_support::CreateGeometry(const vertex* pVertex, size_t vertexC
 {
   geometry geom;
   bool res = true;
+  // Ñreate vertex buffer
   if (res)
   {
     res = Render->GetDevice().CreateGPUResource(CD3DX12_RESOURCE_DESC::Buffer({vertexCount * sizeof(vertex)}), D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER, nullptr, geom.VertexBuffer, pVertex, vertexCount * sizeof(vertex));

@@ -97,7 +97,9 @@ bool gdr::render::Init(engine* Eng)
   {
     ID3D12GraphicsCommandList *commandList;
     Device.BeginUploadCommandList(&commandList);
+    PROFILE_BEGIN(commandList, "geometry support Init");
     Geometry = new gdr::geometry_support(this);
+    PROFILE_END(commandList);
 
     Device.CloseUploadCommandList();
   }
@@ -153,6 +155,7 @@ void gdr::render::DrawFrame(void)
   D3D12_CPU_DESCRIPTOR_HANDLE rtvHandle;
   if (Device.BeginRenderCommandList(&pCommandList, &pBackBuffer, &rtvHandle))
   {
+    PROFILE_BEGIN(pCommandList, "Frame");
     HRESULT hr = S_OK;
     D3D12_CPU_DESCRIPTOR_HANDLE dsvHandle = DSVHeap->GetCPUDescriptorHandleForHeapStart();
     pCommandList->OMSetRenderTargets(1, &rtvHandle, TRUE, &dsvHandle);
@@ -166,22 +169,47 @@ void gdr::render::DrawFrame(void)
       pCommandList->ClearRenderTargetView(rtvHandle, clearColor, 1, &Rect);
 
       assert(Passes.size() >= 1);
+      PROFILE_BEGIN(pCommandList, (Passes[0]->GetName() + " compute call").c_str());
       Passes[0]->CallCompute(pCommandList);
+      PROFILE_END(pCommandList);
       for (int i = 0; i < Passes.size() - 1; i++)
       {
+        PROFILE_BEGIN(pCommandList, (Passes[i + 1]->GetName() + " compute call").c_str());
         Passes[i + 1]->CallCompute(pCommandList);
+        PROFILE_END(pCommandList);
+        PROFILE_BEGIN(pCommandList, (Passes[i]->GetName() + " compute sync").c_str());
         Passes[i]->SyncCompute(pCommandList);
+        PROFILE_END(pCommandList);
         if (Params.IsIndirect)
+        {
+          PROFILE_BEGIN(pCommandList, (Passes[i]->GetName() + " Indirect draw").c_str());
           Passes[i]->CallIndirectDraw(pCommandList);
+          PROFILE_END(pCommandList);
+        }
         else
+        {
+          PROFILE_BEGIN(pCommandList, (Passes[i]->GetName() + " Direct draw").c_str());
           Passes[i]->CallDirectDraw(pCommandList);
+          PROFILE_END(pCommandList);
+        }
       }
+      PROFILE_BEGIN(pCommandList, (Passes[Passes.size() - 1]->GetName() + " compute sync").c_str());
       Passes[Passes.size() - 1]->SyncCompute(pCommandList);
+      PROFILE_END(pCommandList);
       if (Params.IsIndirect)
+      {
+        PROFILE_BEGIN(pCommandList, (Passes[Passes.size() - 1]->GetName() + " Indirect draw").c_str());
         Passes[Passes.size() - 1]->CallIndirectDraw(pCommandList);
+        PROFILE_END(pCommandList);
+      }
       else
+      {
+        PROFILE_BEGIN(pCommandList, (Passes[Passes.size() - 1]->GetName() + " Direct draw").c_str());
         Passes[Passes.size() - 1]->CallDirectDraw(pCommandList);
+        PROFILE_END(pCommandList);
+      }
 
+      PROFILE_END(pCommandList);
       Device.TransitResourceState(pCommandList, pBackBuffer, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
     }
 

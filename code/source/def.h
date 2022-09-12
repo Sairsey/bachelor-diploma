@@ -22,6 +22,22 @@
 #include "D3D12MemAlloc.h"
 #include "utils/math/mth.h"
 
+#include "WinPixEventRuntime/pix3.h"
+
+#define PROFILE_MARKERS
+
+#ifdef PROFILE_MARKERS
+#define PROFILE_BEGIN(command_list, name) PIXBeginEvent(command_list, 0x00ffff00, (name));
+#define PROFILE_END(command_list) PIXEndEvent(command_list);
+#define PROFILE_CPU_BEGIN(command_list, name) PIXBeginEvent(0x0000ff00, (name));
+#define PROFILE_CPU_END(command_list) PIXEndEvent();
+#else
+#define PROFILE_BEGIN(command_list, name) 
+#define PROFILE_END(command_list)
+#define PROFILE_CPU_BEGIN(command_list, name)
+#define PROFILE_CPU_END(command_list)
+#endif
+
 
 #define D3D_RELEASE(a) if ((a) != nullptr) {\
     (a)->Release();\

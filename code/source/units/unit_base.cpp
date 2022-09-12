@@ -10,6 +10,8 @@ void gdr::unit_base::Initialize(void)
   static const UINT32 indices[3] = { 0, 1, 2 };
   ID3D12GraphicsCommandList* commandList;
   Engine->GetDevice().BeginUploadCommandList(&commandList);
+  PROFILE_BEGIN(commandList, "unit_base Init");
   Engine->Geometry->CreateGeometry(vertices, sizeof(vertices), indices, sizeof(indices));
+  PROFILE_END(commandList);
   Engine->GetDevice().CloseUploadCommandList();
 }

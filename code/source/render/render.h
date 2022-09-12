@@ -8,6 +8,8 @@ namespace gdr
   class engine;
   class base_pass;
   class geometry_support;
+  class globals_support;
+  class object_support;
 
   struct render_runtime_params
   {
@@ -77,6 +79,8 @@ namespace gdr
       // Current params
       render_runtime_params Params;
       // Subsystems
-      geometry_support *Geometry;
+      globals_support *GlobalsSystem; // Store camera info and other important stuff
+      geometry_support *GeometrySystem; // support of geometry creation
+      object_support *ObjectSystem; // Helper of every subsystem
   };
 }

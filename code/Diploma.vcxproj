@@ -19,6 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="bin\shaders\shared_structures.h" />
     <ClInclude Include="source\def.h" />
     <ClInclude Include="source\engine\eng.h" />
     <ClInclude Include="source\p_header.h" />
@@ -30,7 +31,10 @@
     <ClInclude Include="source\render\passes\base_pass.h" />
     <ClInclude Include="source\render\render.h" />
     <ClInclude Include="source\render\subsystems\geometry_support.h" />
+    <ClInclude Include="source\render\subsystems\globals_support.h" />
+    <ClInclude Include="source\render\subsystems\object_support.h" />
     <ClInclude Include="source\units\unit_base.h" />
+    <ClInclude Include="source\units\unit_triangle.h" />
     <ClInclude Include="source\utils\math\mth.h" />
     <ClInclude Include="source\utils\math\mth_def.h" />
     <ClInclude Include="source\utils\math\mth_matr.h" />
@@ -55,7 +59,9 @@
     <ClCompile Include="source\render\passes\albedo_pass.cpp" />
     <ClCompile Include="source\render\render.cpp" />
     <ClCompile Include="source\render\subsystems\geometry_support.cpp" />
-    <ClCompile Include="source\units\unit_base.cpp" />
+    <ClCompile Include="source\render\subsystems\globals_support.cpp" />
+    <ClCompile Include="source\render\subsystems\object_support.cpp" />
+    <ClCompile Include="source\units\unit_triangle.cpp" />
     <ClCompile Include="source\utils\D3D12MemAlloc.cpp" />
     <ClCompile Include="source\utils\read_file.cpp" />
     <ClCompile Include="source\window\win.cpp" />

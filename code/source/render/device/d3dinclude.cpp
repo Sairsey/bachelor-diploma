@@ -5,7 +5,8 @@ HRESULT gdr::d3dinclude::Open(D3D_INCLUDE_TYPE IncludeType, LPCSTR pFileName, LP
   std::vector<char> data;
   bool res = true;
 
-  std::string filename = pFileName;
+  std::string filename = "bin/shaders/";
+  filename += pFileName;
 
 #ifdef _UNICODE
   if (res)

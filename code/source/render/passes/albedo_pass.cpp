@@ -6,8 +6,22 @@ void gdr::albedo_pass::Initialize(void)
   Render->GetDevice().CompileShader(_T("bin/shaders/SimpleColor.hlsl"), {}, shader_stage::Vertex, &VertexShader);
   Render->GetDevice().CompileShader(_T("bin/shaders/SimpleColor.hlsl"), {}, shader_stage::Pixel, &PixelShader);
 
-  // 2) Create root signature (nothing now)
+  // 2) Create root signature 
   std::vector<D3D12_ROOT_PARAMETER> params;
+
+  {
+    CD3DX12_ROOT_PARAMETER param;
+    param.InitAsConstantBufferView(albedo_buffer_registers::globals_buffer_register);
+    params.push_back(param);
+  }
+
+  {
+    CD3DX12_ROOT_PARAMETER param;
+    param.InitAsConstants(
+      sizeof(ObjectIndices) / sizeof(int32_t),
+      albedo_buffer_registers::index_buffer_register);
+    params.push_back(param);
+  }
 
   if (params.size() != 0)
   {
@@ -52,10 +66,7 @@ void gdr::albedo_pass::Initialize(void)
   psoDesc.DSVFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
   psoDesc.SampleDesc.Count = 1;
 
-  if (!Render->GetDevice().CreatePSO(psoDesc, &PSO))
-  {
-
-  }
+  Render->GetDevice().CreatePSO(psoDesc, &PSO);
 }
 
 void gdr::albedo_pass::CallDirectDraw(ID3D12GraphicsCommandList* currentCommandList)
@@ -65,10 +76,22 @@ void gdr::albedo_pass::CallDirectDraw(ID3D12GraphicsCommandList* currentCommandL
   currentCommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
   // just iterate for every geometry
-  for (auto &geom : Render->Geometry->CPUPool)
+  for (int i = 0; i < Render->ObjectSystem->CPUPool.size(); i++)
   {
+    geometry &geom = Render->GeometrySystem->CPUPool[i];
+
     currentCommandList->IASetVertexBuffers(0, 1, &geom.VertexBufferView);
     currentCommandList->IASetIndexBuffer(&geom.IndexBufferView);
+    {
+    currentCommandList->SetGraphicsRootConstantBufferView(
+      root_parameters_draw_indices::globals_buffer_index,
+      Render->GlobalsSystem->GPUData.Resource->GetGPUVirtualAddress());
+    currentCommandList->SetGraphicsRoot32BitConstants(
+      root_parameters_draw_indices::index_buffer_index, 
+      sizeof(ObjectIndices) / sizeof(int32_t),
+      &Render->ObjectSystem->CPUPool[i], 0);
+    }
+
     currentCommandList->DrawIndexedInstanced(geom.IndexCount, 1, 0, 0, 0);
   }
 }

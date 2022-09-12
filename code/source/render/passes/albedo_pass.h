@@ -42,6 +42,16 @@ namespace gdr
         indirect_command_pool_register = 0,   // pool with UAV as result of indirect draw
       };
 
+      // indices in root_parameters
+      enum root_parameters_draw_indices
+      {
+        globals_buffer_index = 0,           // root parameter for global buffer
+        index_buffer_index,                 // root parameter for buffer with indices in pools
+        transform_pool_index,               // root parameter for buffer with transforms
+        material_pool_index,                // root parameter for buffer with materials
+        texture_pool_index                  // root parameter for buffer with textures
+      };
+
     public:
       /* Function to get name */
       std::string GetName(void) override 

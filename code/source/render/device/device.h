@@ -10,7 +10,7 @@ namespace gdr
   // Device creation parameters
   struct device_create_params
   {
-    bool DebugLayer = false;
+    bool DebugLayer = true;
     bool DebugShaders = true;
     int  CmdListCount = 2;
     int  UploadListCount = 2;
@@ -245,6 +245,9 @@ namespace gdr
 
       // Resize backbuffers size
       bool ResizeSwapchain(UINT width, UINT height);
+
+      // Allocate Descriptors
+      bool AllocateStaticDescriptors(UINT count, D3D12_CPU_DESCRIPTOR_HANDLE& cpuStartHandle, D3D12_GPU_DESCRIPTOR_HANDLE& gpuStartHandle);
 
       // Check if module initialized
       inline bool IsInitialized() const { return IsInited; }

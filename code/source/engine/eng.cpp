@@ -56,7 +56,6 @@ VOID gdr::engine::Resize(VOID)
  */
 VOID gdr::engine::Erase(HDC hDC)
 {
-
 }
 
 /* Paint window content function.
@@ -68,8 +67,6 @@ VOID gdr::engine::Erase(HDC hDC)
 VOID gdr::engine::Paint(HDC hDC)
 {
   render::DrawFrame();
-
-  InvalidateRect(win::hWnd, NULL, TRUE);
 }
 
 /* Activate handle function.
@@ -89,7 +86,11 @@ VOID gdr::engine::Activate(BOOL IsActive)
  */
 VOID gdr::engine::Timer(VOID)
 {
-
+  for (auto& unit : Units)
+  {
+    unit->Response();
+  }
+  InvalidateRect(win::hWnd, NULL, TRUE);
 }
 
 /* Free CPU time handling function.

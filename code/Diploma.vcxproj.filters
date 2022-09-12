@@ -81,7 +81,13 @@
     <ClCompile Include="source\render\subsystems\geometry_support.cpp">
       <Filter>Source Files\Render\SubSystems</Filter>
     </ClCompile>
-    <ClCompile Include="source\units\unit_base.cpp">
+    <ClCompile Include="source\render\subsystems\object_support.cpp">
+      <Filter>Source Files\Render\SubSystems</Filter>
+    </ClCompile>
+    <ClCompile Include="source\render\subsystems\globals_support.cpp">
+      <Filter>Source Files\Render\SubSystems</Filter>
+    </ClCompile>
+    <ClCompile Include="source\units\unit_triangle.cpp">
       <Filter>Source Files\Units</Filter>
     </ClCompile>
   </ItemGroup>
@@ -151,6 +157,18 @@
     </ClInclude>
     <ClInclude Include="source\render\subsystems\geometry_support.h">
       <Filter>Source Files\Render\SubSystems</Filter>
+    </ClInclude>
+    <ClInclude Include="source\render\subsystems\object_support.h">
+      <Filter>Source Files\Render\SubSystems</Filter>
+    </ClInclude>
+    <ClInclude Include="bin\shaders\shared_structures.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\render\subsystems\globals_support.h">
+      <Filter>Source Files\Render\SubSystems</Filter>
+    </ClInclude>
+    <ClInclude Include="source\units\unit_triangle.h">
+      <Filter>Source Files\Units</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

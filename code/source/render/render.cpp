@@ -95,13 +95,9 @@ bool gdr::render::Init(engine* Eng)
   //init subsystems
   if (localIsInited)
   {
-    ID3D12GraphicsCommandList *commandList;
-    Device.BeginUploadCommandList(&commandList);
-    PROFILE_BEGIN(commandList, "geometry support Init");
-    Geometry = new gdr::geometry_support(this);
-    PROFILE_END(commandList);
-
-    Device.CloseUploadCommandList();
+    GeometrySystem = new gdr::geometry_support(this);
+    ObjectSystem = new gdr::object_support(this);
+    GlobalsSystem = new gdr::globals_support(this);
   }
 
   IsInited = localIsInited;
@@ -149,6 +145,9 @@ void gdr::render::DrawFrame(void)
 {
   if (!IsInited)
     return;
+
+  // Update all subsytems
+  GlobalsSystem->UpdateGPUData();
 
   ID3D12GraphicsCommandList* pCommandList = nullptr;
   ID3D12Resource* pBackBuffer = nullptr;
@@ -229,11 +228,13 @@ void gdr::render::Term(void)
   if (!IsInited)
     return;
 
+  delete ObjectSystem;
+  delete GeometrySystem;
+  delete GlobalsSystem;
   for (auto& pass : Passes)
   {
     delete pass;
   }
-  delete Geometry;
   Device.ReleaseGPUResource(DepthBuffer);
   DSVHeap->Release();
   Passes.clear();

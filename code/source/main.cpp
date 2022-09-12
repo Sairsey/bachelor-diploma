@@ -1,4 +1,5 @@
 #include "p_header.h"
+#include "units/unit_triangle.h"
 
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
   _In_opt_ HINSTANCE hPrevInstance,
@@ -9,6 +10,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
   
   // Units
   Engine.AddUnit(new gdr::unit_base());
+
+  Engine.AddUnit(new unit_triangle());
 
   // math smoke test
   mth::vec3f V1(1, 0, 0);

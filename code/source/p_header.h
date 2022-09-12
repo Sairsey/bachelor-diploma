@@ -11,7 +11,9 @@
 
 #include "render/render.h"
 
+#include "render/subsystems/globals_support.h"
 #include "render/subsystems/geometry_support.h"
+#include "render/subsystems/object_support.h"
 
 #include "render/passes/base_pass.h"
 #include "render/passes/albedo_pass.h"

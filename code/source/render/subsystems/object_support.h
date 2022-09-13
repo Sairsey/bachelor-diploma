@@ -21,6 +21,9 @@ namespace gdr
       // function which will import data and return gdr_object
       gdr_object CreateObject(const vertex* pVertex, size_t vertexCount, const UINT32* pIndices, size_t indexCount);
 
+      // function which will import data and return gdr_object
+      std::vector<gdr_object> CreateObjectsFromFile(std::string fileName);
+
       // function which will return transfroms by object index
       ObjectTransform &GetTransforms(gdr_object object);
 

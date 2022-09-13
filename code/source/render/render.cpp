@@ -1,7 +1,7 @@
 #include "p_header.h"
 
 // Default constructor
-gdr::render::render() : IsInited(false)
+gdr::render::render() : IsInited(false), PlayerCamera(mth::vec3f(0, 0, 1), mth::vec3f(0, 0, 0), mth::vec3f(0, 1, 0), 0.1, 0.1, 1000, 10, 10)
 {
 }
 
@@ -83,8 +83,9 @@ bool gdr::render::Init(engine* Eng)
   // init passes
   if (localIsInited)
   {
+    Passes.push_back(new debug_pass());
     Passes.push_back(new albedo_pass());
-
+    
     for (auto& pass : Passes)
     {
       pass->SetRender(this);
@@ -99,6 +100,7 @@ bool gdr::render::Init(engine* Eng)
     ObjectSystem = new gdr::object_support(this);
     GlobalsSystem = new gdr::globals_support(this);
     TransformsSystem = new gdr::transforms_support(this);
+    IndirectSystem = new gdr::indirect_support(this);
   }
 
   IsInited = localIsInited;
@@ -129,6 +131,8 @@ void gdr::render::Resize(UINT w, UINT h)
   Rect.bottom = (FLOAT)h;
   Rect.right = (FLOAT)w;
 
+  PlayerCamera.Resize(w, h);
+
   if (DepthBuffer.Resource != nullptr)
   {
     D3D12_RESOURCE_DESC desc = DepthBuffer.Resource->GetDesc();
@@ -147,10 +151,10 @@ void gdr::render::DrawFrame(void)
   if (!IsInited)
     return;
 
-  // Update all subsytems
-  GlobalsSystem->UpdateGPUData();
+  // Update all subsytems except globals, it will be updated in each pass
+  IndirectSystem->UpdateGPUData();
   TransformsSystem->UpdateGPUData();
-
+  
   ID3D12GraphicsCommandList* pCommandList = nullptr;
   ID3D12Resource* pBackBuffer = nullptr;
   D3D12_CPU_DESCRIPTOR_HANDLE rtvHandle;
@@ -215,7 +219,7 @@ void gdr::render::DrawFrame(void)
       Device.TransitResourceState(pCommandList, pBackBuffer, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
     }
 
-    Device.CloseSubmitAndPresentRenderCommandList(false);
+    Device.CloseSubmitAndPresentRenderCommandList();
   }
 
 }
@@ -231,6 +235,7 @@ void gdr::render::Term(void)
   if (!IsInited)
     return;
 
+  delete IndirectSystem;
   delete TransformsSystem;
   delete ObjectSystem;
   delete GeometrySystem;

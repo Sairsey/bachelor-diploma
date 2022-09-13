@@ -93,6 +93,18 @@
     <ClCompile Include="source\render\subsystems\transforms_support.cpp">
       <Filter>Source Files\Render\SubSystems</Filter>
     </ClCompile>
+    <ClCompile Include="source\render\passes\debug_pass.cpp">
+      <Filter>Source Files\Render\Passes</Filter>
+    </ClCompile>
+    <ClCompile Include="source\units\unit_control.cpp">
+      <Filter>Source Files\Units</Filter>
+    </ClCompile>
+    <ClCompile Include="source\units\unit_bread.cpp">
+      <Filter>Source Files\Units</Filter>
+    </ClCompile>
+    <ClCompile Include="source\render\subsystems\indirect_support.cpp">
+      <Filter>Source Files\Render\SubSystems</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\p_header.h">
@@ -178,6 +190,18 @@
     </ClInclude>
     <ClInclude Include="source\utils\math\mth_cam.h">
       <Filter>Source Files\Utils\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="source\render\passes\debug_pass.h">
+      <Filter>Source Files\Render\Passes</Filter>
+    </ClInclude>
+    <ClInclude Include="source\units\unit_control.h">
+      <Filter>Source Files\Units</Filter>
+    </ClInclude>
+    <ClInclude Include="source\units\unit_bread.h">
+      <Filter>Source Files\Units</Filter>
+    </ClInclude>
+    <ClInclude Include="source\render\subsystems\indirect_support.h">
+      <Filter>Source Files\Render\SubSystems</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

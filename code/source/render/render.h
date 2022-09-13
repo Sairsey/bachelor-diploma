@@ -11,10 +11,11 @@ namespace gdr
   class globals_support;
   class object_support;
   class transforms_support;
+  class indirect_support;
 
   struct render_runtime_params
   {
-    bool IsIndirect = false; // Enables indirect draw
+    bool IsIndirect = true; // Enables indirect draw
   };
 
   /* Render representation class */
@@ -79,8 +80,11 @@ namespace gdr
 
       // Current params
       render_runtime_params Params;
+      // Current player camera
+      mth::cam3<float> PlayerCamera;
       // Subsystems
       globals_support *GlobalsSystem; // Store camera info and other important stuff
+      indirect_support* IndirectSystem; // support of SRVs and UAVs for indirect draw
       geometry_support *GeometrySystem; // support of geometry creation
       transforms_support* TransformsSystem; // support of object Transforms
       object_support *ObjectSystem; // Helper of every subsystem

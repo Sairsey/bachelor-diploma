@@ -1,5 +1,7 @@
 #include "p_header.h"
+#include "units/unit_control.h"
 #include "units/unit_triangle.h"
+#include "units/unit_bread.h"
 
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
   _In_opt_ HINSTANCE hPrevInstance,
@@ -10,8 +12,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
   
   // Units
   Engine.AddUnit(new gdr::unit_base());
-
-  Engine.AddUnit(new unit_triangle());
+  Engine.AddUnit(new unit_control());
+  Engine.AddUnit(new unit_bread());
 
   // math smoke test
   mth::vec3f V1(1, 0, 0);

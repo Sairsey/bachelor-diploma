@@ -783,14 +783,12 @@ HRESULT gdr::device::UpdateTexture(ID3D12GraphicsCommandList* pCommandList, ID3D
 
 void gdr::device::CloseUploadCommandList()
 {
-  UploadQueue->CloseCommandList();
-
   // Close command list
   HRESULT hr = S_OK;
 
-  // Submit update command list, if needed
+  // Submit updated command list, if needed
   UINT64 uploadFenceValue = NoneValue;
-  D3D_CHECK(UploadQueue->SubmitCommandList(&uploadFenceValue));
+  D3D_CHECK(UploadQueue->CloseAndSubmitCommandList(&uploadFenceValue));
 
   // while upload buffer has fences to submit
   if (SUCCEEDED(hr))
@@ -955,6 +953,14 @@ bool gdr::device::CreatePSO(const D3D12_GRAPHICS_PIPELINE_STATE_DESC& psoDesc, I
 {
   HRESULT hr = S_OK;
   D3DDevice->CreateGraphicsPipelineState(&psoDesc, __uuidof(ID3D12PipelineState), (void**)ppPSO);
+  return SUCCEEDED(hr);
+}
+
+// Create Pipeline state object 
+bool gdr::device::CreateComputePSO(const D3D12_COMPUTE_PIPELINE_STATE_DESC& psoDesc, ID3D12PipelineState** ppPSO)
+{
+  HRESULT hr = S_OK;
+  D3DDevice->CreateComputePipelineState(&psoDesc, __uuidof(ID3D12PipelineState), (void**)ppPSO);
   return SUCCEEDED(hr);
 }
 

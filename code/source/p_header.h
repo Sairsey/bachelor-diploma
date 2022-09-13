@@ -15,9 +15,11 @@
 #include "render/subsystems/geometry_support.h"
 #include "render/subsystems/transforms_support.h"
 #include "render/subsystems/object_support.h"
+#include "render/subsystems/indirect_support.h"
 
 #include "render/passes/base_pass.h"
 #include "render/passes/albedo_pass.h"
+#include "render/passes/debug_pass.h"
 
 
 #include "units/unit_base.h"

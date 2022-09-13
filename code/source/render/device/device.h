@@ -242,6 +242,8 @@ namespace gdr
       bool CreateRootSignature(const D3D12_ROOT_SIGNATURE_DESC& rsDesc, ID3D12RootSignature** ppRootSignature);
       // Create Pipeline state object 
       bool CreatePSO(const D3D12_GRAPHICS_PIPELINE_STATE_DESC& psoDesc, ID3D12PipelineState** ppPSO);
+      // Create Pipeline state object for compute
+      bool CreateComputePSO(const D3D12_COMPUTE_PIPELINE_STATE_DESC& psoDesc, ID3D12PipelineState** ppPSO);
 
       // Resize backbuffers size
       bool ResizeSwapchain(UINT width, UINT height);

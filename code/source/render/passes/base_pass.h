@@ -38,7 +38,7 @@ namespace gdr
     virtual void CallDirectDraw(ID3D12GraphicsCommandList* currentCommandList) {};
 
     /* Function to call Indirect draw shader */
-    virtual void CallIndirectDraw(ID3D12GraphicsCommandList* currentCommandList) {};
+    virtual void CallIndirectDraw(ID3D12GraphicsCommandList* currentCommandList) { CallDirectDraw(currentCommandList); };
 
     /* Virtual Destructor */
     virtual ~base_pass()

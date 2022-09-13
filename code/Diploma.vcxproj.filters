@@ -176,5 +176,8 @@
     <ClInclude Include="source\render\subsystems\transforms_support.h">
       <Filter>Source Files\Render\SubSystems</Filter>
     </ClInclude>
+    <ClInclude Include="source\utils\math\mth_cam.h">
+      <Filter>Source Files\Utils\Math</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

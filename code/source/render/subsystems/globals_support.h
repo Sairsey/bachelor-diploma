@@ -17,12 +17,13 @@ namespace gdr
       // Constructor
       globals_support(render *Rnd);
 
+      // Update data stored on GPU
       void UpdateGPUData(void);
-
-      GlobalData CPUData;  // data stored in CPU
-      GPUResource GPUData; // data stored in GPU
 
       // Destructor 
       ~globals_support(void);
+
+      GlobalData CPUData;      // data stored in CPU
+      GPUResource GPUData;     // data stored in GPU
   };
 }

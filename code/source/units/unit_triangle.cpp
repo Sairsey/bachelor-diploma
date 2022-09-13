@@ -21,29 +21,19 @@ void unit_triangle::Initialize(void)
 void unit_triangle::Response(void)
 {
   float ratio_x = 1, ratio_y = 1;
-  float ProjSize = 1;
+  float ProjSize = 0.1;
   float ProjDist = 0.1; 
   float FarClip = 1000;
   auto q = Engine->GetSize();
   UINT W = q.first;
   UINT H = q.second;
 
-  if (W >= H)
-    ratio_x = (float)W / H;
-  else
-    ratio_y = (float)H / W;
+  mth::cam3<float> camera(mth::vec3f(0, 0.5, -1), mth::vec3f(0), mth::vec3f(0, 1,0), 0.1, 0.1, 1000.0, W, H);
 
   Engine->GlobalsSystem->CPUData.time = 1.0 * clock() / CLOCKS_PER_SEC;
-  Engine->GlobalsSystem->CPUData.VP = mth::matr4f::Identity();
+  Engine->GlobalsSystem->CPUData.VP = camera.GetVP();
   
-  Engine->GlobalsSystem->CPUData.VP = 
-    mth::matr4f::View(mth::vec3f(0, 0.5, -1), mth::vec3f(0, 0, 0), mth::vec3f(0, 1, 0)) *
-  mth::matr4f::Frustum(
-    -ratio_x * ProjSize / 2,
-    ratio_x * ProjSize / 2,
-    -ratio_y * ProjSize / 2,
-    ratio_y * ProjSize / 2,
-    ProjDist, FarClip);
-  Engine->GlobalsSystem->CPUData.VP = Engine->GlobalsSystem->CPUData.VP.Transposed();
-  Engine->ObjectSystem->GetTransforms(Triangle).transform = mth::matr::Translate(mth::vec3f(0, 0, sin(Engine->GlobalsSystem->CPUData.time))).Transposed();
+  Engine->ObjectSystem->GetTransforms(Triangle).transform = 
+    mth::matr::RotateY(Engine->GlobalsSystem->CPUData.time) 
+    * mth::matr::Translate(mth::vec3f(0, 0, sin(Engine->GlobalsSystem->CPUData.time) / 2.0));
 }

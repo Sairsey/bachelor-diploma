@@ -55,15 +55,15 @@ namespace mth
       /* Constructor
        * ARGUMENTS:
        *   - matrix components:
-       *       Type M11, M21, M31, M41,
-       *            M12, M22, M32, M42,
-       *            M13, M23, M33, M43,
-       *            M14, M24, M34, M44;
+       *       Type M11, M12, M13, M14,
+       *            M21, M22, M23, M24,
+       *            M31, M32, M33, M34,
+       *            M41, M42, M43, M44;
        */
-      inline matr4<Type>( Type M11, Type M21, Type M31, Type M41,
-                          Type M12, Type M22, Type M32, Type M42,
-                          Type M13, Type M23, Type M33, Type M43,
-                          Type M14, Type M24, Type M34, Type M44 )
+      inline matr4<Type>( Type M11, Type M12, Type M13, Type M14,
+                          Type M21, Type M22, Type M23, Type M24,
+                          Type M31, Type M32, Type M33, Type M34,
+                          Type M41, Type M42, Type M43, Type M44)
       {
         A[0][0] = M11, A[1][0] = M21, A[2][0] = M31, A[3][0] = M41;
         A[0][1] = M12, A[1][1] = M22, A[2][1] = M32, A[3][1] = M42;
@@ -229,13 +229,13 @@ namespace mth
         matr4<Type> m = matr4<Type>::Identity();
         sincos(AngleInDegree, sinx, cosx);
         m[0][0] = cosx + Axis.X * Axis.X * (1 - cosx);
-        m[1][0] = Axis.X * Axis.Y * (1 - cosx) - Axis.Z * sinx;
-        m[2][0] = Axis.Z * Axis.X * (1 - cosx) + Axis.Y * sinx;
-        m[0][1] = Axis.Y * Axis.X * (1 - cosx) + Axis.Z * sinx;
+        m[0][1] = Axis.X * Axis.Y * (1 - cosx) - Axis.Z * sinx;
+        m[0][2] = Axis.Z * Axis.X * (1 - cosx) + Axis.Y * sinx;
+        m[1][0] = Axis.Y * Axis.X * (1 - cosx) + Axis.Z * sinx;
         m[1][1] = cosx + Axis.Y * Axis.Y * (1 - cosx);
-        m[2][1] = Axis.Z * Axis.Y * (1 - cosx) - Axis.X * sinx;
-        m[0][2] = Axis.Z * Axis.X * (1 - cosx) - Axis.Y * sinx;
-        m[1][2] = Axis.Z * Axis.Y * (1 - cosx) + Axis.X * sinx;
+        m[1][2] = Axis.Z * Axis.Y * (1 - cosx) - Axis.X * sinx;
+        m[2][0] = Axis.Z * Axis.X * (1 - cosx) - Axis.Y * sinx;
+        m[2][1] = Axis.Z * Axis.Y * (1 - cosx) + Axis.X * sinx;
         m[2][2] = cosx + Axis.Z * Axis.Z * (1 - cosx);
         return m;
       } /* End of 'Rotate' function */
@@ -333,7 +333,7 @@ namespace mth
         for (UINT i = 0; i < 4; i++)
           for (UINT j = 0; j < 4; j++)
             for (UINT k = 0; k < 4; k++)
-              m.A[i][j] += A[k][j] * Matr.A[i][k];
+              m.A[i][j] += A[i][k] * Matr.A[k][j];
         return m;
       } /* End of 'operator*' fucntion */
 

@@ -65,6 +65,7 @@
     <ClCompile Include="source\render\subsystems\transforms_support.cpp" />
     <ClCompile Include="source\units\unit_triangle.cpp" />
     <ClCompile Include="source\utils\D3D12MemAlloc.cpp" />
+    <ClInclude Include="source\utils\math\mth_cam.h" />
     <ClCompile Include="source\utils\read_file.cpp" />
     <ClCompile Include="source\window\win.cpp" />
     <ClCompile Include="source\window\win_msg.cpp" />

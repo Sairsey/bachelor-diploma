@@ -6,6 +6,7 @@
 #include "mth_quat.h"
 #include "mth_matr.h"
 #include "mth_operators.h"
+#include "mth_cam.h"
 
 // some specific types
 namespace mth

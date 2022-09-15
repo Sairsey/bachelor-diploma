@@ -98,9 +98,13 @@ void gdr::albedo_pass::Initialize(void)
         (int)albedo_texture_registers::command_pool_register);
     }
 
+    // UAV set as Descriptor range
     {
-      params[(int)root_parameters_compute_indices::out_commands_pool_index].InitAsUnorderedAccessView(
-        (int)albedo_uav_registers::indirect_command_pool_register);
+      CD3DX12_DESCRIPTOR_RANGE descr = {};
+      descr.Init(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 1, (int)albedo_uav_registers::indirect_command_pool_register);
+
+      params[(int)root_parameters_compute_indices::out_commands_pool_index].InitAsDescriptorTable(
+        1, &descr);
     }
 
     if (params.size() != 0)
@@ -172,6 +176,11 @@ void gdr::albedo_pass::CallCompute(ID3D12GraphicsCommandList* currentCommandList
     D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
   
   currentCommandList->SetPipelineState(ComputePSO);
+
+  currentCommandList->SetPipelineState(PSO);
+
+  ID3D12DescriptorHeap* pDescriptorHeaps = Render->GetDevice().GetDescriptorHeap();
+  currentCommandList->SetDescriptorHeaps(1, &pDescriptorHeaps);
   currentCommandList->SetComputeRootSignature(ComputeRootSignature);
 
   // update CPUComputeRootConstants
@@ -194,9 +203,9 @@ void gdr::albedo_pass::CallCompute(ID3D12GraphicsCommandList* currentCommandList
     (int)root_parameters_compute_indices::in_commands_pool_index, // root parameter index
     Render->IndirectSystem->CommandsSRV.Resource->GetGPUVirtualAddress());
 
-  currentCommandList->SetComputeRootUnorderedAccessView(
+  currentCommandList->SetComputeRootDescriptorTable(
     (int)root_parameters_compute_indices::out_commands_pool_index, // root parameter index
-    Render->IndirectSystem->CommandsUAV[OurUAVIndex].Resource->GetGPUVirtualAddress());
+    Render->IndirectSystem->CommandsUAVGPUDescriptor[OurUAVIndex]);
 
 
   currentCommandList->Dispatch(static_cast<UINT>(ceil(Render->IndirectSystem->CPUData.size() / float(128))), 1, 1);

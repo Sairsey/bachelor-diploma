@@ -20,11 +20,14 @@ namespace gdr
   // Indirect data representation class
   class indirect_support
   {
+  public:
+    enum { TotalUAV = 1 }; // Total amount of UAVs
   private:
     render* Render; // pointer on Render
 
-    D3D12_CPU_DESCRIPTOR_HANDLE CPUDescriptor;
-    D3D12_GPU_DESCRIPTOR_HANDLE GPUDescriptor;
+    D3D12_CPU_DESCRIPTOR_HANDLE CommandsSRVCPUDescriptor;
+    D3D12_CPU_DESCRIPTOR_HANDLE CommandsUAVCPUDescriptor[TotalUAV];
+    D3D12_GPU_DESCRIPTOR_HANDLE CommandsSRVGPUDescriptor;
   public:
     // Constructor
     indirect_support(render* Rnd);
@@ -41,9 +44,9 @@ namespace gdr
 
     // GPU buffers which contains filtered commands
     int CurrentUAV = 0; // current used UAV
-    enum { TotalUAV = 1 }; // Total amount of UAVs
     GPUResource CommandsUAV[TotalUAV];                 // Buffer for filtered commands
+    D3D12_GPU_DESCRIPTOR_HANDLE CommandsUAVGPUDescriptor[TotalUAV]; // GPU Descriptors for 
     GPUResource CommandsUAVReset;                      // Buffer for reset
-    UINT CounterOffset;                                 // Offset to Counter
+    UINT CounterOffset;                                // Offset to Counter
   };
 }

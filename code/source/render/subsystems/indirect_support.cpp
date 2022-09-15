@@ -54,40 +54,7 @@ void gdr::indirect_support::UpdateGPUData(void)
       CPUData[i].DrawArguments.StartInstanceLocation = 0;
     }
 
-    // Allocate Descriptors for every need
-    Render->GetDevice().AllocateStaticDescriptors(TotalUAV + 1, CPUDescriptor, GPUDescriptor);
-    D3D12_GPU_DESCRIPTOR_HANDLE m_commonTableGPU = GPUDescriptor;
-    D3D12_CPU_DESCRIPTOR_HANDLE m_commonTableCPU = CPUDescriptor;
-    
-    // aligned UAV size
-    UINT UAVSize = AlignForUavCounter(CPUData.size() * sizeof(indirect_command));
-    CounterOffset = UAVSize;
-
-    // CreateUAVs
-    for (int i = 0; i < TotalUAV; i++)
-    {
-      Render->GetDevice().CreateGPUResource(
-        CD3DX12_RESOURCE_DESC::Buffer({ UAVSize + sizeof(UINT) }, D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS),
-        D3D12_RESOURCE_STATE_COPY_DEST,
-        nullptr,
-        CommandsUAV[i]);
-
-      D3D12_UNORDERED_ACCESS_VIEW_DESC uavDesc = {};
-      uavDesc.Format = DXGI_FORMAT_UNKNOWN;
-      uavDesc.ViewDimension = D3D12_UAV_DIMENSION_BUFFER;
-      uavDesc.Buffer.FirstElement = 0;
-      uavDesc.Buffer.NumElements = CPUData.size();
-      uavDesc.Buffer.StructureByteStride = sizeof(indirect_command);
-      uavDesc.Buffer.CounterOffsetInBytes = UAVSize;
-      uavDesc.Buffer.Flags = D3D12_BUFFER_UAV_FLAG_NONE;
-
-      Render->GetDevice().GetDXDevice()->CreateUnorderedAccessView(CommandsUAV[i].Resource, CommandsUAV[i].Resource, &uavDesc, m_commonTableCPU);
-      CommandsUAV[i].Resource->SetName(L"CommandsUAV");
-      m_commonTableCPU.ptr += Render->GetDevice().GetSRVDescSize();
-    }
-
-
-
+    Render->GetDevice().AllocateStaticDescriptors(1, CommandsSRVCPUDescriptor, CommandsSRVGPUDescriptor);
     // Create SRV
     {
       Render->GetDevice().CreateGPUResource(
@@ -106,9 +73,36 @@ void gdr::indirect_support::UpdateGPUData(void)
       srvDesc.Buffer.StructureByteStride = sizeof(indirect_command);
       srvDesc.Buffer.Flags = D3D12_BUFFER_SRV_FLAG_NONE;
 
-      Render->GetDevice().GetDXDevice()->CreateShaderResourceView(CommandsSRV.Resource, &srvDesc, m_commonTableCPU);
+      Render->GetDevice().GetDXDevice()->CreateShaderResourceView(CommandsSRV.Resource, &srvDesc, CommandsSRVCPUDescriptor);
       CommandsSRV.Resource->SetName(L"CommandsSRV");
-      m_commonTableCPU.ptr += Render->GetDevice().GetSRVDescSize();
+    }
+
+
+    // aligned UAV size
+    UINT UAVSize = AlignForUavCounter(CPUData.size() * sizeof(indirect_command));
+    CounterOffset = UAVSize;
+
+    // CreateUAVs
+    for (int i = 0; i < TotalUAV; i++)
+    {
+      Render->GetDevice().AllocateStaticDescriptors(1, CommandsUAVCPUDescriptor[i], CommandsUAVGPUDescriptor[i]);
+      Render->GetDevice().CreateGPUResource(
+        CD3DX12_RESOURCE_DESC::Buffer({ UAVSize + sizeof(UINT) }, D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS),
+        D3D12_RESOURCE_STATE_COPY_DEST,
+        nullptr,
+        CommandsUAV[i]);
+
+      D3D12_UNORDERED_ACCESS_VIEW_DESC uavDesc = {};
+      uavDesc.Format = DXGI_FORMAT_UNKNOWN;
+      uavDesc.ViewDimension = D3D12_UAV_DIMENSION_BUFFER;
+      uavDesc.Buffer.FirstElement = 0;
+      uavDesc.Buffer.NumElements = CPUData.size();
+      uavDesc.Buffer.StructureByteStride = sizeof(indirect_command);
+      uavDesc.Buffer.CounterOffsetInBytes = UAVSize;
+      uavDesc.Buffer.Flags = D3D12_BUFFER_UAV_FLAG_NONE;
+
+      Render->GetDevice().GetDXDevice()->CreateUnorderedAccessView(CommandsUAV[i].Resource, CommandsUAV[i].Resource, &uavDesc, CommandsUAVCPUDescriptor[i]);
+      CommandsUAV[i].Resource->SetName(L"CommandsUAV");
     }
 
     // Create Reset data
@@ -123,7 +117,6 @@ void gdr::indirect_support::UpdateGPUData(void)
         &data,
         sizeof(UINT));
     }
-
 
     PROFILE_END(uploadCommandList);
     Render->GetDevice().CloseUploadCommandList();

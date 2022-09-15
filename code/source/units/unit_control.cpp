@@ -14,6 +14,6 @@ void unit_control::Response(void)
   position *= 3;
   Engine->PlayerCamera.SetView(
     position,
-    mth::vec3f(0),
+    mth::vec3f(0, 6, 0),
     mth::vec3f(0, 1, 0));
 }

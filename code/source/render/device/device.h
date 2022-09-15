@@ -228,6 +228,14 @@ namespace gdr
       // Close command list for uploading
       void CloseUploadCommandList();
 
+      // Used for override CurrentUploadCmdList in some special cases
+      void SetCommandListAsUpload(ID3D12GraphicsCommandList* pCommandList) { CurrentUploadCmdList = pCommandList;};
+      void ClearUploadListReference(void) { CurrentUploadCmdList = nullptr; };
+      
+      // In case we need huge data to be copied
+      void WaitAllUploadLists(void);
+
+
       // Change state of resource with resource barrier
       bool TransitResourceState(ID3D12GraphicsCommandList* pCommandList, ID3D12Resource* pResource, D3D12_RESOURCE_STATES before, D3D12_RESOURCE_STATES after, UINT subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES);
 

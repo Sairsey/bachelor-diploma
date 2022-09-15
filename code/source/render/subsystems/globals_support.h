@@ -18,7 +18,7 @@ namespace gdr
       globals_support(render *Rnd);
 
       // Update data stored on GPU
-      void UpdateGPUData(void);
+      void UpdateGPUData(ID3D12GraphicsCommandList *pCommandList);
 
       // Destructor 
       ~globals_support(void);

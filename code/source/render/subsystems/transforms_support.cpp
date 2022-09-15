@@ -6,16 +6,12 @@ gdr::transforms_support::transforms_support(render* Rnd)
   GPUData.Resource = nullptr;
 }
 
-void gdr::transforms_support::UpdateGPUData(void)
+void gdr::transforms_support::UpdateGPUData(ID3D12GraphicsCommandList* pCommandList)
 {
   // if buffers are not the same
   if (CPUData.size() != StoredCopy.size() ||
     memcmp(&CPUData[0], &StoredCopy[0], sizeof(ObjectTransform) * CPUData.size()) != 0)
   {
-    ID3D12GraphicsCommandList* uploadCommandList;
-    Render->GetDevice().BeginUploadCommandList(&uploadCommandList);
-    PROFILE_BEGIN(uploadCommandList, "Update transforms");
-
     for (int i = 0; i < CPUData.size(); i++)
     {
       CPUData[i].transformInversedTransposed = CPUData[i].transform.Inversed().Transposed();
@@ -43,11 +39,9 @@ void gdr::transforms_support::UpdateGPUData(void)
     }
     else
     {
-      Render->GetDevice().UpdateBuffer(uploadCommandList, GPUData.Resource, &CPUData[0], sizeof(ObjectTransform) * CPUData.size());
+      Render->GetDevice().UpdateBuffer(pCommandList, GPUData.Resource, &CPUData[0], sizeof(ObjectTransform) * CPUData.size());
     }
 
-    PROFILE_END(uploadCommandList);
-    Render->GetDevice().CloseUploadCommandList();
     StoredCopy = CPUData;
   }
 }

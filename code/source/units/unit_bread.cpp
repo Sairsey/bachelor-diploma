@@ -5,14 +5,18 @@
 void unit_bread::Initialize(void)
 {
   ID3D12GraphicsCommandList* commandList;
-  Engine->GetDevice().BeginUploadCommandList(&commandList);
-  Engine->GetDevice().CloseUploadCommandList();
-  Engine->GetDevice().BeginUploadCommandList(&commandList);
-  PROFILE_BEGIN(commandList, "unit_bread Init");
-  for (int i = 0; i < 1000; i++)
-    Bread.push_back(Engine->ObjectSystem->CreateObjectsFromFile("bin/models/Bread/Bread.obj")[0]);
-  PROFILE_END(commandList);
-  Engine->GetDevice().CloseUploadCommandList();
+  for (int j = 0; j < 3; j++)
+  {
+    // thi is huge data copy, so clear ring buffer every step
+    Engine->GetDevice().WaitAllUploadLists();
+
+    Engine->GetDevice().BeginUploadCommandList(&commandList);
+    PROFILE_BEGIN(commandList, "unit_bread Init");
+    for (int i = 0; i < 1000; i++)
+      Bread.push_back(Engine->ObjectSystem->CreateObjectsFromFile("bin/models/Bread/Bread.obj")[0]);
+    PROFILE_END(commandList);
+    Engine->GetDevice().CloseUploadCommandList();
+  }
 }
 
 void unit_bread::Response(void)

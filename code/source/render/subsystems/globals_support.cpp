@@ -8,18 +8,16 @@ gdr::globals_support::globals_support(render* Rnd)
   GPUData.Resource = nullptr;
 }
 
-void gdr::globals_support::UpdateGPUData(void)
+void gdr::globals_support::UpdateGPUData(ID3D12GraphicsCommandList* pCommandList)
 {
   // if buffers are not the same
   if (memcmp(&CPUData, &StoredCopy, sizeof(GlobalData)) != 0)
   {
-    ID3D12GraphicsCommandList *uploadCommandList;
-    Render->GetDevice().BeginUploadCommandList(&uploadCommandList);
-    PROFILE_BEGIN(uploadCommandList, "Update globals");
-
     if (GPUData.Resource == nullptr)
     {
-      Render->GetDevice().CreateGPUResource(CD3DX12_RESOURCE_DESC::Buffer({ sizeof(GlobalData) }),
+      size_t CBufferGPUSize = Align(sizeof(GlobalData), (size_t)D3D12_CONSTANT_BUFFER_DATA_PLACEMENT_ALIGNMENT);
+
+      Render->GetDevice().CreateGPUResource(CD3DX12_RESOURCE_DESC::Buffer({ CBufferGPUSize }),
         D3D12_RESOURCE_STATE_COPY_DEST,
         nullptr,
         GPUData,
@@ -29,16 +27,14 @@ void gdr::globals_support::UpdateGPUData(void)
       Render->GetDevice().AllocateStaticDescriptors(1, CPUDescriptor, GPUDescriptor);
       D3D12_CONSTANT_BUFFER_VIEW_DESC cbvDesc = {};
       cbvDesc.BufferLocation = GPUData.Resource->GetGPUVirtualAddress();
-      cbvDesc.SizeInBytes = Align(sizeof(GlobalData), (size_t)D3D12_CONSTANT_BUFFER_DATA_PLACEMENT_ALIGNMENT);
+      cbvDesc.SizeInBytes = (UINT)CBufferGPUSize;
       Render->GetDevice().GetDXDevice()->CreateConstantBufferView(&cbvDesc, CPUDescriptor);
     }
     else
     {
-      Render->GetDevice().UpdateBuffer(uploadCommandList, GPUData.Resource, &CPUData, sizeof(GlobalData));
+      Render->GetDevice().UpdateBuffer(pCommandList, GPUData.Resource, &CPUData, sizeof(GlobalData));
     }
 
-    PROFILE_END(uploadCommandList);
-    Render->GetDevice().CloseUploadCommandList();
     StoredCopy = CPUData;
   }
 }

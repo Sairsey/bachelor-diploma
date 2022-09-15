@@ -33,7 +33,7 @@ namespace gdr
     indirect_support(render* Rnd);
 
     // Update data stored on GPU
-    void UpdateGPUData(void);
+    void UpdateGPUData(ID3D12GraphicsCommandList* pCommandList);
 
     // Destructor 
     ~indirect_support(void);

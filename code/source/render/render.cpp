@@ -151,10 +151,17 @@ void gdr::render::DrawFrame(void)
   if (!IsInited)
     return;
 
+  ID3D12GraphicsCommandList* uploadCommandList;
+  GetDevice().BeginUploadCommandList(&uploadCommandList);
+  PROFILE_BEGIN(uploadCommandList, "Update indirect SRVs and UAVs");
   // Update all subsytems except globals, it will be updated in each pass
-  IndirectSystem->UpdateGPUData();
-  TransformsSystem->UpdateGPUData();
-  
+  IndirectSystem->UpdateGPUData(uploadCommandList);
+  PROFILE_END(uploadCommandList);
+  PROFILE_BEGIN(uploadCommandList, "Update transforms");
+  TransformsSystem->UpdateGPUData(uploadCommandList);
+  PROFILE_END(uploadCommandList);
+  GetDevice().CloseUploadCommandList();
+
   ID3D12GraphicsCommandList* pCommandList = nullptr;
   ID3D12Resource* pBackBuffer = nullptr;
   D3D12_CPU_DESCRIPTOR_HANDLE rtvHandle;
@@ -219,7 +226,7 @@ void gdr::render::DrawFrame(void)
       Device.TransitResourceState(pCommandList, pBackBuffer, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
     }
 
-    Device.CloseSubmitAndPresentRenderCommandList();
+    Device.CloseSubmitAndPresentRenderCommandList(false);
   }
 
 }

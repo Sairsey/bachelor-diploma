@@ -10,7 +10,7 @@ void gdr::albedo_pass::Initialize(void)
   // 2) Create root signature 
   {
     std::vector<CD3DX12_ROOT_PARAMETER> params;
-    params.resize((int)3);
+    params.resize((int)root_parameters_draw_indices::total_root_parameters);
 
     {
       params[(int)root_parameters_draw_indices::globals_buffer_index].InitAsConstantBufferView(
@@ -31,7 +31,7 @@ void gdr::albedo_pass::Initialize(void)
     if (params.size() != 0)
     {
       CD3DX12_ROOT_SIGNATURE_DESC rootSignatureDesc;
-      rootSignatureDesc.Init(params.size(), &params[0], 0, nullptr, D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
+      rootSignatureDesc.Init((UINT)params.size(), &params[0], 0, nullptr, D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
       Render->GetDevice().CreateRootSignature(rootSignatureDesc, &RootSignature);
     }
     else
@@ -110,13 +110,13 @@ void gdr::albedo_pass::Initialize(void)
     if (params.size() != 0)
     {
       CD3DX12_ROOT_SIGNATURE_DESC rootSignatureDesc;
-      rootSignatureDesc.Init(params.size(), &params[0], 0, nullptr, D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
+      rootSignatureDesc.Init(params.size(), &params[0], 0U, nullptr, D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
       Render->GetDevice().CreateRootSignature(rootSignatureDesc, &ComputeRootSignature);
     }
     else
     {
       CD3DX12_ROOT_SIGNATURE_DESC rootSignatureDesc;
-      rootSignatureDesc.Init(0, nullptr, 0, nullptr, D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
+      rootSignatureDesc.Init(0U, nullptr, 0U, nullptr, D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
 
       Render->GetDevice().CreateRootSignature(rootSignatureDesc, &ComputeRootSignature);
     }
@@ -183,8 +183,8 @@ void gdr::albedo_pass::CallCompute(ID3D12GraphicsCommandList* currentCommandList
 
   // update CPUComputeRootConstants
   CPUComputeRootConstants.VP = Render->PlayerCamera.GetVP();
-  CPUComputeRootConstants.enableCulling = false;
-  CPUComputeRootConstants.commandCount = Render->IndirectSystem->CPUData.size();
+  CPUComputeRootConstants.enableCulling = true;
+  CPUComputeRootConstants.commandCount = (float)Render->IndirectSystem->CPUData.size();
 
   // set Root constants buffers etc
   currentCommandList->SetComputeRoot32BitConstants(
@@ -223,7 +223,12 @@ void gdr::albedo_pass::CallDirectDraw(ID3D12GraphicsCommandList* currentCommandL
   // Update Globals
   Render->GlobalsSystem->CPUData.CameraPos = Render->PlayerCamera.GetPos();
   Render->GlobalsSystem->CPUData.VP = Render->PlayerCamera.GetVP();
-  Render->GlobalsSystem->UpdateGPUData();
+
+  PROFILE_BEGIN(currentCommandList, "Update globals");
+  Render->GetDevice().SetCommandListAsUpload(currentCommandList);
+  Render->GlobalsSystem->UpdateGPUData(currentCommandList);
+  Render->GetDevice().ClearUploadListReference();
+  PROFILE_END(currentCommandList);
 
   // set common params
   currentCommandList->SetPipelineState(PSO);
@@ -260,7 +265,12 @@ void gdr::albedo_pass::CallIndirectDraw(ID3D12GraphicsCommandList* currentComman
   // Update Globals
   Render->GlobalsSystem->CPUData.CameraPos = Render->PlayerCamera.GetPos();
   Render->GlobalsSystem->CPUData.VP = Render->PlayerCamera.GetVP();
-  Render->GlobalsSystem->UpdateGPUData();
+ 
+  PROFILE_BEGIN(currentCommandList, "Update globals");
+  Render->GetDevice().SetCommandListAsUpload(currentCommandList);
+  Render->GlobalsSystem->UpdateGPUData(currentCommandList);
+  Render->GetDevice().ClearUploadListReference();
+  PROFILE_END(currentCommandList);
 
   // set common params
   currentCommandList->SetPipelineState(PSO);

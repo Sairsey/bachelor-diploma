@@ -102,7 +102,7 @@ std::vector<gdr::gdr_object> gdr::object_support::CreateObjectsFromFile(std::str
 
 ObjectTransform& gdr::object_support::GetTransforms(gdr_object object)
 {
-  return Render->TransformsSystem->CPUData[object];
+  return Render->TransformsSystem->CPUData[CPUPool[object].ObjectTransformIndex];
 }
 
 // destructor

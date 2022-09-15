@@ -19,15 +19,11 @@ static UINT AlignForUavCounter(UINT bufferSize)
   return (bufferSize + (alignment - 1)) & ~(alignment - 1);
 }
 
-void gdr::indirect_support::UpdateGPUData(void)
+void gdr::indirect_support::UpdateGPUData(ID3D12GraphicsCommandList* pCommandList)
 {
   // if we added or removed objects
   if (CPUData.size() != Render->ObjectSystem->CPUPool.size())
   {
-    ID3D12GraphicsCommandList* uploadCommandList;
-    Render->GetDevice().BeginUploadCommandList(&uploadCommandList);
-    PROFILE_BEGIN(uploadCommandList, "Update indirect SRVs and UAVs");
-
     // free data
     for (int i = 0; i < TotalUAV; i++)
       if (CommandsUAV[i].Resource != nullptr)
@@ -117,10 +113,7 @@ void gdr::indirect_support::UpdateGPUData(void)
         &data,
         sizeof(UINT));
     }
-
-    PROFILE_END(uploadCommandList);
-    Render->GetDevice().CloseUploadCommandList();
-    }
+  }
 }
 
 gdr::indirect_support::~indirect_support()

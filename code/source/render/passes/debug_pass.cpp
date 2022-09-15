@@ -120,7 +120,12 @@ void gdr::debug_pass::CallDirectDraw(ID3D12GraphicsCommandList* currentCommandLi
   // Update Globals
   Render->GlobalsSystem->CPUData.CameraPos = Render->PlayerCamera.GetPos();
   Render->GlobalsSystem->CPUData.VP = Render->PlayerCamera.GetVP();
-  Render->GlobalsSystem->UpdateGPUData();
+  PROFILE_BEGIN(currentCommandList, "Update globals");
+  Render->GetDevice().SetCommandListAsUpload(currentCommandList);
+  Render->GlobalsSystem->UpdateGPUData(currentCommandList);
+  Render->GetDevice().ClearUploadListReference();
+  PROFILE_END(currentCommandList);
+
 
   // set common params
   currentCommandList->SetPipelineState(PSO);

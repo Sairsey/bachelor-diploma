@@ -699,6 +699,17 @@ HRESULT gdr::device::UpdateBuffer(ID3D12GraphicsCommandList* pCommandList, ID3D1
   return E_FAIL;
 }
 
+// In case we need huge data to be copied
+void gdr::device::WaitAllUploadLists(void)
+{
+  for (int i = 0; i < UploadQueue->GetCommandListCount(); i++)
+  {
+    ID3D12GraphicsCommandList* pCommandList;
+    BeginUploadCommandList(&pCommandList);
+    CloseUploadCommandList();
+  }
+}
+
 HRESULT gdr::device::UpdateTexture(ID3D12GraphicsCommandList* pCommandList, ID3D12Resource* pTexture, const void* pData, size_t dataSize)
 {
   D3D12_RESOURCE_DESC desc = pTexture->GetDesc();
@@ -791,7 +802,7 @@ void gdr::device::CloseUploadCommandList()
   D3D_CHECK(UploadQueue->CloseAndSubmitCommandList(&uploadFenceValue));
 
   // while upload buffer has fences to submit
-  if (SUCCEEDED(hr))
+  if (uploadFenceValue != NoneValue)
   {
     // Add fence to pending
     UploadBuffer->AddPendingFence(uploadFenceValue);

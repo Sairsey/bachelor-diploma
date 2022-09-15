@@ -18,7 +18,7 @@ namespace gdr
     // Constructor
     transforms_support(render* Rnd);
 
-    void UpdateGPUData(void);
+    void UpdateGPUData(ID3D12GraphicsCommandList* pCommandList);
 
     std::vector<ObjectTransform> CPUData;  // data stored in CPU
     GPUResource GPUData; // data stored in GPU

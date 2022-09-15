@@ -18,6 +18,7 @@
 
 #include <string>
 #include <functional>
+#include <unordered_map>
 
 #include "D3D12MemAlloc.h"
 #include "utils/math/mth.h"

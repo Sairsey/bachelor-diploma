@@ -79,6 +79,7 @@ void gdr::albedo_pass::Initialize(void)
   // 5) Create root signature for compute
   {
     std::vector<CD3DX12_ROOT_PARAMETER> params;
+    CD3DX12_DESCRIPTOR_RANGE descr = {};
 
     params.resize((int)root_parameters_compute_indices::total_root_parameters);
 
@@ -100,7 +101,6 @@ void gdr::albedo_pass::Initialize(void)
 
     // UAV set as Descriptor range
     {
-      CD3DX12_DESCRIPTOR_RANGE descr = {};
       descr.Init(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 1, (int)albedo_uav_registers::indirect_command_pool_register);
 
       params[(int)root_parameters_compute_indices::out_commands_pool_index].InitAsDescriptorTable(
@@ -176,8 +176,6 @@ void gdr::albedo_pass::CallCompute(ID3D12GraphicsCommandList* currentCommandList
     D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
   
   currentCommandList->SetPipelineState(ComputePSO);
-
-  currentCommandList->SetPipelineState(PSO);
 
   ID3D12DescriptorHeap* pDescriptorHeaps = Render->GetDevice().GetDescriptorHeap();
   currentCommandList->SetDescriptorHeaps(1, &pDescriptorHeaps);

@@ -5,7 +5,7 @@
 void unit_bread::Initialize(void)
 {
   ID3D12GraphicsCommandList* commandList;
-  for (int j = 0; j < 40; j++)
+  for (int j = 0; j < 10; j++)
   {
     // thi is huge data copy, so clear ring buffer every step
     Engine->GetDevice().WaitAllUploadLists();
@@ -30,6 +30,6 @@ void unit_bread::Response(void)
     double radius = alpha * 2;
     mth::matr translation = mth::matr::Translate(mth::vec3f(float(sin(alpha) * radius), 0, float(cos(alpha) * radius)));
     
-    Engine->ObjectSystem->GetTransforms(Bread[i]).transform = mth::matr::RotateY(Engine->GetTime() * 10.0) * translation;
+    Engine->ObjectSystem->GetTransforms(Bread[i]).transform = mth::matr::RotateY(Engine->GetTime() * 10.0f) * translation;
   }
 }

@@ -93,7 +93,7 @@ namespace mth
         MATRICES<Type>::MatrProj = matr4<Type>::Frustum(-W / 2, W / 2, -H / 2, H / 2, ProjDist, FarClip);
         break;
       case COORINATE_SYSTEM::SCREEN:
-        MATRICES<Type>::MatrProj = matr4<Type>::Ortho(0, FrameW - 1, FrameH - 1, 0, -ProjDist, FarClip);
+        MATRICES<Type>::MatrProj = matr4<Type>::Ortho((Type)0, (Type)(FrameW - 1), (Type)(FrameH - 1), (Type)0, (Type)(-ProjDist), (Type)(FarClip));
         break;
       case COORINATE_SYSTEM::CAMERA:
         MATRICES<Type>::MatrProj = matr4<Type>::Identity();

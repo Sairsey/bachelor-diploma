@@ -14,6 +14,8 @@ cbuffer Indices : register(b1)
 
 StructuredBuffer<ObjectTransform> ObjectTransformData : register(t2);    // SRV: Data with transforms which stored per object
 StructuredBuffer<ObjectMaterial> ObjectMaterialData : register(t3);      // SRV: Data with materials which stored per object
+Texture2D TexturesPool[]  : register(t4, space1);                        // Bindless Pool with all textures
+SamplerState LinearSampler : register(s0);                               // Texture sampler
 
 struct VSIn
 {
@@ -62,6 +64,8 @@ float3 Shade(float3 Normal, float3 Position, float2 uv, ObjectMaterial material)
 
     /* Diffuse color*/
     float3 diffuseColor = float4(material.Kd, 0);
+    if (material.KdMapIndex != -1)
+      diffuseColor = TexturesPool[material.KdMapIndex].Sample(LinearSampler, uv).xyz;
     Phong += (diffuseColor * NdotL);
 
     /*Specular color*/

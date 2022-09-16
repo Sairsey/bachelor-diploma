@@ -11,6 +11,7 @@ void gdr::albedo_pass::Initialize(void)
   {
     std::vector<CD3DX12_ROOT_PARAMETER> params;
     params.resize((int)root_parameters_draw_indices::total_root_parameters);
+    CD3DX12_DESCRIPTOR_RANGE bindlessTexturesDesc[1];  // Textures Pool
 
     {
       params[(int)root_parameters_draw_indices::globals_buffer_index].InitAsConstantBufferView(
@@ -33,16 +34,28 @@ void gdr::albedo_pass::Initialize(void)
         (int)albedo_texture_registers::material_pool_register);
     }
 
+    {
+      bindlessTexturesDesc[0].BaseShaderRegister = (int)albedo_texture_registers::texture_pool_register;
+      bindlessTexturesDesc[0].NumDescriptors = MAX_TEXTURE_AMOUNT;
+      bindlessTexturesDesc[0].OffsetInDescriptorsFromTableStart = 0;
+      bindlessTexturesDesc[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+      bindlessTexturesDesc[0].RegisterSpace = 1;
+      
+      params[(int)root_parameters_draw_indices::texture_pool_index].InitAsDescriptorTable(1, bindlessTexturesDesc);
+    }
+
+    CD3DX12_STATIC_SAMPLER_DESC samplerDesc(0, D3D12_FILTER_MIN_MAG_MIP_LINEAR); // Texture sampler
+
     if (params.size() != 0)
     {
       CD3DX12_ROOT_SIGNATURE_DESC rootSignatureDesc;
-      rootSignatureDesc.Init((UINT)params.size(), &params[0], 0, nullptr, D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
+      rootSignatureDesc.Init((UINT)params.size(), &params[0], 1, &samplerDesc, D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
       Render->GetDevice().CreateRootSignature(rootSignatureDesc, &RootSignature);
     }
     else
     {
       CD3DX12_ROOT_SIGNATURE_DESC rootSignatureDesc;
-      rootSignatureDesc.Init(0, nullptr, 0, nullptr, D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
+      rootSignatureDesc.Init(0, nullptr, 1, &samplerDesc, D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
 
       Render->GetDevice().CreateRootSignature(rootSignatureDesc, &RootSignature);
     }
@@ -115,7 +128,7 @@ void gdr::albedo_pass::Initialize(void)
     if (params.size() != 0)
     {
       CD3DX12_ROOT_SIGNATURE_DESC rootSignatureDesc;
-      rootSignatureDesc.Init(params.size(), &params[0], 0U, nullptr, D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
+      rootSignatureDesc.Init((UINT)params.size(), &params[0], 0U, nullptr, D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
       Render->GetDevice().CreateRootSignature(rootSignatureDesc, &ComputeRootSignature);
     }
     else
@@ -260,6 +273,9 @@ void gdr::albedo_pass::CallDirectDraw(ID3D12GraphicsCommandList* currentCommandL
       currentCommandList->SetGraphicsRootShaderResourceView(
         (int)root_parameters_draw_indices::material_pool_index,
         Render->MaterialsSystem->GPUData.Resource->GetGPUVirtualAddress());
+      currentCommandList->SetGraphicsRootDescriptorTable(
+        (int)root_parameters_draw_indices::texture_pool_index,
+        Render->TexturesSystem->TextureTableGPU);
     }
 
     currentCommandList->DrawIndexedInstanced(geom.IndexCount, 1, 0, 0, 0);
@@ -294,9 +310,12 @@ void gdr::albedo_pass::CallIndirectDraw(ID3D12GraphicsCommandList* currentComman
   currentCommandList->SetGraphicsRootShaderResourceView(
     (int)root_parameters_draw_indices::material_pool_index,
     Render->MaterialsSystem->GPUData.Resource->GetGPUVirtualAddress());
+  currentCommandList->SetGraphicsRootDescriptorTable(
+    (int)root_parameters_draw_indices::texture_pool_index,
+    Render->TexturesSystem->TextureTableGPU);
   currentCommandList->ExecuteIndirect(
       CommandSignature,
-      Render->IndirectSystem->CPUData.size(),
+      (UINT)Render->IndirectSystem->CPUData.size(),
       Render->IndirectSystem->CommandsUAV[OurUAVIndex].Resource,
       0,
       Render->IndirectSystem->CommandsUAV[OurUAVIndex].Resource,

@@ -13,6 +13,7 @@ namespace gdr
   class transforms_support;
   class materials_support;
   class indirect_support;
+  class textures_support;
 
   struct render_runtime_params
   {
@@ -91,6 +92,7 @@ namespace gdr
       transforms_support* TransformsSystem; // support of object Transforms
       object_support *ObjectSystem; // Helper of every subsystem
       materials_support *MaterialsSystem; //System to store info about materials
+      textures_support* TexturesSystem; //System to store info about textures
 
       device_time_query DeviceFrameCounter;
   };

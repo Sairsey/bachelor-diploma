@@ -31,7 +31,7 @@ void gdr::transforms_support::UpdateGPUData(ID3D12GraphicsCommandList* pCommandL
       srvDesc.Format = DXGI_FORMAT_UNKNOWN;
       srvDesc.ViewDimension = D3D12_SRV_DIMENSION_BUFFER;
       srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-      srvDesc.Buffer.NumElements = CPUData.size();
+      srvDesc.Buffer.NumElements = (UINT)CPUData.size();
       srvDesc.Buffer.StructureByteStride = sizeof(ObjectTransform);
       srvDesc.Buffer.Flags = D3D12_BUFFER_SRV_FLAG_NONE;
 

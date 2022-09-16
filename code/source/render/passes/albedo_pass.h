@@ -56,8 +56,8 @@ namespace gdr
         index_buffer_index,                 // root parameter for buffer with indices in pools
         transform_pool_index,               // root parameter for buffer with transforms
         material_pool_index,                // root parameter for buffer with materials
-        total_root_parameters,
         texture_pool_index,                 // root parameter for buffer with textures
+        total_root_parameters,
       };
 
       // indices in root_parameters

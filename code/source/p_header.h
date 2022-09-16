@@ -18,6 +18,7 @@
 #include "render/subsystems/object_support.h"
 #include "render/subsystems/materials_support.h"
 #include "render/subsystems/indirect_support.h"
+#include "render/subsystems/texture_support.h"
 
 #include "render/passes/base_pass.h"
 #include "render/passes/albedo_pass.h"

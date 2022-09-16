@@ -65,7 +65,7 @@ void gdr::indirect_support::UpdateGPUData(ID3D12GraphicsCommandList* pCommandLis
       srvDesc.Format = DXGI_FORMAT_UNKNOWN;
       srvDesc.ViewDimension = D3D12_SRV_DIMENSION_BUFFER;
       srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-      srvDesc.Buffer.NumElements = CPUData.size();
+      srvDesc.Buffer.NumElements = (UINT)CPUData.size();
       srvDesc.Buffer.StructureByteStride = sizeof(indirect_command);
       srvDesc.Buffer.Flags = D3D12_BUFFER_SRV_FLAG_NONE;
 
@@ -75,7 +75,7 @@ void gdr::indirect_support::UpdateGPUData(ID3D12GraphicsCommandList* pCommandLis
 
 
     // aligned UAV size
-    UINT UAVSize = AlignForUavCounter(CPUData.size() * sizeof(indirect_command));
+    UINT UAVSize = AlignForUavCounter((UINT)CPUData.size() * sizeof(indirect_command));
     CounterOffset = UAVSize;
 
     // CreateUAVs
@@ -92,7 +92,7 @@ void gdr::indirect_support::UpdateGPUData(ID3D12GraphicsCommandList* pCommandLis
       uavDesc.Format = DXGI_FORMAT_UNKNOWN;
       uavDesc.ViewDimension = D3D12_UAV_DIMENSION_BUFFER;
       uavDesc.Buffer.FirstElement = 0;
-      uavDesc.Buffer.NumElements = CPUData.size();
+      uavDesc.Buffer.NumElements = (UINT)CPUData.size();
       uavDesc.Buffer.StructureByteStride = sizeof(indirect_command);
       uavDesc.Buffer.CounterOffsetInBytes = UAVSize;
       uavDesc.Buffer.Flags = D3D12_BUFFER_UAV_FLAG_NONE;

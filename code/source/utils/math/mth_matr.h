@@ -290,10 +290,10 @@ namespace mth
        */
       inline static matr4<Type> Frustum( Type Left, Type Right, Type Bottom, Type Top, Type Near, Type Far )
       {
-        return matr4<Type>(2.0 * Near / (Right - Left),                               0,                         0, 0,
-                                                     0,     2.0 * Near / (Top - Bottom),                         0, 0,
-                                                     0, (Top + Bottom) / (Top - Bottom),        Far / (Far - Near), 1,
-                                                     0,                               0, Far * Near / (Near - Far), 0);
+        return matr4<Type>((Type)2.0 * Near / (Right - Left),                           (Type)0,                   (Type)0, (Type)0,
+                                                     (Type)0, (Type)2.0 * Near / (Top - Bottom),                   (Type)0, (Type)0,
+                                                     (Type)0,   (Top + Bottom) / (Top - Bottom),        Far / (Far - Near), (Type)1,
+                                                     (Type)0,                           (Type)0, Far * Near / (Near - Far), (Type)0);
       } /* End of 'Frustum' function */
 
       /* Get matrix line funciton.

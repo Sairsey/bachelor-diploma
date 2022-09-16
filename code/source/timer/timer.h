@@ -8,7 +8,7 @@ namespace gdr
   {
   protected:
     /* Timer data */
-    DOUBLE
+    float
       GlobalTime, GlobalDeltaTime, /* Global time and interframe interval */
       Time, DeltaTime,             /* Time with pause and interframe interval */
       FPS;                         /* Frames per seond value */
@@ -24,7 +24,7 @@ namespace gdr
       PauseTime,  /* Time during pause period */
       TimePerSec, /* Timer resolution */
       FrameCounter; /* Frames counter */
-    DOUBLE
+    float
       SleepTime;  /* Time during pause */
   
   public:
@@ -61,7 +61,7 @@ namespace gdr
      *     - time
      *         DBL Time;
      */
-    DOUBLE GetTime(VOID)
+    float GetTime(VOID)
     {
       return Time;
     }
@@ -72,7 +72,7 @@ namespace gdr
      *     - time
      *         DBL Time;
      */
-    DOUBLE GetFPS(VOID)
+    float GetFPS(VOID)
     {
       return FPS;
     }
@@ -83,7 +83,7 @@ namespace gdr
      *     - global time
      *         DBL GlobalTime;
      */
-    DOUBLE GetGlobalTime(VOID)
+    float GetGlobalTime(VOID)
     {
       return GlobalTime;
     }
@@ -94,7 +94,7 @@ namespace gdr
      *     - delta time
      *         DBL DeltaTime;
      */
-    DOUBLE GetDeltaTime(VOID)
+    float GetDeltaTime(VOID)
     {
       return DeltaTime;
     }
@@ -105,7 +105,7 @@ namespace gdr
      *     - time
      *         DBL GlobalDeltaTime;
      */
-    DOUBLE GetGlobalDeltaTime(VOID)
+    float GetGlobalDeltaTime(VOID)
     {
       return GlobalDeltaTime;
     }
@@ -130,8 +130,8 @@ namespace gdr
       /*** Handle timer ***/
       QueryPerformanceCounter(&t);           // obtain current timer value
       /* Global time */
-      GlobalTime = (DOUBLE)(t.QuadPart - StartTime) / TimePerSec;
-      GlobalDeltaTime = (DOUBLE)(t.QuadPart - OldTime) / TimePerSec;
+      GlobalTime = (float)(t.QuadPart - StartTime) / TimePerSec;
+      GlobalDeltaTime = (float)(t.QuadPart - OldTime) / TimePerSec;
       /* Time with pause */
       if (IsPause || IsSleep)
       {
@@ -140,7 +140,7 @@ namespace gdr
       }
       else
       {
-        Time = (DOUBLE)(t.QuadPart - PauseTime - StartTime) / TimePerSec;
+        Time = (float)(t.QuadPart - PauseTime - StartTime) / TimePerSec;
         DeltaTime = GlobalDeltaTime;
       }
       /* Sleep */
@@ -156,7 +156,7 @@ namespace gdr
       /* FPS */
       if (t.QuadPart - OldTimeFPS > TimePerSec)
       {
-        FPS = (DOUBLE)FrameCounter * TimePerSec / (t.QuadPart - OldTimeFPS);
+        FPS = (float)FrameCounter * TimePerSec / (t.QuadPart - OldTimeFPS);
         OldTimeFPS = t.QuadPart;
         FrameCounter = 0;
         OutputDebugString((std::to_wstring(FPS) + L"\n").c_str());
@@ -193,7 +193,7 @@ namespace gdr
      *       INT S;
      *   RETURNS: none.
      */
-    VOID Sleep(DOUBLE S)
+    VOID Sleep(float S)
     {
       if (S == 0)
         return;

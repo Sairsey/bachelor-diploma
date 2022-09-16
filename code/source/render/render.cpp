@@ -1,7 +1,7 @@
 #include "p_header.h"
 
 // Default constructor
-gdr::render::render() : IsInited(false), PlayerCamera(mth::vec3f(0, 0, 1), mth::vec3f(0, 0, 0), mth::vec3f(0, 1, 0), 0.1, 0.1, 1000, 10, 10)
+gdr::render::render() : IsInited(false), PlayerCamera(mth::vec3f(0, 0, 1), mth::vec3f(0, 0, 0), mth::vec3f(0, 1, 0), 0.1f, 0.1f, 1000, 10, 10)
 {
 }
 
@@ -56,8 +56,8 @@ bool gdr::render::Init(engine* Eng)
 
     Viewport.TopLeftX = 0.0f;
     Viewport.TopLeftY = 0.0f;
-    Viewport.Height = (LONG)size.second;
-    Viewport.Width = (LONG)size.first;
+    Viewport.Height = (FLOAT)size.second;
+    Viewport.Width = (FLOAT)size.first;
     Viewport.MinDepth = 0.0f;
     Viewport.MaxDepth = 1.0f;
 
@@ -102,6 +102,7 @@ bool gdr::render::Init(engine* Eng)
     TransformsSystem = new gdr::transforms_support(this);
     IndirectSystem = new gdr::indirect_support(this);
     MaterialsSystem = new gdr::materials_support(this);
+    TexturesSystem = new gdr::textures_support(this);
   }
 
   IsInited = localIsInited;
@@ -129,8 +130,8 @@ void gdr::render::Resize(UINT w, UINT h)
 
   Rect.left = 0;
   Rect.top = 0;
-  Rect.bottom = (FLOAT)h;
-  Rect.right = (FLOAT)w;
+  Rect.bottom = (LONG)h;
+  Rect.right = (LONG)w;
 
   PlayerCamera.Resize(w, h);
 
@@ -163,6 +164,9 @@ void gdr::render::DrawFrame(void)
   PROFILE_END(uploadCommandList);
   PROFILE_BEGIN(uploadCommandList, "Update materials");
   MaterialsSystem->UpdateGPUData(uploadCommandList);
+  PROFILE_END(uploadCommandList);
+  PROFILE_BEGIN(uploadCommandList, "Update Textures");
+  TexturesSystem->UpdateGPUData(uploadCommandList);
   PROFILE_END(uploadCommandList);
   GetDevice().CloseUploadCommandList();
 
@@ -248,6 +252,7 @@ void gdr::render::Term(void)
   if (!IsInited)
     return;
 
+  delete TexturesSystem;
   delete IndirectSystem;
   delete MaterialsSystem; 
   delete TransformsSystem;

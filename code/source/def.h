@@ -77,3 +77,10 @@ namespace std
   using tstring = string;
 }
 #endif // !UNICODE
+
+inline std::wstring charToWString(const char* text)
+{
+  std::string str(text);
+  std::wstring wstr(str.begin(), str.end());
+  return wstr;
+}

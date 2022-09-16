@@ -40,8 +40,8 @@ gdr::gdr_object gdr::object_support::CreateObject(const vertex* pVertex, size_t 
   Render->MaterialsSystem->CPUData.push_back(gdr::materials_support::DefaultMaterial());
 
   ObjectIndices new_record;
-  new_record.ObjectTransformIndex = Render->TransformsSystem->CPUData.size() - 1;
-  new_record.ObjectMaterialIndex = Render->MaterialsSystem->CPUData.size() - 1;
+  new_record.ObjectTransformIndex = (UINT)Render->TransformsSystem->CPUData.size() - 1;
+  new_record.ObjectMaterialIndex = (UINT)Render->MaterialsSystem->CPUData.size() - 1;
   CPUPool.push_back(new_record);
   return CPUPool.size() - 1;
 }
@@ -58,13 +58,13 @@ gdr::gdr_object gdr::object_support::DublicateObject(gdr_object original)
   if (CPUPool[original].ObjectMaterialIndex != -1)
   {
     Render->MaterialsSystem->CPUData.push_back(Render->MaterialsSystem->CPUData[CPUPool[original].ObjectMaterialIndex]);
-    new_record.ObjectMaterialIndex = Render->MaterialsSystem->CPUData.size() - 1;
+    new_record.ObjectMaterialIndex = (UINT)Render->MaterialsSystem->CPUData.size() - 1;
 
   }
   if (CPUPool[original].ObjectTransformIndex != -1)
   {
     Render->TransformsSystem->CPUData.push_back(Render->TransformsSystem->CPUData[CPUPool[original].ObjectTransformIndex]);
-    new_record.ObjectTransformIndex = Render->TransformsSystem->CPUData.size() - 1;
+    new_record.ObjectTransformIndex = (UINT)Render->TransformsSystem->CPUData.size() - 1;
   }
   
   CPUPool.push_back(new_record);
@@ -150,10 +150,48 @@ std::vector<gdr::gdr_object> gdr::object_support::CreateObjectsFromFile(std::str
 
     if (mat.Ph == 0.f)
       mat.Ph = 1.0f;
-    /*
-    aiString str;
-    scene->mMaterials[Mesh->mMaterialIndex]->GetTexture(aiTextureType_DIFFUSE, 0, &str);
-    */
+
+    std::string directory;
+    size_t last_slash_idx = fileName.rfind('\\');
+    if (std::string::npos != last_slash_idx)
+    {
+      directory = fileName.substr(0, last_slash_idx);
+    }
+    else
+    {
+      size_t last_slash_idx = fileName.rfind('/');
+      if (std::string::npos != last_slash_idx)
+      {
+        directory = fileName.substr(0, last_slash_idx) + "/";
+      }
+    }
+    
+    {
+      aiString str;
+      scene->mMaterials[Mesh->mMaterialIndex]->GetTexture(aiTextureType_DIFFUSE, 0, &str);
+      if (str.length != 0)
+      {
+        mat.KdMapIndex = Render->TexturesSystem->Load(directory + str.C_Str());
+      }
+    }
+
+    {
+      aiString str;
+      scene->mMaterials[Mesh->mMaterialIndex]->GetTexture(aiTextureType_AMBIENT, 0, &str);
+      if (str.length != 0)
+      {
+        mat.KaMapIndex = Render->TexturesSystem->Load(directory + str.C_Str());
+      }
+    }
+
+    {
+      aiString str;
+      scene->mMaterials[Mesh->mMaterialIndex]->GetTexture(aiTextureType_SPECULAR, 0, &str);
+      if (str.length != 0)
+      {
+        mat.KsMapIndex = Render->TexturesSystem->Load(directory + str.C_Str());
+      }
+    }
   }
   LoadedObjectTypes[fileName] = result;
   return result;

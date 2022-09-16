@@ -38,11 +38,13 @@
     <ClInclude Include="source\render\subsystems\indirect_support.h" />
     <ClInclude Include="source\render\subsystems\materials_support.h" />
     <ClInclude Include="source\render\subsystems\object_support.h" />
+    <ClInclude Include="source\render\subsystems\texture_support.h" />
     <ClInclude Include="source\render\subsystems\transforms_support.h" />
     <ClInclude Include="source\timer\timer.h" />
     <ClInclude Include="source\units\unit_base.h" />
     <ClInclude Include="source\units\unit_bread.h" />
     <ClInclude Include="source\units\unit_control.h" />
+    <ClInclude Include="source\units\unit_frog.h" />
     <ClInclude Include="source\units\unit_triangle.h" />
     <ClInclude Include="source\utils\math\mth.h" />
     <ClInclude Include="source\utils\math\mth_def.h" />
@@ -74,13 +76,16 @@
     <ClCompile Include="source\render\subsystems\indirect_support.cpp" />
     <ClCompile Include="source\render\subsystems\materials_support.cpp" />
     <ClCompile Include="source\render\subsystems\object_support.cpp" />
+    <ClCompile Include="source\render\subsystems\texture_support.cpp" />
     <ClCompile Include="source\render\subsystems\transforms_support.cpp" />
     <ClCompile Include="source\units\unit_bread.cpp" />
     <ClCompile Include="source\units\unit_control.cpp" />
+    <ClCompile Include="source\units\unit_frog.cpp" />
     <ClCompile Include="source\units\unit_triangle.cpp" />
     <ClCompile Include="source\utils\D3D12MemAlloc.cpp" />
     <ClInclude Include="source\utils\math\mth_cam.h" />
     <ClCompile Include="source\utils\read_file.cpp" />
+    <ClCompile Include="source\utils\stb_image.cpp" />
     <ClCompile Include="source\window\win.cpp" />
     <ClCompile Include="source\window\win_msg.cpp" />
   </ItemGroup>

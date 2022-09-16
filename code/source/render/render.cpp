@@ -48,7 +48,7 @@ bool gdr::render::Init(engine* Eng)
 
   // init device
   localIsInited = Device.Init(params);
-
+  DeviceFrameCounter = device_time_query(&Device);
   // init sizes
   if (localIsInited) 
   {
@@ -172,6 +172,7 @@ void gdr::render::DrawFrame(void)
   if (Device.BeginRenderCommandList(&pCommandList, &pBackBuffer, &rtvHandle))
   {
     PROFILE_BEGIN(pCommandList, "Frame");
+    DeviceFrameCounter.Start(pCommandList);
     HRESULT hr = S_OK;
     D3D12_CPU_DESCRIPTOR_HANDLE dsvHandle = DSVHeap->GetCPUDescriptorHandleForHeapStart();
     pCommandList->OMSetRenderTargets(1, &rtvHandle, TRUE, &dsvHandle);
@@ -227,6 +228,7 @@ void gdr::render::DrawFrame(void)
       }
 
       PROFILE_END(pCommandList);
+      DeviceFrameCounter.Stop(pCommandList);
       Device.TransitResourceState(pCommandList, pBackBuffer, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
     }
 

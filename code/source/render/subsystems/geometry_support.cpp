@@ -44,8 +44,11 @@ gdr::geometry_support::~geometry_support()
 {
   for (auto& geom : CPUPool)
   {
-    Render->GetDevice().ReleaseGPUResource(geom.IndexBuffer);
-    Render->GetDevice().ReleaseGPUResource(geom.VertexBuffer);
+    if (!geom.IsDublicated)
+    {
+      Render->GetDevice().ReleaseGPUResource(geom.IndexBuffer);
+      Render->GetDevice().ReleaseGPUResource(geom.VertexBuffer);
+    }
   }
   CPUPool.clear();
 }

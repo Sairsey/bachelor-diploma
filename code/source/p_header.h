@@ -8,6 +8,7 @@
 #include "render/device/gpu_ring_buffer.h"
 #include "render/device/d3dinclude.h"
 #include "render/device/device.h"
+#include "render/device/device_time_query.h"
 
 #include "render/render.h"
 

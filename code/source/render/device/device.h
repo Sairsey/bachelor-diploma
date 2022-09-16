@@ -276,6 +276,9 @@ namespace gdr
       // Wait GPU for Idle
       void WaitGPUIdle();
 
+      bool QueryTimestamp(ID3D12GraphicsCommandList* pCommandList, const std::function<void(UINT64)>& cb);
+      UINT64 GetPresentQueueFrequency() const;
+
       // Default destructor
       ~device();
   };

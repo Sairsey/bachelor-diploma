@@ -50,6 +50,7 @@ gdr::gdr_object gdr::object_support::CreateObject(const vertex* pVertex, size_t 
 gdr::gdr_object gdr::object_support::DublicateObject(gdr_object original)
 {
   Render->GeometrySystem->CPUPool.push_back(Render->GeometrySystem->CPUPool[original]);
+  Render->GeometrySystem->CPUPool[Render->GeometrySystem->CPUPool.size() - 1].IsDublicated = true;
   ObjectIndices new_record;
   new_record.ObjectTransformIndex = -1;
   new_record.ObjectMaterialIndex = -1;

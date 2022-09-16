@@ -26,6 +26,7 @@
     <ClInclude Include="source\render\device\command_queue.h" />
     <ClInclude Include="source\render\device\d3dinclude.h" />
     <ClInclude Include="source\render\device\device.h" />
+    <ClInclude Include="source\render\device\device_time_query.h" />
     <ClInclude Include="source\render\device\gpu_ring_buffer.h" />
     <ClInclude Include="source\render\passes\albedo_pass.h" />
     <ClInclude Include="source\render\passes\base_pass.h" />
@@ -62,6 +63,7 @@
     <ClCompile Include="source\render\device\command_queue.cpp" />
     <ClCompile Include="source\render\device\d3dinclude.cpp" />
     <ClCompile Include="source\render\device\device.cpp" />
+    <ClCompile Include="source\render\device\device_time_query.cpp" />
     <ClCompile Include="source\render\passes\albedo_pass.cpp" />
     <ClCompile Include="source\render\passes\debug_pass.cpp" />
     <ClCompile Include="source\render\render.cpp" />

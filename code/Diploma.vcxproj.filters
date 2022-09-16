@@ -108,6 +108,9 @@
     <ClCompile Include="source\render\subsystems\materials_support.cpp">
       <Filter>Source Files\Render\SubSystems</Filter>
     </ClCompile>
+    <ClCompile Include="source\render\device\device_time_query.cpp">
+      <Filter>Source Files\Render\Device</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\p_header.h">
@@ -208,6 +211,9 @@
     </ClInclude>
     <ClInclude Include="source\render\render.h">
       <Filter>Source Files\Render</Filter>
+    </ClInclude>
+    <ClInclude Include="source\render\device\device_time_query.h">
+      <Filter>Source Files\Render\Device</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

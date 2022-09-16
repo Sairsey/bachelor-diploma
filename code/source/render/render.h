@@ -90,5 +90,7 @@ namespace gdr
       transforms_support* TransformsSystem; // support of object Transforms
       object_support *ObjectSystem; // Helper of every subsystem
       materials_support *MaterialsSystem; //System to store info about materials
+
+      device_time_query DeviceFrameCounter;
   };
 }

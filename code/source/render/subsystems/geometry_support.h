@@ -25,6 +25,8 @@ namespace gdr
 
     // Amount of indices
     UINT IndexCount = 0;
+
+    bool IsDublicated = false;// helps destructor do the right thing
   };
 
   /* Geometry support subsystem class */

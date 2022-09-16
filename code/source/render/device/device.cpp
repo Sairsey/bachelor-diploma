@@ -1000,6 +1000,34 @@ bool gdr::device::ResizeSwapchain(UINT width, UINT height)
   return SUCCEEDED(hr);
 }
 
+bool gdr::device::QueryTimestamp(ID3D12GraphicsCommandList* pCommandList, const std::function<void(UINT64)>& cb)
+{
+  UINT64 id = -1;
+  UINT query = -1;
+  std::function<void(UINT64)> queryCB;
+  ring_buffer_result allocRes = QueryBuffer->Alloc(1, id, queryCB, 1);
+  assert(allocRes == ring_buffer_result::Ok);
+  if (allocRes == ring_buffer_result::Ok)
+  {
+    QueryBuffer->At(id) = cb;
+
+    pCommandList->EndQuery(QueryBuffer->GetQueryHeap(), D3D12_QUERY_TYPE_TIMESTAMP, (UINT)id);
+
+    return true;
+  }
+
+  return false;
+}
+
+UINT64 gdr::device::GetPresentQueueFrequency() const
+{
+  UINT64 freq = 0;
+  HRESULT hr = S_OK;
+  D3D_CHECK(PresentQueue->GetQueue()->GetTimestampFrequency(&freq));
+
+  return freq;
+}
+
 void gdr::device::WaitGPUIdle()
 {
   UINT64 finishedFenceValue = NoneValue;

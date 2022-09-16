@@ -14,12 +14,16 @@ namespace gdr
     private:
       // pointer to Render
       render* Render;
+      std::unordered_map<std::string, std::vector<gdr_object>> LoadedObjectTypes;
     public:
       // default constructor
       object_support(render *Rnd);
 
       // function which will import data and return gdr_object
       gdr_object CreateObject(const vertex* pVertex, size_t vertexCount, const UINT32* pIndices, size_t indexCount);
+
+      // function which will import data and return gdr_object
+      gdr_object DublicateObject(gdr_object original);
 
       // function which will import data and return gdr_object
       std::vector<gdr_object> CreateObjectsFromFile(std::string fileName);

@@ -15,7 +15,7 @@ namespace gdr
     int  CmdListCount = 2;
     int  UploadListCount = 2;
     HWND hWnd = nullptr;
-    int  UploadHeapSizeMb = 16;
+    int  UploadHeapSizeMb = 256;
     int  DynamicHeapSizeMb = 16;
     int  ReadbackHeapSizeMb = 1;
     int  DynamicDescCount = 16384 * 16;

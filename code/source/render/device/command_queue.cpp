@@ -78,7 +78,8 @@ HRESULT gdr::command_list::Submit(ID3D12CommandQueue* pQueue)
 
 HRESULT gdr::command_list::Wait(UINT64& finishedFenceValue)
 {
-  assert(PendingFenceValue == NoneValue && CurrentFenceValue == NoneValue);
+  assert(PendingFenceValue == NoneValue);
+  assert(CurrentFenceValue == NoneValue);
 
   finishedFenceValue = NoneValue;
 

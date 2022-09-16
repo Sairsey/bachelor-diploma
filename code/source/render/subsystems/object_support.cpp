@@ -47,11 +47,42 @@ gdr::gdr_object gdr::object_support::CreateObject(const vertex* pVertex, size_t 
 }
 
 // function which will import data and return gdr_object
+gdr::gdr_object gdr::object_support::DublicateObject(gdr_object original)
+{
+  Render->GeometrySystem->CPUPool.push_back(Render->GeometrySystem->CPUPool[original]);
+  ObjectIndices new_record;
+  new_record.ObjectTransformIndex = -1;
+  new_record.ObjectMaterialIndex = -1;
+
+  if (CPUPool[original].ObjectMaterialIndex != -1)
+  {
+    Render->MaterialsSystem->CPUData.push_back(Render->MaterialsSystem->CPUData[CPUPool[original].ObjectMaterialIndex]);
+    new_record.ObjectMaterialIndex = Render->MaterialsSystem->CPUData.size() - 1;
+
+  }
+  if (CPUPool[original].ObjectTransformIndex != -1)
+  {
+    Render->TransformsSystem->CPUData.push_back(Render->TransformsSystem->CPUData[CPUPool[original].ObjectTransformIndex]);
+    new_record.ObjectTransformIndex = Render->TransformsSystem->CPUData.size() - 1;
+  }
+  
+  CPUPool.push_back(new_record);
+  return CPUPool.size() - 1;
+}
+
+// function which will import data and return gdr_object
 std::vector<gdr::gdr_object> gdr::object_support::CreateObjectsFromFile(std::string fileName)
 {
   std::vector<gdr::gdr_object> result;
   // Create an instance of the Importer class
   Assimp::Importer importer;
+
+  if (LoadedObjectTypes.find(fileName) != LoadedObjectTypes.end())
+  {
+    for (auto &objects : LoadedObjectTypes[fileName])
+      result.push_back(DublicateObject(objects));
+    return result;
+  }
 
   const aiScene* scene = importer.ReadFile(fileName,
     aiProcessPreset_TargetRealtime_Fast |
@@ -123,6 +154,7 @@ std::vector<gdr::gdr_object> gdr::object_support::CreateObjectsFromFile(std::str
     scene->mMaterials[Mesh->mMaterialIndex]->GetTexture(aiTextureType_DIFFUSE, 0, &str);
     */
   }
+  LoadedObjectTypes[fileName] = result;
   return result;
 }
 

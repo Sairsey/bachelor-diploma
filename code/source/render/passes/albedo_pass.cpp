@@ -28,6 +28,11 @@ void gdr::albedo_pass::Initialize(void)
         (int)albedo_texture_registers::object_transform_pool_register);
     }
 
+    {
+      params[(int)root_parameters_draw_indices::material_pool_index].InitAsShaderResourceView(
+        (int)albedo_texture_registers::material_pool_register);
+    }
+
     if (params.size() != 0)
     {
       CD3DX12_ROOT_SIGNATURE_DESC rootSignatureDesc;
@@ -205,7 +210,6 @@ void gdr::albedo_pass::CallCompute(ID3D12GraphicsCommandList* currentCommandList
     (int)root_parameters_compute_indices::out_commands_pool_index, // root parameter index
     Render->IndirectSystem->CommandsUAVGPUDescriptor[OurUAVIndex]);
 
-
   currentCommandList->Dispatch(static_cast<UINT>(ceil(Render->IndirectSystem->CPUData.size() / float(128))), 1, 1);
 }
 
@@ -253,6 +257,9 @@ void gdr::albedo_pass::CallDirectDraw(ID3D12GraphicsCommandList* currentCommandL
       currentCommandList->SetGraphicsRootShaderResourceView(
         (int)root_parameters_draw_indices::transform_pool_index,
         Render->TransformsSystem->GPUData.Resource->GetGPUVirtualAddress());
+      currentCommandList->SetGraphicsRootShaderResourceView(
+        (int)root_parameters_draw_indices::material_pool_index,
+        Render->MaterialsSystem->GPUData.Resource->GetGPUVirtualAddress());
     }
 
     currentCommandList->DrawIndexedInstanced(geom.IndexCount, 1, 0, 0, 0);
@@ -284,7 +291,9 @@ void gdr::albedo_pass::CallIndirectDraw(ID3D12GraphicsCommandList* currentComman
   currentCommandList->SetGraphicsRootShaderResourceView(
     (int)root_parameters_draw_indices::transform_pool_index,
     Render->TransformsSystem->GPUData.Resource->GetGPUVirtualAddress());
-
+  currentCommandList->SetGraphicsRootShaderResourceView(
+    (int)root_parameters_draw_indices::material_pool_index,
+    Render->MaterialsSystem->GPUData.Resource->GetGPUVirtualAddress());
   currentCommandList->ExecuteIndirect(
       CommandSignature,
       Render->IndirectSystem->CPUData.size(),

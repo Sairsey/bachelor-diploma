@@ -11,6 +11,7 @@ namespace gdr
   class globals_support;
   class object_support;
   class transforms_support;
+  class materials_support;
   class indirect_support;
 
   struct render_runtime_params
@@ -88,5 +89,6 @@ namespace gdr
       geometry_support *GeometrySystem; // support of geometry creation
       transforms_support* TransformsSystem; // support of object Transforms
       object_support *ObjectSystem; // Helper of every subsystem
+      materials_support *MaterialsSystem; //System to store info about materials
   };
 }

@@ -28,7 +28,7 @@ namespace gdr
       ObjectTransform &GetTransforms(gdr_object object);
 
       // function which will return material by object index
-      //material &GetMaterial(gdr_object object);
+      ObjectMaterial &GetMaterial(gdr_object object);
 
       // default de-structor
       ~object_support();

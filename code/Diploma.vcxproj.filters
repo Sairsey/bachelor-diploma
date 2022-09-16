@@ -105,6 +105,9 @@
     <ClCompile Include="source\render\subsystems\indirect_support.cpp">
       <Filter>Source Files\Render\SubSystems</Filter>
     </ClCompile>
+    <ClCompile Include="source\render\subsystems\materials_support.cpp">
+      <Filter>Source Files\Render\SubSystems</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\p_header.h">
@@ -201,6 +204,9 @@
       <Filter>Source Files\Units</Filter>
     </ClInclude>
     <ClInclude Include="source\render\subsystems\indirect_support.h">
+      <Filter>Source Files\Render\SubSystems</Filter>
+    </ClInclude>
+    <ClInclude Include="source\render\subsystems\materials_support.h">
       <Filter>Source Files\Render\SubSystems</Filter>
     </ClInclude>
   </ItemGroup>

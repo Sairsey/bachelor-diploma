@@ -37,9 +37,11 @@ gdr::gdr_object gdr::object_support::CreateObject(const vertex* pVertex, size_t 
   newTransform.transformInversedTransposed = mth::matr::Identity();
   Render->TransformsSystem->CPUData.push_back(newTransform);
 
+  Render->MaterialsSystem->CPUData.push_back(gdr::materials_support::DefaultMaterial());
+
   ObjectIndices new_record;
   new_record.ObjectTransformIndex = Render->TransformsSystem->CPUData.size() - 1;
-  new_record.ObjectMaterialIndex = -1;
+  new_record.ObjectMaterialIndex = Render->MaterialsSystem->CPUData.size() - 1;
   CPUPool.push_back(new_record);
   return CPUPool.size() - 1;
 }
@@ -96,6 +98,30 @@ std::vector<gdr::gdr_object> gdr::object_support::CreateObjectsFromFile(std::str
       continue;
 
     result.push_back(CreateObject(vertices.data(), vertices.size(), indices.data(), indices.size()));
+
+    ObjectMaterial &mat = GetMaterial(result[result.size() - 1]);
+
+    aiColor3D color(0.f, 0.f, 0.f);
+    float shininess = mat.Ph;
+
+    scene->mMaterials[Mesh->mMaterialIndex]->Get(AI_MATKEY_COLOR_DIFFUSE, color);
+    mat.Kd = mth::vec3f(color.r, color.g, color.b);
+
+    scene->mMaterials[Mesh->mMaterialIndex]->Get(AI_MATKEY_COLOR_AMBIENT, color);
+    mat.Ka = mth::vec3f(color.r, color.g, color.b);
+
+    scene->mMaterials[Mesh->mMaterialIndex]->Get(AI_MATKEY_COLOR_SPECULAR, color);
+    mat.Ks = mth::vec3f(color.r, color.g, color.b);
+
+    scene->mMaterials[Mesh->mMaterialIndex]->Get(AI_MATKEY_SHININESS, shininess);
+    mat.Ph = shininess / 4.0f;
+
+    if (mat.Ph == 0.f)
+      mat.Ph = 1.0f;
+    /*
+    aiString str;
+    scene->mMaterials[Mesh->mMaterialIndex]->GetTexture(aiTextureType_DIFFUSE, 0, &str);
+    */
   }
   return result;
 }
@@ -103,6 +129,12 @@ std::vector<gdr::gdr_object> gdr::object_support::CreateObjectsFromFile(std::str
 ObjectTransform& gdr::object_support::GetTransforms(gdr_object object)
 {
   return Render->TransformsSystem->CPUData[CPUPool[object].ObjectTransformIndex];
+}
+
+// function which will return material by object index
+ObjectMaterial& gdr::object_support::GetMaterial(gdr_object object)
+{
+  return Render->MaterialsSystem->CPUData[CPUPool[object].ObjectMaterialIndex];
 }
 
 // destructor

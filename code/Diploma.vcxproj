@@ -34,6 +34,7 @@
     <ClInclude Include="source\render\subsystems\geometry_support.h" />
     <ClInclude Include="source\render\subsystems\globals_support.h" />
     <ClInclude Include="source\render\subsystems\indirect_support.h" />
+    <ClInclude Include="source\render\subsystems\materials_support.h" />
     <ClInclude Include="source\render\subsystems\object_support.h" />
     <ClInclude Include="source\render\subsystems\transforms_support.h" />
     <ClInclude Include="source\units\unit_base.h" />
@@ -67,6 +68,7 @@
     <ClCompile Include="source\render\subsystems\geometry_support.cpp" />
     <ClCompile Include="source\render\subsystems\globals_support.cpp" />
     <ClCompile Include="source\render\subsystems\indirect_support.cpp" />
+    <ClCompile Include="source\render\subsystems\materials_support.cpp" />
     <ClCompile Include="source\render\subsystems\object_support.cpp" />
     <ClCompile Include="source\render\subsystems\transforms_support.cpp" />
     <ClCompile Include="source\units\unit_bread.cpp" />

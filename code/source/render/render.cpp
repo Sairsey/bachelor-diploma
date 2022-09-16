@@ -101,6 +101,7 @@ bool gdr::render::Init(engine* Eng)
     GlobalsSystem = new gdr::globals_support(this);
     TransformsSystem = new gdr::transforms_support(this);
     IndirectSystem = new gdr::indirect_support(this);
+    MaterialsSystem = new gdr::materials_support(this);
   }
 
   IsInited = localIsInited;
@@ -159,6 +160,9 @@ void gdr::render::DrawFrame(void)
   PROFILE_END(uploadCommandList);
   PROFILE_BEGIN(uploadCommandList, "Update transforms");
   TransformsSystem->UpdateGPUData(uploadCommandList);
+  PROFILE_END(uploadCommandList);
+  PROFILE_BEGIN(uploadCommandList, "Update materials");
+  MaterialsSystem->UpdateGPUData(uploadCommandList);
   PROFILE_END(uploadCommandList);
   GetDevice().CloseUploadCommandList();
 
@@ -243,6 +247,7 @@ void gdr::render::Term(void)
     return;
 
   delete IndirectSystem;
+  delete MaterialsSystem; 
   delete TransformsSystem;
   delete ObjectSystem;
   delete GeometrySystem;

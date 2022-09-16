@@ -40,6 +40,12 @@
     <Filter Include="Source Files\Render\SubSystems">
       <UniqueIdentifier>{175b7bc7-787f-4b66-9151-4eba0e3d1750}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Timer">
+      <UniqueIdentifier>{f4b9eedc-1134-4e62-bffe-bf9a0a447a53}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Input">
+      <UniqueIdentifier>{7fddf6b0-f893-435b-a056-63ad0ae38472}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\main.cpp">
@@ -214,6 +220,12 @@
     </ClInclude>
     <ClInclude Include="source\render\device\device_time_query.h">
       <Filter>Source Files\Render\Device</Filter>
+    </ClInclude>
+    <ClInclude Include="source\timer\timer.h">
+      <Filter>Source Files\Timer</Filter>
+    </ClInclude>
+    <ClInclude Include="source\input\input.h">
+      <Filter>Source Files\Input</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

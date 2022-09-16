@@ -23,6 +23,9 @@
 #include "render/passes/albedo_pass.h"
 #include "render/passes/debug_pass.h"
 
+#include "timer/timer.h"
+
+#include "input/input.h"
 
 #include "units/unit_base.h"
 #include "engine/eng.h"

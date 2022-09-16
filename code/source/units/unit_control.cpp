@@ -9,25 +9,35 @@ void unit_control::Initialize(void)
 
 void unit_control::Response(void)
 {
-  Engine->GlobalsSystem->CPUData.time = 1.0 * clock() / CLOCKS_PER_SEC;
-  mth::vec3f position = mth::vec3f(cos(Engine->GlobalsSystem->CPUData.time) * 2, 3, sin(Engine->GlobalsSystem->CPUData.time) * 2);
+  mth::vec3f position = mth::vec3f(cos(Engine->GetTime()) * 2, 3, sin(Engine->GetTime()) * 2);
   position *= 3;
   Engine->PlayerCamera.SetView(
     position,
     mth::vec3f(0, 6, 0),
     mth::vec3f(0, 1, 0));
 
+  if (Engine->KeysClick['I'])
+    Engine->Params.IsIndirect = !Engine->Params.IsIndirect;
+  
+  if (Engine->KeysClick['C'])
+    Engine->Params.IsCulling = !Engine->Params.IsCulling;
+
+  if (Engine->Params.IsCulling && !Engine->Params.IsIndirect)
+    Engine->Params.IsCulling = false;
+
   {
     static double prev_update_time = 0;
-    if (Engine->GlobalsSystem->CPUData.time - prev_update_time >= 1.0)
+    if (Engine->GetTime() - prev_update_time >= 1.0)
     {
       wchar_t buf[500];
-      swprintf_s(buf, L"GDR, Device Frame %g ms, %g FPS, %d objects",
+      swprintf_s(buf, L"GDR, Device Frame %g ms, %g CPU FPS, %d objects, Indirect: %s, Culling %s",
         Engine->DeviceFrameCounter.GetMSec(),
-        1000.0 / Engine->DeviceFrameCounter.GetMSec(),
-        Engine->ObjectSystem->CPUPool.size());
+        Engine->GetFPS(),
+        Engine->ObjectSystem->CPUPool.size(),
+        Engine->Params.IsIndirect ? L"Enabled" : L"Disabled",
+        Engine->Params.IsCulling ? L"Enabled" : L"Disabled");
       SetWindowText(Engine->hWnd, buf);
-      prev_update_time = Engine->GlobalsSystem->CPUData.time;
+      prev_update_time = Engine->GetTime();
     }
   }
 }

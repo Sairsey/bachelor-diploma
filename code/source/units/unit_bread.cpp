@@ -30,6 +30,6 @@ void unit_bread::Response(void)
     double radius = alpha * 2;
     mth::matr translation = mth::matr::Translate(mth::vec3f(float(sin(alpha) * radius), 0, float(cos(alpha) * radius)));
     
-    Engine->ObjectSystem->GetTransforms(Bread[i]).transform = mth::matr::RotateY(Engine->GlobalsSystem->CPUData.time * 10.0) * translation;
+    Engine->ObjectSystem->GetTransforms(Bread[i]).transform = mth::matr::RotateY(Engine->GetTime() * 10.0) * translation;
   }
 }

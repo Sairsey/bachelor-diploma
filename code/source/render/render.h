@@ -17,6 +17,7 @@ namespace gdr
   struct render_runtime_params
   {
     bool IsIndirect = true; // Enables indirect draw
+    bool IsCulling = true;  // Enables culling
   };
 
   /* Render representation class */

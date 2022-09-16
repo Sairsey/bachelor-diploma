@@ -22,6 +22,7 @@
     <ClInclude Include="bin\shaders\shared_structures.h" />
     <ClInclude Include="source\def.h" />
     <ClInclude Include="source\engine\eng.h" />
+    <ClInclude Include="source\input\input.h" />
     <ClInclude Include="source\p_header.h" />
     <ClInclude Include="source\render\device\command_queue.h" />
     <ClInclude Include="source\render\device\d3dinclude.h" />
@@ -38,6 +39,7 @@
     <ClInclude Include="source\render\subsystems\materials_support.h" />
     <ClInclude Include="source\render\subsystems\object_support.h" />
     <ClInclude Include="source\render\subsystems\transforms_support.h" />
+    <ClInclude Include="source\timer\timer.h" />
     <ClInclude Include="source\units\unit_base.h" />
     <ClInclude Include="source\units\unit_bread.h" />
     <ClInclude Include="source\units\unit_control.h" />

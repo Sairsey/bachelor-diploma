@@ -66,7 +66,6 @@ VOID gdr::engine::Erase(HDC hDC)
  */
 VOID gdr::engine::Paint(HDC hDC)
 {
-  render::DrawFrame();
 }
 
 /* Activate handle function.
@@ -86,11 +85,18 @@ VOID gdr::engine::Activate(BOOL IsActive)
  */
 VOID gdr::engine::Timer(VOID)
 {
+  // update Time
+  timer_support::Response();
+  input_support::Response(hWnd);
+  input_support::UpdateWheel(win::MouseWheel);
+
+  GlobalsSystem->CPUData.time = GetTime();
   for (auto& unit : Units)
   {
     unit->Response();
   }
-  InvalidateRect(win::hWnd, NULL, TRUE);
+  timer_support::IncreaseFrameCounter();
+  render::DrawFrame();
 }
 
 /* Free CPU time handling function.
@@ -99,5 +105,16 @@ VOID gdr::engine::Timer(VOID)
  */
 VOID gdr::engine::Idle(VOID)
 {
+  // update Time
+  timer_support::Response();
+  input_support::Response(hWnd);
+  input_support::UpdateWheel(win::MouseWheel);
 
+  GlobalsSystem->CPUData.time = GetTime();
+  for (auto& unit : Units)
+  {
+    unit->Response();
+  }
+  timer_support::IncreaseFrameCounter();
+  render::DrawFrame();
 }

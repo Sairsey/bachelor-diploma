@@ -188,7 +188,7 @@ void gdr::albedo_pass::CallCompute(ID3D12GraphicsCommandList* currentCommandList
 
   // update CPUComputeRootConstants
   CPUComputeRootConstants.VP = Render->PlayerCamera.GetVP();
-  CPUComputeRootConstants.enableCulling = true;
+  CPUComputeRootConstants.enableCulling = Render->Params.IsCulling;
   CPUComputeRootConstants.commandCount = (float)Render->IndirectSystem->CPUData.size();
 
   // set Root constants buffers etc

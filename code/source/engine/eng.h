@@ -10,7 +10,9 @@ namespace gdr
   /* Engine class declaration */
   class engine : 
     public win,
-    public render
+    public render,
+    public timer_support,
+    public input_support
   {
     private:
       /* Vector of all units we will draw */

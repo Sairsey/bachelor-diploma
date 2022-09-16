@@ -166,7 +166,10 @@ bool gdr::device::InitD3D12Device(bool DebugDevice)
   }
 
   DxgiFactory->EnumAdapters(maxAdapterIdx, &pAdapter);
+  DXGI_ADAPTER_DESC desc;
+  pAdapter->GetDesc(&desc);
   bool skip = D3D12CreateDevice(pAdapter, D3D_FEATURE_LEVEL_12_0, __uuidof(ID3D12Device), (void**)&D3DDevice) != S_OK;
+  OutputDebugString(desc.Description);
 
   // Fall back to 11_1 feature level, if 12_0 is not supported
   if (skip)

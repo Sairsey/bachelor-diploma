@@ -20,5 +20,5 @@ void unit_triangle::Initialize(void)
 
 void unit_triangle::Response(void)
 {
-  Engine->ObjectSystem->GetTransforms(Triangle).transform = mth::matr::Translate(mth::vec3f(0, 0, sin(Engine->GlobalsSystem->CPUData.time) / 2.0));
+  Engine->ObjectSystem->GetTransforms(Triangle).transform = mth::matr::Translate(mth::vec3f(0, 0, sin(Engine->GetTime()) / 2.0));
 }

@@ -5,14 +5,49 @@
 
 void unit_control::Initialize(void)
 {
+  MinCameraSpeed = 10;
+  MaxCameraSpeed = 1000;
+  CameraSpeedStep = 10;
+
+  CameraSpeed = MinCameraSpeed;
 }
 
 void unit_control::Response(void)
 {
-  mth::vec3f position = mth::vec3f(cos(Engine->GetTime()) * 2, 3, sin(Engine->GetTime()) * 2);
-  position *= 3;
-  Engine->PlayerCamera.SetView(
-    position,
-    mth::vec3f(0, 6, 0),
-    mth::vec3f(0, 1, 0));
+  if (Engine->Keys[VK_RBUTTON])
+  {
+    if (Engine->Mdx != 0)
+    {
+        Engine->PlayerCamera.RotateAroundLocY(-Engine->Mdx * 0.5 * Engine->GetGlobalDeltaTime());
+    }
+    if (Engine->Mdy != 0)
+    {
+        Engine->PlayerCamera.RotateAroundLocRight(-Engine->Mdy * 0.5 * Engine->GetGlobalDeltaTime());
+    }
+  }
+
+  if (Engine->Keys['W'])
+    Engine->PlayerCamera.TranslateCamera(mth::vec3f(0, 0, CameraSpeed * Engine->GetGlobalDeltaTime()));
+  if (Engine->Keys['A'])
+    Engine->PlayerCamera.TranslateCamera(mth::vec3f(-CameraSpeed * Engine->GetGlobalDeltaTime(), 0, 0));
+  if (Engine->Keys['S'])
+    Engine->PlayerCamera.TranslateCamera(mth::vec3f(0, 0, -CameraSpeed * Engine->GetGlobalDeltaTime()));
+  if (Engine->Keys['D'])
+    Engine->PlayerCamera.TranslateCamera(mth::vec3f(CameraSpeed * Engine->GetGlobalDeltaTime(), 0, 0));
+
+  if (Engine->Keys['R'])
+    Engine->PlayerCamera.TranslateCamera(mth::vec3f(0, CameraSpeed * Engine->GetGlobalDeltaTime(), 0));
+  if (Engine->Keys['F'])
+    Engine->PlayerCamera.TranslateCamera(mth::vec3f(0, -CameraSpeed * Engine->GetGlobalDeltaTime(), 0));
+
+  if (Engine->KeysClick[VK_SHIFT])
+  {
+    CameraSpeed *= CameraSpeedStep;
+    if (CameraSpeed >= MaxCameraSpeed)
+      CameraSpeed = MinCameraSpeed;
+  }
+
+
+
+
 }

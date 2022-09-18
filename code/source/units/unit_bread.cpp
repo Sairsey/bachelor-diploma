@@ -35,6 +35,7 @@ void unit_bread::Response(void)
 {
   mth::matr rotation = mth::matr::RotateY(Engine->GetTime() * 10.0f);
 
+  /* Parallel Computing matrices
   const auto processor_count = std::thread::hardware_concurrency();
   std::vector<std::future<void>> f;
 
@@ -51,5 +52,11 @@ void unit_bread::Response(void)
   for (int thread_i = 0; thread_i < processor_count; thread_i++)
   {
     f[thread_i].wait();
+  }*/
+
+  /* single-thread computing */
+  for (int i = 0; i < Bread.size(); i++)
+  {
+    Engine->ObjectSystem->GetTransforms(Bread[i]).transform = rotation * Translations[i];
   }
 }

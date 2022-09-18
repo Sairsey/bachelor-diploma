@@ -3,6 +3,11 @@
 
 class unit_control : public gdr::unit_base
 {
+private:
+  float CameraSpeed;
+  float MinCameraSpeed;
+  float MaxCameraSpeed;
+  float CameraSpeedStep;
 public:
   void Initialize(void);
 

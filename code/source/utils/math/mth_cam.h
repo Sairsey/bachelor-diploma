@@ -141,9 +141,9 @@ namespace mth
       }
       this->Loc = Loc;
       this->LookAt = LookAt;
-      this->Right = vec3<Type>(MATRICES<Type>::MatrView[0][0], MATRICES<Type>::MatrView[0][1], MATRICES<Type>::MatrView[0][2]);
       this->Up = Up;
       this->Dir = (LookAt - Loc).Normalized();
+      this->Right = (Dir cross Up).Normalized();
       ChangeFlag = true;
       return *this;
     } /* End of 'SetView' function */

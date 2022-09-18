@@ -3,6 +3,7 @@
 #include "units/unit_triangle.h"
 #include "units/unit_bread.h"
 #include "units/unit_frog.h"
+#include "units/unit_stats.h"
 
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
   _In_opt_ HINSTANCE hPrevInstance,
@@ -16,6 +17,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
   Engine.AddUnit(new unit_control());
   Engine.AddUnit(new unit_frog()); 
   Engine.AddUnit(new unit_bread());
+
+  Engine.AddUnit(new unit_stats());
 
   // math smoke test
   mth::vec3f V1(1, 0, 0);

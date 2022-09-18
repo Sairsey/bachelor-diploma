@@ -126,6 +126,12 @@
     <ClCompile Include="source\units\unit_frog.cpp">
       <Filter>Source Files\Units</Filter>
     </ClCompile>
+    <ClCompile Include="source\render\passes\imgui_pass.cpp">
+      <Filter>Source Files\Render\Passes</Filter>
+    </ClCompile>
+    <ClCompile Include="source\units\unit_stats.cpp">
+      <Filter>Source Files\Units</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\p_header.h">
@@ -242,5 +248,14 @@
     <ClInclude Include="source\units\unit_frog.h">
       <Filter>Source Files\Units</Filter>
     </ClInclude>
+    <ClInclude Include="source\render\passes\imgui_pass.h">
+      <Filter>Source Files\Render\Passes</Filter>
+    </ClInclude>
+    <ClInclude Include="source\units\unit_stats.h">
+      <Filter>Source Files\Units</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
   </ItemGroup>
 </Project>

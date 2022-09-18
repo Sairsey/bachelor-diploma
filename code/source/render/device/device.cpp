@@ -292,7 +292,7 @@ bool gdr::device::InitSwapchain(int Count, HWND hWnd)
   desc.OutputWindow = hWnd;
   desc.Windowed = TRUE;
   desc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
-  desc.Flags = 0;
+  desc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING;
   desc.SampleDesc.Count = 1;
   desc.SampleDesc.Quality = 0;
 
@@ -814,6 +814,12 @@ void gdr::device::CloseUploadCommandList()
   CurrentUploadCmdList = nullptr;
 }
 
+void gdr::device::CloseUploadCommandListBeforeRenderCommandList()
+{
+  UploadQueue->CloseCommandList();
+  CurrentUploadCmdList = nullptr;
+}
+
 bool gdr::device::TransitResourceState(ID3D12GraphicsCommandList* pCommandList, ID3D12Resource* pResource, D3D12_RESOURCE_STATES before, D3D12_RESOURCE_STATES after, UINT subresource)
 {
   D3D12_RESOURCE_BARRIER barrier;
@@ -996,7 +1002,7 @@ bool gdr::device::ResizeSwapchain(UINT width, UINT height)
 
     TermBackBuffers();
 
-    D3D_CHECK(Swapchain->ResizeBuffers(count, width, height, DXGI_FORMAT_R8G8B8A8_UNORM, 0));
+    D3D_CHECK(Swapchain->ResizeBuffers(count, width, height, DXGI_FORMAT_R8G8B8A8_UNORM, DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING));
     D3D_CHECK(CreateBackBuffers(count));
   }
 

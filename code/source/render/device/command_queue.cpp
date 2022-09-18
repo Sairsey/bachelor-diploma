@@ -294,5 +294,5 @@ void gdr::command_queue::WaitIdle(UINT64& finishedFenceValue)
 
 HRESULT gdr::present_command_queue::PreSignal()
 {
-  return Swapchain->Present(VSync ? 1 : 0, 0);
+  return Swapchain->Present(VSync ? 1 : 0, DXGI_PRESENT_ALLOW_TEARING);
 }

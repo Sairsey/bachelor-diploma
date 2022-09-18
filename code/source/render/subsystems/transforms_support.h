@@ -13,7 +13,9 @@ namespace gdr
     std::vector<ObjectTransform> StoredCopy; // stored copy to check if data has changed
     D3D12_CPU_DESCRIPTOR_HANDLE CPUDescriptor;
     D3D12_GPU_DESCRIPTOR_HANDLE GPUDescriptor;
-    bool RecalcInverse = false;
+    
+    void UpdateInverseTranspose();
+
   public:
     // Constructor
     transforms_support(render* Rnd);

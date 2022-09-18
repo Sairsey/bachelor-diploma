@@ -10,7 +10,7 @@ namespace gdr
   // Device creation parameters
   struct device_create_params
   {
-    bool DebugLayer = true;
+    bool DebugLayer = false;
     bool DebugShaders = true;
     int  CmdListCount = 2;
     int  UploadListCount = 2;
@@ -227,6 +227,9 @@ namespace gdr
       HRESULT UpdateTexture(ID3D12GraphicsCommandList* pCommandList, ID3D12Resource* pTexture, const void* pData, size_t dataSize);
       // Close command list for uploading
       void CloseUploadCommandList();
+
+      // Close command list for uploading
+      void CloseUploadCommandListBeforeRenderCommandList();
 
       // Used for override CurrentUploadCmdList in some special cases
       void SetCommandListAsUpload(ID3D12GraphicsCommandList* pCommandList) { CurrentUploadCmdList = pCommandList;};

@@ -223,7 +223,7 @@ void gdr::albedo_pass::CallCompute(ID3D12GraphicsCommandList* currentCommandList
     (int)root_parameters_compute_indices::out_commands_pool_index, // root parameter index
     Render->IndirectSystem->CommandsUAVGPUDescriptor[OurUAVIndex]);
 
-  currentCommandList->Dispatch(static_cast<UINT>(ceil(Render->IndirectSystem->CPUData.size() / float(128))), 1, 1);
+  currentCommandList->Dispatch(static_cast<UINT>(ceil(Render->IndirectSystem->CPUData.size() / float(1024))), 1, 1);
 }
 
 void gdr::albedo_pass::SyncCompute(ID3D12GraphicsCommandList* currentCommandList)

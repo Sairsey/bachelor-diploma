@@ -19,6 +19,12 @@ namespace gdr
       {
       }
 
+      // Return name of this unit
+      virtual std::string GetName(void)
+      {
+        return "unit_base";
+      }
+
       /* Set engine pointer function.
        * ARGUMENTS:
        *   - pointer on Engine

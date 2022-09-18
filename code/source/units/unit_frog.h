@@ -10,6 +10,11 @@ public:
 
   void Response(void);
 
+  std::string GetName(void)
+  {
+    return "unit_frog";
+  }
+
   ~unit_frog(void)
   {
   }

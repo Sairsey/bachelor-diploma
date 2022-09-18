@@ -32,6 +32,7 @@
     <ClInclude Include="source\render\passes\albedo_pass.h" />
     <ClInclude Include="source\render\passes\base_pass.h" />
     <ClInclude Include="source\render\passes\debug_pass.h" />
+    <ClInclude Include="source\render\passes\imgui_pass.h" />
     <ClInclude Include="source\render\render.h" />
     <ClInclude Include="source\render\subsystems\geometry_support.h" />
     <ClInclude Include="source\render\subsystems\globals_support.h" />
@@ -45,6 +46,7 @@
     <ClInclude Include="source\units\unit_bread.h" />
     <ClInclude Include="source\units\unit_control.h" />
     <ClInclude Include="source\units\unit_frog.h" />
+    <ClInclude Include="source\units\unit_stats.h" />
     <ClInclude Include="source\units\unit_triangle.h" />
     <ClInclude Include="source\utils\math\mth.h" />
     <ClInclude Include="source\utils\math\mth_def.h" />
@@ -70,6 +72,7 @@
     <ClCompile Include="source\render\device\device_time_query.cpp" />
     <ClCompile Include="source\render\passes\albedo_pass.cpp" />
     <ClCompile Include="source\render\passes\debug_pass.cpp" />
+    <ClCompile Include="source\render\passes\imgui_pass.cpp" />
     <ClCompile Include="source\render\render.cpp" />
     <ClCompile Include="source\render\subsystems\geometry_support.cpp" />
     <ClCompile Include="source\render\subsystems\globals_support.cpp" />
@@ -81,6 +84,7 @@
     <ClCompile Include="source\units\unit_bread.cpp" />
     <ClCompile Include="source\units\unit_control.cpp" />
     <ClCompile Include="source\units\unit_frog.cpp" />
+    <ClCompile Include="source\units\unit_stats.cpp" />
     <ClCompile Include="source\units\unit_triangle.cpp" />
     <ClCompile Include="source\utils\D3D12MemAlloc.cpp" />
     <ClInclude Include="source\utils\math\mth_cam.h" />
@@ -88,6 +92,11 @@
     <ClCompile Include="source\utils\stb_image.cpp" />
     <ClCompile Include="source\window\win.cpp" />
     <ClCompile Include="source\window\win_msg.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="thirdparty\projects\imgui\imgui.vcxproj">
+      <Project>{d45e2dcd-dfde-471b-9760-a36906b9c284}</Project>
+    </ProjectReference>
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
@@ -194,7 +203,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>assimp.lib;WinPixEventRuntime.lib;d3dcompiler.lib;d3d12.lib;dxgi.lib;dxguid.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>imgui_$(Configuration).lib;assimp.lib;WinPixEventRuntime.lib;d3dcompiler.lib;d3d12.lib;dxgi.lib;dxguid.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(SolutionDir)\thirdparty\lib</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
@@ -215,7 +224,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>assimp.lib;WinPixEventRuntime.lib;d3dcompiler.lib;d3d12.lib;dxgi.lib;dxguid.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>imgui_$(Configuration).lib;assimp.lib;WinPixEventRuntime.lib;d3dcompiler.lib;d3d12.lib;dxgi.lib;dxguid.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(SolutionDir)\thirdparty\lib</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>

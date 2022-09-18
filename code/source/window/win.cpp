@@ -1,4 +1,5 @@
 #include <p_header.h>
+#include "imgui/imgui_impl_win32.h"
 
 /* Default constructor. */
 gdr::win::win( VOID ) : IsInit(FALSE), hWnd(NULL), hInstance(GetModuleHandle(NULL)),
@@ -92,6 +93,9 @@ WPARAM gdr::win::Run( VOID )
   return msg.wParam;
 }
 
+// Forward declare message handler from imgui_impl_win32.cpp
+extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+
  /* Window message handle function (CALLBACK version).
   *   - window handle:
   *       HWND hWnd;
@@ -108,6 +112,9 @@ LRESULT CALLBACK gdr::win::WinFunc( HWND hWnd, UINT Msg, WPARAM wParam, LPARAM l
 {
   win *Win;
   
+  if (ImGui_ImplWin32_WndProcHandler(hWnd, Msg, wParam, lParam))
+    return true;
+
   switch (Msg)
   {
   case WM_CREATE:/* Attach 'this' pointer to window class to window */

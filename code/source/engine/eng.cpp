@@ -91,10 +91,14 @@ VOID gdr::engine::Timer(VOID)
   input_support::UpdateWheel(win::MouseWheel);
 
   GlobalsSystem->CPUData.time = GetTime();
+  PROFILE_CPU_BEGIN("Units update");
   for (auto& unit : Units)
   {
+    PROFILE_CPU_BEGIN(unit->GetName().c_str());
     unit->Response();
+    PROFILE_CPU_END();
   }
+  PROFILE_CPU_END();
   timer_support::IncreaseFrameCounter();
   render::DrawFrame();
 }
@@ -105,16 +109,5 @@ VOID gdr::engine::Timer(VOID)
  */
 VOID gdr::engine::Idle(VOID)
 {
-  // update Time
-  timer_support::Response();
-  input_support::Response(hWnd);
-  input_support::UpdateWheel(win::MouseWheel);
-
-  GlobalsSystem->CPUData.time = GetTime();
-  for (auto& unit : Units)
-  {
-    unit->Response();
-  }
-  timer_support::IncreaseFrameCounter();
-  render::DrawFrame();
+  Timer();
 }

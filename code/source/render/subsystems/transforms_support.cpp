@@ -1,9 +1,33 @@
 #include "p_header.h"
+#include <thread>
+#include <future>
+
 
 gdr::transforms_support::transforms_support(render* Rnd)
 {
   Render = Rnd;
   GPUData.Resource = nullptr;
+}
+
+void gdr::transforms_support::UpdateInverseTranspose(void)
+{
+  const auto processor_count = std::thread::hardware_concurrency();
+  std::vector<std::future<void>> f;
+
+  for (int thread_i = 0; thread_i < processor_count; thread_i++)
+  {
+    f.push_back(std::async(std::launch::async, [&]() {
+      for (int i = thread_i; i < CPUData.size(); i += processor_count)
+      {
+        CPUData[i].transformInversedTransposed = CPUData[i].transform.Inversed().Transposed();
+      }
+    }));
+  }
+
+  for (int thread_i = 0; thread_i < processor_count; thread_i++)
+  {
+    f[thread_i].wait();
+  }
 }
 
 void gdr::transforms_support::UpdateGPUData(ID3D12GraphicsCommandList* pCommandList)
@@ -12,10 +36,9 @@ void gdr::transforms_support::UpdateGPUData(ID3D12GraphicsCommandList* pCommandL
   if (CPUData.size() != StoredCopy.size() ||
     memcmp(&CPUData[0], &StoredCopy[0], sizeof(ObjectTransform) * CPUData.size()) != 0)
   {
-    for (int i = 0; i < CPUData.size(); i++)
-    {
-      CPUData[i].transformInversedTransposed = CPUData[i].transform.Inversed().Transposed();
-    }
+    
+    // Now updating on GPU and only for those, who are ready to draw
+    //UpdateInverseTranspose();
 
     if (GPUData.Resource == nullptr)
     {

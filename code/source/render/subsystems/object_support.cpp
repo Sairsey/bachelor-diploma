@@ -55,12 +55,7 @@ gdr::gdr_object gdr::object_support::DublicateObject(gdr_object original)
   new_record.ObjectTransformIndex = -1;
   new_record.ObjectMaterialIndex = -1;
 
-  if (CPUPool[original].ObjectMaterialIndex != -1)
-  {
-    Render->MaterialsSystem->CPUData.push_back(Render->MaterialsSystem->CPUData[CPUPool[original].ObjectMaterialIndex]);
-    new_record.ObjectMaterialIndex = (UINT)Render->MaterialsSystem->CPUData.size() - 1;
-
-  }
+  new_record.ObjectMaterialIndex = CPUPool[original].ObjectMaterialIndex;
   if (CPUPool[original].ObjectTransformIndex != -1)
   {
     Render->TransformsSystem->CPUData.push_back(Render->TransformsSystem->CPUData[CPUPool[original].ObjectTransformIndex]);

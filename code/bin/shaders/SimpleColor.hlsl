@@ -1,4 +1,6 @@
 #include "shared_structures.h"
+#include "RandomGenerator.h"
+#include "Matrices.h"
 
 cbuffer GlobalValues : register (b0)
 {
@@ -39,7 +41,7 @@ VSOut VS(VSIn input)
 
     output.pos = mul(VP, mul(myTransform.transform, float4(input.pos, 1.0)));
     output.unmodifiedPos = mul(myTransform.transform, float4(input.pos, 1.0));
-    output.normal = mul(myTransform.transformInversedTransposed, float4(input.normal, 1.0));
+    output.normal = mul(transpose(inverse(myTransform.transform)), float4(input.normal, 1.0));
     output.uv = input.uv;
 
     return output;
@@ -80,5 +82,12 @@ float4 PS(VSOut input) : SV_TARGET
 {
     ObjectMaterial myMaterial = ObjectMaterialData[indices.ObjectMaterialIndex];
     float4 col = float4(Shade(normalize(input.normal.xyz), input.unmodifiedPos.xyz, input.uv, myMaterial), 1);
+    if (0)
+    {
+      /*Random Color*/
+      NumberGenerator N;
+      N.SetSeed(indices.ObjectTransformIndex);
+      col = float4(N.GetRandomFloat(0, 1), N.GetRandomFloat(0, 1), N.GetRandomFloat(0, 1), 1);
+    }
     return col;
 }

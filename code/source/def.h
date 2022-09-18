@@ -22,21 +22,22 @@
 
 #include "D3D12MemAlloc.h"
 #include "utils/math/mth.h"
-
+#define USE_PIX
 #include "WinPixEventRuntime/pix3.h"
+#include "imgui/imgui.h"
 
 #define PROFILE_MARKERS
 
 #ifdef PROFILE_MARKERS
 #define PROFILE_BEGIN(command_list, name) PIXBeginEvent(command_list, 0x00ffff00, (name));
 #define PROFILE_END(command_list) PIXEndEvent(command_list);
-#define PROFILE_CPU_BEGIN(command_list, name) PIXBeginEvent(0x0000ff00, (name));
-#define PROFILE_CPU_END(command_list) PIXEndEvent();
+#define PROFILE_CPU_BEGIN(name) PIXBeginEvent(0x0000ff00, (name));
+#define PROFILE_CPU_END() PIXEndEvent();
 #else
 #define PROFILE_BEGIN(command_list, name) 
 #define PROFILE_END(command_list)
-#define PROFILE_CPU_BEGIN(command_list, name)
-#define PROFILE_CPU_END(command_list)
+#define PROFILE_CPU_BEGIN(name)
+#define PROFILE_CPU_END()
 #endif
 
 

@@ -8,6 +8,11 @@ public:
 
   void Response(void);
 
+  std::string GetName(void)
+  {
+    return "unit_control";
+  }
+
   ~unit_control(void)
   {
   }

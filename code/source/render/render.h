@@ -72,6 +72,12 @@ namespace gdr
       /* Get Device function */
       device &GetDevice(void) {return Device;}
 
+      /* Get Engine function */
+      engine *GetEngine(void);
+
+      /* Add IMGUI lambda*/
+      void AddLambdaForIMGUI(std::function<void(void)> func);
+
       /* Terminate function
        * ARGUMENTS: None
        * RETURNS: None

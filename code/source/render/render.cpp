@@ -85,6 +85,7 @@ bool gdr::render::Init(engine* Eng)
   {
     Passes.push_back(new debug_pass());
     Passes.push_back(new albedo_pass());
+    Passes.push_back(new imgui_pass());
     
     for (auto& pass : Passes)
     {
@@ -108,6 +109,20 @@ bool gdr::render::Init(engine* Eng)
   IsInited = localIsInited;
 
   return IsInited;
+}
+
+void gdr::render::AddLambdaForIMGUI(std::function<void(void)> func)
+{
+  for (auto& pass : Passes)
+  {
+    if (pass->GetName() == "imgui_pass")
+    {
+      imgui_pass *real_pass = dynamic_cast<imgui_pass*>(pass);
+
+      real_pass->AddLambda(func);
+      break;
+    }
+  }
 }
 
 /* Resize frame function
@@ -152,6 +167,7 @@ void gdr::render::DrawFrame(void)
 {
   if (!IsInited)
     return;
+  PROFILE_CPU_BEGIN("DrawFrame");
 
   ID3D12GraphicsCommandList* uploadCommandList;
   GetDevice().BeginUploadCommandList(&uploadCommandList);
@@ -168,7 +184,7 @@ void gdr::render::DrawFrame(void)
   PROFILE_BEGIN(uploadCommandList, "Update Textures");
   TexturesSystem->UpdateGPUData(uploadCommandList);
   PROFILE_END(uploadCommandList);
-  GetDevice().CloseUploadCommandList();
+  GetDevice().CloseUploadCommandListBeforeRenderCommandList();
 
   ID3D12GraphicsCommandList* pCommandList = nullptr;
   ID3D12Resource* pBackBuffer = nullptr;
@@ -238,7 +254,12 @@ void gdr::render::DrawFrame(void)
 
     Device.CloseSubmitAndPresentRenderCommandList(false);
   }
+  PROFILE_CPU_END();
+}
 
+gdr::engine *gdr::render::GetEngine(void)
+{
+  return Engine;
 }
 
 /* Initialize function

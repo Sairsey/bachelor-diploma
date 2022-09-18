@@ -159,7 +159,7 @@ namespace gdr
         FPS = (float)FrameCounter * TimePerSec / (t.QuadPart - OldTimeFPS);
         OldTimeFPS = t.QuadPart;
         FrameCounter = 0;
-        OutputDebugString((std::to_wstring(FPS) + L"\n").c_str());
+        //OutputDebugString((std::to_wstring(FPS) + L"\n").c_str());
       }
       OldTime = t.QuadPart;
     }

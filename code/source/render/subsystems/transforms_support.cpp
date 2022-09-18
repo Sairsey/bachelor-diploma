@@ -16,12 +16,12 @@ void gdr::transforms_support::UpdateInverseTranspose(void)
 
   for (int thread_i = 0; thread_i < processor_count; thread_i++)
   {
-    f.push_back(std::async(std::launch::async, [&]() {
-      for (int i = thread_i; i < CPUData.size(); i += processor_count)
+    f.push_back(std::async(std::launch::async, [&](int j) {
+      for (int i = j; i < CPUData.size(); i += processor_count)
       {
         CPUData[i].transformInversedTransposed = CPUData[i].transform.Inversed().Transposed();
       }
-    }));
+    }, thread_i));
   }
 
   for (int thread_i = 0; thread_i < processor_count; thread_i++)

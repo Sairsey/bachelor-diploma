@@ -4,10 +4,16 @@
 
 void unit_stats::Initialize(void)
 {
-  TransformToolActive = true;
+  TransformToolActive = false;
   CurrentTransformToShow = 0;
-  MaterialToolActive = true;
+  MaterialToolActive = false;
   CurrentMaterialToShow = 0;
+  
+  StatsToolActive = true;
+  CPURenderTimePlot.resize(PlotWindowWidth);
+  DeviceRenderTimePlot.resize(PlotWindowWidth);
+  GPUMemoryUsagePlot.resize(PlotWindowWidth);
+  CurrentPlotIndex = 0;
 }
 
 void unit_stats::Response(void)
@@ -169,4 +175,80 @@ void unit_stats::Response(void)
       }
       ImGui::End();
     });
+
+
+  CPURenderTimePlot[CurrentPlotIndex] = Engine->GetGlobalDeltaTime() * 1000.0;
+  DeviceRenderTimePlot[CurrentPlotIndex] = Engine->DeviceFrameCounter.GetMSec();
+
+  DXGI_QUERY_VIDEO_MEMORY_INFO gpu_info;
+  ((IDXGIAdapter3 *)Engine->GetDevice().GetAdapter())->QueryVideoMemoryInfo(0, DXGI_MEMORY_SEGMENT_GROUP_LOCAL, &gpu_info);
+  GPUMemoryUsagePlot[CurrentPlotIndex] = gpu_info.CurrentUsage / 1024.0 / 1024.0;
+  MaxGPUMemoryPlot = gpu_info.Budget / 1024.0 / 1024.0;
+  
+  AverageCPURenderTimePlot = 0;
+  for (int i = 0; i < CPURenderTimePlot.size(); i++)
+    AverageCPURenderTimePlot += CPURenderTimePlot[i];
+  AverageCPURenderTimePlot /= CPURenderTimePlot.size();
+
+  AverageDeviceRenderTimePlot = 0;
+  for (int i = 0; i < DeviceRenderTimePlot.size(); i++)
+    AverageDeviceRenderTimePlot += DeviceRenderTimePlot[i];
+  AverageDeviceRenderTimePlot /= DeviceRenderTimePlot.size();
+
+  AverageGPUMemoryUsagePlot = 0;
+  for (int i = 0; i < GPUMemoryUsagePlot.size(); i++)
+    AverageGPUMemoryUsagePlot += GPUMemoryUsagePlot[i];
+  AverageGPUMemoryUsagePlot /= GPUMemoryUsagePlot.size();
+
+  CurrentPlotIndex = (CurrentPlotIndex + 1) % PlotWindowWidth;
+
+
+  Engine->AddLambdaForIMGUI(
+    [&]()
+    {
+      if (!StatsToolActive)
+        return;
+
+      ImGui::Begin("Stats", &StatsToolActive, ImGuiWindowFlags_AlwaysAutoResize);
+
+      if (ImGui::Button("Open Materials viewer"))
+      {
+        MaterialToolActive = true;
+        StatsToolActive = false;
+      }
+
+      if (ImGui::Button("Open Transforms viewer"))
+      {
+        TransformToolActive = true;
+        StatsToolActive = false;
+      }
+
+      ImGui::Text("Average FPS = %.4g", Engine->GetFPS());
+      ImGui::Text("Average CPU Render Time = %.4g ms", AverageCPURenderTimePlot);
+      ImGui::Text("Average Device Render Time = %f ms", AverageDeviceRenderTimePlot);
+      ImGui::Text("Average GPU Usage = %f MB", AverageGPUMemoryUsagePlot);
+      ImGui::Text("Max GPU budget = %f MB", MaxGPUMemoryPlot);
+      ImGui::Text("Objects amount = %zd", Engine->ObjectSystem->CPUPool.size());
+      ImGui::Text("Geometry amount = %zd", Engine->GeometrySystem->CPUPool.size());
+      ImGui::Text("Materials amount = %zd", Engine->MaterialsSystem->CPUData.size());
+      ImGui::Text("Max Textures amount = %zd", gdr::MAX_TEXTURE_AMOUNT);
+      ImGui::Text("Current project time %g", Engine->GetTime());
+      ImGui::Checkbox("Indirect Render", &Engine->Params.IsIndirect);
+      if (Engine->Params.IsIndirect)
+        ImGui::Checkbox("Culling", &Engine->Params.IsCulling);
+
+      bool pause = Engine->GetPause();
+      if (ImGui::Checkbox("Pause", &pause))
+      {
+        Engine->SetPause(pause);
+      }
+
+      ImGui::End();
+    });
+
+
+  if (Engine->KeysClick[VK_OEM_3]) // TILDE
+  {
+    StatsToolActive = true;
+  }
 }

@@ -5,6 +5,7 @@ class unit_bread : public gdr::unit_base
 {
 private:
   std::vector<gdr::gdr_object> Bread;
+  std::vector<mth::matr4f> Translations;
 public:
   void Initialize(void);
 

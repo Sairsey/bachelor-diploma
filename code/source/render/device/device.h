@@ -266,7 +266,7 @@ namespace gdr
       inline bool IsInitialized() const { return IsInited; }
       // Get D3D Device
       inline ID3D12Device* GetDXDevice() const { return D3DDevice; }
-
+      inline IDXGIAdapter* GetAdapter() const { return DxgiAdapter; }
       inline ID3D12DescriptorHeap* GetDescriptorHeap() const { return D3DDescriptorHeap;}
 
       // Get size of SRV

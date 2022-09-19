@@ -22,6 +22,8 @@
 
 #include "render/passes/base_pass.h"
 #include "render/passes/albedo_pass.h"
+#include "render/passes/order_transparent_pass.h"
+#include "render/passes/oit_transparent_pass.h"
 #include "render/passes/debug_pass.h"
 #include "render/passes/imgui_pass.h"
 

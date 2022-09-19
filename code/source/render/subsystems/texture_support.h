@@ -9,6 +9,7 @@ namespace gdr
   {
     bool IsUsed = false;
     bool IsSrv = false;
+    bool IsTransparent = false;
     std::string Name;
     size_t W;
     size_t H;

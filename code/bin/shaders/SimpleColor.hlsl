@@ -4,9 +4,7 @@
 
 cbuffer GlobalValues : register (b0)
 {
-  float4x4 VP; // camera view-proj
-  float3 CameraPos; // Camera position
-  float time; // Time in seconds
+  GlobalData globals;
 }
 
 cbuffer Indices : register(b1)
@@ -39,7 +37,7 @@ VSOut VS(VSIn input)
     VSOut output;
     ObjectTransform myTransform = ObjectTransformData[indices.ObjectTransformIndex];
 
-    output.pos = mul(VP, mul(myTransform.transform, float4(input.pos, 1.0)));
+    output.pos = mul(globals.VP, mul(myTransform.transform, float4(input.pos, 1.0)));
     output.unmodifiedPos = mul(myTransform.transform, float4(input.pos, 1.0));
     output.normal = mul(transpose(inverse(myTransform.transform)), float4(input.normal, 1.0));
     output.uv = input.uv;
@@ -54,7 +52,7 @@ float3 Shade(float3 Normal, float3 Position, float2 uv, ObjectMaterial material)
   float3 L = float3(1, 1, 1);
   L = normalize(L);
 
-  float3 V = CameraPos - Position;
+  float3 V = globals.CameraPos - Position;
   V = normalize(V);
 
   float3 Phong = material.Ka;

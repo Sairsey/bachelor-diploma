@@ -85,6 +85,7 @@ bool gdr::render::Init(engine* Eng)
   {
     Passes.push_back(new debug_pass());
     Passes.push_back(new albedo_pass());
+    Passes.push_back(new oit_transparent_pass());
     Passes.push_back(new imgui_pass());
     
     for (auto& pass : Passes)
@@ -184,7 +185,7 @@ void gdr::render::DrawFrame(void)
   PROFILE_BEGIN(uploadCommandList, "Update Textures");
   TexturesSystem->UpdateGPUData(uploadCommandList);
   PROFILE_END(uploadCommandList);
-  GetDevice().CloseUploadCommandListBeforeRenderCommandList();
+  GetDevice().CloseUploadCommandList();
 
   ID3D12GraphicsCommandList* pCommandList = nullptr;
   ID3D12Resource* pBackBuffer = nullptr;

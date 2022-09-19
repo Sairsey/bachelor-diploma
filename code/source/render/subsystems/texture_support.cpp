@@ -129,6 +129,17 @@ int gdr::textures_support::Load(std::string name)
               else
                 pBuffer[y * width * 4 + x * 4 + c] = 255;
 
+      if (components == 4)
+      {
+        for (int y = 0; y < height && !CPUPool[NewTextureIndex].IsTransparent; y++)
+          for (int x = 0; x < width && !CPUPool[NewTextureIndex].IsTransparent; x++)
+            // if we have any semi-transparent pixel
+            if (pBuffer[y * width * 4 + x * 4 + 3] != 255)
+            {
+              CPUPool[NewTextureIndex].IsTransparent = true;
+            }
+      }
+
       GenerateMips(pBuffer, width, height, mips - 1);
       HRESULT hr = Render->GetDevice().CreateGPUResource(
         CD3DX12_RESOURCE_DESC::Tex2D(DXGI_FORMAT_R8G8B8A8_UNORM, width, height, 1, mips),

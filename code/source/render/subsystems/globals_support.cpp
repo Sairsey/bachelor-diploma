@@ -24,6 +24,8 @@ void gdr::globals_support::UpdateGPUData(ID3D12GraphicsCommandList* pCommandList
         &CPUData,
         sizeof(GlobalData));
 
+      GPUData.Resource->SetName(L"Globals buffer");
+
       Render->GetDevice().AllocateStaticDescriptors(1, CPUDescriptor, GPUDescriptor);
       D3D12_CONSTANT_BUFFER_VIEW_DESC cbvDesc = {};
       cbvDesc.BufferLocation = GPUData.Resource->GetGPUVirtualAddress();

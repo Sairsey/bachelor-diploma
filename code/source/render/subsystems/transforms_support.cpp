@@ -58,6 +58,8 @@ void gdr::transforms_support::UpdateGPUData(ID3D12GraphicsCommandList* pCommandL
       srvDesc.Buffer.StructureByteStride = sizeof(ObjectTransform);
       srvDesc.Buffer.Flags = D3D12_BUFFER_SRV_FLAG_NONE;
 
+      GPUData.Resource->SetName(L"Transfroms pool");
+
       Render->GetDevice().GetDXDevice()->CreateShaderResourceView(GPUData.Resource, &srvDesc, CPUDescriptor);
     }
     else

@@ -46,7 +46,7 @@ namespace gdr
       // 'u' registers
       enum struct albedo_uav_registers
       {
-        indirect_command_pool_register = 1,   // pool with UAV as result of indirect draw
+        indirect_command_pool_register = 0,   // pool with UAV as result of indirect draw
       };
 
       // indices in root_parameters

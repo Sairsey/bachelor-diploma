@@ -33,6 +33,8 @@
     <ClInclude Include="source\render\passes\base_pass.h" />
     <ClInclude Include="source\render\passes\debug_pass.h" />
     <ClInclude Include="source\render\passes\imgui_pass.h" />
+    <ClInclude Include="source\render\passes\oit_transparent_pass.h" />
+    <ClInclude Include="source\render\passes\order_transparent_pass.h" />
     <ClInclude Include="source\render\render.h" />
     <ClInclude Include="source\render\subsystems\geometry_support.h" />
     <ClInclude Include="source\render\subsystems\globals_support.h" />
@@ -44,6 +46,7 @@
     <ClInclude Include="source\timer\timer.h" />
     <ClInclude Include="source\units\unit_base.h" />
     <ClInclude Include="source\units\unit_bread.h" />
+    <ClInclude Include="source\units\unit_city.h" />
     <ClInclude Include="source\units\unit_control.h" />
     <ClInclude Include="source\units\unit_frog.h" />
     <ClInclude Include="source\units\unit_stats.h" />
@@ -73,6 +76,8 @@
     <ClCompile Include="source\render\passes\albedo_pass.cpp" />
     <ClCompile Include="source\render\passes\debug_pass.cpp" />
     <ClCompile Include="source\render\passes\imgui_pass.cpp" />
+    <ClCompile Include="source\render\passes\oit_transparent_pass.cpp" />
+    <ClCompile Include="source\render\passes\order_transparent_pass.cpp" />
     <ClCompile Include="source\render\render.cpp" />
     <ClCompile Include="source\render\subsystems\geometry_support.cpp" />
     <ClCompile Include="source\render\subsystems\globals_support.cpp" />
@@ -82,6 +87,7 @@
     <ClCompile Include="source\render\subsystems\texture_support.cpp" />
     <ClCompile Include="source\render\subsystems\transforms_support.cpp" />
     <ClCompile Include="source\units\unit_bread.cpp" />
+    <ClCompile Include="source\units\unit_city.cpp" />
     <ClCompile Include="source\units\unit_control.cpp" />
     <ClCompile Include="source\units\unit_frog.cpp" />
     <ClCompile Include="source\units\unit_stats.cpp" />

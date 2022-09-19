@@ -91,6 +91,8 @@ VOID gdr::engine::Timer(VOID)
   input_support::UpdateWheel(win::MouseWheel);
 
   GlobalsSystem->CPUData.time = GetTime();
+  GlobalsSystem->CPUData.width = win::Width;
+  GlobalsSystem->CPUData.height = win::Height;
   PROFILE_CPU_BEGIN("Units update");
   for (auto& unit : Units)
   {

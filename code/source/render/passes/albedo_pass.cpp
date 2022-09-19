@@ -3,9 +3,9 @@
 void gdr::albedo_pass::Initialize(void)
 {
   // 1) Compile our shaders
-  Render->GetDevice().CompileShader(_T("bin/shaders/SimpleColor.hlsl"), {}, shader_stage::Vertex, &VertexShader);
-  Render->GetDevice().CompileShader(_T("bin/shaders/SimpleColor.hlsl"), {}, shader_stage::Pixel, &PixelShader);
-  Render->GetDevice().CompileShader(_T("bin/shaders/SimpleCull.hlsl"), {}, shader_stage::Compute, &ComputeShader);
+  Render->GetDevice().CompileShader(_T("bin/shaders/AlbedoPhong.hlsl"), {}, shader_stage::Vertex, &VertexShader);
+  Render->GetDevice().CompileShader(_T("bin/shaders/AlbedoPhong.hlsl"), {}, shader_stage::Pixel, &PixelShader);
+  Render->GetDevice().CompileShader(_T("bin/shaders/AlbedoCull.hlsl"), {}, shader_stage::Compute, &ComputeShader);
 
   // 2) Create root signature 
   {
@@ -223,7 +223,7 @@ void gdr::albedo_pass::CallCompute(ID3D12GraphicsCommandList* currentCommandList
     (int)root_parameters_compute_indices::out_commands_pool_index, // root parameter index
     Render->IndirectSystem->CommandsUAVGPUDescriptor[OurUAVIndex]);
 
-  currentCommandList->Dispatch(static_cast<UINT>(ceil(Render->IndirectSystem->CPUData.size() / float(1024))), 1, 1);
+  currentCommandList->Dispatch(static_cast<UINT>(ceil(Render->IndirectSystem->CPUData.size() / float(ComputeThreadBlockSize))), 1, 1);
 }
 
 void gdr::albedo_pass::SyncCompute(ID3D12GraphicsCommandList* currentCommandList)
@@ -252,8 +252,19 @@ void gdr::albedo_pass::CallDirectDraw(ID3D12GraphicsCommandList* currentCommandL
   currentCommandList->SetGraphicsRootSignature(RootSignature);
   currentCommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
+  std::vector<gdr::gdr_object> objects_to_draw;
+
+  // composite all transparents
+  for (gdr::gdr_object i = 0; i < Render->ObjectSystem->CPUPool.size(); i++)
+  {
+    if ((Render->ObjectSystem->CPUPool[i].ObjectParams & OBJECT_PARAMETER_TRANSPARENT) == 0)
+    {
+      objects_to_draw.push_back(i);
+    }
+  }
+
   // just iterate for every geometry
-  for (int i = 0; i < Render->ObjectSystem->CPUPool.size(); i++)
+  for (auto &i : objects_to_draw)
   {
     geometry &geom = Render->GeometrySystem->CPUPool[i];
 

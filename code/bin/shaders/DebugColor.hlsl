@@ -2,9 +2,7 @@
 
 cbuffer GlobalValues : register (b0)
 {
-  float4x4 VP; // camera view-proj
-  float3 CameraPos; // Camera position
-  float time; // Time in seconds
+  GlobalData globals;
 }
 
 struct VSIn
@@ -21,7 +19,7 @@ VSOut VS(VSIn input)
 {
     VSOut output;
     
-    output.pos = mul(VP, float4(input.pos, 1.0));
+    output.pos = mul(globals.VP, float4(input.pos, 1.0));
 
     return output;
 }

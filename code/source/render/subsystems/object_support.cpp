@@ -42,6 +42,7 @@ gdr::gdr_object gdr::object_support::CreateObject(const vertex* pVertex, size_t 
   ObjectIndices new_record;
   new_record.ObjectTransformIndex = (UINT)Render->TransformsSystem->CPUData.size() - 1;
   new_record.ObjectMaterialIndex = (UINT)Render->MaterialsSystem->CPUData.size() - 1;
+  new_record.ObjectParams = 0;
   CPUPool.push_back(new_record);
   return CPUPool.size() - 1;
 }
@@ -54,8 +55,35 @@ gdr::gdr_object gdr::object_support::DublicateObject(gdr_object original)
   ObjectIndices new_record;
   new_record.ObjectTransformIndex = -1;
   new_record.ObjectMaterialIndex = -1;
+  new_record.ObjectParams = 0;
 
   new_record.ObjectMaterialIndex = CPUPool[original].ObjectMaterialIndex;
+
+  // check transparency
+  {
+    if (Render->MaterialsSystem->CPUData[new_record.ObjectMaterialIndex].KaMapIndex != -1)
+    {
+      new_record.ObjectParams |= 
+      Render->TexturesSystem->CPUPool[Render->MaterialsSystem->CPUData[new_record.ObjectMaterialIndex].KaMapIndex].IsTransparent 
+      ? OBJECT_PARAMETER_TRANSPARENT 
+      : 0;
+    }
+    if (Render->MaterialsSystem->CPUData[new_record.ObjectMaterialIndex].KdMapIndex != -1)
+    {
+      new_record.ObjectParams |=
+        Render->TexturesSystem->CPUPool[Render->MaterialsSystem->CPUData[new_record.ObjectMaterialIndex].KdMapIndex].IsTransparent
+        ? OBJECT_PARAMETER_TRANSPARENT
+        : 0;
+    }
+    if (Render->MaterialsSystem->CPUData[new_record.ObjectMaterialIndex].KsMapIndex != -1)
+    {
+      new_record.ObjectParams |=
+        Render->TexturesSystem->CPUPool[Render->MaterialsSystem->CPUData[new_record.ObjectMaterialIndex].KsMapIndex].IsTransparent
+        ? OBJECT_PARAMETER_TRANSPARENT
+        : 0;
+    }
+  }
+
   if (CPUPool[original].ObjectTransformIndex != -1)
   {
     Render->TransformsSystem->CPUData.push_back(Render->TransformsSystem->CPUData[CPUPool[original].ObjectTransformIndex]);
@@ -179,6 +207,8 @@ std::vector<gdr::gdr_object> gdr::object_support::CreateObjectsFromFile(std::str
       }
     }
 
+    
+
     {
       aiString str;
       scene->mMaterials[Mesh->mMaterialIndex]->GetTexture(aiTextureType_SPECULAR, 0, &str);
@@ -187,8 +217,34 @@ std::vector<gdr::gdr_object> gdr::object_support::CreateObjectsFromFile(std::str
         mat.KsMapIndex = Render->TexturesSystem->Load(directory + str.C_Str());
       }
     }
+
+    // check transparency
+    {
+      if (mat.KaMapIndex != -1)
+      {
+        CPUPool[CPUPool.size() - 1].ObjectParams |=
+          Render->TexturesSystem->CPUPool[mat.KaMapIndex].IsTransparent
+          ? OBJECT_PARAMETER_TRANSPARENT
+          : 0;
+      }
+      if (mat.KdMapIndex != -1)
+      {
+        CPUPool[CPUPool.size() - 1].ObjectParams |=
+          Render->TexturesSystem->CPUPool[mat.KdMapIndex].IsTransparent
+          ? OBJECT_PARAMETER_TRANSPARENT
+          : 0;
+      }
+      if (mat.KsMapIndex != -1)
+      {
+        CPUPool[CPUPool.size() - 1].ObjectParams |=
+          Render->TexturesSystem->CPUPool[mat.KsMapIndex].IsTransparent
+          ? OBJECT_PARAMETER_TRANSPARENT
+          : 0;
+      }
+    }
   }
   LoadedObjectTypes[fileName] = result;
+  
   return result;
 }
 

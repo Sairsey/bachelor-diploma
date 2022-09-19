@@ -9,7 +9,7 @@ void unit_bread::Initialize(void)
 {
   ID3D12GraphicsCommandList* commandList;
   double alpha = 0;
-  for (int j = 0; j < 1000; j++)
+  for (int j = 0; j < 1; j++)
   {
     // thi is huge data copy, so clear ring buffer every step
     Engine->GetDevice().WaitAllUploadLists();

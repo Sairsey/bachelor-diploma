@@ -4,6 +4,7 @@
 #include "utils/math/mth.h"
 using float4x4 = mth::matr;
 using float3 = mth::vec3f;
+using float4 = mth::vec4f;
 // C++ code
 #pragma pack(push, 1)
 #else
@@ -16,6 +17,8 @@ struct GlobalData
   float4x4 VP; // camera view-proj
   float3 CameraPos; // Camera position
   float time; // Time in seconds
+  UINT width;
+  UINT height;
 };
 
 struct ObjectTransform
@@ -42,14 +45,36 @@ struct ObjectIndices
 {
   UINT ObjectTransformIndex; // index of ObjectTransform
   UINT ObjectMaterialIndex; // index of ObjectMaterial
+  UINT ObjectParams;        // MASK with some parameters for object
 };
+
+#define OBJECT_PARAMETER_TRANSPARENT 0x1       // Set if object is transparent
 
 struct ComputeRootConstants
 {
   float4x4 VP;
-  float enableCulling;
-  float commandCount;
+  UINT enableCulling;
+  UINT commandCount;
 };
+
+struct OITList
+{
+  UINT RootIndex;
+};
+
+struct OITNode
+{
+  UINT NextNodeIndex;
+  float Depth;
+  float4 Color;
+};
+
+#define ComputeThreadBlockSize 1024
+#define MAX_TRANSPARENT_ARRAY_SIZE 100
+#define MAX_TRANSPARENT_DEPTH 10
+#define MAX_AMOUNT_OF_TRANSPARENT_PIXELS (1920 * 1080 * MAX_TRANSPARENT_DEPTH)
+
+
 
 #ifdef __cplusplus
 // C++ code

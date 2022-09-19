@@ -11,8 +11,6 @@
 
 #include "shared_structures.h"
 
-#define threadBlockSize 128
-
 struct D3D12_DRAW_INDEXED_ARGUMENTS
 {
     uint IndexCountPerInstance;
@@ -47,7 +45,7 @@ struct IndirectCommand
 
 StructuredBuffer<ObjectTransform> ObjectTransformData     : register(t2);    // SRV: Data with transforms which stored per object
 StructuredBuffer<IndirectCommand> inputCommands           : register(t0);    // SRV: Indirect commands
-AppendStructuredBuffer<IndirectCommand> outputCommands    : register(u1);    // UAV: Processed indirect commands
+AppendStructuredBuffer<IndirectCommand> outputCommands    : register(u0);    // UAV: Processed indirect commands
 cbuffer RootConstants : register (b0)                                        // RootConstant : General data
 {
   ComputeRootConstants globals;
@@ -93,11 +91,11 @@ bool CullAABBFrustum(
     return inside;
 }
 
-[numthreads(threadBlockSize, 1, 1)]
+[numthreads(ComputeThreadBlockSize, 1, 1)]
 void CS(uint3 groupId : SV_GroupID, uint groupIndex : SV_GroupIndex)
 {
     // Each thread of the CS operates on one of the indirect commands.
-    uint index = (groupId.x * threadBlockSize) + groupIndex;
+    uint index = (groupId.x * ComputeThreadBlockSize) + groupIndex;
 
     // Don't attempt to access commands that don't exist if more threads are allocated
     // than commands.

@@ -35,6 +35,8 @@ void gdr::materials_support::UpdateGPUData(ID3D12GraphicsCommandList* pCommandLi
         &CPUData[0],
         sizeof(ObjectMaterial) * CPUData.size());
 
+      GPUData.Resource->SetName(L"Materials Pool");
+
       Render->GetDevice().AllocateStaticDescriptors(1, CPUDescriptor, GPUDescriptor);
       D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
       srvDesc.Format = DXGI_FORMAT_UNKNOWN;

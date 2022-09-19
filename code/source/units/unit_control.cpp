@@ -18,11 +18,11 @@ void unit_control::Response(void)
   {
     if (Engine->Mdx != 0)
     {
-        Engine->PlayerCamera.RotateAroundLocY(-Engine->Mdx * 0.5 * Engine->GetGlobalDeltaTime());
+        Engine->PlayerCamera.RotateAroundLocY(-Engine->Mdx * 0.01);
     }
     if (Engine->Mdy != 0)
     {
-        Engine->PlayerCamera.RotateAroundLocRight(-Engine->Mdy * 0.5 * Engine->GetGlobalDeltaTime());
+        Engine->PlayerCamera.RotateAroundLocRight(-Engine->Mdy * 0.01);
     }
   }
 

@@ -21,7 +21,7 @@ namespace gdr
   class indirect_support
   {
   public:
-    enum { TotalUAV = 1 }; // Total amount of UAVs
+    enum { TotalUAV = 2 }; // Total amount of UAVs
   private:
     render* Render; // pointer on Render
 

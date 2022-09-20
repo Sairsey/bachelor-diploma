@@ -1,7 +1,7 @@
 #include "shared_structures.h"
 #include "RandomGenerator.h"
 #include "Matrices.h"
-
+// this shader with indirect draw takes 10-12ms to compute. Maybe we can be faster, but idk
 cbuffer GlobalValues : register (b0)
 {
   GlobalData globals;
@@ -52,9 +52,10 @@ float4 PS(VSOut input) : SV_TARGET
 
     // lets sort with selection sort first MAX_TRANSPARENT_DEPTH elements
     uint sorted_amount = arraySize;
-    if (sorted_amount > MAX_TRANSPARENT_DEPTH)
-      sorted_amount = MAX_TRANSPARENT_DEPTH;
+    if (sorted_amount > MAX_SORTED_PIXELS_AMOUNT)
+      sorted_amount = MAX_SORTED_PIXELS_AMOUNT;
 
+    [unroll(MAX_SORTED_PIXELS_AMOUNT)]
     for (uint i = 0; i < sorted_amount; i++)
     {
       uint min = arraySize - 1;
@@ -74,6 +75,7 @@ float4 PS(VSOut input) : SV_TARGET
     // now 0 is the smallest by depth value and that means it is nearest
 
     // reverse first MAX_TRANSPARENT_DEPTH, so we start from farthest in sorted_amount
+    [unroll(MAX_SORTED_PIXELS_AMOUNT)]
     for (uint i = 0; i < sorted_amount / 2; i++)
     {
       OITNode tmp = frags[i];
@@ -91,6 +93,7 @@ float4 PS(VSOut input) : SV_TARGET
     float3 WBOITColor = float3(0, 0, 0);
     float divider = 0.0;
     float WBOITAlpha = 1;
+    [unroll(MAX_TRANSPARENT_ARRAY_SIZE - MAX_SORTED_PIXELS_AMOUNT)]
     for (uint i = sorted_amount; i < arraySize; i++)
     {
       WBOITColor += frags[i].Color.rgb * frags[i].Color.a * weight(frags[i].Depth, frags[i].Color.a);

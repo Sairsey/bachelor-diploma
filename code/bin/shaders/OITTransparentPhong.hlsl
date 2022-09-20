@@ -72,7 +72,7 @@ float4 PS(VSOut input) : SV_TARGET
     float4 col = Shade(normalize(input.normal.xyz), input.unmodifiedPos.xyz, input.uv, myMaterial);
     uint new_element_index = OITPool.IncrementCounter();
     
-    if (new_element_index < MAX_AMOUNT_OF_TRANSPARENT_PIXELS)
+    if (col.a != 0 && new_element_index < MAX_AMOUNT_OF_TRANSPARENT_PIXELS)
     {
       uint prevHead = -1;
 

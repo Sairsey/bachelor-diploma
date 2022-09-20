@@ -15,14 +15,22 @@ namespace gdr
     ID3DBlob* PixelShader;
     ID3DBlob* ComposeVertexShader;
     ID3DBlob* ComposePixelShader;
+    ID3DBlob* ComputeShader;
 
     // Root signature
     ID3D12RootSignature* ComposeRootSignature;
     ID3D12RootSignature* RootSignature;
+    ID3D12RootSignature* ComputeRootSignature;
+
+    ComputeRootConstants CPUComputeRootConstants;
+
+    // Command signatures
+    ID3D12CommandSignature* CommandSignature;
 
     // Pipeline state object
     ID3D12PipelineState* PSO;
     ID3D12PipelineState* ComposePSO;
+    ID3D12PipelineState* ComputePSO;
 
     // fullscreen rect
     GPUResource ScreenVertexBuffer;
@@ -101,6 +109,9 @@ namespace gdr
     std::vector<OITList> OITListsClearVector;
 
     void CreateOITLists(void);
+
+    // index of used UAV for indirect
+    int OurUAVIndex;
   public:
     /* Function to get name */
     std::string GetName(void) override
@@ -112,16 +123,16 @@ namespace gdr
     void Initialize(void) override;
 
     /* Function to call compute shader */
-    //void CallCompute(ID3D12GraphicsCommandList* currentCommandList) override;
+    void CallCompute(ID3D12GraphicsCommandList* currentCommandList) override;
 
     /* Function to sync result of compute shader */
-    //void SyncCompute(ID3D12GraphicsCommandList* currentCommandList) override;
+    void SyncCompute(ID3D12GraphicsCommandList* currentCommandList) override;
 
     /* Function to call Direct draw shader */
     void CallDirectDraw(ID3D12GraphicsCommandList* currentCommandList) override;
 
     /* Function to call Indirect draw shader */
-    //void CallIndirectDraw(ID3D12GraphicsCommandList* currentCommandList) override;
+    void CallIndirectDraw(ID3D12GraphicsCommandList* currentCommandList) override;
 
     /* Virtual Destructor */
     ~oit_transparent_pass() override;

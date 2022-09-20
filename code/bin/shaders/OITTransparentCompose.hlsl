@@ -28,10 +28,15 @@ VSOut VS(VSIn input)
     return output;
 }
 
+float weight(float depth, float a)
+{
+  return 1.0;
+}
+
+// Using here a "mixed" method
 float4 PS(VSOut input) : SV_TARGET
 {
     uint2 screen_pos = uint2(input.pos.x - 0.5, input.pos.y - 0.5);
-    float3 color = float3(0, 0, 0);
     OITNode frags[MAX_TRANSPARENT_ARRAY_SIZE];
     uint arraySize = 0;
     uint n = OITHeads[screen_pos.y * globals.width + screen_pos.x].RootIndex;
@@ -45,106 +50,66 @@ float4 PS(VSOut input) : SV_TARGET
     if (arraySize == 0)
       return float4(0, 0, 0, 0);
 
+    // lets sort with selection sort first MAX_TRANSPARENT_DEPTH elements
     uint sorted_amount = arraySize;
+    if (sorted_amount > MAX_TRANSPARENT_DEPTH)
+      sorted_amount = MAX_TRANSPARENT_DEPTH;
 
-    bool merge_sort = true;
-    bool insertion_sort = false;
-    bool smart_selection_sort = false;
-    
-    if (merge_sort)
+    for (uint i = 0; i < sorted_amount; i++)
     {
-      // sort the array by depth using merge sort (farthest is 0th, nearest is (array_size - 1)th)
-      int i, j1, j2, k;
-      int a, b, c;
-      int step = 1;
-      OITNode leftArray[MAX_TRANSPARENT_ARRAY_SIZE / 2]; //for merge sort
+      uint min = arraySize - 1;
+      for (uint j = arraySize - 1; j > i; j--)
+        if (frags[min].Depth > frags[j].Depth)
+          min = j;
 
-      while (step <= arraySize)
-      {
-        i = 0;
-        while (i < arraySize - step)
-        {
-          ////////////////////////////////////////////////////////////////////////
-          //merge(step, i, i + step, min(i + step + step, count));
-          a = i;
-          b = i + step;
-          c = (i + step + step) >= arraySize ? arraySize : (i + step + step);
-
-          for (k = 0; k < step; k++)
-            leftArray[k] = frags[a + k];
-
-          j1 = 0;
-          j2 = 0;
-          for (k = a; k < c; k++)
-          {
-            if (b + j1 >= c || (j2 < step && leftArray[j2].Depth > frags[b + j1].Depth))
-              frags[k] = leftArray[j2++];
-            else
-              frags[k] = frags[b + j1++];
-          }
-          ////////////////////////////////////////////////////////////////////////
-          i += 2 * step;
-        }
-        step *= 2;
-      }
-    }
-    else if (insertion_sort)
-    {
-      for (uint i = 1; i < sorted_amount; i++)
-      {
-        OITNode toInsert = frags[i];
-        uint j = i;
-        while (j > 0 && toInsert.Depth > frags[j - 1].Depth) {
-          frags[j] = frags[j - 1];
-          j--;
-        }
-        frags[j] = toInsert;
-      }
-    }
-    else if (smart_selection_sort)// selection sort but only MAX_TRANSPARENT_DEPTH elements
-    {
-      if (sorted_amount > MAX_TRANSPARENT_DEPTH)
-        sorted_amount = MAX_TRANSPARENT_DEPTH;
-
-      for (uint i = 0; i < sorted_amount; i++)
-      {
-        uint min = arraySize - 1;
-        for (uint j = arraySize - 1; j > i; j--)
-          if (frags[min].Depth > frags[j].Depth)
-            min = j;
-
-        // swap i and min
-        if (frags[min].Depth < frags[i].Depth)
-        {
-          OITNode tmp = frags[i];
-          frags[i] = frags[min];
-          frags[min] = tmp;
-        }
-      }
-      // now 0 is the smallest by depth value and that means it is nearest
-
-      // reverse, so we start from farthest in sorted_amount
-      for (uint i = 0; i < sorted_amount / 2; i++)
+      // swap i and min
+      if (frags[min].Depth < frags[i].Depth)
       {
         OITNode tmp = frags[i];
-        frags[i] = frags[sorted_amount - i - 1];
-        frags[sorted_amount - i - 1] = tmp;
+        frags[i] = frags[min];
+        frags[min] = tmp;
       }
     }
-    else // nothing
-    {
 
-    }
-    
+    // now 0 is the smallest by depth value and that means it is nearest
 
-    float out_alpha = (1.0 - frags[0].Color.a);
-    color = frags[0].Color.rgb;
-    
-    for (int i = 1; i < sorted_amount; i++)
+    // reverse first MAX_TRANSPARENT_DEPTH, so we start from farthest in sorted_amount
+    for (uint i = 0; i < sorted_amount / 2; i++)
     {
-      color = color * (1 - frags[i].Color.a) + frags[i].Color.a * frags[i].Color.rgb;
-      out_alpha *= (1 - frags[i].Color.a);
+      OITNode tmp = frags[i];
+      frags[i] = frags[sorted_amount - i - 1];
+      frags[sorted_amount - i - 1] = tmp;
     }
 
-    return float4(color, 1.0 - out_alpha);
+    // Out color splitted in 3 parts
+    // 1) Opaque Color (stored in RT)
+    // 2) Sorted Transparent Color
+    // 3) Approximated WBOIT color
+    // we use WBOIT color as starting color, and starting alpha
+
+    // calculate WBOIT
+    float3 WBOITColor = float3(0, 0, 0);
+    float divider = 0.0;
+    float WBOITAlpha = 1;
+    for (uint i = sorted_amount; i < arraySize; i++)
+    {
+      WBOITColor += frags[i].Color.rgb * frags[i].Color.a * weight(frags[i].Depth, frags[i].Color.a);
+      divider += frags[i].Color.a * weight(frags[i].Depth, frags[i].Color.a);
+      WBOITAlpha *= 1 - frags[i].Color.a;
+    }
+    if (divider != 0.0)
+      WBOITColor /= divider;
+    WBOITAlpha = WBOITAlpha;
+
+    float3 SortedColor = WBOITColor;
+    float SortedAlpha = WBOITAlpha;
+    
+    for (uint i = 0; i < sorted_amount; i++)
+    {
+      SortedColor = SortedColor * (1 - frags[i].Color.a) + frags[i].Color.a * frags[i].Color.rgb;
+      SortedAlpha *= (1 - frags[i].Color.a);
+    }
+
+    SortedAlpha = 1.0 - SortedAlpha;
+    return float4(SortedColor, SortedAlpha);
 }

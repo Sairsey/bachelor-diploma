@@ -49,18 +49,21 @@ void gdr::oit_transparent_pass::Initialize(void)
       params[(int)root_parameters_draw_indices::oit_pool_index].InitAsDescriptorTable(1, &descr);
     }
 
-    CD3DX12_STATIC_SAMPLER_DESC samplerDesc(0, D3D12_FILTER_MIN_MAG_MIP_LINEAR); // Texture sampler
+
+    CD3DX12_STATIC_SAMPLER_DESC samplerDescs[2];
+    samplerDescs[0].Init(0, D3D12_FILTER_MIN_MAG_MIP_LINEAR); // Texture sampler
+    samplerDescs[1].Init(1, D3D12_FILTER_MIN_MAG_MIP_POINT); // Texture sampler
 
     if (params.size() != 0)
     {
       CD3DX12_ROOT_SIGNATURE_DESC rootSignatureDesc;
-      rootSignatureDesc.Init((UINT)params.size(), &params[0], 1, &samplerDesc, D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
+      rootSignatureDesc.Init((UINT)params.size(), &params[0], sizeof(samplerDescs) / sizeof(samplerDescs[0]), samplerDescs, D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
       Render->GetDevice().CreateRootSignature(rootSignatureDesc, &RootSignature);
     }
     else
     {
       CD3DX12_ROOT_SIGNATURE_DESC rootSignatureDesc;
-      rootSignatureDesc.Init(0, nullptr, 1, &samplerDesc, D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
+      rootSignatureDesc.Init(0, nullptr, sizeof(samplerDescs) / sizeof(samplerDescs[0]), samplerDescs, D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
 
       Render->GetDevice().CreateRootSignature(rootSignatureDesc, &RootSignature);
     }
@@ -83,7 +86,7 @@ void gdr::oit_transparent_pass::Initialize(void)
     psoDesc.VS = CD3DX12_SHADER_BYTECODE(VertexShader);
     psoDesc.PS = CD3DX12_SHADER_BYTECODE(PixelShader);
     psoDesc.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
-    psoDesc.RasterizerState.CullMode = D3D12_CULL_MODE_NONE;
+    psoDesc.RasterizerState.CullMode = D3D12_CULL_MODE_FRONT;
     psoDesc.BlendState = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
 
     psoDesc.BlendState.RenderTarget[0].BlendEnable = TRUE;

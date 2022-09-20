@@ -16,6 +16,7 @@ StructuredBuffer<ObjectTransform> ObjectTransformData : register(t2);    // SRV:
 StructuredBuffer<ObjectMaterial> ObjectMaterialData : register(t3);      // SRV: Data with materials which stored per object
 Texture2D TexturesPool[]  : register(t4, space1);                        // Bindless Pool with all textures
 SamplerState LinearSampler : register(s0);                               // Texture sampler
+SamplerState NearestSampler : register(s1);                               // Texture sampler
 
 RWStructuredBuffer<OITList> OITHeads : register(u1);                     // UAV: Data with Order Independent transparency lists
 RWStructuredBuffer<OITNode> OITPool : register(u2);                     // UAV: Data with Order Independent transparency nodes
@@ -56,8 +57,8 @@ float4 Shade(float3 Normal, float3 Position, float2 uv, ObjectMaterial material)
 
   if (material.KdMapIndex != -1)
   {
-    Phong = TexturesPool[material.KdMapIndex].Sample(LinearSampler, uv).xyz;
-    alpha = TexturesPool[material.KdMapIndex].Sample(LinearSampler, uv).w;
+    Phong = TexturesPool[material.KdMapIndex].Sample(NearestSampler, uv).xyz;
+    alpha = TexturesPool[material.KdMapIndex].Sample(NearestSampler, uv).w;
   }
 
   return float4(Phong, alpha);

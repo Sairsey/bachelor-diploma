@@ -14,7 +14,7 @@ void unit_frog::Initialize(void)
 
 void unit_frog::Response(void)
 {
-  float radius = 0;
+  float radius = 10;
   mth::matr translation = mth::matr::Translate(mth::vec3f(radius, 0, 0));
   Engine->ObjectSystem->GetTransforms(Frog).transform = translation * mth::matr::RotateY(Engine->GetTime() * 2.1f);
 }

@@ -374,6 +374,9 @@ void gdr::oit_transparent_pass::CreateOITLists(void)
 
 void gdr::oit_transparent_pass::CallCompute(ID3D12GraphicsCommandList* currentCommandList)
 {
+  if (!Render->Params.IsTransparent)
+    return;
+
   // at first get our UAV
   OurUAVIndex = Render->IndirectSystem->CurrentUAV;
   Render->IndirectSystem->CurrentUAV = (Render->IndirectSystem->CurrentUAV + 1) % Render->IndirectSystem->TotalUAV;
@@ -425,6 +428,9 @@ void gdr::oit_transparent_pass::CallCompute(ID3D12GraphicsCommandList* currentCo
 
 void gdr::oit_transparent_pass::SyncCompute(ID3D12GraphicsCommandList* currentCommandList)
 {
+  if (!Render->Params.IsTransparent)
+    return;
+
   Render->GetDevice().TransitResourceState(
     currentCommandList,
     Render->IndirectSystem->CommandsUAV[OurUAVIndex].Resource,
@@ -433,6 +439,8 @@ void gdr::oit_transparent_pass::SyncCompute(ID3D12GraphicsCommandList* currentCo
 
 void gdr::oit_transparent_pass::CallDirectDraw(ID3D12GraphicsCommandList* currentCommandList)
 {
+  if (!Render->Params.IsTransparent)
+    return;
   // Update Globals
   Render->GlobalsSystem->CPUData.CameraPos = Render->PlayerCamera.GetPos();
   Render->GlobalsSystem->CPUData.VP = Render->PlayerCamera.GetVP();
@@ -561,6 +569,9 @@ void gdr::oit_transparent_pass::CallDirectDraw(ID3D12GraphicsCommandList* curren
 
 void gdr::oit_transparent_pass::CallIndirectDraw(ID3D12GraphicsCommandList* currentCommandList)
 {
+  if (!Render->Params.IsTransparent)
+    return;
+
   // Update Globals
   Render->GlobalsSystem->CPUData.CameraPos = Render->PlayerCamera.GetPos();
   Render->GlobalsSystem->CPUData.VP = Render->PlayerCamera.GetVP();

@@ -237,6 +237,7 @@ void unit_stats::Response(void)
       if (Engine->Params.IsIndirect)
         ImGui::Checkbox("Culling", &Engine->Params.IsCulling);
 
+      ImGui::Checkbox("Transparents Render", &Engine->Params.IsTransparent);
       bool pause = Engine->GetPause();
       if (ImGui::Checkbox("Pause", &pause))
       {

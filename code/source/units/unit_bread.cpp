@@ -9,14 +9,14 @@ void unit_bread::Initialize(void)
 {
   ID3D12GraphicsCommandList* commandList;
   double alpha = 0;
-  for (int j = 0; j < 1; j++)
+  for (int j = 0; j < 40; j++)
   {
     // thi is huge data copy, so clear ring buffer every step
     Engine->GetDevice().WaitAllUploadLists();
 
     Engine->GetDevice().BeginUploadCommandList(&commandList);
     PROFILE_BEGIN(commandList, "unit_bread Init");
-    for (int i = 0; i < 100; i++)
+    for (int i = 0; i < 1000; i++)
     {
       Bread.push_back(Engine->ObjectSystem->CreateObjectsFromFile("bin/models/Bread/Bread.obj")[0]);
       int k = Bread.size() - 1;

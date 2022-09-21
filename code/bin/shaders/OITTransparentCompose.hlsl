@@ -40,22 +40,34 @@ float4 PS(VSOut input) : SV_TARGET
     OITNode frags[MAX_TRANSPARENT_ARRAY_SIZE];
     uint arraySize = 0;
     uint n = OITHeads[screen_pos.y * globals.width + screen_pos.x].RootIndex;
+
+    if (n == 0xFFFFFFFF)
+      return float4(0, 0, 0, 0);
+
+    // Out color splitted in 3 parts
+    // 1) Opaque Color (stored in RT)
+    // 2) Sorted Transparent Color
+    // 3) Approximated WBOIT color
+    // we use WBOIT color as starting color, and starting alpha
+
+    // calculate WBOIT
+    float3 WBOITColor = float3(0, 0, 0);
+    float divider = 0.0;
+    float WBOITAlpha = 1;
     while (n != 0xFFFFFFFF && arraySize < MAX_TRANSPARENT_ARRAY_SIZE)
     {
       frags[arraySize] = OITPool[n];
-      n = frags[arraySize].NextNodeIndex;
       arraySize++;
+      WBOITColor += OITPool[n].Color.rgb * OITPool[n].Color.a * weight(OITPool[n].Depth, OITPool[n].Color.a);
+      divider += OITPool[n].Color.a * weight(OITPool[n].Depth, OITPool[n].Color.a);
+      WBOITAlpha *= 1 - OITPool[n].Color.a;
+      n = OITPool[n].NextNodeIndex;
     }
-
-    if (arraySize == 0)
-      return float4(0, 0, 0, 0);
+    WBOITColor /= divider + 0.00001f;
 
     // lets sort with selection sort first MAX_TRANSPARENT_DEPTH elements
-    uint sorted_amount = arraySize;
-    if (sorted_amount > MAX_SORTED_PIXELS_AMOUNT)
-      sorted_amount = MAX_SORTED_PIXELS_AMOUNT;
+    uint sorted_amount = min(arraySize, MAX_SORTED_PIXELS_AMOUNT);
 
-    [unroll(MAX_SORTED_PIXELS_AMOUNT)]
     for (uint i = 0; i < sorted_amount; i++)
     {
       uint min = arraySize - 1;
@@ -74,45 +86,17 @@ float4 PS(VSOut input) : SV_TARGET
 
     // now 0 is the smallest by depth value and that means it is nearest
 
-    // reverse first MAX_TRANSPARENT_DEPTH, so we start from farthest in sorted_amount
-    [unroll(MAX_SORTED_PIXELS_AMOUNT)]
-    for (uint i = 0; i < sorted_amount / 2; i++)
-    {
-      OITNode tmp = frags[i];
-      frags[i] = frags[sorted_amount - i - 1];
-      frags[sorted_amount - i - 1] = tmp;
-    }
-
-    // Out color splitted in 3 parts
-    // 1) Opaque Color (stored in RT)
-    // 2) Sorted Transparent Color
-    // 3) Approximated WBOIT color
-    // we use WBOIT color as starting color, and starting alpha
-
-    // calculate WBOIT
-    float3 WBOITColor = float3(0, 0, 0);
-    float divider = 0.0;
-    float WBOITAlpha = 1;
-    [unroll(MAX_TRANSPARENT_ARRAY_SIZE - MAX_SORTED_PIXELS_AMOUNT)]
-    for (uint i = sorted_amount; i < arraySize; i++)
-    {
-      WBOITColor += frags[i].Color.rgb * frags[i].Color.a * weight(frags[i].Depth, frags[i].Color.a);
-      divider += frags[i].Color.a * weight(frags[i].Depth, frags[i].Color.a);
-      WBOITAlpha *= 1 - frags[i].Color.a;
-    }
-    if (divider != 0.0)
-      WBOITColor /= divider;
-    WBOITAlpha = WBOITAlpha;
+    //WBOITColor = float3(0, 0, 0);
+    //WBOITAlpha = 1.0;
 
     float3 SortedColor = WBOITColor;
     float SortedAlpha = WBOITAlpha;
     
-    for (uint i = 0; i < sorted_amount; i++)
+    for (int i = sorted_amount - 1; i >= 0; i--)
     {
       SortedColor = SortedColor * (1 - frags[i].Color.a) + frags[i].Color.a * frags[i].Color.rgb;
       SortedAlpha *= (1 - frags[i].Color.a);
     }
 
-    SortedAlpha = 1.0 - SortedAlpha;
-    return float4(SortedColor, SortedAlpha);
+    return float4(SortedColor, 1.0 - SortedAlpha);
 }

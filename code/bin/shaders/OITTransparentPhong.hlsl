@@ -74,7 +74,7 @@ float4 PS(VSOut input) : SV_TARGET
     
     if (col.a != 0 && new_element_index < MAX_AMOUNT_OF_TRANSPARENT_PIXELS)
     {
-      uint prevHead = -1;
+      uint prevHead = 0xFFFFFFFF;
 
       InterlockedExchange(OITHeads[screen_pos.y * globals.width + screen_pos.x].RootIndex, new_element_index, prevHead);
 

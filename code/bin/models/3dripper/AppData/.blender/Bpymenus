@@ -1,0 +1,5 @@
+# Blender: registered menu entries for bpython scripts
+
+Export {
+'Wavefront (.obj)...' 249 export_obj.py 0 'Save a Wavefront OBJ File'
+}

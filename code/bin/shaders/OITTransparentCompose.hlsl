@@ -41,7 +41,6 @@ float4 PS(VSOut input) : SV_TARGET
     OITNode nearest2;
     OITNode nearest3;
     OITNode nearest4;
-    OITNode nearestOpaque;
     uint arraySize = 0;
     uint n = OITHeads[screen_pos.y * globals.width + screen_pos.x].RootIndex;
     if (n == 0xFFFFFFFF)
@@ -64,61 +63,47 @@ float4 PS(VSOut input) : SV_TARGET
     nearest2 = nearest;
     nearest3 = nearest;
     nearest4 = nearest;
-    nearestOpaque = nearest;
-
-    while (n != 0xFFFFFFFF && arraySize < MAX_TRANSPARENT_ARRAY_SIZE)
-    {
-      if (OITPool[n].Color.a >= 0.9 && OITPool[n].Depth < nearestOpaque.Depth)
-      {
-        nearestOpaque = OITPool[n];
-      }
-      n = OITPool[n].NextNodeIndex;
-    }
 
     n = OITHeads[screen_pos.y * globals.width + screen_pos.x].RootIndex;
     //[unroll(MAX_TRANSPARENT_ARRAY_SIZE)]
     while (n != 0xFFFFFFFF && arraySize < MAX_TRANSPARENT_ARRAY_SIZE)
     {
-      if (OITPool[n].Depth <= nearestOpaque.Depth)
+      if (OITPool[n].Depth < nearest.Depth)
       {
-        if (OITPool[n].Depth < nearest.Depth)
-        {
-          nearest4 = nearest3;
-          nearest3 = nearest2;
-          nearest2 = nearest;
-          nearest = OITPool[n];
-        }
-        else if (OITPool[n].Depth < nearest2.Depth)
-        {
-          nearest4 = nearest3;
-          nearest3 = nearest2;
-          nearest2 = OITPool[n];
-        }
-        else if (OITPool[n].Depth < nearest3.Depth)
-        {
-          nearest4 = nearest3;
-          nearest3 = OITPool[n];
-        }
-        else if (OITPool[n].Depth < nearest4.Depth)
-        {
-          nearest4 = OITPool[n];
-        }
-        
-        
-        WBOITColor += OITPool[n].Color.rgb * weight(OITPool[n].Depth, OITPool[n].Color.a);
-        divider += OITPool[n].Color.a * weight(OITPool[n].Depth, OITPool[n].Color.a);
-        WBOITAlpha *= 1 - OITPool[n].Color.a;
-        arraySize++;
+        nearest4 = nearest3;
+        nearest3 = nearest2;
+        nearest2 = nearest;
+        nearest = OITPool[n];
       }
+      else if (OITPool[n].Depth < nearest2.Depth)
+      {
+        nearest4 = nearest3;
+        nearest3 = nearest2;
+        nearest2 = OITPool[n];
+      }
+      else if (OITPool[n].Depth < nearest3.Depth)
+      {
+        nearest4 = nearest3;
+        nearest3 = OITPool[n];
+      }
+      else if (OITPool[n].Depth < nearest4.Depth)
+      {
+        nearest4 = OITPool[n];
+      }
+      
+      WBOITColor += OITPool[n].Color.rgb * OITPool[n].Color.a * weight(OITPool[n].Depth, OITPool[n].Color.a); // Added additional a multiplier and now it is perfect
+      divider += OITPool[n].Color.a * weight(OITPool[n].Depth, OITPool[n].Color.a);
+      WBOITAlpha *= 1 - OITPool[n].Color.a;
+      arraySize++;
 
       n = OITPool[n].NextNodeIndex;
     }
     // remove nearest elements in WBOIT
 
-    WBOITColor -= nearest.Color.rgb * weight(nearest.Depth, nearest.Color.a) +
-      nearest2.Color.rgb * weight(nearest2.Depth, nearest2.Color.a) + 
-      nearest3.Color.rgb * weight(nearest3.Depth, nearest3.Color.a) +
-      nearest4.Color.rgb * weight(nearest4.Depth, nearest4.Color.a);
+    WBOITColor -= nearest.Color.rgb * nearest.Color.a * weight(nearest.Depth, nearest.Color.a) +
+      nearest2.Color.rgb * nearest2.Color.a * weight(nearest2.Depth, nearest2.Color.a) +
+      nearest3.Color.rgb * nearest3.Color.a * weight(nearest3.Depth, nearest3.Color.a) +
+      nearest4.Color.rgb * nearest4.Color.a * weight(nearest4.Depth, nearest4.Color.a);
     divider -= nearest.Color.a * weight(nearest.Depth, nearest.Color.a) +
       nearest2.Color.a * weight(nearest2.Depth, nearest2.Color.a) +
       nearest3.Color.a * weight(nearest3.Depth, nearest3.Color.a) +
@@ -133,7 +118,6 @@ float4 PS(VSOut input) : SV_TARGET
       (1 - nearest3.Color.a) + nearest3.Color.a * nearest3.Color.rgb) *
       (1 - nearest2.Color.a) + nearest2.Color.a * nearest2.Color.rgb) *
       (1 - nearest.Color.a) + nearest.Color.a * nearest.Color.rgb;
-
 
     return float4(ResultColor, 1.0 - ResultAlpha);
 }

@@ -37,10 +37,13 @@ float weight(float depth, float a)
 float4 PS(VSOut input) : SV_TARGET
 {
     uint2 screen_pos = uint2(input.pos.x - 0.5, input.pos.y - 0.5);
-    OITNode frags[MAX_TRANSPARENT_ARRAY_SIZE];
+    OITNode nearest;
+    OITNode nearest2;
+    OITNode nearest3;
+    OITNode nearest4;
+    OITNode nearestOpaque;
     uint arraySize = 0;
     uint n = OITHeads[screen_pos.y * globals.width + screen_pos.x].RootIndex;
-
     if (n == 0xFFFFFFFF)
       return float4(0, 0, 0, 0);
 
@@ -50,53 +53,87 @@ float4 PS(VSOut input) : SV_TARGET
     // 3) Approximated WBOIT color
     // we use WBOIT color as starting color, and starting alpha
 
-    // calculate WBOIT
+    // calculate WBOIT and sorted
     float3 WBOITColor = float3(0, 0, 0);
     float divider = 0.0;
     float WBOITAlpha = 1;
+
+    // fill nearests with default data
+    nearest.Color = float4(0, 0, 0, 0);
+    nearest.Depth = 1.0;
+    nearest2 = nearest;
+    nearest3 = nearest;
+    nearest4 = nearest;
+    nearestOpaque = nearest;
+
     while (n != 0xFFFFFFFF && arraySize < MAX_TRANSPARENT_ARRAY_SIZE)
     {
-      frags[arraySize] = OITPool[n];
-      arraySize++;
-      WBOITColor += OITPool[n].Color.rgb * OITPool[n].Color.a * weight(OITPool[n].Depth, OITPool[n].Color.a);
-      divider += OITPool[n].Color.a * weight(OITPool[n].Depth, OITPool[n].Color.a);
-      WBOITAlpha *= 1 - OITPool[n].Color.a;
+      if (OITPool[n].Color.a >= 0.9 && OITPool[n].Depth < nearestOpaque.Depth)
+      {
+        nearestOpaque = OITPool[n];
+      }
       n = OITPool[n].NextNodeIndex;
     }
+
+    n = OITHeads[screen_pos.y * globals.width + screen_pos.x].RootIndex;
+    //[unroll(MAX_TRANSPARENT_ARRAY_SIZE)]
+    while (n != 0xFFFFFFFF && arraySize < MAX_TRANSPARENT_ARRAY_SIZE)
+    {
+      if (OITPool[n].Depth <= nearestOpaque.Depth)
+      {
+        if (OITPool[n].Depth < nearest.Depth)
+        {
+          nearest4 = nearest3;
+          nearest3 = nearest2;
+          nearest2 = nearest;
+          nearest = OITPool[n];
+        }
+        else if (OITPool[n].Depth < nearest2.Depth)
+        {
+          nearest4 = nearest3;
+          nearest3 = nearest2;
+          nearest2 = OITPool[n];
+        }
+        else if (OITPool[n].Depth < nearest3.Depth)
+        {
+          nearest4 = nearest3;
+          nearest3 = OITPool[n];
+        }
+        else if (OITPool[n].Depth < nearest4.Depth)
+        {
+          nearest4 = OITPool[n];
+        }
+        
+        
+        WBOITColor += OITPool[n].Color.rgb * weight(OITPool[n].Depth, OITPool[n].Color.a);
+        divider += OITPool[n].Color.a * weight(OITPool[n].Depth, OITPool[n].Color.a);
+        WBOITAlpha *= 1 - OITPool[n].Color.a;
+        arraySize++;
+      }
+
+      n = OITPool[n].NextNodeIndex;
+    }
+    // remove nearest elements in WBOIT
+
+    WBOITColor -= nearest.Color.rgb * weight(nearest.Depth, nearest.Color.a) +
+      nearest2.Color.rgb * weight(nearest2.Depth, nearest2.Color.a) + 
+      nearest3.Color.rgb * weight(nearest3.Depth, nearest3.Color.a) +
+      nearest4.Color.rgb * weight(nearest4.Depth, nearest4.Color.a);
+    divider -= nearest.Color.a * weight(nearest.Depth, nearest.Color.a) +
+      nearest2.Color.a * weight(nearest2.Depth, nearest2.Color.a) +
+      nearest3.Color.a * weight(nearest3.Depth, nearest3.Color.a) +
+      nearest4.Color.a * weight(nearest4.Depth, nearest4.Color.a);
+
     WBOITColor /= divider + 0.00001f;
 
-    // lets sort with selection sort first MAX_TRANSPARENT_DEPTH elements
-    uint sorted_amount = min(arraySize, MAX_SORTED_PIXELS_AMOUNT);
+    float ResultAlpha = WBOITAlpha;
+    float3 ResultColor = 
+      (((WBOITColor * 
+      (1 - nearest4.Color.a) + nearest4.Color.a * nearest4.Color.rgb) *
+      (1 - nearest3.Color.a) + nearest3.Color.a * nearest3.Color.rgb) *
+      (1 - nearest2.Color.a) + nearest2.Color.a * nearest2.Color.rgb) *
+      (1 - nearest.Color.a) + nearest.Color.a * nearest.Color.rgb;
 
-    for (uint i = 0; i < sorted_amount; i++)
-    {
-      uint min = arraySize - 1;
-      for (uint j = arraySize - 1; j > i; j--)
-        if (frags[min].Depth > frags[j].Depth)
-          min = j;
 
-      // swap i and min
-      if (frags[min].Depth < frags[i].Depth)
-      {
-        OITNode tmp = frags[i];
-        frags[i] = frags[min];
-        frags[min] = tmp;
-      }
-    }
-
-    // now 0 is the smallest by depth value and that means it is nearest
-
-    //WBOITColor = float3(0, 0, 0);
-    //WBOITAlpha = 1.0;
-
-    float3 SortedColor = WBOITColor;
-    float SortedAlpha = WBOITAlpha;
-    
-    for (int i = sorted_amount - 1; i >= 0; i--)
-    {
-      SortedColor = SortedColor * (1 - frags[i].Color.a) + frags[i].Color.a * frags[i].Color.rgb;
-      SortedAlpha *= (1 - frags[i].Color.a);
-    }
-
-    return float4(SortedColor, 1.0 - SortedAlpha);
+    return float4(ResultColor, 1.0 - ResultAlpha);
 }

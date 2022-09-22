@@ -18,7 +18,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
   Engine.AddUnit(new unit_control());
   Engine.AddUnit(new unit_frog()); 
   Engine.AddUnit(new unit_bread());
-  Engine.AddUnit(new unit_city());
+  //Engine.AddUnit(new unit_city());
 
   Engine.AddUnit(new unit_stats());
 

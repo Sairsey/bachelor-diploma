@@ -166,6 +166,10 @@ int gdr::textures_support::Load(std::string name)
       delete[] pBuffer;
       pBuffer = nullptr;
     }
+    else
+    {
+      printf("Error");
+    }
   }
   return NewTextureIndex;
 }

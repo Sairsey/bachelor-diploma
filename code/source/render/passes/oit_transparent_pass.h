@@ -97,6 +97,7 @@ namespace gdr
 
     // UAVs for OIT
     GPUResource OITLists;
+    GPUResource OITListsClearBuffer;
     GPUResource OITPool;
 
     D3D12_CPU_DESCRIPTOR_HANDLE OITPoolCPUDescriptor;

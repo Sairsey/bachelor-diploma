@@ -370,12 +370,25 @@ void gdr::oit_transparent_pass::CreateOITLists(void)
   {
     OITListsClearVector[i].RootIndex = 0xFFFFFFFF;
   }
+  OITListsClearBuffer.Resource = nullptr;
 }
 
 void gdr::oit_transparent_pass::CallCompute(ID3D12GraphicsCommandList* currentCommandList)
 {
   if (!Render->Params.IsTransparent)
     return;
+
+  if (OITListsClearBuffer.Resource == nullptr)
+  {
+    Render->GetDevice().SetCommandListAsUpload(currentCommandList);
+    Render->GetDevice().CreateGPUResource(
+      CD3DX12_RESOURCE_DESC::Buffer({ CurrentOITListsSize }),
+      D3D12_RESOURCE_STATE_COMMON,
+      nullptr,
+      OITListsClearBuffer, OITListsClearVector.data(), CurrentOITListsSize);
+    Render->GetDevice().ClearUploadListReference();
+  }
+
 
   // at first get our UAV
   OurUAVIndex = Render->IndirectSystem->CurrentUAV;
@@ -474,13 +487,34 @@ void gdr::oit_transparent_pass::CallDirectDraw(ID3D12GraphicsCommandList* curren
         CurrentOITListsSize != Render->GetEngine()->Width * Render->GetEngine()->Height * sizeof(OITList))
       {
         Render->GetDevice().ReleaseGPUResource(OITLists);
+        Render->GetDevice().ReleaseGPUResource(OITListsClearBuffer);
         CreateOITLists();
+        if (OITListsClearBuffer.Resource == nullptr)
+        {
+          Render->GetDevice().SetCommandListAsUpload(currentCommandList);
+          Render->GetDevice().CreateGPUResource(
+            CD3DX12_RESOURCE_DESC::Buffer({ CurrentOITListsSize }),
+            D3D12_RESOURCE_STATE_COMMON,
+            nullptr,
+            OITListsClearBuffer, OITListsClearVector.data(), CurrentOITListsSize);
+          Render->GetDevice().ClearUploadListReference();
+        }
       }
 
       // Clear with 0xFFFFFFFF
-      Render->GetDevice().SetCommandListAsUpload(currentCommandList);
-      Render->GetDevice().UpdateBuffer(currentCommandList, OITLists.Resource, OITListsClearVector.data(), CurrentOITListsSize);
-      Render->GetDevice().ClearUploadListReference();
+      currentCommandList->CopyBufferRegion(
+        OITLists.Resource,
+        0,
+        OITListsClearBuffer.Resource,
+        0,
+        CurrentOITListsSize);
+
+      //Render->GetDevice().SetCommandListAsUpload(currentCommandList);
+      //Render->GetDevice().UpdateBuffer(currentCommandList, OITLists.Resource, OITListsClearVector.data(), CurrentOITListsSize);
+      //Render->GetDevice().ClearUploadListReference();
+
+
+
       Render->GetDevice().TransitResourceState(
         currentCommandList,
         OITLists.Resource,
@@ -609,13 +643,34 @@ void gdr::oit_transparent_pass::CallIndirectDraw(ID3D12GraphicsCommandList* curr
         CurrentOITListsSize != Render->GetEngine()->Width * Render->GetEngine()->Height * sizeof(OITList))
       {
         Render->GetDevice().ReleaseGPUResource(OITLists);
+        Render->GetDevice().ReleaseGPUResource(OITListsClearBuffer);
         CreateOITLists();
+        if (OITListsClearBuffer.Resource == nullptr)
+        {
+          Render->GetDevice().SetCommandListAsUpload(currentCommandList);
+          Render->GetDevice().CreateGPUResource(
+            CD3DX12_RESOURCE_DESC::Buffer({ CurrentOITListsSize }),
+            D3D12_RESOURCE_STATE_COPY_DEST,
+            nullptr,
+            OITListsClearBuffer, OITListsClearVector.data(), CurrentOITListsSize);
+          Render->GetDevice().ClearUploadListReference();
+        }
       }
 
       // Clear with 0xFFFFFFFF
-      Render->GetDevice().SetCommandListAsUpload(currentCommandList);
-      Render->GetDevice().UpdateBuffer(currentCommandList, OITLists.Resource, OITListsClearVector.data(), CurrentOITListsSize);
-      Render->GetDevice().ClearUploadListReference();
+      currentCommandList->CopyBufferRegion(
+        OITLists.Resource,
+        0,
+        OITListsClearBuffer.Resource,
+        0,
+        CurrentOITListsSize);
+
+      //Render->GetDevice().SetCommandListAsUpload(currentCommandList);
+      //Render->GetDevice().UpdateBuffer(currentCommandList, OITLists.Resource, OITListsClearVector.data(), CurrentOITListsSize);
+      //Render->GetDevice().ClearUploadListReference();
+
+
+
       Render->GetDevice().TransitResourceState(
         currentCommandList,
         OITLists.Resource,
@@ -703,6 +758,8 @@ gdr::oit_transparent_pass::~oit_transparent_pass(void)
   ComputeShader->Release();
 
   Render->GetDevice().ReleaseGPUResource(OITPool);
+  if (OITListsClearBuffer.Resource != nullptr)
+    Render->GetDevice().ReleaseGPUResource(OITListsClearBuffer);
   Render->GetDevice().ReleaseGPUResource(OITLists);
   Render->GetDevice().ReleaseGPUResource(ScreenVertexBuffer);
   ComposePSO->Release();

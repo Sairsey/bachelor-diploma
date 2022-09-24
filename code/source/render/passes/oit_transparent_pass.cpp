@@ -13,8 +13,8 @@ static UINT AlignForUavCounter(UINT bufferSize)
 void gdr::oit_transparent_pass::Initialize(void)
 {
   // 1) Compile our shaders
-  Render->GetDevice().CompileShader(_T("bin/shaders/OITTransparentPhong.hlsl"), {}, shader_stage::Vertex, &VertexShader);
-  Render->GetDevice().CompileShader(_T("bin/shaders/OITTransparentPhong.hlsl"), {}, shader_stage::Pixel, &PixelShader);
+  Render->GetDevice().CompileShader(_T("bin/shaders/OITTransparentColor.hlsl"), {}, shader_stage::Vertex, &VertexShader);
+  Render->GetDevice().CompileShader(_T("bin/shaders/OITTransparentColor.hlsl"), {}, shader_stage::Pixel, &PixelShader);
   Render->GetDevice().CompileShader(_T("bin/shaders/OITTransparentCompose.hlsl"), {}, shader_stage::Vertex, &ComposeVertexShader);
   Render->GetDevice().CompileShader(_T("bin/shaders/OITTransparentCompose.hlsl"), {}, shader_stage::Pixel, &ComposePixelShader);
   Render->GetDevice().CompileShader(_T("bin/shaders/OITTransparentCull.hlsl"), {}, shader_stage::Compute, &ComputeShader);
@@ -55,17 +55,9 @@ void gdr::oit_transparent_pass::Initialize(void)
     samplerDescs[0].Init(0, D3D12_FILTER_MIN_MAG_MIP_LINEAR); // Texture sampler
     samplerDescs[1].Init(1, D3D12_FILTER_MIN_MAG_MIP_POINT); // Texture sampler
 
-    if (params.size() != 0)
     {
       CD3DX12_ROOT_SIGNATURE_DESC rootSignatureDesc;
       rootSignatureDesc.Init((UINT)params.size(), &params[0], sizeof(samplerDescs) / sizeof(samplerDescs[0]), samplerDescs, D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
-      Render->GetDevice().CreateRootSignature(rootSignatureDesc, &RootSignature);
-    }
-    else
-    {
-      CD3DX12_ROOT_SIGNATURE_DESC rootSignatureDesc;
-      rootSignatureDesc.Init(0, nullptr, sizeof(samplerDescs) / sizeof(samplerDescs[0]), samplerDescs, D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
-
       Render->GetDevice().CreateRootSignature(rootSignatureDesc, &RootSignature);
     }
   }

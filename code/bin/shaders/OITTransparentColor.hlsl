@@ -15,7 +15,12 @@ cbuffer Indices : register(b1)
 StructuredBuffer<ObjectTransform> ObjectTransformData : register(t2);    // SRV: Data with transforms which stored per object
 StructuredBuffer<ObjectMaterial> ObjectMaterialData : register(t3);      // SRV: Data with materials which stored per object
 Texture2D TexturesPool[]  : register(t4, space1);                        // Bindless Pool with all textures
-SamplerState LinearSampler : register(s0);                               // Texture sampler
+
+RWStructuredBuffer<OITList> OITHeads : register(u1);                     // UAV: Data with Order Independent transparency lists
+RWStructuredBuffer<OITNode> OITPool : register(u2);                     // UAV: Data with Order Independent transparency nodes
+
+// add all shade functions
+#include "ShadeFunctions.h"
 
 struct VSIn
 {
@@ -45,47 +50,25 @@ VSOut VS(VSIn input)
     return output;
 }
 
-
-float3 Shade(float3 Normal, float3 Position, float2 uv, ObjectMaterial material)
-{
-  // HARDCODED
-  float3 L = float3(1, 1, 1);
-  L = normalize(L);
-
-  float3 V = globals.CameraPos - Position;
-  V = normalize(V);
-
-  float3 Phong = material.Ka;
-
-  float NdotL = dot(Normal, L);
-
-  if (NdotL > 0) {
-    float3 R = reflect(-L, Normal);
-
-    /* Diffuse color*/
-    float3 diffuseColor = float4(material.Kd, 0);
-    if (material.KdMapIndex != -1)
-      diffuseColor = TexturesPool[material.KdMapIndex].Sample(LinearSampler, uv).xyz;
-    Phong += (diffuseColor * NdotL);
-
-    /*Specular color*/
-    float RdotV = dot(R, V);
-    Phong += material.Ks * pow(max(0.0f, RdotV), material.Ph);
-  }
-
-  return Phong;
-}
-
+[earlydepthstencil]
 float4 PS(VSOut input) : SV_TARGET
 {
     ObjectMaterial myMaterial = ObjectMaterialData[indices.ObjectMaterialIndex];
-    float4 col = float4(Shade(normalize(input.normal.xyz), input.unmodifiedPos.xyz, input.uv, myMaterial), 1);
-    if (0)
+    uint2 screen_pos = uint2(input.pos.x - 0.5, input.pos.y - 0.5);
+    float4 col = Shade(normalize(input.normal.xyz), input.unmodifiedPos.xyz, input.uv, myMaterial);
+    uint new_element_index = OITPool.IncrementCounter();
+    
+    if (col.a != 0 && new_element_index < MAX_AMOUNT_OF_TRANSPARENT_PIXELS)
     {
-      /*Random Color*/
-      NumberGenerator N;
-      N.SetSeed(indices.ObjectTransformIndex);
-      col = float4(N.GetRandomFloat(0, 1), N.GetRandomFloat(0, 1), N.GetRandomFloat(0, 1), 1);
+      uint prevHead = 0xFFFFFFFF;
+
+      InterlockedExchange(OITHeads[screen_pos.y * globals.width + screen_pos.x].RootIndex, new_element_index, prevHead);
+
+      // add element to the beginning of the list
+      OITPool[new_element_index].NextNodeIndex = prevHead;
+      OITPool[new_element_index].Depth = input.pos.z;
+      OITPool[new_element_index].Color = col;
     }
-    return col;
+
+    return float4(0, 0, 0, 0); // draw nothing
 }

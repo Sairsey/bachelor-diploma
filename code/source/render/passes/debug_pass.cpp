@@ -15,17 +15,9 @@ void gdr::debug_pass::Initialize(void)
     params.push_back(param);
   }
 
-  if (params.size() != 0)
   {
     CD3DX12_ROOT_SIGNATURE_DESC rootSignatureDesc;
     rootSignatureDesc.Init((UINT)params.size(), &params[0], 0, nullptr, D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
-    Render->GetDevice().CreateRootSignature(rootSignatureDesc, &RootSignature);
-  }
-  else
-  {
-    CD3DX12_ROOT_SIGNATURE_DESC rootSignatureDesc;
-    rootSignatureDesc.Init(0, nullptr, 0, nullptr, D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
-
     Render->GetDevice().CreateRootSignature(rootSignatureDesc, &RootSignature);
   }
 

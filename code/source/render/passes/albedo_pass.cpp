@@ -3,8 +3,8 @@
 void gdr::albedo_pass::Initialize(void)
 {
   // 1) Compile our shaders
-  Render->GetDevice().CompileShader(_T("bin/shaders/AlbedoPhong.hlsl"), {}, shader_stage::Vertex, &VertexShader);
-  Render->GetDevice().CompileShader(_T("bin/shaders/AlbedoPhong.hlsl"), {}, shader_stage::Pixel, &PixelShader);
+  Render->GetDevice().CompileShader(_T("bin/shaders/AlbedoColor.hlsl"), {}, shader_stage::Vertex, &VertexShader);
+  Render->GetDevice().CompileShader(_T("bin/shaders/AlbedoColor.hlsl"), {}, shader_stage::Pixel, &PixelShader);
   Render->GetDevice().CompileShader(_T("bin/shaders/AlbedoCull.hlsl"), {}, shader_stage::Compute, &ComputeShader);
 
   // 2) Create root signature 
@@ -44,19 +44,14 @@ void gdr::albedo_pass::Initialize(void)
       params[(int)root_parameters_draw_indices::texture_pool_index].InitAsDescriptorTable(1, bindlessTexturesDesc);
     }
 
-    CD3DX12_STATIC_SAMPLER_DESC samplerDesc(0, D3D12_FILTER_MIN_MAG_MIP_LINEAR); // Texture sampler
+    // Texture samplers
+    CD3DX12_STATIC_SAMPLER_DESC samplerDescs[2];
+    samplerDescs[0].Init(0, D3D12_FILTER_MIN_MAG_MIP_LINEAR);
+    samplerDescs[1].Init(1, D3D12_FILTER_MIN_MAG_MIP_POINT); 
 
-    if (params.size() != 0)
     {
       CD3DX12_ROOT_SIGNATURE_DESC rootSignatureDesc;
-      rootSignatureDesc.Init((UINT)params.size(), &params[0], 1, &samplerDesc, D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
-      Render->GetDevice().CreateRootSignature(rootSignatureDesc, &RootSignature);
-    }
-    else
-    {
-      CD3DX12_ROOT_SIGNATURE_DESC rootSignatureDesc;
-      rootSignatureDesc.Init(0, nullptr, 1, &samplerDesc, D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
-
+      rootSignatureDesc.Init((UINT)params.size(), &params[0], sizeof(samplerDescs) / sizeof(samplerDescs[0]), samplerDescs, D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
       Render->GetDevice().CreateRootSignature(rootSignatureDesc, &RootSignature);
     }
   }

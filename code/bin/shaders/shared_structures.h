@@ -32,6 +32,7 @@ struct ObjectTransform
 
 struct ObjectMaterial
 {
+  UINT ShadeType;
   float3 Ka;
   float3 Kd;
   float3 Ks;
@@ -40,6 +41,10 @@ struct ObjectMaterial
   int KdMapIndex;
   int KsMapIndex;
 };
+
+#define MATERIAL_SHADER_DIFFUSE 0
+#define MATERIAL_SHADER_PHONG 1
+#define MATERIAL_SHADER_AMOUNT 2
 
 struct ObjectIndices
 {

@@ -9,6 +9,7 @@ gdr::materials_support::materials_support(render* Rnd)
 ObjectMaterial gdr::materials_support::DefaultMaterial(void)
 {
   ObjectMaterial mat;
+  mat.ShadeType = MATERIAL_SHADER_PHONG;
   mat.Ka = mth::vec3f(0.f, 0.f, 0.f);
   mat.Kd = mth::vec3f(0.7f, 0.7f, 0.7f);
   mat.Ks = mth::vec3f(0.1f, 0.1f, 0.1f);

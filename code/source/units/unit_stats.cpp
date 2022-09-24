@@ -145,6 +145,10 @@ void unit_stats::Response(void)
         CurrentMaterialToShow = min(CurrentMaterialToShow, Engine->MaterialsSystem->CPUData.size() - 1);
       }
       ImGui::Text("Material %d", CurrentMaterialToShow);
+
+      const char* items[] = { "Diffuse component only" , "Phong" };
+      ImGui::Combo("Used Shader", (int *)&Engine->MaterialsSystem->CPUData[CurrentMaterialToShow].ShadeType, items, IM_ARRAYSIZE(items));
+
       // Edit a color (stored as ~4 floats)
       ImGui::ColorEdit3("Ka", &Engine->MaterialsSystem->CPUData[CurrentMaterialToShow].Ka[0]);
       ImGui::Text("Ka Texture index %d", Engine->MaterialsSystem->CPUData[CurrentMaterialToShow].KaMapIndex);

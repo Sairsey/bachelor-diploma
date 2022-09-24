@@ -219,28 +219,17 @@ std::vector<gdr::gdr_object> gdr::object_support::CreateObjectsFromFile(std::str
     }
 
     // check transparency
+    if (mat.KdMapIndex != -1)
     {
-      if (mat.KaMapIndex != -1)
-      {
-        CPUPool[CPUPool.size() - 1].ObjectParams |=
-          Render->TexturesSystem->CPUPool[mat.KaMapIndex].IsTransparent
-          ? OBJECT_PARAMETER_TRANSPARENT
-          : 0;
-      }
-      if (mat.KdMapIndex != -1)
-      {
-        CPUPool[CPUPool.size() - 1].ObjectParams |=
-          Render->TexturesSystem->CPUPool[mat.KdMapIndex].IsTransparent
-          ? OBJECT_PARAMETER_TRANSPARENT
-          : 0;
-      }
-      if (mat.KsMapIndex != -1)
-      {
-        CPUPool[CPUPool.size() - 1].ObjectParams |=
-          Render->TexturesSystem->CPUPool[mat.KsMapIndex].IsTransparent
-          ? OBJECT_PARAMETER_TRANSPARENT
-          : 0;
-      }
+      CPUPool[CPUPool.size() - 1].ObjectParams |=
+        Render->TexturesSystem->CPUPool[mat.KdMapIndex].IsTransparent
+        ? OBJECT_PARAMETER_TRANSPARENT
+        : 0;
+    }
+
+    if (CPUPool[CPUPool.size() - 1].ObjectParams & OBJECT_PARAMETER_TRANSPARENT)
+    {
+      mat.ShadeType = MATERIAL_SHADER_DIFFUSE;
     }
   }
   LoadedObjectTypes[fileName] = result;

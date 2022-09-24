@@ -15,7 +15,8 @@ cbuffer Indices : register(b1)
 StructuredBuffer<ObjectTransform> ObjectTransformData : register(t2);    // SRV: Data with transforms which stored per object
 StructuredBuffer<ObjectMaterial> ObjectMaterialData : register(t3);      // SRV: Data with materials which stored per object
 Texture2D TexturesPool[]  : register(t4, space1);                        // Bindless Pool with all textures
-SamplerState LinearSampler : register(s0);                               // Texture sampler
+
+#include "ShadeFunctions.h"
 
 struct VSIn
 {
@@ -43,21 +44,6 @@ VSOut VS(VSIn input)
     output.uv = input.uv;
 
     return output;
-}
-
-
-float4 Shade(float3 Normal, float3 Position, float2 uv, ObjectMaterial material)
-{
-  float3 Phong = float3(0, 0, 0);
-  float alpha = 1.0;
-
-  if (material.KdMapIndex != -1)
-  {
-    Phong = TexturesPool[material.KdMapIndex].Sample(LinearSampler, uv).xyz;
-    alpha = TexturesPool[material.KdMapIndex].Sample(LinearSampler, uv).w;
-  }
-
-  return float4(Phong, alpha);
 }
 
 float4 PS(VSOut input) : SV_TARGET

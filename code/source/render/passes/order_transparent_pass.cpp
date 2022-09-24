@@ -12,26 +12,11 @@ void gdr::order_transparent_pass::Initialize(void)
     params.resize((int)root_parameters_draw_indices::total_root_parameters);
     CD3DX12_DESCRIPTOR_RANGE bindlessTexturesDesc[1];  // Textures Pool
 
-    {
-      params[(int)root_parameters_draw_indices::globals_buffer_index].InitAsConstantBufferView(
-        (int)transparent_buffer_registers::globals_buffer_register);
-    }
-
-    {
-      params[(int)root_parameters_draw_indices::index_buffer_index].InitAsConstants(
-        sizeof(ObjectIndices) / sizeof(int32_t),
-        (int)transparent_buffer_registers::index_buffer_register);
-    }
-
-    {
-      params[(int)root_parameters_draw_indices::transform_pool_index].InitAsShaderResourceView(
-        (int)transparent_texture_registers::object_transform_pool_register);
-    }
-
-    {
-      params[(int)root_parameters_draw_indices::material_pool_index].InitAsShaderResourceView(
-        (int)transparent_texture_registers::material_pool_register);
-    }
+    params[(int)root_parameters_draw_indices::globals_buffer_index].InitAsConstantBufferView((int)transparent_buffer_registers::globals_buffer_register);
+    params[(int)root_parameters_draw_indices::index_buffer_index].InitAsConstants(sizeof(ObjectIndices) / sizeof(int32_t), (int)transparent_buffer_registers::index_buffer_register);
+    params[(int)root_parameters_draw_indices::transform_pool_index].InitAsShaderResourceView((int)transparent_texture_registers::object_transform_pool_register);
+    params[(int)root_parameters_draw_indices::material_pool_index].InitAsShaderResourceView((int)transparent_texture_registers::material_pool_register);
+    params[(int)root_parameters_draw_indices::light_sources_pool_index].InitAsShaderResourceView((int)transparent_texture_registers::light_sources_pool_register);
 
     {
       bindlessTexturesDesc[0].BaseShaderRegister = (int)transparent_texture_registers::texture_pool_register;

@@ -15,6 +15,7 @@ cbuffer Indices : register(b1)
 StructuredBuffer<ObjectTransform> ObjectTransformData : register(t2);    // SRV: Data with transforms which stored per object
 StructuredBuffer<ObjectMaterial> ObjectMaterialData : register(t3);      // SRV: Data with materials which stored per object
 Texture2D TexturesPool[]  : register(t4, space1);                        // Bindless Pool with all textures
+StructuredBuffer<LightSource> LightSourcesPool  : register(t7);        // SRV: Data with lights
 
 RWStructuredBuffer<OITList> OITHeads : register(u1);                     // UAV: Data with Order Independent transparency lists
 RWStructuredBuffer<OITNode> OITPool : register(u2);                     // UAV: Data with Order Independent transparency nodes

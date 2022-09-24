@@ -16,6 +16,7 @@
 #include "render/subsystems/geometry_support.h"
 #include "render/subsystems/transforms_support.h"
 #include "render/subsystems/object_support.h"
+#include "render/subsystems/light_sources_support.h"
 #include "render/subsystems/materials_support.h"
 #include "render/subsystems/indirect_support.h"
 #include "render/subsystems/texture_support.h"

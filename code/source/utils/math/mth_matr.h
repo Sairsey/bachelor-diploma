@@ -15,6 +15,7 @@
 #else
 #define sincos(Angle, SinX, CosX) \
         {                         \
+          Angle *= MTH_D2R;       \
           SinX = sin(Angle);      \
           CosX = cos(Angle);      \
         }

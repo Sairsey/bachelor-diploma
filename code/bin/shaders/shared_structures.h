@@ -17,8 +17,9 @@ struct GlobalData
   float4x4 VP; // camera view-proj
   float3 CameraPos; // Camera position
   float time; // Time in seconds
-  UINT width;
-  UINT height;
+  UINT width;  // Screen size 
+  UINT height; // Screen size 
+  UINT LightsAmount; // Amount of active lights
 };
 
 struct ObjectTransform
@@ -29,6 +30,26 @@ struct ObjectTransform
   float3 minAABB;
   float3 maxAABB;
 };
+
+struct LightSource
+{
+  UINT LightSourceType;      // type of lightsource to use
+  UINT ObjectTransformIndex; // index of ObjectTransform
+  float3 Color;              // Color of lightsource
+
+  // Attenuation params
+  float ConstantAttenuation;
+  float LinearAttenuation;
+  float QuadricAttenuation;
+
+  // Spot light params
+  float AngleInnerCone;              // for Spot - angle in radians
+  float AngleOuterCone;              // for Spot - angle in radians
+};
+
+#define LIGHT_SOURCE_TYPE_DIRECTIONAL 0
+#define LIGHT_SOURCE_TYPE_POINT 1
+#define LIGHT_SOURCE_TYPE_SPOT 2
 
 struct ObjectMaterial
 {

@@ -141,6 +141,9 @@
     <ClCompile Include="source\render\passes\oit_transparent_pass.cpp">
       <Filter>Source Files\Render\Passes</Filter>
     </ClCompile>
+    <ClCompile Include="source\render\subsystems\light_sources_support.cpp">
+      <Filter>Source Files\Render\SubSystems</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\p_header.h">
@@ -271,6 +274,9 @@
     </ClInclude>
     <ClInclude Include="source\render\passes\oit_transparent_pass.h">
       <Filter>Source Files\Render\Passes</Filter>
+    </ClInclude>
+    <ClInclude Include="source\render\subsystems\light_sources_support.h">
+      <Filter>Source Files\Render\SubSystems</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

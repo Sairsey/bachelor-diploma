@@ -10,6 +10,9 @@ void unit_control::Initialize(void)
   CameraSpeedStep = 10;
 
   CameraSpeed = MinCameraSpeed;
+  DefaultLight = Engine->LightsSystem->AddDirectionalLightSource();
+  Engine->LightsSystem->GetTransform(DefaultLight).transform = mth::matr4f::RotateX(30);
+  Engine->LightsSystem->GetLight(DefaultLight).Color = mth::vec3f(1, 1, 1);
 }
 
 void unit_control::Response(void)
@@ -18,11 +21,11 @@ void unit_control::Response(void)
   {
     if (Engine->Mdx != 0)
     {
-        Engine->PlayerCamera.RotateAroundLocY(-Engine->Mdx * 0.01);
+        Engine->PlayerCamera.RotateAroundLocY(-Engine->Mdx * 0.1);
     }
     if (Engine->Mdy != 0)
     {
-        Engine->PlayerCamera.RotateAroundLocRight(-Engine->Mdy * 0.01);
+        Engine->PlayerCamera.RotateAroundLocRight(-Engine->Mdy * 0.1);
     }
   }
 
@@ -43,7 +46,7 @@ void unit_control::Response(void)
   if (Engine->KeysClick[VK_SHIFT])
   {
     CameraSpeed *= CameraSpeedStep;
-    if (CameraSpeed >= MaxCameraSpeed)
+    if (CameraSpeed > MaxCameraSpeed)
       CameraSpeed = MinCameraSpeed;
   }
 

@@ -226,11 +226,12 @@ std::vector<gdr::gdr_object> gdr::object_support::CreateObjectsFromFile(std::str
         ? OBJECT_PARAMETER_TRANSPARENT
         : 0;
     }
-
+    /*
     if (CPUPool[CPUPool.size() - 1].ObjectParams & OBJECT_PARAMETER_TRANSPARENT)
     {
       mat.ShadeType = MATERIAL_SHADER_DIFFUSE;
     }
+    */
   }
   LoadedObjectTypes[fileName] = result;
   

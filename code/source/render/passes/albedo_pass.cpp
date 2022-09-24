@@ -13,26 +13,11 @@ void gdr::albedo_pass::Initialize(void)
     params.resize((int)root_parameters_draw_indices::total_root_parameters);
     CD3DX12_DESCRIPTOR_RANGE bindlessTexturesDesc[1];  // Textures Pool
 
-    {
-      params[(int)root_parameters_draw_indices::globals_buffer_index].InitAsConstantBufferView(
-        (int)albedo_buffer_registers::globals_buffer_register);
-    }
-
-    {
-      params[(int)root_parameters_draw_indices::index_buffer_index].InitAsConstants(
-        sizeof(ObjectIndices) / sizeof(int32_t),
-        (int)albedo_buffer_registers::index_buffer_register);
-    }
-
-    {
-      params[(int)root_parameters_draw_indices::transform_pool_index].InitAsShaderResourceView(
-        (int)albedo_texture_registers::object_transform_pool_register);
-    }
-
-    {
-      params[(int)root_parameters_draw_indices::material_pool_index].InitAsShaderResourceView(
-        (int)albedo_texture_registers::material_pool_register);
-    }
+    params[(int)root_parameters_draw_indices::globals_buffer_index].InitAsConstantBufferView((int)albedo_buffer_registers::globals_buffer_register);
+    params[(int)root_parameters_draw_indices::index_buffer_index].InitAsConstants(sizeof(ObjectIndices) / sizeof(int32_t), (int)albedo_buffer_registers::index_buffer_register);
+    params[(int)root_parameters_draw_indices::transform_pool_index].InitAsShaderResourceView((int)albedo_texture_registers::object_transform_pool_register);
+    params[(int)root_parameters_draw_indices::material_pool_index].InitAsShaderResourceView((int)albedo_texture_registers::material_pool_register);
+    params[(int)root_parameters_draw_indices::light_sources_pool_index].InitAsShaderResourceView((int)albedo_texture_registers::light_sources_pool_register);
 
     {
       bindlessTexturesDesc[0].BaseShaderRegister = (int)albedo_texture_registers::texture_pool_register;
@@ -282,6 +267,9 @@ void gdr::albedo_pass::CallDirectDraw(ID3D12GraphicsCommandList* currentCommandL
       currentCommandList->SetGraphicsRootDescriptorTable(
         (int)root_parameters_draw_indices::texture_pool_index,
         Render->TexturesSystem->TextureTableGPU);
+      currentCommandList->SetGraphicsRootShaderResourceView(
+        (int)root_parameters_draw_indices::light_sources_pool_index,
+        Render->LightsSystem->GPUData.Resource->GetGPUVirtualAddress());
     }
 
     currentCommandList->DrawIndexedInstanced(geom.IndexCount, 1, 0, 0, 0);
@@ -319,6 +307,9 @@ void gdr::albedo_pass::CallIndirectDraw(ID3D12GraphicsCommandList* currentComman
   currentCommandList->SetGraphicsRootDescriptorTable(
     (int)root_parameters_draw_indices::texture_pool_index,
     Render->TexturesSystem->TextureTableGPU);
+  currentCommandList->SetGraphicsRootShaderResourceView(
+    (int)root_parameters_draw_indices::light_sources_pool_index,
+    Render->LightsSystem->GPUData.Resource->GetGPUVirtualAddress());
   currentCommandList->ExecuteIndirect(
       CommandSignature,
       (UINT)Render->IndirectSystem->CPUData.size(),

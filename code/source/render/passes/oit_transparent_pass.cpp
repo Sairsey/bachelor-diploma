@@ -31,6 +31,7 @@ void gdr::oit_transparent_pass::Initialize(void)
     params[(int)root_parameters_draw_indices::index_buffer_index].InitAsConstants(sizeof(ObjectIndices) / sizeof(int32_t), (int)transparent_buffer_registers::index_buffer_register);
     params[(int)root_parameters_draw_indices::transform_pool_index].InitAsShaderResourceView((int)transparent_texture_registers::object_transform_pool_register);
     params[(int)root_parameters_draw_indices::material_pool_index].InitAsShaderResourceView((int)transparent_texture_registers::material_pool_register);
+    params[(int)root_parameters_draw_indices::light_sources_pool_index].InitAsShaderResourceView((int)transparent_texture_registers::light_sources_pool_register);
 
     {
       bindlessTexturesDesc[0].BaseShaderRegister = (int)transparent_texture_registers::texture_pool_register;
@@ -557,6 +558,9 @@ void gdr::oit_transparent_pass::CallDirectDraw(ID3D12GraphicsCommandList* curren
       currentCommandList->SetGraphicsRootUnorderedAccessView(
         (int)root_parameters_draw_indices::oit_lists_index,
         OITLists.Resource->GetGPUVirtualAddress());
+      currentCommandList->SetGraphicsRootShaderResourceView(
+        (int)root_parameters_draw_indices::light_sources_pool_index,
+        Render->LightsSystem->GPUData.Resource->GetGPUVirtualAddress());
       currentCommandList->SetGraphicsRootDescriptorTable(
         (int)root_parameters_draw_indices::oit_pool_index,
         OITPoolGPUDescriptor);
@@ -697,6 +701,9 @@ void gdr::oit_transparent_pass::CallIndirectDraw(ID3D12GraphicsCommandList* curr
   currentCommandList->SetGraphicsRootDescriptorTable(
     (int)root_parameters_draw_indices::oit_pool_index,
     OITPoolGPUDescriptor);
+  currentCommandList->SetGraphicsRootShaderResourceView(
+    (int)root_parameters_draw_indices::light_sources_pool_index,
+    Render->LightsSystem->GPUData.Resource->GetGPUVirtualAddress());
 
   currentCommandList->ExecuteIndirect(
     CommandSignature,

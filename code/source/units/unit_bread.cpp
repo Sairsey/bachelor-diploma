@@ -33,7 +33,7 @@ void unit_bread::Initialize(void)
 
 void unit_bread::Response(void)
 {
-  mth::matr rotation = mth::matr::RotateY(Engine->GetTime() * 10.0f);
+  mth::matr rotation = mth::matr::RotateY(Engine->GetTime() * 50.0f);
 
   /* Parallel Computing matrices
   const auto processor_count = std::thread::hardware_concurrency();

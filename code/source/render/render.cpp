@@ -105,6 +105,7 @@ bool gdr::render::Init(engine* Eng)
     IndirectSystem = new gdr::indirect_support(this);
     MaterialsSystem = new gdr::materials_support(this);
     TexturesSystem = new gdr::textures_support(this);
+    LightsSystem = new gdr::light_sources_support(this);
   }
 
   IsInited = localIsInited;
@@ -184,6 +185,9 @@ void gdr::render::DrawFrame(void)
   PROFILE_END(uploadCommandList);
   PROFILE_BEGIN(uploadCommandList, "Update Textures");
   TexturesSystem->UpdateGPUData(uploadCommandList);
+  PROFILE_END(uploadCommandList);
+  PROFILE_BEGIN(uploadCommandList, "Update Lights");
+  LightsSystem->UpdateGPUData(uploadCommandList);
   PROFILE_END(uploadCommandList);
   GetDevice().CloseUploadCommandList();
 

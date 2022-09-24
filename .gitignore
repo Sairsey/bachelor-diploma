@@ -351,3 +351,5 @@ MigrationBackup/
 
 !code/bin
 !code/bin/*
+code/bin/models/magnolia_s
+

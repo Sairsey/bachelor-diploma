@@ -185,6 +185,87 @@ namespace mth
                               0,     0, 0, 1);
       } /* End of 'RotateZ' funciton */
 
+      /* Decompose matrix to its elements.
+       * ARGUMENTS:
+       * RETURNS:
+       *   (vec3<Type>) Rotation per each axis in degrees.
+       */
+      vec3<Type> GetEulerAngles()
+      {
+        vec3<Type> Ans;
+        Type sy = sqrt(A[0][0] * A[0][0] + A[1][0] * A[1][0]);
+        bool is_singular = sy < 0.00005;
+
+        if (!is_singular)
+        {
+          Ans.X = atan2(A[2][1], A[2][2]);
+          Ans.Y = atan2(-A[2][0], sy);
+          Ans.Z = atan2(A[1][0], A[0][0]);
+        }
+        else
+        {
+          Ans.X = atan2(-A[1][2], A[1][1]);
+          Ans.Y = atan2(-A[2][0], sy);
+          Ans.Z = 0;
+        }
+
+        Ans.X = Ans.X < 0 ? Ans.X + 2 * MTH_PI : Ans.X;
+        Ans.Y = Ans.Y < 0 ? Ans.Y + 2 * MTH_PI : Ans.Y;
+        Ans.Z = Ans.Z < 0 ? Ans.Z + 2 * MTH_PI : Ans.Z;
+
+        return Ans * MTH_R2D;
+      }
+
+      /* Decompose matrix to its elements.
+       * ARGUMENTS:
+       * RETURNS:
+       *   (vec3<Type>) Translation vector.
+       *   (vec3<Type>) Rotation per each axis in degrees.
+       *   (vec3<Type>) Scale per each axis.
+       */
+      void Decompose(vec3<Type>& Translation, vec3<Type>& RotationPerAxis, vec3<Type> &Scale)
+      {
+        Type sx = vec3<Type>(A[0][0], A[0][1], A[0][2]).Lenght() ;
+        Type sy = vec3<Type>(A[1][0], A[1][1], A[1][2]).Lenght() ;
+        Type sz = vec3<Type>(A[2][0], A[2][1], A[2][2]).Lenght() ;
+
+        // if determine is negative, we need to invert one scale
+        Type det = Determ();
+        if (det < 0) {
+          sx = -sx;
+        }
+
+        // Translation vector
+        Translation.X = A[3][0];
+        Translation.Y = A[3][1];
+        Translation.Z = A[3][2];
+
+        // Scale rotation part
+        Type invSX = 1.0 / sx;
+        Type invSY = 1.0 / sy;
+        Type invSZ = 1.0 / sz;
+
+        matr4<Type> tmpMatr = *this;
+
+        tmpMatr.A[0][0] *= invSX;
+        tmpMatr.A[0][1] *= invSX;
+        tmpMatr.A[0][2] *= invSX;
+
+        tmpMatr.A[1][0] *= invSY;
+        tmpMatr.A[1][1] *= invSY;
+        tmpMatr.A[1][2] *= invSY;
+
+        tmpMatr.A[2][0] *= invSZ;
+        tmpMatr.A[2][1] *= invSZ;
+        tmpMatr.A[2][2] *= invSZ;
+        
+        RotationPerAxis = tmpMatr.GetEulerAngles();
+
+        Scale.X = sx;
+        Scale.Y = sy;
+        Scale.Z = sz;
+      }
+
       /* Translation matrix setup function.
        * ARGUMENTS:
        *   - translation vector:

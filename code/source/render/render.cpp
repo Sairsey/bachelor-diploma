@@ -207,7 +207,7 @@ void gdr::render::DrawFrame(void)
 
     if (Device.TransitResourceState(pCommandList, pBackBuffer, D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET))
     {
-      FLOAT clearColor[4] = { 0.3f, 0.5f, 0.7f, 1.0f };
+      FLOAT clearColor[4] = { 0.f, 0.f, 0.f, 1.0f };
       pCommandList->ClearRenderTargetView(rtvHandle, clearColor, 1, &Rect);
       pCommandList->ClearDepthStencilView(dsvHandle, D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.0f, 0, 1, &Rect);
 

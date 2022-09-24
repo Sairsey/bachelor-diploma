@@ -46,9 +46,9 @@ float4 ShadePhong(float3 Normal, float3 Position, float2 uv, ObjectMaterial mate
     {
       float3 LightDir = float3(0, -1, 0);
       float4x4 TransformMatrix = ObjectTransformData[LightSourcesPool[i].ObjectTransformIndex].transform;
-      TransformMatrix[3][0] = 0;
-      TransformMatrix[3][1] = 0;
-      TransformMatrix[3][2] = 0;
+      TransformMatrix[0][3] = 0;
+      TransformMatrix[1][3] = 0;
+      TransformMatrix[2][3] = 0;
       LightDir = mul(TransformMatrix, float4(LightDir, 1.0)).xyz;
       LightDir = normalize(LightDir);
       float3 L = -LightDir;
@@ -99,9 +99,9 @@ float4 ShadePhong(float3 Normal, float3 Position, float2 uv, ObjectMaterial mate
       LightPos = mul(TransformMatrix, float4(LightPos, 1.0)).xyz;
 
       float3 LightDir = float3(0, -1, 0);
-      TransformMatrix[3][0] = 0;
-      TransformMatrix[3][1] = 0;
-      TransformMatrix[3][2] = 0;
+      TransformMatrix[0][3] = 0;
+      TransformMatrix[1][3] = 0;
+      TransformMatrix[2][3] = 0;
       LightDir = mul(TransformMatrix, float4(LightDir, 1.0)).xyz;
       LightDir = normalize(LightDir);
 

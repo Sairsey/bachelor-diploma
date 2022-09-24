@@ -20,7 +20,7 @@ void unit_stats::Response(void)
 {
   Engine->AddLambdaForIMGUI(
     [&]()
-    {
+    { 
       if (!TransformToolActive || Engine->TransformsSystem->CPUData.size() == 0)
         return;
       // Create a window called "My First Tool", with a menu bar.
@@ -67,6 +67,29 @@ void unit_stats::Response(void)
         CurrentTransformToShow = min(CurrentTransformToShow, Engine->TransformsSystem->CPUData.size() - 1);
       }
       ImGui::Text("Transform %d", CurrentTransformToShow);
+
+      mth::vec3f Translate, Rotate, Scale;
+      Engine->TransformsSystem->CPUData[CurrentTransformToShow].transform.Decompose(Translate, Rotate, Scale);
+
+      bool IsMatrChanged = false;
+
+      if (ImGui::DragFloat3("Translation", &Translate.X, 0.1))
+        IsMatrChanged = true;
+      if (ImGui::DragFloat3("Rotation", &Rotate.X, 0.1))
+        IsMatrChanged = true;
+      if (ImGui::DragFloat3("Scale", &Scale.X, 0.1))
+        IsMatrChanged = true;
+
+
+      if (IsMatrChanged)
+      {
+        mth::matr4f result = mth::matr4f::RotateZ(Rotate.Z) * mth::matr4f::RotateY(Rotate.Y) * mth::matr4f::RotateX(Rotate.X) * mth::matr4f::Scale(Scale) * mth::matr4f::Translate(Translate);
+        if (!isnan(result[0][0]) && !isnan(result[1][1]) && !isnan(result[2][2]) && !isnan(result[3][3]))
+          Engine->TransformsSystem->CPUData[CurrentTransformToShow].transform = result;
+        else
+          Engine->TransformsSystem->CPUData[CurrentTransformToShow].transform = mth::matr4f::Identity();
+      }
+
       ImGui::BeginTable("Transform matrix", 4, ImGuiTableFlags_Borders);
 
       for (int i = 0; i < 4; i++)

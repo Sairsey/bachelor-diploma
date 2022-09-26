@@ -205,36 +205,82 @@ void unit_stats::Response(void)
       }
       ImGui::Text("Material %d", CurrentMaterialToShow);
 
-      const char* items[] = { "Diffuse component only" , "Phong" };
+      const char* items[] = { "Diffuse component only" , "Phong", "Cook Torrance"};
       ImGui::Combo("Used Shader", (int *)&Engine->MaterialsSystem->CPUData[CurrentMaterialToShow].ShadeType, items, IM_ARRAYSIZE(items));
 
       // Edit a color (stored as ~4 floats)
-      ImGui::ColorEdit3("Ka", &Engine->MaterialsSystem->CPUData[CurrentMaterialToShow].Ka[0]);
-      ImGui::Text("Ka Texture index %d", Engine->MaterialsSystem->CPUData[CurrentMaterialToShow].KaMapIndex);
-      if (Engine->MaterialsSystem->CPUData[CurrentMaterialToShow].KaMapIndex != -1)
+      if (Engine->MaterialsSystem->CPUData[CurrentMaterialToShow].ShadeType == MATERIAL_SHADER_DIFFUSE)
       {
-        D3D12_GPU_DESCRIPTOR_HANDLE true_texture_handle = Engine->TexturesSystem->TextureTableGPU;
-        true_texture_handle.ptr += Engine->MaterialsSystem->CPUData[CurrentMaterialToShow].KaMapIndex * Engine->GetDevice().GetSRVDescSize();
+        ImGui::ColorEdit3("Diffuse", &Engine->MaterialsSystem->CPUData[CurrentMaterialToShow].Kd[0]);
+        ImGui::Text("Diffuse Texture index %d", Engine->MaterialsSystem->CPUData[CurrentMaterialToShow].KdMapIndex);
+        if (Engine->MaterialsSystem->CPUData[CurrentMaterialToShow].KdMapIndex != -1)
+        {
+          D3D12_GPU_DESCRIPTOR_HANDLE true_texture_handle = Engine->TexturesSystem->TextureTableGPU;
+          true_texture_handle.ptr += Engine->MaterialsSystem->CPUData[CurrentMaterialToShow].KdMapIndex * Engine->GetDevice().GetSRVDescSize();
 
-        ImGui::Image((ImTextureID)true_texture_handle.ptr, ImVec2((float)128, (float)128));
+          ImGui::Image((ImTextureID)true_texture_handle.ptr, ImVec2((float)128, (float)128));
+        }
       }
-      ImGui::ColorEdit3("Kd", &Engine->MaterialsSystem->CPUData[CurrentMaterialToShow].Kd[0]);
-      ImGui::Text("Kd Texture index %d", Engine->MaterialsSystem->CPUData[CurrentMaterialToShow].KdMapIndex);
-      if (Engine->MaterialsSystem->CPUData[CurrentMaterialToShow].KdMapIndex != -1)
-      {
-        D3D12_GPU_DESCRIPTOR_HANDLE true_texture_handle = Engine->TexturesSystem->TextureTableGPU;
-        true_texture_handle.ptr += Engine->MaterialsSystem->CPUData[CurrentMaterialToShow].KdMapIndex * Engine->GetDevice().GetSRVDescSize();
 
-        ImGui::Image((ImTextureID)true_texture_handle.ptr, ImVec2((float)128, (float)128));
+      if (Engine->MaterialsSystem->CPUData[CurrentMaterialToShow].ShadeType == MATERIAL_SHADER_PHONG)
+      {
+        ImGui::ColorEdit3("Ka", &Engine->MaterialsSystem->CPUData[CurrentMaterialToShow].Ka[0]);
+        ImGui::Text("Ka Texture index %d", Engine->MaterialsSystem->CPUData[CurrentMaterialToShow].KaMapIndex);
+        if (Engine->MaterialsSystem->CPUData[CurrentMaterialToShow].KaMapIndex != -1)
+        {
+          D3D12_GPU_DESCRIPTOR_HANDLE true_texture_handle = Engine->TexturesSystem->TextureTableGPU;
+          true_texture_handle.ptr += Engine->MaterialsSystem->CPUData[CurrentMaterialToShow].KaMapIndex * Engine->GetDevice().GetSRVDescSize();
+
+          ImGui::Image((ImTextureID)true_texture_handle.ptr, ImVec2((float)128, (float)128));
+        }
+        ImGui::ColorEdit3("Kd", &Engine->MaterialsSystem->CPUData[CurrentMaterialToShow].Kd[0]);
+        ImGui::Text("Kd Texture index %d", Engine->MaterialsSystem->CPUData[CurrentMaterialToShow].KdMapIndex);
+        if (Engine->MaterialsSystem->CPUData[CurrentMaterialToShow].KdMapIndex != -1)
+        {
+          D3D12_GPU_DESCRIPTOR_HANDLE true_texture_handle = Engine->TexturesSystem->TextureTableGPU;
+          true_texture_handle.ptr += Engine->MaterialsSystem->CPUData[CurrentMaterialToShow].KdMapIndex * Engine->GetDevice().GetSRVDescSize();
+
+          ImGui::Image((ImTextureID)true_texture_handle.ptr, ImVec2((float)128, (float)128));
+        }
+        ImGui::ColorEdit3("Ks", &Engine->MaterialsSystem->CPUData[CurrentMaterialToShow].Ks[0]);
+        ImGui::Text("Ks Texture index %d", Engine->MaterialsSystem->CPUData[CurrentMaterialToShow].KsMapIndex);
+        if (Engine->MaterialsSystem->CPUData[CurrentMaterialToShow].KsMapIndex != -1)
+        {
+          D3D12_GPU_DESCRIPTOR_HANDLE true_texture_handle = Engine->TexturesSystem->TextureTableGPU;
+          true_texture_handle.ptr += Engine->MaterialsSystem->CPUData[CurrentMaterialToShow].KsMapIndex * Engine->GetDevice().GetSRVDescSize();
+
+          ImGui::Image((ImTextureID)true_texture_handle.ptr, ImVec2((float)128, (float)128));
+        }
       }
-      ImGui::ColorEdit3("Ks", &Engine->MaterialsSystem->CPUData[CurrentMaterialToShow].Ks[0]);
-      ImGui::Text("Ks Texture index %d", Engine->MaterialsSystem->CPUData[CurrentMaterialToShow].KsMapIndex);
-      if (Engine->MaterialsSystem->CPUData[CurrentMaterialToShow].KsMapIndex != -1)
+      if (Engine->MaterialsSystem->CPUData[CurrentMaterialToShow].ShadeType == MATERIAL_SHADER_COOKTORRANCE)
       {
-        D3D12_GPU_DESCRIPTOR_HANDLE true_texture_handle = Engine->TexturesSystem->TextureTableGPU;
-        true_texture_handle.ptr += Engine->MaterialsSystem->CPUData[CurrentMaterialToShow].KsMapIndex * Engine->GetDevice().GetSRVDescSize();
+        ImGui::DragFloat("Roughness", &Engine->MaterialsSystem->CPUData[CurrentMaterialToShow].Ks[2], 0.001);
+        ImGui::Text("Roughness Texture index %d", Engine->MaterialsSystem->CPUData[CurrentMaterialToShow].KsMapIndex);
+        if (Engine->MaterialsSystem->CPUData[CurrentMaterialToShow].KsMapIndex != -1)
+        {
+          D3D12_GPU_DESCRIPTOR_HANDLE true_texture_handle = Engine->TexturesSystem->TextureTableGPU;
+          true_texture_handle.ptr += Engine->MaterialsSystem->CPUData[CurrentMaterialToShow].KsMapIndex * Engine->GetDevice().GetSRVDescSize();
 
-        ImGui::Image((ImTextureID)true_texture_handle.ptr, ImVec2((float)128, (float)128));
+          ImGui::Image((ImTextureID)true_texture_handle.ptr, ImVec2((float)128, (float)128));
+        }
+        ImGui::ColorEdit3("Albedo", &Engine->MaterialsSystem->CPUData[CurrentMaterialToShow].Kd[0]);
+        ImGui::Text("Albedo Texture index %d", Engine->MaterialsSystem->CPUData[CurrentMaterialToShow].KdMapIndex);
+        if (Engine->MaterialsSystem->CPUData[CurrentMaterialToShow].KdMapIndex != -1)
+        {
+          D3D12_GPU_DESCRIPTOR_HANDLE true_texture_handle = Engine->TexturesSystem->TextureTableGPU;
+          true_texture_handle.ptr += Engine->MaterialsSystem->CPUData[CurrentMaterialToShow].KdMapIndex * Engine->GetDevice().GetSRVDescSize();
+
+          ImGui::Image((ImTextureID)true_texture_handle.ptr, ImVec2((float)128, (float)128));
+        }
+        ImGui::DragFloat("Metallic", &Engine->MaterialsSystem->CPUData[CurrentMaterialToShow].Ks[1], 0.001);
+        ImGui::Text("Metallic Texture index %d", Engine->MaterialsSystem->CPUData[CurrentMaterialToShow].KsMapIndex);
+        if (Engine->MaterialsSystem->CPUData[CurrentMaterialToShow].KsMapIndex != -1)
+        {
+          D3D12_GPU_DESCRIPTOR_HANDLE true_texture_handle = Engine->TexturesSystem->TextureTableGPU;
+          true_texture_handle.ptr += Engine->MaterialsSystem->CPUData[CurrentMaterialToShow].KsMapIndex * Engine->GetDevice().GetSRVDescSize();
+
+          ImGui::Image((ImTextureID)true_texture_handle.ptr, ImVec2((float)128, (float)128));
+        }
       }
       ImGui::End();
     });

@@ -1,12 +1,13 @@
 #pragma once
 #include "def.h"
 #include "../bin/shaders/shared_structures.h"
+struct aiString;
+struct aiScene;
 
 /* Project namespace */
 namespace gdr
 {
   using gdr_object= long long;
-
   // Object system representation class
   class object_support
   {
@@ -15,6 +16,9 @@ namespace gdr
       // pointer to Render
       render* Render;
       std::unordered_map<std::string, std::vector<gdr_object>> LoadedObjectTypes;
+
+      // Load texture function
+      int LoadTextureFromAssimp(aiString *path, aiScene* scene, std::string directory);
     public:
       // default constructor
       object_support(render *Rnd);

@@ -144,6 +144,9 @@
     <ClCompile Include="source\render\subsystems\light_sources_support.cpp">
       <Filter>Source Files\Render\SubSystems</Filter>
     </ClCompile>
+    <ClCompile Include="source\units\unit_pbr_spheres.cpp">
+      <Filter>Source Files\Units</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\p_header.h">
@@ -277,6 +280,9 @@
     </ClInclude>
     <ClInclude Include="source\render\subsystems\light_sources_support.h">
       <Filter>Source Files\Render\SubSystems</Filter>
+    </ClInclude>
+    <ClInclude Include="source\units\unit_pbr_spheres.h">
+      <Filter>Source Files\Units</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

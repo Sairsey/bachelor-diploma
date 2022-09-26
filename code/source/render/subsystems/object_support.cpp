@@ -94,6 +94,31 @@ gdr::gdr_object gdr::object_support::DublicateObject(gdr_object original)
   return CPUPool.size() - 1;
 }
 
+int gdr::object_support::LoadTextureFromAssimp(aiString *path, aiScene* scene, std::string directory)
+{
+  int index = -1;
+  int textureNumber = path->C_Str()[1] - '0';
+  std::string fullpath;
+  if (path->C_Str()[0] == '*')
+  {
+    fullpath = directory + scene->mTextures[textureNumber]->mFilename.C_Str() + "." + scene->mTextures[textureNumber]->achFormatHint;
+    FILE *F;
+    fopen_s(&F, fullpath.c_str(), "wb");
+    fwrite(scene->mTextures[textureNumber]->pcData, 1, scene->mTextures[textureNumber]->mWidth, F);
+    fclose(F);
+  }
+  else
+  {
+    fullpath = directory + path->C_Str();
+  }
+  if (path->length != 0)
+  {
+    index = Render->TexturesSystem->Load(fullpath);
+  }
+
+  return index;
+}
+
 // function which will import data and return gdr_object
 std::vector<gdr::gdr_object> gdr::object_support::CreateObjectsFromFile(std::string fileName)
 {
@@ -188,34 +213,42 @@ std::vector<gdr::gdr_object> gdr::object_support::CreateObjectsFromFile(std::str
         directory = fileName.substr(0, last_slash_idx) + "/";
       }
     }
-    
+
+    aiShadingMode shadingModel;
+    scene->mMaterials[Mesh->mMaterialIndex]->Get(AI_MATKEY_SHADING_MODEL, shadingModel);
+
+    if (shadingModel & aiShadingMode::aiShadingMode_CookTorrance)
     {
-      aiString str;
-      scene->mMaterials[Mesh->mMaterialIndex]->GetTexture(aiTextureType_DIFFUSE, 0, &str);
-      if (str.length != 0)
       {
-        mat.KdMapIndex = Render->TexturesSystem->Load(directory + str.C_Str());
+        aiString str;
+        scene->mMaterials[Mesh->mMaterialIndex]->GetTexture(aiTextureType_DIFFUSE, 0, &str);
+        mat.KdMapIndex = LoadTextureFromAssimp(&str, const_cast<aiScene *>(scene), directory);
       }
+      {
+        aiString str;
+        scene->mMaterials[Mesh->mMaterialIndex]->GetTexture(AI_MATKEY_METALLIC_TEXTURE, &str);
+        mat.KsMapIndex = LoadTextureFromAssimp(&str, const_cast<aiScene*>(scene), directory);
+      }
+      mat.ShadeType = MATERIAL_SHADER_COOKTORRANCE;
     }
-
+    else
     {
-      aiString str;
-      scene->mMaterials[Mesh->mMaterialIndex]->GetTexture(aiTextureType_AMBIENT, 0, &str);
-      if (str.length != 0)
       {
-        mat.KaMapIndex = Render->TexturesSystem->Load(directory + str.C_Str());
+        aiString str;
+        scene->mMaterials[Mesh->mMaterialIndex]->GetTexture(aiTextureType_DIFFUSE, 0, &str);
+        mat.KdMapIndex = LoadTextureFromAssimp(&str, const_cast<aiScene*>(scene), directory);
       }
-    }
-
-    
-
-    {
-      aiString str;
-      scene->mMaterials[Mesh->mMaterialIndex]->GetTexture(aiTextureType_SPECULAR, 0, &str);
-      if (str.length != 0)
       {
-        mat.KsMapIndex = Render->TexturesSystem->Load(directory + str.C_Str());
+        aiString str;
+        scene->mMaterials[Mesh->mMaterialIndex]->GetTexture(aiTextureType_AMBIENT, 0, &str);
+        mat.KaMapIndex = LoadTextureFromAssimp(&str, const_cast<aiScene*>(scene), directory);
       }
+      {
+        aiString str;
+        scene->mMaterials[Mesh->mMaterialIndex]->GetTexture(aiTextureType_SPECULAR, 0, &str);
+        mat.KsMapIndex = LoadTextureFromAssimp(&str, const_cast<aiScene*>(scene), directory);
+      }
+      mat.ShadeType = MATERIAL_SHADER_PHONG;
     }
 
     // check transparency

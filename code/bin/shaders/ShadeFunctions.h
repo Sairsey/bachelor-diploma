@@ -22,8 +22,8 @@ float4 ShadePhong(float3 Normal, float3 Position, float2 uv, ObjectMaterial mate
   float alpha = 1.0;
   float3 ambientColor = material.Ka;
   if (material.KaMapIndex != -1)
-    ambientColor = TexturesPool[material.KaMapIndex].Sample(LinearSampler, uv).xyz
-    ;
+    ambientColor = TexturesPool[material.KaMapIndex].Sample(LinearSampler, uv).xyz;
+
   float3 diffuseColor = material.Kd;
   if (material.KdMapIndex != -1)
   {
@@ -42,6 +42,9 @@ float4 ShadePhong(float3 Normal, float3 Position, float2 uv, ObjectMaterial mate
 
   for (uint i = 0; i < globals.LightsAmount; i++)
   {
+    float attenuation = 1.0;
+    float3 L;
+
     if (LightSourcesPool[i].LightSourceType == LIGHT_SOURCE_TYPE_DIRECTIONAL)
     {
       float3 LightDir = float3(0, -1, 0);
@@ -51,19 +54,7 @@ float4 ShadePhong(float3 Normal, float3 Position, float2 uv, ObjectMaterial mate
       TransformMatrix[2][3] = 0;
       LightDir = mul(TransformMatrix, float4(LightDir, 1.0)).xyz;
       LightDir = normalize(LightDir);
-      float3 L = -LightDir;
-
-      float NdotL = dot(Normal, L);
-
-      if (NdotL > 0)
-      {
-        float3 R = reflect(-L, Normal);
-
-        resultColor += LightSourcesPool[i].Color * diffuseColor * NdotL;
-
-        float RdotV = dot(R, V);
-        resultColor += LightSourcesPool[i].Color * specularColor * pow(max(0.0f, RdotV), material.Ph);
-      }
+      L = -LightDir;
     }
     else if (LightSourcesPool[i].LightSourceType == LIGHT_SOURCE_TYPE_POINT)
     {
@@ -71,26 +62,14 @@ float4 ShadePhong(float3 Normal, float3 Position, float2 uv, ObjectMaterial mate
       float4x4 TransformMatrix = ObjectTransformData[LightSourcesPool[i].ObjectTransformIndex].transform;
       LightPos = mul(TransformMatrix, float4(LightPos, 1.0)).xyz;
       
-      float3 L = LightPos - Position;
+      L = LightPos - Position;
       float d = length(L);
       L = normalize(L);
 
-      float attenuation = 1.0 / (
+      attenuation = 1.0 / (
         LightSourcesPool[i].ConstantAttenuation +
         LightSourcesPool[i].LinearAttenuation * d +
         LightSourcesPool[i].QuadricAttenuation * d * d);
-
-      float NdotL = dot(Normal, L);
-
-      if (NdotL > 0)
-      {
-        float3 R = reflect(-L, Normal);
-
-        resultColor += attenuation * LightSourcesPool[i].Color * diffuseColor * NdotL;
-
-        float RdotV = dot(R, V);
-        resultColor += attenuation * LightSourcesPool[i].Color * specularColor * pow(max(0.0f, RdotV), material.Ph);
-      }
     }
     else if (LightSourcesPool[i].LightSourceType == LIGHT_SOURCE_TYPE_SPOT)
     {
@@ -105,14 +84,13 @@ float4 ShadePhong(float3 Normal, float3 Position, float2 uv, ObjectMaterial mate
       LightDir = mul(TransformMatrix, float4(LightDir, 1.0)).xyz;
       LightDir = normalize(LightDir);
 
-      float3 L = LightPos - Position;
+      L = LightPos - Position;
       float d = length(L);
       L = normalize(L);
 
       float cosTheta = dot(-L, LightDir);
       float cosInnerCone = cos(LightSourcesPool[i].AngleInnerCone);
       float cosOuterCone = cos(LightSourcesPool[i].AngleOuterCone);
-
 
       if (cosTheta < cosOuterCone)
       {
@@ -126,19 +104,158 @@ float4 ShadePhong(float3 Normal, float3 Position, float2 uv, ObjectMaterial mate
 
       if (cosTheta < cosInnerCone)
         attenuation *= 1.0 - (cosInnerCone - cosTheta) / (cosInnerCone - cosOuterCone);
-
-      float NdotL = dot(Normal, L);
-
-      if (NdotL > 0)
-      {
-        float3 R = reflect(-L, Normal);
-
-        resultColor += attenuation * LightSourcesPool[i].Color * diffuseColor * NdotL;
-
-        float RdotV = dot(R, V);
-        resultColor += attenuation * LightSourcesPool[i].Color * specularColor * pow(max(0.0f, RdotV), material.Ph);
-      }
     }
+
+    float NdotL = dot(Normal, L);
+
+    if (NdotL > 0)
+    {
+      float3 R = reflect(-L, Normal);
+
+      resultColor += attenuation * LightSourcesPool[i].Color * diffuseColor * NdotL;
+
+      float RdotV = dot(R, V);
+      resultColor += attenuation * LightSourcesPool[i].Color * specularColor * pow(max(0.0f, RdotV), material.Ph);
+    }
+  }
+
+  return float4(resultColor, alpha);
+}
+
+#define PI 3.14159265358979323846
+
+float GGX_PartialGeometry(float cosThetaN, float alpha) {
+  float cosTheta_sqr = saturate(cosThetaN * cosThetaN);
+  float tan2 = (1 - cosTheta_sqr) / cosTheta_sqr;
+  float GP = 2 / (1 + sqrt(1 + alpha * alpha * tan2));
+  return GP;
+}
+
+float GGX_Distribution(float cosThetaNH, float alpha) {
+  float alpha2 = alpha * alpha;
+  float NH_sqr = saturate(cosThetaNH * cosThetaNH);
+  float den = NH_sqr * alpha2 + (1.0 - NH_sqr);
+  return alpha2 / (PI * den * den);
+}
+
+float3 FresnelSchlick(float3 F0, float cosTheta) {
+  return F0 + (1.0 - F0) * pow(1.0 - saturate(cosTheta), 5.0);
+}
+
+float4 ShadeCookTorrance(float3 Normal, float3 Position, float2 uv, ObjectMaterial material)
+{
+  float3 resultColor = float3(0, 0, 0);
+  float alpha = 1.0;
+  
+  float roughness = material.Ks.g;
+  if (material.KsMapIndex != -1)
+    roughness = TexturesPool[material.KsMapIndex].Sample(LinearSampler, uv).g;
+
+  float3 albedo = material.Kd;
+  if (material.KdMapIndex != -1)
+  {
+    albedo = TexturesPool[material.KdMapIndex].Sample(LinearSampler, uv).xyz;
+    alpha = TexturesPool[material.KdMapIndex].Sample(NearestSampler, uv).w;
+  }
+
+  float metallic = material.Ks.b;
+  if (material.KsMapIndex != -1)
+    metallic = TexturesPool[material.KsMapIndex].Sample(LinearSampler, uv).b;
+
+  float3 V = globals.CameraPos - Position;
+  V = normalize(V);
+
+  resultColor = 0.0;
+
+  for (uint i = 0; i < globals.LightsAmount; i++)
+  {
+    float attenuation = 1.0;
+    float3 L;
+
+    if (LightSourcesPool[i].LightSourceType == LIGHT_SOURCE_TYPE_DIRECTIONAL)
+    {
+      float3 LightDir = float3(0, -1, 0);
+      float4x4 TransformMatrix = ObjectTransformData[LightSourcesPool[i].ObjectTransformIndex].transform;
+      TransformMatrix[0][3] = 0;
+      TransformMatrix[1][3] = 0;
+      TransformMatrix[2][3] = 0;
+      LightDir = mul(TransformMatrix, float4(LightDir, 1.0)).xyz;
+      LightDir = normalize(LightDir);
+      L = -LightDir;
+    }
+    else if (LightSourcesPool[i].LightSourceType == LIGHT_SOURCE_TYPE_POINT)
+    {
+      float3 LightPos = float3(0, 0, 0);
+      float4x4 TransformMatrix = ObjectTransformData[LightSourcesPool[i].ObjectTransformIndex].transform;
+      LightPos = mul(TransformMatrix, float4(LightPos, 1.0)).xyz;
+
+      L = LightPos - Position;
+      float d = length(L);
+      L = normalize(L);
+
+      attenuation = 1.0 / (
+        LightSourcesPool[i].ConstantAttenuation +
+        LightSourcesPool[i].LinearAttenuation * d +
+        LightSourcesPool[i].QuadricAttenuation * d * d);
+    }
+    else if (LightSourcesPool[i].LightSourceType == LIGHT_SOURCE_TYPE_SPOT)
+    {
+      float3 LightPos = float3(0, 0, 0);
+      float4x4 TransformMatrix = ObjectTransformData[LightSourcesPool[i].ObjectTransformIndex].transform;
+      LightPos = mul(TransformMatrix, float4(LightPos, 1.0)).xyz;
+
+      float3 LightDir = float3(0, -1, 0);
+      TransformMatrix[0][3] = 0;
+      TransformMatrix[1][3] = 0;
+      TransformMatrix[2][3] = 0;
+      LightDir = mul(TransformMatrix, float4(LightDir, 1.0)).xyz;
+      LightDir = normalize(LightDir);
+
+      L = LightPos - Position;
+      float d = length(L);
+      L = normalize(L);
+
+      float cosTheta = dot(-L, LightDir);
+      float cosInnerCone = cos(LightSourcesPool[i].AngleInnerCone);
+      float cosOuterCone = cos(LightSourcesPool[i].AngleOuterCone);
+
+      if (cosTheta < cosOuterCone)
+      {
+        continue;
+      }
+
+      float attenuation = 1.0 / (
+        LightSourcesPool[i].ConstantAttenuation +
+        LightSourcesPool[i].LinearAttenuation * d +
+        LightSourcesPool[i].QuadricAttenuation * d * d);
+
+      if (cosTheta < cosInnerCone)
+        attenuation *= 1.0 - (cosInnerCone - cosTheta) / (cosInnerCone - cosOuterCone);
+    }
+
+    float3 H = normalize(V + L);
+    //precompute dots
+    float NL = dot(Normal, L);
+    if (NL <= 0.0) continue;
+    float NV = dot(Normal, V);
+    if (NV <= 0.0) continue;
+    float NH = dot(Normal, H);
+    float HV = dot(H, V);
+
+    float3 F0 = 0.04;
+    F0 = lerp(F0, albedo, metallic);
+    
+    //precompute roughness square
+    float roug_sqr = roughness * roughness;
+    float G = GGX_PartialGeometry(NV, roug_sqr) * GGX_PartialGeometry(NL, roug_sqr);
+    float D = GGX_Distribution(NH, roug_sqr);
+    float3 F = FresnelSchlick(F0, HV);
+
+    float3 Specular = G * D * F * 0.25 / NV;
+    float3 KDiffuse = float3(1.0, 1.0, 1.0) - F;
+    float3 Diffuse = albedo * (1.0 - metallic) * KDiffuse * NL;
+
+    resultColor += attenuation * LightSourcesPool[i].Color * (Diffuse + Specular);
   }
 
   return float4(resultColor, alpha);
@@ -153,6 +270,9 @@ float4 Shade(float3 Normal, float3 Position, float2 uv, ObjectMaterial material)
       break;
     case MATERIAL_SHADER_PHONG:
       return ShadePhong(Normal, Position, uv, material);
+      break;
+    case MATERIAL_SHADER_COOKTORRANCE:
+      return ShadeCookTorrance(Normal, Position, uv, material);
       break;
     default:
       return float4(1, 0, 1, 1);

@@ -18,7 +18,7 @@ void unit_bread::Initialize(void)
     PROFILE_BEGIN(commandList, "unit_bread Init");
     for (int i = 0; i < 1000; i++)
     {
-      Bread.push_back(Engine->ObjectSystem->CreateObjectsFromFile("bin/models/Bread/Bread.obj")[0]);
+      Bread.push_back(Engine->ObjectSystem->CreateObjectsFromFile("bin/models/pbr_sphere/pbr_sphere.glb")[0]);
       int k = Bread.size() - 1;
 
       double dist = (Engine->ObjectSystem->GetTransforms(Bread[k]).maxAABB - Engine->ObjectSystem->GetTransforms(Bread[k]).minAABB).Lenght();

@@ -50,6 +50,7 @@
     <ClInclude Include="source\units\unit_city.h" />
     <ClInclude Include="source\units\unit_control.h" />
     <ClInclude Include="source\units\unit_frog.h" />
+    <ClInclude Include="source\units\unit_pbr_spheres.h" />
     <ClInclude Include="source\units\unit_stats.h" />
     <ClInclude Include="source\units\unit_triangle.h" />
     <ClInclude Include="source\utils\math\mth.h" />
@@ -92,6 +93,7 @@
     <ClCompile Include="source\units\unit_city.cpp" />
     <ClCompile Include="source\units\unit_control.cpp" />
     <ClCompile Include="source\units\unit_frog.cpp" />
+    <ClCompile Include="source\units\unit_pbr_spheres.cpp" />
     <ClCompile Include="source\units\unit_stats.cpp" />
     <ClCompile Include="source\units\unit_triangle.cpp" />
     <ClCompile Include="source\utils\D3D12MemAlloc.cpp" />

@@ -55,8 +55,8 @@ struct ObjectMaterial
 {
   UINT ShadeType;
   float3 Ka;
-  float3 Kd;
-  float3 Ks;
+  float3 Kd; // in case of PBR Kd.xyz - Albedo
+  float3 Ks; // in case of PBR Ks.b - metallic, Ks.g - roughness
   float Ph;
   int KaMapIndex;
   int KdMapIndex;
@@ -65,7 +65,8 @@ struct ObjectMaterial
 
 #define MATERIAL_SHADER_DIFFUSE 0
 #define MATERIAL_SHADER_PHONG 1
-#define MATERIAL_SHADER_AMOUNT 2
+#define MATERIAL_SHADER_COOKTORRANCE 2
+#define MATERIAL_SHADER_AMOUNT 3
 
 struct ObjectIndices
 {

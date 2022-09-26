@@ -33,6 +33,7 @@ struct VSOut
   float4 pos : SV_POSITION;
   float4 unmodifiedPos : POSITION;
   float4 normal : NORMAL;
+  float3 tangent : TANGENT;
   float2 uv: TEXCOORD;
 };
 

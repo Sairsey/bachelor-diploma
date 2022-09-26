@@ -125,10 +125,8 @@ float4 ShadePhong(float3 Normal, float3 Position, float2 uv, ObjectMaterial mate
 #define PI 3.14159265358979323846
 
 float GGX_PartialGeometry(float cosThetaN, float alpha) {
-  float cosTheta_sqr = saturate(cosThetaN * cosThetaN);
-  float tan2 = (1 - cosTheta_sqr) / cosTheta_sqr;
-  float GP = 2 / (1 + sqrt(1 + alpha * alpha * tan2));
-  return GP;
+  float K = (alpha + 1) * (alpha + 1) / 8.0;  
+  return cosThetaN / (cosThetaN * (1 - K) + K);
 }
 
 float GGX_Distribution(float cosThetaNH, float alpha) {
@@ -235,25 +233,22 @@ float4 ShadeCookTorrance(float3 Normal, float3 Position, float2 uv, ObjectMateri
 
     float3 H = normalize(V + L);
     //precompute dots
-    float NL = dot(Normal, L);
-    if (NL <= 0.0) continue;
-    float NV = dot(Normal, V);
-    if (NV <= 0.0) continue;
-    float NH = dot(Normal, H);
-    float HV = dot(H, V);
+    float NL = max(dot(Normal, L), 0.0);
+    float NV = max(dot(Normal, V), 0.0);
+    float NH = max(dot(Normal, H), 0.0);
+    float HV = max(dot(H, V), 0.0);
 
     float3 F0 = 0.04;
     F0 = lerp(F0, albedo, metallic);
     
     //precompute roughness square
-    float roug_sqr = roughness * roughness;
-    float G = GGX_PartialGeometry(NV, roug_sqr) * GGX_PartialGeometry(NL, roug_sqr);
-    float D = GGX_Distribution(NH, roug_sqr);
+    float G = GGX_PartialGeometry(NV, roughness) * GGX_PartialGeometry(NL, roughness);
+    float D = GGX_Distribution(NH, roughness);
     float3 F = FresnelSchlick(F0, HV);
 
-    float3 Specular = G * D * F * 0.25 / NV;
+    float3 Specular = G * D * F / (4.0 * (NV + 1e-5f));
     float3 KDiffuse = float3(1.0, 1.0, 1.0) - F;
-    float3 Diffuse = albedo * (1.0 - metallic) * KDiffuse * NL;
+    float3 Diffuse = albedo * (1.0 - metallic) * KDiffuse * NL / PI;
 
     resultColor += attenuation * LightSourcesPool[i].Color * (Diffuse + Specular);
   }

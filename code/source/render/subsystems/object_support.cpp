@@ -101,7 +101,7 @@ int gdr::object_support::LoadTextureFromAssimp(aiString *path, aiScene* scene, s
   std::string fullpath;
   if (path->C_Str()[0] == '*')
   {
-    fullpath = directory + scene->mTextures[textureNumber]->mFilename.C_Str() + "." + scene->mTextures[textureNumber]->achFormatHint;
+    fullpath = directory + scene->mTextures[textureNumber]->mFilename.C_Str() + path->C_Str()[1] + "." + scene->mTextures[textureNumber]->achFormatHint;
     FILE *F;
     fopen_s(&F, fullpath.c_str(), "wb");
     fwrite(scene->mTextures[textureNumber]->pcData, 1, scene->mTextures[textureNumber]->mWidth, F);
@@ -172,7 +172,8 @@ std::vector<gdr::gdr_object> gdr::object_support::CreateObjectsFromFile(std::str
 
       V.UV = mth::vec2f({ uv.x, uv.y });
 
-      V.Tangent = Mesh->mTangents[0][j];
+      V.Tangent = mth::vec3f{Mesh->mTangents[j].x, Mesh->mTangents[j].y, Mesh->mTangents[j].z};
+      V.Tangent.Normalize();
 
       vertices.push_back(V);
     }

@@ -10,6 +10,7 @@ namespace gdr
     mth::vec3f Pos;
     mth::vec3f Normal;
     mth::vec2f UV;
+    mth::vec3f Tangent;
   };
 
   // Geometry representation struct

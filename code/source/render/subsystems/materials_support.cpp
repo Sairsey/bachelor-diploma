@@ -17,6 +17,7 @@ ObjectMaterial gdr::materials_support::DefaultMaterial(void)
   mat.KaMapIndex = -1;
   mat.KdMapIndex = -1;
   mat.KsMapIndex = -1;
+  mat.NormalMapIndex = -1;
   return mat;
 }
 

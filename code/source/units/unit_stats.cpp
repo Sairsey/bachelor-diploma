@@ -282,6 +282,15 @@ void unit_stats::Response(void)
           ImGui::Image((ImTextureID)true_texture_handle.ptr, ImVec2((float)128, (float)128));
         }
       }
+
+      ImGui::Text("Normal Texture index %d", Engine->MaterialsSystem->CPUData[CurrentMaterialToShow].NormalMapIndex);
+      if (Engine->MaterialsSystem->CPUData[CurrentMaterialToShow].NormalMapIndex != -1)
+      {
+        D3D12_GPU_DESCRIPTOR_HANDLE true_texture_handle = Engine->TexturesSystem->TextureTableGPU;
+        true_texture_handle.ptr += Engine->MaterialsSystem->CPUData[CurrentMaterialToShow].NormalMapIndex * Engine->GetDevice().GetSRVDescSize();
+
+        ImGui::Image((ImTextureID)true_texture_handle.ptr, ImVec2((float)128, (float)128));
+      }
       ImGui::End();
     });
 

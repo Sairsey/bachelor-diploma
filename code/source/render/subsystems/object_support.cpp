@@ -171,6 +171,9 @@ std::vector<gdr::gdr_object> gdr::object_support::CreateObjectsFromFile(std::str
         uv = Mesh->mTextureCoords[0][j];
 
       V.UV = mth::vec2f({ uv.x, uv.y });
+
+      V.Tangent = Mesh->mTangents[0][j];
+
       vertices.push_back(V);
     }
 
@@ -259,12 +262,13 @@ std::vector<gdr::gdr_object> gdr::object_support::CreateObjectsFromFile(std::str
         ? OBJECT_PARAMETER_TRANSPARENT
         : 0;
     }
-    /*
-    if (CPUPool[CPUPool.size() - 1].ObjectParams & OBJECT_PARAMETER_TRANSPARENT)
+
+    // check normalmap
     {
-      mat.ShadeType = MATERIAL_SHADER_DIFFUSE;
+      aiString str;
+      scene->mMaterials[Mesh->mMaterialIndex]->GetTexture(aiTextureType_NORMALS, 0, &str);
+      mat.NormalMapIndex = LoadTextureFromAssimp(&str, const_cast<aiScene*>(scene), directory);
     }
-    */
   }
   LoadedObjectTypes[fileName] = result;
   

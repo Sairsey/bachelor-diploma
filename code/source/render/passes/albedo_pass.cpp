@@ -46,14 +46,15 @@ void gdr::albedo_pass::Initialize(void)
   {
       { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
       { "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
-      { "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 24, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 }
+      { "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 24, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+      { "TANGENT", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 32, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
   };
 
   // 4) Create PSO
   // Describe and create the graphics pipeline state object (PSO).
   {
     D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc = {};
-    psoDesc.InputLayout = { inputElementDescs, 3 };
+    psoDesc.InputLayout = { inputElementDescs, 4 };
     psoDesc.pRootSignature = RootSignature;
     psoDesc.VS = CD3DX12_SHADER_BYTECODE(VertexShader);
     psoDesc.PS = CD3DX12_SHADER_BYTECODE(PixelShader);

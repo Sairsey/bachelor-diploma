@@ -61,6 +61,7 @@ struct ObjectMaterial
   int KaMapIndex;
   int KdMapIndex;
   int KsMapIndex;
+  int NormalMapIndex;
 };
 
 #define MATERIAL_SHADER_DIFFUSE 0

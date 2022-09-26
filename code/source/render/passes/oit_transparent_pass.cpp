@@ -145,7 +145,6 @@ void gdr::oit_transparent_pass::Initialize(void)
 
     // UAV for OIT Lists
     Render->GetDevice().AllocateStaticDescriptors(2, OITListsCPUDescriptor, OITListsGPUDescriptor);
-    CreateOITLists();
   }
 
   // 6) Create Combine InputLayout
@@ -371,18 +370,6 @@ void gdr::oit_transparent_pass::CallCompute(ID3D12GraphicsCommandList* currentCo
   if (!Render->Params.IsTransparent)
     return;
 
-  if (OITListsClearBuffer.Resource == nullptr)
-  {
-    Render->GetDevice().SetCommandListAsUpload(currentCommandList);
-    Render->GetDevice().CreateGPUResource(
-      CD3DX12_RESOURCE_DESC::Buffer({ CurrentOITListsSize }),
-      D3D12_RESOURCE_STATE_COMMON,
-      nullptr,
-      OITListsClearBuffer, OITListsClearVector.data(), CurrentOITListsSize);
-    Render->GetDevice().ClearUploadListReference();
-  }
-
-
   // at first get our UAV
   OurUAVIndex = Render->IndirectSystem->CurrentUAV;
   Render->IndirectSystem->CurrentUAV = (Render->IndirectSystem->CurrentUAV + 1) % Render->IndirectSystem->TotalUAV;
@@ -491,6 +478,7 @@ void gdr::oit_transparent_pass::CallDirectDraw(ID3D12GraphicsCommandList* curren
             nullptr,
             OITListsClearBuffer, OITListsClearVector.data(), CurrentOITListsSize);
           Render->GetDevice().ClearUploadListReference();
+
         }
       }
 
@@ -649,7 +637,12 @@ void gdr::oit_transparent_pass::CallIndirectDraw(ID3D12GraphicsCommandList* curr
             D3D12_RESOURCE_STATE_COPY_DEST,
             nullptr,
             OITListsClearBuffer, OITListsClearVector.data(), CurrentOITListsSize);
+          OITListsClearBuffer.Resource->SetName(L"OIT Lists clear buffer");
           Render->GetDevice().ClearUploadListReference();
+          Render->GetDevice().TransitResourceState(
+            currentCommandList,
+            OITListsClearBuffer.Resource,
+            D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_COPY_SOURCE);
         }
       }
 

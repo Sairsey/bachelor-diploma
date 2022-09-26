@@ -13,6 +13,10 @@ private:
   bool MaterialToolActive;
   int CurrentMaterialToShow;
 
+  // Light tool
+  bool LightToolActive;
+  int CurrentLightToShow;
+
   // Stats window
   bool StatsToolActive;
   const int PlotWindowWidth = 10;
@@ -26,6 +30,12 @@ private:
   std::vector<float> GPUMemoryUsagePlot;
   float AverageGPUMemoryUsagePlot;
   float MaxGPUMemoryPlot;
+
+  gdr::gdr_object PointLightObject;
+  gdr::gdr_object DirLightObject;
+  gdr::gdr_object SpotLightObject;
+
+  int NullTransform;
 
 public:
   void Initialize(void);

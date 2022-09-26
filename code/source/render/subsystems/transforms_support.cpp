@@ -36,7 +36,13 @@ void gdr::transforms_support::UpdateGPUData(ID3D12GraphicsCommandList* pCommandL
   if (CPUData.size() != StoredCopy.size() ||
     memcmp(&CPUData[0], &StoredCopy[0], sizeof(ObjectTransform) * CPUData.size()) != 0)
   {
-    
+
+    if (CPUData.size() != StoredCopy.size() && GPUData.Resource != nullptr)
+    {
+      Render->GetDevice().ReleaseGPUResource(GPUData);
+      GPUData.Resource = nullptr;
+    }
+
     // Now updating on GPU and only for those, who are ready to draw
     //UpdateInverseTranspose();
 

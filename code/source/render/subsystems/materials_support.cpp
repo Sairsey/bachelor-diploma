@@ -27,6 +27,12 @@ void gdr::materials_support::UpdateGPUData(ID3D12GraphicsCommandList* pCommandLi
     memcmp(&CPUData[0], &StoredCopy[0], sizeof(ObjectMaterial) * CPUData.size()) != 0)
   {
 
+    if (CPUData.size() != StoredCopy.size() && GPUData.Resource != nullptr)
+    {
+      Render->GetDevice().ReleaseGPUResource(GPUData);
+      GPUData.Resource = nullptr;
+    }
+
     if (GPUData.Resource == nullptr)
     {
       Render->GetDevice().CreateGPUResource(CD3DX12_RESOURCE_DESC::Buffer({ sizeof(ObjectMaterial) * CPUData.size() }),

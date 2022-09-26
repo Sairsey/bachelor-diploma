@@ -10,7 +10,7 @@ namespace gdr
   // Device creation parameters
   struct device_create_params
   {
-    bool DebugLayer = false;
+    bool DebugLayer = true;
     bool DebugShaders = true;
     int  CmdListCount = 2;
     int  UploadListCount = 2;

@@ -8,16 +8,51 @@ void unit_stats::Initialize(void)
   CurrentTransformToShow = 0;
   MaterialToolActive = false;
   CurrentMaterialToShow = 0;
+  LightToolActive = false;
+  CurrentLightToShow = 0;
   
   StatsToolActive = true;
   CPURenderTimePlot.resize(PlotWindowWidth);
   DeviceRenderTimePlot.resize(PlotWindowWidth);
   GPUMemoryUsagePlot.resize(PlotWindowWidth);
   CurrentPlotIndex = 0;
+
+  // load all objects for lights
+  ID3D12GraphicsCommandList* commandList;
+  Engine->GetDevice().BeginUploadCommandList(&commandList);
+  PROFILE_BEGIN(commandList, "unit_stats lights Init");
+  PointLightObject = Engine->ObjectSystem->CreateObjectsFromFile("bin/models/light_meshes/sphere.obj")[0];
+  DirLightObject = Engine->ObjectSystem->CreateObjectsFromFile("bin/models/light_meshes/dir.obj")[0];
+  SpotLightObject = Engine->ObjectSystem->CreateObjectsFromFile("bin/models/light_meshes/cone.obj")[0];
+  PROFILE_END(commandList);
+  Engine->GetDevice().CloseUploadCommandList();
 }
 
 void unit_stats::Response(void)
 {
+  // set all light objects transforms to zero
+  Engine->ObjectSystem->GetTransforms(PointLightObject).transform = mth::matr4f::Scale(0);
+  Engine->ObjectSystem->GetTransforms(SpotLightObject).transform = mth::matr4f::Scale(0);
+  Engine->ObjectSystem->GetTransforms(DirLightObject).transform = mth::matr4f::Scale(0);
+
+  // if light tool is active
+  if (LightToolActive)
+  {
+    // choose right mesh
+    gdr::gdr_object ObjectType;
+    if (Engine->LightsSystem->GetLight(CurrentLightToShow).LightSourceType == LIGHT_SOURCE_TYPE_DIRECTIONAL)
+      ObjectType = DirLightObject;
+    if (Engine->LightsSystem->GetLight(CurrentLightToShow).LightSourceType == LIGHT_SOURCE_TYPE_SPOT)
+      ObjectType = SpotLightObject;
+    if (Engine->LightsSystem->GetLight(CurrentLightToShow).LightSourceType == LIGHT_SOURCE_TYPE_POINT)
+      ObjectType = PointLightObject;
+
+    Engine->ObjectSystem->GetTransforms(ObjectType).transform = Engine->LightsSystem->GetTransform(CurrentLightToShow).transform;
+    if (ObjectType == DirLightObject)
+      Engine->ObjectSystem->GetTransforms(ObjectType).transform = Engine->ObjectSystem->GetTransforms(ObjectType).transform * mth::matr::Translate({ 0, 10, 0 });
+  }
+
+  // Transform viewer
   Engine->AddLambdaForIMGUI(
     [&]()
     { 
@@ -118,6 +153,7 @@ void unit_stats::Response(void)
       ImGui::End();
     });
 
+  // Material viewer
   Engine->AddLambdaForIMGUI(
     [&]()
     {
@@ -203,6 +239,98 @@ void unit_stats::Response(void)
       ImGui::End();
     });
 
+  // Lights viewer
+  Engine->AddLambdaForIMGUI(
+    [&]()
+    {
+      if (!LightToolActive || Engine->LightsSystem->CPUData.size() == 0)
+        return;
+      ImGui::Begin("Lights Viewer", &LightToolActive, ImGuiWindowFlags_AlwaysAutoResize);
+      if (ImGui::Button("<<<"))
+      {
+        CurrentLightToShow -= 100;
+        CurrentLightToShow = max(0, CurrentLightToShow);
+        CurrentLightToShow = min(CurrentLightToShow, Engine->LightsSystem->CPUData.size() - 1);
+      }
+      ImGui::SameLine();
+      if (ImGui::Button("<<"))
+      {
+        CurrentLightToShow -= 10;
+        CurrentLightToShow = max(0, CurrentLightToShow);
+        CurrentLightToShow = min(CurrentLightToShow, Engine->LightsSystem->CPUData.size() - 1);
+      }
+      ImGui::SameLine();
+      if (ImGui::Button("<"))
+      {
+        CurrentLightToShow -= 1;
+        CurrentLightToShow = max(0, CurrentLightToShow);
+        CurrentLightToShow = min(CurrentLightToShow, Engine->LightsSystem->CPUData.size() - 1);
+      }
+      ImGui::SameLine();
+      if (ImGui::Button(">"))
+      {
+        CurrentLightToShow += 1;
+        CurrentLightToShow = max(0, CurrentLightToShow);
+        CurrentLightToShow = min(CurrentLightToShow, Engine->LightsSystem->CPUData.size() - 1);
+      }
+      ImGui::SameLine();
+      if (ImGui::Button(">>"))
+      {
+        CurrentLightToShow += 10;
+        CurrentLightToShow = max(0, CurrentLightToShow);
+        CurrentLightToShow = min(CurrentLightToShow, Engine->LightsSystem->CPUData.size() - 1);
+      }
+      ImGui::SameLine();
+      if (ImGui::Button(">>>"))
+      {
+        CurrentLightToShow += 100;
+        CurrentLightToShow = max(0, CurrentLightToShow);
+        CurrentLightToShow = min(CurrentLightToShow, Engine->LightsSystem->CPUData.size() - 1);
+      }
+
+      if (ImGui::Button("New Light"))
+      {
+        CurrentLightToShow = Engine->LightsSystem->AddDirectionalLightSource();
+      }
+      ImGui::SameLine();
+
+      ImGui::Text("Light %d", CurrentLightToShow);
+
+      const char* items[] = { "Directional" , "Point", "Spot"};
+      ImGui::Combo("Type", (int*)&Engine->LightsSystem->GetLight(CurrentLightToShow).LightSourceType, items, IM_ARRAYSIZE(items));
+
+      ImGui::Text("Transform index %d", Engine->LightsSystem->GetLight(CurrentLightToShow).ObjectTransformIndex);
+      ImGui::SameLine();
+      if (ImGui::Button("Open"))
+      {
+        TransformToolActive = true;
+        CurrentTransformToShow = Engine->LightsSystem->GetLight(CurrentLightToShow).ObjectTransformIndex;
+      }
+
+      ImGui::ColorEdit3("Color", &Engine->LightsSystem->GetLight(CurrentLightToShow).Color[0]);
+
+      if (Engine->LightsSystem->GetLight(CurrentLightToShow).LightSourceType != LIGHT_SOURCE_TYPE_DIRECTIONAL)
+      {
+        ImGui::Text("Attenuation");
+        ImGui::DragFloat("Constant part", &Engine->LightsSystem->GetLight(CurrentLightToShow).ConstantAttenuation, 0.1);
+        ImGui::DragFloat("Linear part", &Engine->LightsSystem->GetLight(CurrentLightToShow).LinearAttenuation, 0.1);
+        ImGui::DragFloat("Quadric part", &Engine->LightsSystem->GetLight(CurrentLightToShow).QuadricAttenuation, 0.1);
+        Engine->LightsSystem->GetLight(CurrentLightToShow).ConstantAttenuation = max(1, Engine->LightsSystem->GetLight(CurrentLightToShow).ConstantAttenuation);
+      }
+
+      if (Engine->LightsSystem->GetLight(CurrentLightToShow).LightSourceType == LIGHT_SOURCE_TYPE_SPOT)
+      {
+        Engine->LightsSystem->GetLight(CurrentLightToShow).AngleInnerCone *= MTH_R2D;
+        Engine->LightsSystem->GetLight(CurrentLightToShow).AngleOuterCone *= MTH_R2D;
+        ImGui::DragFloat("Inner cone angle", &Engine->LightsSystem->GetLight(CurrentLightToShow).AngleInnerCone, 0.1, 1);
+        ImGui::DragFloat("Outer cone angle", &Engine->LightsSystem->GetLight(CurrentLightToShow).AngleOuterCone, 0.1, Engine->LightsSystem->GetLight(CurrentLightToShow).AngleInnerCone);
+        Engine->LightsSystem->GetLight(CurrentLightToShow).AngleInnerCone = max(5, Engine->LightsSystem->GetLight(CurrentLightToShow).AngleInnerCone);
+        Engine->LightsSystem->GetLight(CurrentLightToShow).AngleOuterCone = max(Engine->LightsSystem->GetLight(CurrentLightToShow).AngleInnerCone, Engine->LightsSystem->GetLight(CurrentLightToShow).AngleOuterCone);
+        Engine->LightsSystem->GetLight(CurrentLightToShow).AngleInnerCone *= MTH_D2R;
+        Engine->LightsSystem->GetLight(CurrentLightToShow).AngleOuterCone *= MTH_D2R;
+      }
+      ImGui::End();
+    });
 
   CPURenderTimePlot[CurrentPlotIndex] = Engine->GetGlobalDeltaTime() * 1000.0;
   DeviceRenderTimePlot[CurrentPlotIndex] = Engine->DeviceFrameCounter.GetMSec();
@@ -229,7 +357,7 @@ void unit_stats::Response(void)
 
   CurrentPlotIndex = (CurrentPlotIndex + 1) % PlotWindowWidth;
 
-
+  // Stats
   Engine->AddLambdaForIMGUI(
     [&]()
     {
@@ -247,6 +375,12 @@ void unit_stats::Response(void)
       if (ImGui::Button("Open Transforms viewer"))
       {
         TransformToolActive = true;
+        StatsToolActive = false;
+      }
+
+      if (ImGui::Button("Open Lights viewer"))
+      {
+        LightToolActive = true;
         StatsToolActive = false;
       }
 

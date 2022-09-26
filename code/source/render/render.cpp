@@ -278,6 +278,7 @@ void gdr::render::Term(void)
   if (!IsInited)
     return;
 
+  delete LightsSystem;
   delete TexturesSystem;
   delete IndirectSystem;
   delete MaterialsSystem; 

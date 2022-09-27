@@ -85,6 +85,7 @@ bool gdr::render::Init(engine* Eng)
   {
     Passes.push_back(new debug_pass());
     Passes.push_back(new albedo_pass());
+    Passes.push_back(new skybox_pass());
     Passes.push_back(new oit_transparent_pass());
     Passes.push_back(new imgui_pass());
     
@@ -105,6 +106,7 @@ bool gdr::render::Init(engine* Eng)
     IndirectSystem = new gdr::indirect_support(this);
     MaterialsSystem = new gdr::materials_support(this);
     TexturesSystem = new gdr::textures_support(this);
+    CubeTexturesSystem= new gdr::cube_textures_support(this);
     LightsSystem = new gdr::light_sources_support(this);
   }
 
@@ -185,6 +187,9 @@ void gdr::render::DrawFrame(void)
   PROFILE_END(uploadCommandList);
   PROFILE_BEGIN(uploadCommandList, "Update Textures");
   TexturesSystem->UpdateGPUData(uploadCommandList);
+  PROFILE_END(uploadCommandList);
+  PROFILE_BEGIN(uploadCommandList, "Update cube Textures");
+  CubeTexturesSystem->UpdateGPUData(uploadCommandList);
   PROFILE_END(uploadCommandList);
   PROFILE_BEGIN(uploadCommandList, "Update Lights");
   LightsSystem->UpdateGPUData(uploadCommandList);
@@ -280,6 +285,7 @@ void gdr::render::Term(void)
 
   delete LightsSystem;
   delete TexturesSystem;
+  delete CubeTexturesSystem;
   delete IndirectSystem;
   delete MaterialsSystem; 
   delete TransformsSystem;

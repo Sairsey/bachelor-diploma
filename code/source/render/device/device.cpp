@@ -719,11 +719,11 @@ HRESULT gdr::device::UpdateTexture(ID3D12GraphicsCommandList* pCommandList, ID3D
   assert(desc.Dimension == D3D12_RESOURCE_DIMENSION_TEXTURE2D);
 
   UINT64 total = 0;
-  std::vector<UINT> numRows(desc.MipLevels);
-  std::vector<UINT64> rowSize(desc.MipLevels);
-  std::vector<D3D12_PLACED_SUBRESOURCE_FOOTPRINT> placedFootprint(desc.MipLevels);
+  std::vector<UINT> numRows(desc.MipLevels * desc.DepthOrArraySize);
+  std::vector<UINT64> rowSize(desc.MipLevels * desc.DepthOrArraySize);
+  std::vector<D3D12_PLACED_SUBRESOURCE_FOOTPRINT> placedFootprint(desc.MipLevels * desc.DepthOrArraySize);
 
-  D3DDevice->GetCopyableFootprints(&desc, 0, desc.MipLevels, 0, placedFootprint.data(), numRows.data(), rowSize.data(), &total);
+  D3DDevice->GetCopyableFootprints(&desc, 0, desc.MipLevels * desc.DepthOrArraySize, 0, placedFootprint.data(), numRows.data(), rowSize.data(), &total);
 
   assert(CurrentUploadCmdList == pCommandList);
 
@@ -768,28 +768,35 @@ HRESULT gdr::device::UpdateTexture(ID3D12GraphicsCommandList* pCommandList, ID3D
 
   UINT8* pDstData = static_cast<UINT8*>(pAlloc);
 
-  for (int i = 0; i < desc.MipLevels; i++)
+  for (int arrayIndex = 0; arrayIndex < desc.DepthOrArraySize; arrayIndex++)
   {
-    // Copy from pData
-    for (UINT j = 0; j < height; j++)
+    width = desc.Width;
+    height = desc.Height;
+    for (int mipIndex = 0; mipIndex < desc.MipLevels; mipIndex++)
     {
-      memcpy(pDstData, pSrcData, width * pixelSize);
-      pDstData += placedFootprint[i].Footprint.RowPitch;
-      pSrcData += width * pixelSize;
+      const int subResourceIndex = mipIndex + (arrayIndex * desc.MipLevels);
+
+      // Copy from pData
+      for (UINT j = 0; j < height; j++)
+      {
+        memcpy(pDstData, pSrcData, width * pixelSize);
+        pDstData += placedFootprint[subResourceIndex].Footprint.RowPitch;
+        pSrcData += width * pixelSize;
+      }
+
+      placedFootprint[subResourceIndex].Offset += allocStartOffset;
+
+      const auto& dst = CD3DX12_TEXTURE_COPY_LOCATION(pTexture, subResourceIndex);
+      const auto& src = CD3DX12_TEXTURE_COPY_LOCATION(UploadBuffer->GetBuffer(), placedFootprint[subResourceIndex]);
+      pCommandList->CopyTextureRegion(
+        &dst,
+        0, 0, 0,
+        &src,
+        nullptr);
+
+      width /= 2;
+      height /= 2;
     }
-
-    placedFootprint[i].Offset += allocStartOffset;
-
-    const auto& dst = CD3DX12_TEXTURE_COPY_LOCATION(pTexture, i);
-    const auto& src = CD3DX12_TEXTURE_COPY_LOCATION(UploadBuffer->GetBuffer(), placedFootprint[i]);
-    pCommandList->CopyTextureRegion(
-      &dst,
-      0, 0, 0,
-      &src,
-      nullptr);
-
-    width /= 2;
-    height /= 2;
   }
 
   return S_OK;

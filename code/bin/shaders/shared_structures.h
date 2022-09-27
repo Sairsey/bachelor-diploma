@@ -20,6 +20,7 @@ struct GlobalData
   UINT width;  // Screen size 
   UINT height; // Screen size 
   UINT LightsAmount; // Amount of active lights
+  int SkyboxCubemapIndex;
 };
 
 struct ObjectTransform

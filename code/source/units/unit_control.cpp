@@ -13,6 +13,18 @@ void unit_control::Initialize(void)
   DefaultLight = Engine->LightsSystem->AddDirectionalLightSource();
   Engine->LightsSystem->GetTransform(DefaultLight).transform = mth::matr4f::RotateX(30);
   Engine->LightsSystem->GetLight(DefaultLight).Color = mth::vec3f(1, 1, 1);
+  ID3D12GraphicsCommandList* commandList;
+  Engine->GetDevice().BeginUploadCommandList(&commandList);
+  PROFILE_BEGIN(commandList, "skybox Init");
+  Engine->GlobalsSystem->CPUData.SkyboxCubemapIndex = Engine->CubeTexturesSystem->Load(
+    "bin/cubemaps/yokohama/posx.jpg",
+    "bin/cubemaps/yokohama/negx.jpg",
+    "bin/cubemaps/yokohama/posy.jpg",
+    "bin/cubemaps/yokohama/negy.jpg",
+    "bin/cubemaps/yokohama/posz.jpg",
+    "bin/cubemaps/yokohama/negz.jpg");
+  PROFILE_END(commandList);
+  Engine->GetDevice().CloseUploadCommandList();
 }
 
 void unit_control::Response(void)

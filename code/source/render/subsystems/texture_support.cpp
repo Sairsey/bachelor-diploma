@@ -4,7 +4,7 @@
 
 
 // NearestPowerOf2
-UINT NearestPowerOf2(UINT val)
+static UINT NearestPowerOf2(UINT val)
 {
   DWORD idx = 0;
   _BitScanReverse(&idx, val);

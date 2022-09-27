@@ -448,6 +448,7 @@ void unit_stats::Response(void)
       ImGui::Text("Geometry amount = %zd", Engine->GeometrySystem->CPUPool.size());
       ImGui::Text("Materials amount = %zd", Engine->MaterialsSystem->CPUData.size());
       ImGui::Text("Max Textures amount = %zd", gdr::MAX_TEXTURE_AMOUNT);
+      ImGui::Text("Max Cube textures amount = %zd", gdr::MAX_CUBE_TEXTURE_AMOUNT);
       ImGui::Text("Current project time %g", Engine->GetTime());
       ImGui::Checkbox("Indirect Render", &Engine->Params.IsIndirect);
       if (Engine->Params.IsIndirect)

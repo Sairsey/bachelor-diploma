@@ -5,43 +5,45 @@
 namespace gdr
 {
   // texture representation struct
-  struct texture
+  struct cube_texture
   {
     bool IsUsed = false;
     bool IsSrv = false;
-    bool IsTransparent = false;
     std::string Name;
-    size_t W;
-    size_t H;
-    size_t NumOfMips;
     GPUResource TextureResource;
   };
 
-  const int MAX_TEXTURE_AMOUNT = 1024;
+  const int MAX_CUBE_TEXTURE_AMOUNT = 6;
 
   // Transforms data representation class
-  class textures_support
+  class cube_textures_support
   {
   private:
     render* Render; // pointer on Render
   public:
     // Constructor
-    textures_support(render* Rnd);
+    cube_textures_support(render* Rnd);
 
     // Load Texture
-    int Load(std::string name);
+    int Load(
+      std::string namePosX,
+      std::string nameNegX,
+      std::string namePosY,
+      std::string nameNegY,
+      std::string namePosZ,
+      std::string nameNegZ);
 
     // Update data on GPU in case we need it 
     void UpdateGPUData(ID3D12GraphicsCommandList* pCommandList);
 
     // Pool with data
-    texture CPUPool[MAX_TEXTURE_AMOUNT];
+    cube_texture CPUPool[MAX_TEXTURE_AMOUNT];
 
     // Handles for CPU and GPU tables
-    D3D12_GPU_DESCRIPTOR_HANDLE TextureTableGPU;
-    D3D12_CPU_DESCRIPTOR_HANDLE TextureTableCPU;
+    D3D12_GPU_DESCRIPTOR_HANDLE CubeTextureTableGPU;
+    D3D12_CPU_DESCRIPTOR_HANDLE CubeTextureTableCPU;
 
     // Destructor 
-    ~textures_support(void);
+    ~cube_textures_support(void);
   };
 }

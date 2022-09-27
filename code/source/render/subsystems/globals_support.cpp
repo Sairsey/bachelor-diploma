@@ -5,6 +5,7 @@ gdr::globals_support::globals_support(render* Rnd)
   Render = Rnd;
   StoredCopy.time = 0;
   CPUData.time = 1;
+  CPUData.SkyboxCubemapIndex = -1;
   GPUData.Resource = nullptr;
 }
 

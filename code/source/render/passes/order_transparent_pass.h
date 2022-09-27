@@ -30,12 +30,13 @@ namespace gdr
     // 't' registers
     enum struct transparent_texture_registers
     {
-      command_pool_register = 0,            // pool with indirect commands 
-      index_pool_register,                  // pool with indices in every pool    
-      object_transform_pool_register,       // pool with transform data           Supported
+      command_pool_register = 0,            // pool with indirect commands
+      index_pool_register,                  // pool with indices in every pool
+      object_transform_pool_register,       // pool with transform data
       material_pool_register,               // pool with material data
       texture_pool_register,                // pool with texture data
-      light_sources_pool_register,               // pool with light sources data
+      light_sources_pool_register,          // pool with light sources data
+      cube_texture_pool_register,           // pool with cube texture data
     };
 
     // 'u' registers
@@ -53,6 +54,7 @@ namespace gdr
       material_pool_index,                // root parameter for buffer with materials
       texture_pool_index,                 // root parameter for buffer with textures
       light_sources_pool_index,           // root parameter for buffer with light sources
+      cube_texture_pool_index,            // root parameter for cube textures
       total_root_parameters,
     };
 

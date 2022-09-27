@@ -252,6 +252,34 @@ float4 ShadeCookTorrance(float3 Normal, float3 Position, float2 uv, ObjectMateri
 
     resultColor += attenuation * LightSourcesPool[i].Color * (Diffuse + Specular);
   }
+  
+  // enviroment color
+  if (globals.SkyboxCubemapIndex != -1)
+  {
+    // lets pretent we get only light from point Light Source by normal
+    float3 L = Normal;
+
+    float3 H = normalize(V + L);
+    //precompute dots
+    float NL = max(dot(Normal, L), 0.0);
+    float NV = max(dot(Normal, V), 0.0);
+    float NH = max(dot(Normal, H), 0.0);
+    float HV = max(dot(H, V), 0.0);
+
+    float3 F0 = 0.04;
+    F0 = lerp(F0, albedo, metallic);
+
+    //precompute roughness square
+    float G = GGX_PartialGeometry(NV, roughness) * GGX_PartialGeometry(NL, roughness);
+    float D = GGX_Distribution(NH, roughness);
+    float3 F = FresnelSchlick(F0, HV);
+
+    float3 Specular = G * D * F / (4.0 * (NV + 1e-5f));
+    float3 KDiffuse = float3(1.0, 1.0, 1.0) - F;
+    float3 Diffuse = albedo * (1.0 - metallic) * KDiffuse * NL / PI;
+
+    resultColor += CubeTexturesPool[globals.SkyboxCubemapIndex].Sample(LinearSampler, Normal).rgb * (Diffuse + Specular);
+  }
 
   return float4(resultColor, alpha);
 }

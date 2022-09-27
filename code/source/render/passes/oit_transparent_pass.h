@@ -55,6 +55,7 @@ namespace gdr
       oit_lists_compose_register,           // pool with OIT Lists
       oit_pool_compose_register,            // pool with OIT Nodes
       light_sources_pool_register,          // pool with light sources data
+      cube_texture_pool_register,           // pool with cube texture data
     };
 
     // 'u' registers
@@ -76,6 +77,7 @@ namespace gdr
       oit_lists_index,
       oit_pool_index,
       light_sources_pool_index,           // root parameter for buffer with light sources
+      cube_texture_pool_index,            // root parameter for cube textures
       total_root_parameters,
     };
 

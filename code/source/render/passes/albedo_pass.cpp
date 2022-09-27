@@ -12,6 +12,8 @@ void gdr::albedo_pass::Initialize(void)
     std::vector<CD3DX12_ROOT_PARAMETER> params;
     params.resize((int)root_parameters_draw_indices::total_root_parameters);
     CD3DX12_DESCRIPTOR_RANGE bindlessTexturesDesc[1];  // Textures Pool
+    CD3DX12_DESCRIPTOR_RANGE cubeBindlessTexturesDesc[1];  // Textures Pool
+
 
     params[(int)root_parameters_draw_indices::globals_buffer_index].InitAsConstantBufferView((int)albedo_buffer_registers::globals_buffer_register);
     params[(int)root_parameters_draw_indices::index_buffer_index].InitAsConstants(sizeof(ObjectIndices) / sizeof(int32_t), (int)albedo_buffer_registers::index_buffer_register);
@@ -27,6 +29,16 @@ void gdr::albedo_pass::Initialize(void)
       bindlessTexturesDesc[0].RegisterSpace = 1;
       
       params[(int)root_parameters_draw_indices::texture_pool_index].InitAsDescriptorTable(1, bindlessTexturesDesc);
+    }
+
+    {
+      cubeBindlessTexturesDesc[0].BaseShaderRegister = (int)albedo_texture_registers::cube_texture_pool_register;
+      cubeBindlessTexturesDesc[0].NumDescriptors = MAX_CUBE_TEXTURE_AMOUNT;
+      cubeBindlessTexturesDesc[0].OffsetInDescriptorsFromTableStart = 0;
+      cubeBindlessTexturesDesc[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+      cubeBindlessTexturesDesc[0].RegisterSpace = 2;
+
+      params[(int)root_parameters_draw_indices::cube_texture_pool_index].InitAsDescriptorTable(1, cubeBindlessTexturesDesc);
     }
 
     // Texture samplers
@@ -271,6 +283,9 @@ void gdr::albedo_pass::CallDirectDraw(ID3D12GraphicsCommandList* currentCommandL
       currentCommandList->SetGraphicsRootShaderResourceView(
         (int)root_parameters_draw_indices::light_sources_pool_index,
         Render->LightsSystem->GPUData.Resource->GetGPUVirtualAddress());
+      currentCommandList->SetGraphicsRootDescriptorTable(
+        (int)root_parameters_draw_indices::cube_texture_pool_index,
+        Render->CubeTexturesSystem->CubeTextureTableGPU);
     }
 
     currentCommandList->DrawIndexedInstanced(geom.IndexCount, 1, 0, 0, 0);
@@ -311,6 +326,9 @@ void gdr::albedo_pass::CallIndirectDraw(ID3D12GraphicsCommandList* currentComman
   currentCommandList->SetGraphicsRootShaderResourceView(
     (int)root_parameters_draw_indices::light_sources_pool_index,
     Render->LightsSystem->GPUData.Resource->GetGPUVirtualAddress());
+  currentCommandList->SetGraphicsRootDescriptorTable(
+    (int)root_parameters_draw_indices::cube_texture_pool_index,
+    Render->CubeTexturesSystem->CubeTextureTableGPU);
   currentCommandList->ExecuteIndirect(
       CommandSignature,
       (UINT)Render->IndirectSystem->CPUData.size(),

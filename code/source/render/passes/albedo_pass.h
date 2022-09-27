@@ -41,7 +41,8 @@ namespace gdr
         object_transform_pool_register,       // pool with transform data           Supported
         material_pool_register,               // pool with material data
         texture_pool_register,                // pool with texture data
-        light_sources_pool_register,               // pool with light sources data
+        light_sources_pool_register,          // pool with light sources data
+        cube_texture_pool_register,            // root parameter for cube textures
       };
 
       // 'u' registers
@@ -59,6 +60,7 @@ namespace gdr
         material_pool_index,                // root parameter for buffer with materials
         texture_pool_index,                 // root parameter for buffer with textures
         light_sources_pool_index,           // root parameter for buffer with light sources
+        cube_texture_pool_index,            // root parameter for cube textures
         total_root_parameters,
       };
 

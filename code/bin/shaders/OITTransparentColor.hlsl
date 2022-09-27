@@ -21,6 +21,8 @@ StructuredBuffer<LightSource> LightSourcesPool  : register(t7);        // SRV: D
 RWStructuredBuffer<OITList> OITHeads : register(u1);                     // UAV: Data with Order Independent transparency lists
 RWStructuredBuffer<OITNode> OITPool : register(u2);                     // UAV: Data with Order Independent transparency nodes
 
+TextureCube CubeTexturesPool[] : register(t8, space2);                   // Bindless Pool with all textures
+
 // add all shade functions
 #include "ShadeFunctions.h"
 

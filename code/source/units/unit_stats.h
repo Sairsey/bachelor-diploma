@@ -5,6 +5,9 @@ class unit_stats : public gdr::unit_base
 {
 private:
 
+  // Present Mode support
+  bool PresentMode;
+
   // Transform tool
   bool TransformToolActive;
   int CurrentTransformToShow;

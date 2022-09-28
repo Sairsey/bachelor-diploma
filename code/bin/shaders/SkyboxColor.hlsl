@@ -36,7 +36,7 @@ VSOut VS(VSIn input)
 float4 PS(VSOut input) : SV_TARGET
 {
   if (globals.SkyboxCubemapIndex == -1)
-    return float4(input.TexCoords, 1);
+    return float4(0.3, 0.5, 0.7, 1);
   else
     return CubeTexturesPool[globals.SkyboxCubemapIndex].Sample(LinearSampler, input.TexCoords).rgba;
 }

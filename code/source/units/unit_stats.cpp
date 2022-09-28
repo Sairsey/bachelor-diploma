@@ -17,6 +17,8 @@ void unit_stats::Initialize(void)
   GPUMemoryUsagePlot.resize(PlotWindowWidth);
   CurrentPlotIndex = 0;
 
+  PresentMode = false;
+
   // load all objects for lights
   ID3D12GraphicsCommandList* commandList;
   Engine->GetDevice().BeginUploadCommandList(&commandList);
@@ -51,6 +53,13 @@ void unit_stats::Response(void)
     if (ObjectType == DirLightObject)
       Engine->ObjectSystem->GetTransforms(ObjectType).transform = Engine->ObjectSystem->GetTransforms(ObjectType).transform * mth::matr::Translate({ 0, 10, 0 });
   }
+  // Present mode
+  Engine->AddLambdaForIMGUI(
+    [&]()
+    {
+          ImGuiIO& io = ImGui::GetIO();
+          io.FontGlobalScale = PresentMode ? 1.5 : 1.0;
+    });
 
   // Transform viewer
   Engine->AddLambdaForIMGUI(
@@ -125,22 +134,26 @@ void unit_stats::Response(void)
           Engine->TransformsSystem->CPUData[CurrentTransformToShow].transform = mth::matr4f::Identity();
       }
 
-      ImGui::BeginTable("Transform matrix", 4, ImGuiTableFlags_Borders);
-
-      for (int i = 0; i < 4; i++)
+      if (!PresentMode)
       {
-        for (int j = 0; j < 4; j++)
-        {
-          ImGui::TableNextColumn();
-          if (Engine->TransformsSystem->CPUData[CurrentTransformToShow].transform[i][j] < 0)
-            ImGui::Text("%4.3f", Engine->TransformsSystem->CPUData[CurrentTransformToShow].transform[i][j]);
-          else
-            ImGui::Text("%4.4f", Engine->TransformsSystem->CPUData[CurrentTransformToShow].transform[i][j]);
-        }
-        ImGui::TableNextRow();
+          ImGui::BeginTable("Transform matrix", 4, ImGuiTableFlags_Borders);
+
+          for (int i = 0; i < 4; i++)
+          {
+              for (int j = 0; j < 4; j++)
+              {
+                  ImGui::TableNextColumn();
+                  if (Engine->TransformsSystem->CPUData[CurrentTransformToShow].transform[i][j] < 0)
+                      ImGui::Text("%4.3f", Engine->TransformsSystem->CPUData[CurrentTransformToShow].transform[i][j]);
+                  else
+                      ImGui::Text("%4.4f", Engine->TransformsSystem->CPUData[CurrentTransformToShow].transform[i][j]);
+              }
+              ImGui::TableNextRow();
+          }
+          ImGui::EndTable();
+
       }
 
-      ImGui::EndTable();
       ImGui::Text("AABB min (%f, %f, %f)",
         Engine->TransformsSystem->CPUData[CurrentTransformToShow].minAABB.X,
         Engine->TransformsSystem->CPUData[CurrentTransformToShow].minAABB.Y,
@@ -460,7 +473,13 @@ void unit_stats::Response(void)
       {
         Engine->SetPause(pause);
       }
+      ImGui::Checkbox("Present Mode", &PresentMode);
 
+      ImGui::DragFloat3("Camera Position", const_cast<float *>(&Engine->PlayerCamera.GetPos().X), 0.1);
+      ImGui::DragFloat3("Camera Direction", const_cast<float*>(&Engine->PlayerCamera.GetDir().X), 0.1);
+      ImGui::DragFloat3("Camera Up", const_cast<float*>(&Engine->PlayerCamera.GetUp().X), 0.1);
+      if (ImGui::Button("Apply Camera Transform"))
+        Engine->PlayerCamera.SetView(Engine->PlayerCamera.GetPos(), Engine->PlayerCamera.GetDir() + Engine->PlayerCamera.GetPos(), Engine->PlayerCamera.GetUp());
       ImGui::End();
     });
 

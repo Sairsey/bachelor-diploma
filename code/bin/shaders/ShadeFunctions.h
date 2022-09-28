@@ -97,7 +97,7 @@ float4 ShadePhong(float3 Normal, float3 Position, float2 uv, ObjectMaterial mate
         continue;
       }
 
-      float attenuation = 1.0 / (
+      attenuation = 1.0 / (
         LightSourcesPool[i].ConstantAttenuation +
         LightSourcesPool[i].LinearAttenuation * d +
         LightSourcesPool[i].QuadricAttenuation * d * d);

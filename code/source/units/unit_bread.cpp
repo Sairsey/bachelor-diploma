@@ -18,7 +18,7 @@ void unit_bread::Initialize(void)
     PROFILE_BEGIN(commandList, "unit_bread Init");
     for (int i = 0; i < 1000; i++)
     {
-      Bread.push_back(Engine->ObjectSystem->CreateObjectsFromFile("bin/models/pbr_sphere/pbr_sphere.glb")[0]);
+      Bread.push_back(Engine->ObjectSystem->CreateObjectsFromFile("bin/models/bread/bread.obj")[0]);
       int k = Bread.size() - 1;
 
       double dist = (Engine->ObjectSystem->GetTransforms(Bread[k]).maxAABB - Engine->ObjectSystem->GetTransforms(Bread[k]).minAABB).Lenght();
@@ -33,7 +33,7 @@ void unit_bread::Initialize(void)
 
 void unit_bread::Response(void)
 {
-  mth::matr rotation = mth::matr::RotateY(Engine->GetTime() * 50.0f) * mth::matr::RotateX(Engine->GetTime() * 10.0f) * mth::matr::RotateZ(Engine->GetTime() * 3.0f);
+  mth::matr rotation = mth::matr::RotateY(Engine->GetTime() * 50.0f);
 
   /* Parallel Computing matrices
   const auto processor_count = std::thread::hardware_concurrency();

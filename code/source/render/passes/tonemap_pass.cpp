@@ -326,6 +326,7 @@ void gdr::tonemap_pass::CallDirectDraw(ID3D12GraphicsCommandList* currentCommand
 gdr::tonemap_pass::~tonemap_pass(void)
 {
   Render->GetDevice().ReleaseGPUResource(ScreenVertexBuffer);
+  Render->GetDevice().ReleaseGPUResource(LuminanceBuffer);
 
   FirstVertexShader->Release();
   FirstPixelShader->Release();

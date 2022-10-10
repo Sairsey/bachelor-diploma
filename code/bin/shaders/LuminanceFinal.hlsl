@@ -8,6 +8,12 @@ cbuffer GlobalValues : register (b0)
 {
   GlobalData globals;
 }
+
+bool IsNaN(float x)
+{
+  return !(x < 0.f || x > 0.f || x == 0.f);
+}
+
 [numthreads(1, 1, 1)]
 void CS(uint3 groupId : SV_GroupID, uint groupIndex : SV_GroupIndex)
 {
@@ -21,6 +27,8 @@ void CS(uint3 groupId : SV_GroupID, uint groupIndex : SV_GroupIndex)
 
     float averageLuminance = exp(value) - 1;
     float averageLuminanceAdapted = Luminance[0].LuminanceAdapted + (averageLuminance - Luminance[0].LuminanceAdapted) * (1.0 - exp(-globals.DeltaTime));
+
+    averageLuminanceAdapted = max(averageLuminanceAdapted, 0.0001);
 
     float keyValue = 1.f - 2.f / (2.f + log10(averageLuminance + 1));
     float keyValueAdapted = 1.f - 2.f / (2.f + log10(averageLuminanceAdapted + 1));

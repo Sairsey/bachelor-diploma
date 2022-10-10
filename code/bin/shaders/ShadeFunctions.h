@@ -277,8 +277,9 @@ float4 ShadeCookTorrance(float3 Normal, float3 Position, float2 uv, ObjectMateri
     float3 Specular = G * D * F / (4.0 * (NV + 1e-5f));
     float3 KDiffuse = float3(1.0, 1.0, 1.0) - F;
     float3 Diffuse = albedo * (1.0 - metallic) * KDiffuse * NL / PI;
+    float3 r = reflect(-V, Normal);
 
-    resultColor += CubeTexturesPool[globals.SkyboxCubemapIndex].Sample(LinearSampler, Normal).rgb * (Diffuse + Specular);
+    resultColor += CubeTexturesPool[globals.SkyboxCubemapIndex].Sample(LinearSampler, r).rgb * Specular + Diffuse;
   }
 
   return float4(resultColor, alpha);

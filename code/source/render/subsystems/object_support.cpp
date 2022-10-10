@@ -233,6 +233,12 @@ std::vector<gdr::gdr_object> gdr::object_support::CreateObjectsFromFile(std::str
         scene->mMaterials[Mesh->mMaterialIndex]->GetTexture(AI_MATKEY_METALLIC_TEXTURE, &str);
         mat.KsMapIndex = LoadTextureFromAssimp(&str, const_cast<aiScene*>(scene), directory);
       }
+
+
+      scene->mMaterials[Mesh->mMaterialIndex]->Get(AI_MATKEY_METALLIC_FACTOR, mat.Ks.B);
+      scene->mMaterials[Mesh->mMaterialIndex]->Get(AI_MATKEY_ROUGHNESS_FACTOR, mat.Ks.G);
+      mat.Ks.B = max(0.001, mat.Ks.B);
+
       mat.ShadeType = MATERIAL_SHADER_COOKTORRANCE;
     }
     else

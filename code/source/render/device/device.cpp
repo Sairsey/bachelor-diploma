@@ -661,6 +661,23 @@ bool gdr::device::BeginUploadCommandList(ID3D12GraphicsCommandList** ppCommandLi
   return SUCCEEDED(hr);
 }
 
+bool gdr::device::AllocateRenderTargetView(D3D12_CPU_DESCRIPTOR_HANDLE& cpuHandle, UINT count)
+{
+  assert(CurrentRTView < MaxRTViews && RenderTargetViews != nullptr);
+
+  if (CurrentRTView < MaxRTViews)
+  {
+    cpuHandle = RenderTargetViews->GetCPUDescriptorHandleForHeapStart();
+    cpuHandle.ptr += RtvDescSize * CurrentRTView;
+
+    CurrentRTView += count;
+
+    return true;
+  }
+
+  return false;
+}
+
 bool gdr::device::AllocateStaticDescriptors(UINT count, D3D12_CPU_DESCRIPTOR_HANDLE& cpuStartHandle, D3D12_GPU_DESCRIPTOR_HANDLE& gpuStartHandle)
 {
   assert(CurrentStaticDescIndex + count <= StaticDescCount);

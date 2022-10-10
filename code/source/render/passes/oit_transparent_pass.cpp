@@ -110,7 +110,7 @@ void gdr::oit_transparent_pass::Initialize(void)
     psoDesc.SampleMask = UINT_MAX;
     psoDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
     psoDesc.NumRenderTargets = 1;
-    psoDesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
+    psoDesc.RTVFormats[0] = Render->RenderTargets->Formats[(int)render_targets_enum::target_frame];
     psoDesc.DSVFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
     psoDesc.SampleDesc.Count = 1;
 
@@ -217,7 +217,7 @@ void gdr::oit_transparent_pass::Initialize(void)
     psoDesc.SampleMask = UINT_MAX;
     psoDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
     psoDesc.NumRenderTargets = 1;
-    psoDesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
+    psoDesc.RTVFormats[0] = Render->RenderTargets->Formats[(int)render_targets_enum::target_frame];
     psoDesc.DSVFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
     psoDesc.SampleDesc.Count = 1;
 
@@ -444,6 +444,7 @@ void gdr::oit_transparent_pass::SyncCompute(ID3D12GraphicsCommandList* currentCo
 
 void gdr::oit_transparent_pass::CallDirectDraw(ID3D12GraphicsCommandList* currentCommandList)
 {
+  Render->RenderTargets->Set(currentCommandList, render_targets_enum::target_frame);
   if (!Render->Params.IsTransparent)
     return;
   // Update Globals
@@ -604,6 +605,7 @@ void gdr::oit_transparent_pass::CallIndirectDraw(ID3D12GraphicsCommandList* curr
 {
   if (!Render->Params.IsTransparent)
     return;
+  Render->RenderTargets->Set(currentCommandList, render_targets_enum::target_frame);
 
   // Update Globals
   Render->GlobalsSystem->CPUData.CameraPos = Render->PlayerCamera.GetPos();

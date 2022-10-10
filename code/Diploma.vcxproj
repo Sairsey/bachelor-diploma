@@ -32,6 +32,7 @@
     <ClInclude Include="source\render\passes\albedo_pass.h" />
     <ClInclude Include="source\render\passes\base_pass.h" />
     <ClInclude Include="source\render\passes\debug_pass.h" />
+    <ClInclude Include="source\render\passes\hdr_copy_pass.h" />
     <ClInclude Include="source\render\passes\imgui_pass.h" />
     <ClInclude Include="source\render\passes\oit_transparent_pass.h" />
     <ClInclude Include="source\render\passes\order_transparent_pass.h" />
@@ -44,6 +45,7 @@
     <ClInclude Include="source\render\subsystems\light_sources_support.h" />
     <ClInclude Include="source\render\subsystems\materials_support.h" />
     <ClInclude Include="source\render\subsystems\object_support.h" />
+    <ClInclude Include="source\render\subsystems\render_target_support.h" />
     <ClInclude Include="source\render\subsystems\texture_support.h" />
     <ClInclude Include="source\render\subsystems\transforms_support.h" />
     <ClInclude Include="source\timer\timer.h" />
@@ -79,6 +81,7 @@
     <ClCompile Include="source\render\device\device_time_query.cpp" />
     <ClCompile Include="source\render\passes\albedo_pass.cpp" />
     <ClCompile Include="source\render\passes\debug_pass.cpp" />
+    <ClCompile Include="source\render\passes\hdr_copy_pass.cpp" />
     <ClCompile Include="source\render\passes\imgui_pass.cpp" />
     <ClCompile Include="source\render\passes\oit_transparent_pass.cpp" />
     <ClCompile Include="source\render\passes\order_transparent_pass.cpp" />
@@ -91,6 +94,7 @@
     <ClCompile Include="source\render\subsystems\light_sources_support.cpp" />
     <ClCompile Include="source\render\subsystems\materials_support.cpp" />
     <ClCompile Include="source\render\subsystems\object_support.cpp" />
+    <ClCompile Include="source\render\subsystems\render_target_support.cpp" />
     <ClCompile Include="source\render\subsystems\texture_support.cpp" />
     <ClCompile Include="source\render\subsystems\transforms_support.cpp" />
     <ClCompile Include="source\units\unit_bread.cpp" />

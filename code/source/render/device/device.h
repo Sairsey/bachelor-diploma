@@ -261,6 +261,7 @@ namespace gdr
 
       // Allocate Descriptors
       bool AllocateStaticDescriptors(UINT count, D3D12_CPU_DESCRIPTOR_HANDLE& cpuStartHandle, D3D12_GPU_DESCRIPTOR_HANDLE& gpuStartHandle);
+      bool AllocateRenderTargetView(D3D12_CPU_DESCRIPTOR_HANDLE& cpuHandle, UINT count = 1);
 
       // Check if module initialized
       inline bool IsInitialized() const { return IsInited; }

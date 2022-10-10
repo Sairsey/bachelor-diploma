@@ -16,6 +16,7 @@ namespace gdr
   class textures_support;
   class cube_textures_support;
   class light_sources_support;
+  class render_targets_support;
 
   struct render_runtime_params
   {
@@ -104,6 +105,7 @@ namespace gdr
       textures_support* TexturesSystem; //System to store info about textures
       cube_textures_support* CubeTexturesSystem; // System to store info about cube textures
       light_sources_support* LightsSystem; //System to store info about lights
+      render_targets_support* RenderTargets; //System to store info about lights
 
       device_time_query DeviceFrameCounter;
   };

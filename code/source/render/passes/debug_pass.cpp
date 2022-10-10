@@ -44,7 +44,7 @@ void gdr::debug_pass::Initialize(void)
   psoDesc.SampleMask = UINT_MAX;
   psoDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_LINE;
   psoDesc.NumRenderTargets = 1;
-  psoDesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
+  psoDesc.RTVFormats[0] = Render->RenderTargets->Formats[(int)render_targets_enum::target_frame];
   psoDesc.DSVFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
   psoDesc.SampleDesc.Count = 1;
 
@@ -109,6 +109,7 @@ void gdr::debug_pass::Initialize(void)
 
 void gdr::debug_pass::CallDirectDraw(ID3D12GraphicsCommandList* currentCommandList)
 {
+  Render->RenderTargets->Set(currentCommandList, render_targets_enum::target_frame);
   // Update Globals
   Render->GlobalsSystem->CPUData.CameraPos = Render->PlayerCamera.GetPos();
   Render->GlobalsSystem->CPUData.VP = Render->PlayerCamera.GetVP();

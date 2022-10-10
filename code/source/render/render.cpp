@@ -80,22 +80,6 @@ bool gdr::render::Init(engine* Eng)
     localIsInited = localIsInited && CreateDepthStencil();
   }
 
-  // init passes
-  if (localIsInited)
-  {
-    Passes.push_back(new debug_pass());
-    Passes.push_back(new albedo_pass());
-    Passes.push_back(new skybox_pass());
-    Passes.push_back(new oit_transparent_pass());
-    Passes.push_back(new imgui_pass());
-    
-    for (auto& pass : Passes)
-    {
-      pass->SetRender(this);
-      pass->Initialize();
-    }
-  }
-
   //init subsystems
   if (localIsInited)
   {
@@ -108,6 +92,24 @@ bool gdr::render::Init(engine* Eng)
     TexturesSystem = new gdr::textures_support(this);
     CubeTexturesSystem= new gdr::cube_textures_support(this);
     LightsSystem = new gdr::light_sources_support(this);
+    RenderTargets = new gdr::render_targets_support(this);
+  }
+
+  // init passes
+  if (localIsInited)
+  {
+    Passes.push_back(new debug_pass());
+    Passes.push_back(new albedo_pass());
+    Passes.push_back(new skybox_pass());
+    Passes.push_back(new oit_transparent_pass());
+    Passes.push_back(new hdr_copy_pass());
+    Passes.push_back(new imgui_pass());
+
+    for (auto& pass : Passes)
+    {
+      pass->SetRender(this);
+      pass->Initialize();
+    }
   }
 
   IsInited = localIsInited;
@@ -153,6 +155,8 @@ void gdr::render::Resize(UINT w, UINT h)
   Rect.right = (LONG)w;
 
   PlayerCamera.Resize(w, h);
+
+  RenderTargets->Resize(w, h);
 
   if (DepthBuffer.Resource != nullptr)
   {
@@ -205,10 +209,9 @@ void gdr::render::DrawFrame(void)
     DeviceFrameCounter.Start(pCommandList);
     HRESULT hr = S_OK;
     D3D12_CPU_DESCRIPTOR_HANDLE dsvHandle = DSVHeap->GetCPUDescriptorHandleForHeapStart();
-    pCommandList->OMSetRenderTargets(1, &rtvHandle, TRUE, &dsvHandle);
-
     pCommandList->RSSetViewports(1, &Viewport);
     pCommandList->RSSetScissorRects(1, &Rect);
+
 
     if (Device.TransitResourceState(pCommandList, pBackBuffer, D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET))
     {
@@ -216,14 +219,17 @@ void gdr::render::DrawFrame(void)
       pCommandList->ClearRenderTargetView(rtvHandle, clearColor, 1, &Rect);
       pCommandList->ClearDepthStencilView(dsvHandle, D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.0f, 0, 1, &Rect);
 
+      // Save DepthStencil and Display buffers
+      RenderTargets->SaveDepthStencilBuffer(&dsvHandle);
+      RenderTargets->SaveDisplayBuffer(&rtvHandle, pBackBuffer);
+
+      RenderTargets->Set(pCommandList, render_targets_enum::target_display);
+
       assert(Passes.size() >= 1);
-      PROFILE_BEGIN(pCommandList, (Passes[0]->GetName() + " compute call").c_str());
-      Passes[0]->CallCompute(pCommandList);
-      PROFILE_END(pCommandList);
-      for (int i = 0; i < Passes.size() - 1; i++)
+      for (int i = 0; i < Passes.size(); i++)
       {
-        PROFILE_BEGIN(pCommandList, (Passes[i + 1]->GetName() + " compute call").c_str());
-        Passes[i + 1]->CallCompute(pCommandList);
+        PROFILE_BEGIN(pCommandList, (Passes[i]->GetName() + " compute call").c_str());
+        Passes[i]->CallCompute(pCommandList);
         PROFILE_END(pCommandList);
         PROFILE_BEGIN(pCommandList, (Passes[i]->GetName() + " compute sync").c_str());
         Passes[i]->SyncCompute(pCommandList);
@@ -241,23 +247,6 @@ void gdr::render::DrawFrame(void)
           PROFILE_END(pCommandList);
         }
       }
-      PROFILE_BEGIN(pCommandList, (Passes[Passes.size() - 1]->GetName() + " compute sync").c_str());
-      Passes[Passes.size() - 1]->SyncCompute(pCommandList);
-      PROFILE_END(pCommandList);
-      if (Params.IsIndirect)
-      {
-        PROFILE_BEGIN(pCommandList, (Passes[Passes.size() - 1]->GetName() + " Indirect draw").c_str());
-        Passes[Passes.size() - 1]->CallIndirectDraw(pCommandList);
-        PROFILE_END(pCommandList);
-      }
-      else
-      {
-        PROFILE_BEGIN(pCommandList, (Passes[Passes.size() - 1]->GetName() + " Direct draw").c_str());
-        Passes[Passes.size() - 1]->CallDirectDraw(pCommandList);
-        PROFILE_END(pCommandList);
-      }
-
-      PROFILE_END(pCommandList);
       DeviceFrameCounter.Stop(pCommandList);
       Device.TransitResourceState(pCommandList, pBackBuffer, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
     }
@@ -283,6 +272,7 @@ void gdr::render::Term(void)
   if (!IsInited)
     return;
 
+  delete RenderTargets;
   delete LightsSystem;
   delete TexturesSystem;
   delete CubeTexturesSystem;

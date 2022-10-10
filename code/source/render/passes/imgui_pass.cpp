@@ -21,6 +21,7 @@ void gdr::imgui_pass::Initialize(void)
 
 void gdr::imgui_pass::CallDirectDraw(ID3D12GraphicsCommandList* currentCommandList)
 {
+  Render->RenderTargets->Set(currentCommandList, render_targets_enum::target_display);
   ImGui_ImplDX12_NewFrame();
   ImGui_ImplWin32_NewFrame();
   ImGui::NewFrame();

@@ -38,10 +38,6 @@ namespace gdr
       bool IsInited;
       // Device
       device Device;
-      // Viewport
-      D3D12_VIEWPORT Viewport;
-      // Scissor rect
-      D3D12_RECT Rect;
       // All supported passes
       std::vector<base_pass *> Passes;
 

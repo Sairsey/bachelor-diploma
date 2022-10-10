@@ -8,9 +8,23 @@ namespace gdr
   {
     target_none = -1,
     target_display = 0,        // r8g8b8a8 unorm
-    target_frame,      // r16g16b16a16f
+    target_frame_hdr,      // r16g16b16a16f
+    target_frame_lum,
+    target_frame_lum_2,
+    target_frame_lum_4,
+    target_frame_lum_8,
+    target_frame_lum_16,
+    target_frame_lum_final,
 
     target_count,
+  };
+
+  struct render_target_params
+  {
+    DXGI_FORMAT Format;      // Render Target Format
+    bool IsFullscreen;       // Is this RT must be Fullscreen size with scale
+    mth::vec2f scale;
+    mth::vec2<int> size;
   };
 
   // Multiple render targets support class
@@ -33,9 +47,15 @@ namespace gdr
   public:
 
     // Formats for each render target view
-    DXGI_FORMAT Formats[(long)render_targets_enum::target_count] = {
-      DXGI_FORMAT_R8G8B8A8_UNORM,
-      DXGI_FORMAT_R11G11B10_FLOAT,
+    render_target_params TargetParams[(long)render_targets_enum::target_count] = {
+      {DXGI_FORMAT_R8G8B8A8_UNORM, true, mth::vec2f(1.0)},          // target_display
+      {DXGI_FORMAT_R11G11B10_FLOAT, true, mth::vec2f(1.0)},         // target_frame_hdr
+      {DXGI_FORMAT_R32_FLOAT, true, mth::vec2f(1.0)},               // target_frame_lum
+      {DXGI_FORMAT_R32_FLOAT, true, mth::vec2f(0.5)},               // target_frame_lum 1/2
+      {DXGI_FORMAT_R32_FLOAT, true, mth::vec2f(0.25)},              // target_frame_lum 1/4
+      {DXGI_FORMAT_R32_FLOAT, true, mth::vec2f(0.125)},             // target_frame_lum 1/8
+      {DXGI_FORMAT_R32_FLOAT, true, mth::vec2f(0.0625)},            // target_frame_lum 1/16
+      {DXGI_FORMAT_R32_FLOAT, true, mth::vec2f(0.03125)},           // target_frame_lum_final 1/32
     };
 
     // Textures

@@ -17,10 +17,12 @@ struct GlobalData
   float4x4 VP; // camera view-proj
   float3 CameraPos; // Camera position
   float time; // Time in seconds
+  float DeltaTime; // Delta time in seconds
   UINT width;  // Screen size 
   UINT height; // Screen size 
   UINT LightsAmount; // Amount of active lights
-  int SkyboxCubemapIndex;
+  int SkyboxCubemapIndex; // Index of skybox in cubemap pool
+  float SceneExposure;    // Scene exposure
 };
 
 struct ObjectTransform
@@ -103,7 +105,13 @@ struct OITNode
 #define MAX_TRANSPARENT_DEPTH 10
 #define MAX_AMOUNT_OF_TRANSPARENT_PIXELS (1920 * 1080 * MAX_TRANSPARENT_DEPTH)
 
-
+struct LuminanceVariables
+{
+  float Luminance;
+  float LuminanceAdapted;
+  float Exposure;
+  float ExposureAdapted;
+};
 
 #ifdef __cplusplus
 // C++ code

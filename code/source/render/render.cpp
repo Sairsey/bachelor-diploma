@@ -14,7 +14,7 @@ bool gdr::render::CreateDepthStencil(void)
   depthOptimizedClearValue.DepthStencil.Stencil = 0;
 
   bool res = Device.CreateGPUResource(
-    CD3DX12_RESOURCE_DESC::Tex2D(DXGI_FORMAT_D24_UNORM_S8_UINT, Rect.right - Rect.left, Rect.bottom - Rect.top, 1, 0, 1, 0, D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL),
+    CD3DX12_RESOURCE_DESC::Tex2D(DXGI_FORMAT_D24_UNORM_S8_UINT, Engine->Width, Engine->Height, 1, 0, 1, 0, D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL),
     D3D12_RESOURCE_STATE_DEPTH_WRITE,
     &depthOptimizedClearValue,
     DepthBuffer
@@ -49,23 +49,6 @@ bool gdr::render::Init(engine* Eng)
   // init device
   localIsInited = Device.Init(params);
   DeviceFrameCounter = device_time_query(&Device);
-  // init sizes
-  if (localIsInited) 
-  {
-    auto size = Eng->GetSize();
-
-    Viewport.TopLeftX = 0.0f;
-    Viewport.TopLeftY = 0.0f;
-    Viewport.Height = (FLOAT)size.second;
-    Viewport.Width = (FLOAT)size.first;
-    Viewport.MinDepth = 0.0f;
-    Viewport.MaxDepth = 1.0f;
-
-    Rect.left = 0;
-    Rect.top = 0;
-    Rect.bottom = (LONG)size.second;
-    Rect.right = (LONG)size.first;
-  }
 
   // init depth-stencil
   if (localIsInited)
@@ -102,7 +85,8 @@ bool gdr::render::Init(engine* Eng)
     Passes.push_back(new albedo_pass());
     Passes.push_back(new skybox_pass());
     Passes.push_back(new oit_transparent_pass());
-    Passes.push_back(new hdr_copy_pass());
+    Passes.push_back(new tonemap_pass());
+    //Passes.push_back(new hdr_copy_pass());
     Passes.push_back(new imgui_pass());
 
     for (auto& pass : Passes)
@@ -142,17 +126,6 @@ void gdr::render::AddLambdaForIMGUI(std::function<void(void)> func)
 void gdr::render::Resize(UINT w, UINT h)
 {
   Device.ResizeSwapchain(w, h);
-  Viewport.TopLeftX = 0.0f;
-  Viewport.TopLeftY = 0.0f;
-  Viewport.Height = (FLOAT)h;
-  Viewport.Width = (FLOAT)w;
-  Viewport.MinDepth = 0.0f;
-  Viewport.MaxDepth = 1.0f;
-
-  Rect.left = 0;
-  Rect.top = 0;
-  Rect.bottom = (LONG)h;
-  Rect.right = (LONG)w;
 
   PlayerCamera.Resize(w, h);
 
@@ -209,13 +182,16 @@ void gdr::render::DrawFrame(void)
     DeviceFrameCounter.Start(pCommandList);
     HRESULT hr = S_OK;
     D3D12_CPU_DESCRIPTOR_HANDLE dsvHandle = DSVHeap->GetCPUDescriptorHandleForHeapStart();
-    pCommandList->RSSetViewports(1, &Viewport);
-    pCommandList->RSSetScissorRects(1, &Rect);
-
-
     if (Device.TransitResourceState(pCommandList, pBackBuffer, D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET))
     {
       FLOAT clearColor[4] = { 0.f, 0.f, 0.f, 1.0f };
+      // Scissor rect
+      D3D12_RECT Rect;
+      Rect.left = 0;
+      Rect.top = 0;
+      Rect.bottom = Engine->Height;
+      Rect.right = Engine->Width;
+
       pCommandList->ClearRenderTargetView(rtvHandle, clearColor, 1, &Rect);
       pCommandList->ClearDepthStencilView(dsvHandle, D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.0f, 0, 1, &Rect);
 
@@ -251,6 +227,8 @@ void gdr::render::DrawFrame(void)
       Device.TransitResourceState(pCommandList, pBackBuffer, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
     }
 
+
+    PROFILE_END(pCommandList);
     Device.CloseSubmitAndPresentRenderCommandList(false);
   }
   PROFILE_CPU_END();

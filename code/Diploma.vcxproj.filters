@@ -159,6 +159,9 @@
     <ClCompile Include="source\render\passes\hdr_copy_pass.cpp">
       <Filter>Source Files\Render\Passes</Filter>
     </ClCompile>
+    <ClCompile Include="source\render\passes\tonemap_pass.cpp">
+      <Filter>Source Files\Render\Passes</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\p_header.h">
@@ -306,6 +309,9 @@
       <Filter>Source Files\Render\SubSystems</Filter>
     </ClInclude>
     <ClInclude Include="source\render\passes\hdr_copy_pass.h">
+      <Filter>Source Files\Render\Passes</Filter>
+    </ClInclude>
+    <ClInclude Include="source\render\passes\tonemap_pass.h">
       <Filter>Source Files\Render\Passes</Filter>
     </ClInclude>
   </ItemGroup>

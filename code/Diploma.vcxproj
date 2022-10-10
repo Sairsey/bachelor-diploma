@@ -37,6 +37,7 @@
     <ClInclude Include="source\render\passes\oit_transparent_pass.h" />
     <ClInclude Include="source\render\passes\order_transparent_pass.h" />
     <ClInclude Include="source\render\passes\skybox_pass.h" />
+    <ClInclude Include="source\render\passes\tonemap_pass.h" />
     <ClInclude Include="source\render\render.h" />
     <ClInclude Include="source\render\subsystems\cube_texture_support.h" />
     <ClInclude Include="source\render\subsystems\geometry_support.h" />
@@ -86,6 +87,7 @@
     <ClCompile Include="source\render\passes\oit_transparent_pass.cpp" />
     <ClCompile Include="source\render\passes\order_transparent_pass.cpp" />
     <ClCompile Include="source\render\passes\skybox_pass.cpp" />
+    <ClCompile Include="source\render\passes\tonemap_pass.cpp" />
     <ClCompile Include="source\render\render.cpp" />
     <ClCompile Include="source\render\subsystems\cube_texture_support.cpp" />
     <ClCompile Include="source\render\subsystems\geometry_support.cpp" />

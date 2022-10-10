@@ -478,6 +478,7 @@ void unit_stats::Response(void)
       ImGui::DragFloat3("Camera Position", const_cast<float *>(&Engine->PlayerCamera.GetPos().X), 0.1);
       ImGui::DragFloat3("Camera Direction", const_cast<float*>(&Engine->PlayerCamera.GetDir().X), 0.1);
       ImGui::DragFloat3("Camera Up", const_cast<float*>(&Engine->PlayerCamera.GetUp().X), 0.1);
+      ImGui::DragFloat("Exposure", &Engine->GlobalsSystem->CPUData.SceneExposure, 0.1);
       if (ImGui::Button("Apply Camera Transform"))
         Engine->PlayerCamera.SetView(Engine->PlayerCamera.GetPos(), Engine->PlayerCamera.GetDir() + Engine->PlayerCamera.GetPos(), Engine->PlayerCamera.GetUp());
       ImGui::End();

@@ -90,6 +90,7 @@ VOID gdr::engine::Timer(VOID)
   input_support::Response(hWnd);
   input_support::UpdateWheel(win::MouseWheel);
 
+  GlobalsSystem->CPUData.DeltaTime = GetDeltaTime();
   GlobalsSystem->CPUData.time = GetTime();
   GlobalsSystem->CPUData.width = win::Width;
   GlobalsSystem->CPUData.height = win::Height;

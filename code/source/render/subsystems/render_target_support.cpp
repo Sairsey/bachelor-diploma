@@ -41,6 +41,48 @@ void gdr::render_targets_support::Set(ID3D12GraphicsCommandList* CommandList, re
 
   CurrentRT = ResultTarget;
 
+  // Viewport
+  D3D12_VIEWPORT Viewport;
+  // Scissor rect
+  D3D12_RECT Rect;
+
+  Viewport.TopLeftX = 0.0f;
+  Viewport.TopLeftY = 0.0f;
+  Viewport.Height = 
+    (FLOAT)(
+      TargetParams[(int)CurrentRT].IsFullscreen ?
+      Render->GetEngine()->Height * TargetParams[(int)CurrentRT].scale.Y :
+      TargetParams[(int)CurrentRT].size.Y);
+  Viewport.Width = 
+    (FLOAT)(
+      TargetParams[(int)CurrentRT].IsFullscreen ?
+      Render->GetEngine()->Width * TargetParams[(int)CurrentRT].scale.X :
+      TargetParams[(int)CurrentRT].size.X);
+  Viewport.MinDepth = 0.0f;
+  Viewport.MaxDepth = 1.0f;
+
+  Viewport.Height = max(Viewport.Height, 1);
+  Viewport.Width = max(Viewport.Width, 1);
+
+  Rect.left = 0;
+  Rect.top = 0;
+  Rect.bottom =
+    (LONG)(
+      TargetParams[(int)CurrentRT].IsFullscreen ?
+      Render->GetEngine()->Height * TargetParams[(int)CurrentRT].scale.Y :
+      TargetParams[(int)CurrentRT].size.Y);
+  Rect.right = 
+    (LONG)(
+      TargetParams[(int)CurrentRT].IsFullscreen ?
+      Render->GetEngine()->Width * TargetParams[(int)CurrentRT].scale.X :
+      TargetParams[(int)CurrentRT].size.X);
+
+  Rect.bottom = max(Rect.bottom, 1);
+  Rect.right = max(Rect.right, 1);
+
+  CommandList->RSSetViewports(1, &Viewport);
+  CommandList->RSSetScissorRects(1, &Rect);
+
   CommandList->OMSetRenderTargets(1, &RenderTargetViews[(int)CurrentRT], TRUE, &DepthStencilView);
 }
 
@@ -90,9 +132,9 @@ void gdr::render_targets_support::CreateTextures()
     D3D12_RESOURCE_FLAGS flags = D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET;
     D3D12_RESOURCE_DESC desc = 
       CD3DX12_RESOURCE_DESC::Tex2D(
-      Formats[i],
-      Render->GetEngine()->Width,
-      Render->GetEngine()->Height,
+      TargetParams[i].Format,
+      TargetParams[i].IsFullscreen ? max(Render->GetEngine()->Width * TargetParams[i].scale.X, 1) : TargetParams[i].size.X,
+      TargetParams[i].IsFullscreen ? max(Render->GetEngine()->Height * TargetParams[i].scale.Y, 1) : TargetParams[i].size.Y,
       1,
       1,
       1,
@@ -104,7 +146,7 @@ void gdr::render_targets_support::CreateTextures()
   for (int i = 1; i < (int)render_targets_enum::target_count; i++)
   {
     D3D12_RENDER_TARGET_VIEW_DESC desc = {};
-    desc.Format = Formats[i];
+    desc.Format = TargetParams[i].Format;
     desc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
     desc.Texture2D.MipSlice = 0;
     desc.Texture2D.PlaneSlice = 0;

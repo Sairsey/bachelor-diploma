@@ -55,7 +55,7 @@ void gdr::hdr_copy_pass::Initialize(void)
     psoDesc.SampleMask = UINT_MAX;
     psoDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
     psoDesc.NumRenderTargets = 1;
-    psoDesc.RTVFormats[0] = Render->RenderTargets->Formats[(int)render_targets_enum::target_display];
+    psoDesc.RTVFormats[0] = Render->RenderTargets->TargetParams[(int)render_targets_enum::target_display].Format;
     psoDesc.DSVFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
     psoDesc.SampleDesc.Count = 1;
 
@@ -108,7 +108,7 @@ void gdr::hdr_copy_pass::CallDirectDraw(ID3D12GraphicsCommandList* currentComman
 
   D3D12_GPU_DESCRIPTOR_HANDLE tmp_descr = Render->RenderTargets->ShaderResourceViewsGPU;
 
-  tmp_descr.ptr += (int)render_targets_enum::target_frame * Render->GetDevice().GetSRVDescSize();
+  tmp_descr.ptr += (int)render_targets_enum::target_frame_hdr * Render->GetDevice().GetSRVDescSize();
 
   currentCommandList->SetGraphicsRootDescriptorTable(
     (int)root_parameters_draw_indices::hdr_texture_index, tmp_descr);

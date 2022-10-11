@@ -29,7 +29,7 @@ namespace gdr
     textures_support(render* Rnd);
 
     // Load Texture
-    int Load(std::string name);
+    int Load(std::string name, bool isSrgb = false);
 
     // Update data on GPU in case we need it 
     void UpdateGPUData(ID3D12GraphicsCommandList* pCommandList);

@@ -94,14 +94,14 @@ gdr::gdr_object gdr::object_support::DublicateObject(gdr_object original)
   return CPUPool.size() - 1;
 }
 
-int gdr::object_support::LoadTextureFromAssimp(aiString *path, aiScene* scene, std::string directory)
+int gdr::object_support::LoadTextureFromAssimp(aiString *path, aiScene* scene, std::string directory, bool isSrgb)
 {
   int index = -1;
-  int textureNumber = path->C_Str()[1] - '0';
+  int textureNumber = atoi(path->C_Str() + 1);
   std::string fullpath;
   if (path->C_Str()[0] == '*')
   {
-    fullpath = directory + scene->mTextures[textureNumber]->mFilename.C_Str() + path->C_Str()[1] + "." + scene->mTextures[textureNumber]->achFormatHint;
+    fullpath = directory + scene->mTextures[textureNumber]->mFilename.C_Str() + (path->C_Str() + 1) + "." + scene->mTextures[textureNumber]->achFormatHint;
     FILE *F;
     fopen_s(&F, fullpath.c_str(), "wb");
     fwrite(scene->mTextures[textureNumber]->pcData, 1, scene->mTextures[textureNumber]->mWidth, F);
@@ -113,7 +113,7 @@ int gdr::object_support::LoadTextureFromAssimp(aiString *path, aiScene* scene, s
   }
   if (path->length != 0)
   {
-    index = Render->TexturesSystem->Load(fullpath);
+    index = Render->TexturesSystem->Load(fullpath, isSrgb);
   }
 
   return index;
@@ -226,7 +226,7 @@ std::vector<gdr::gdr_object> gdr::object_support::CreateObjectsFromFile(std::str
       {
         aiString str;
         scene->mMaterials[Mesh->mMaterialIndex]->GetTexture(aiTextureType_DIFFUSE, 0, &str);
-        mat.KdMapIndex = LoadTextureFromAssimp(&str, const_cast<aiScene *>(scene), directory);
+        mat.KdMapIndex = LoadTextureFromAssimp(&str, const_cast<aiScene *>(scene), directory, true);
       }
       {
         aiString str;
@@ -246,7 +246,7 @@ std::vector<gdr::gdr_object> gdr::object_support::CreateObjectsFromFile(std::str
       {
         aiString str;
         scene->mMaterials[Mesh->mMaterialIndex]->GetTexture(aiTextureType_DIFFUSE, 0, &str);
-        mat.KdMapIndex = LoadTextureFromAssimp(&str, const_cast<aiScene*>(scene), directory);
+        mat.KdMapIndex = LoadTextureFromAssimp(&str, const_cast<aiScene*>(scene), directory, true);
       }
       {
         aiString str;

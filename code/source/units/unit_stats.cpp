@@ -376,6 +376,9 @@ void unit_stats::Response(void)
       }
 
       ImGui::ColorEdit3("Color", &Engine->LightsSystem->GetLight(CurrentLightToShow).Color[0]);
+      ImGui::DragFloat("Red", &Engine->LightsSystem->GetLight(CurrentLightToShow).Color[0], 0.1);
+      ImGui::DragFloat("Blue", &Engine->LightsSystem->GetLight(CurrentLightToShow).Color[1], 0.1);
+      ImGui::DragFloat("Green", &Engine->LightsSystem->GetLight(CurrentLightToShow).Color[2], 0.1);
 
       if (Engine->LightsSystem->GetLight(CurrentLightToShow).LightSourceType != LIGHT_SOURCE_TYPE_DIRECTIONAL)
       {

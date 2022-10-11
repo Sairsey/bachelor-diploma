@@ -18,7 +18,7 @@ namespace gdr
       std::unordered_map<std::string, std::vector<gdr_object>> LoadedObjectTypes;
 
       // Load texture function
-      int LoadTextureFromAssimp(aiString *path, aiScene* scene, std::string directory);
+      int LoadTextureFromAssimp(aiString *path, aiScene* scene, std::string directory, bool isSrgb = false);
     public:
       // default constructor
       object_support(render *Rnd);

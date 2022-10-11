@@ -77,7 +77,7 @@ gdr::textures_support::textures_support(render* Rnd)
 }
 
 // Load Texture
-int gdr::textures_support::Load(std::string name)
+int gdr::textures_support::Load(std::string name, bool isSrgb)
 {
   // check if we already have this texture
   for (int i = 0; i < MAX_TEXTURE_AMOUNT; i++)
@@ -142,7 +142,9 @@ int gdr::textures_support::Load(std::string name)
 
       GenerateMips(pBuffer, width, height, mips - 1);
       HRESULT hr = Render->GetDevice().CreateGPUResource(
-        CD3DX12_RESOURCE_DESC::Tex2D(DXGI_FORMAT_R8G8B8A8_UNORM, width, height, 1, mips),
+        CD3DX12_RESOURCE_DESC::Tex2D(
+        isSrgb ? DXGI_FORMAT_R8G8B8A8_UNORM_SRGB : DXGI_FORMAT_R8G8B8A8_UNORM,
+        width, height, 1, mips),
         D3D12_RESOURCE_STATE_COMMON,
         nullptr,
         CPUPool[NewTextureIndex].TextureResource,

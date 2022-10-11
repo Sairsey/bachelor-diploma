@@ -31,9 +31,9 @@ VSOut VS(VSIn input)
     return output;
 }
 
-static const float A = 0.1; // Shoulder Strength
+static const float A = 0.15; // Shoulder Strength
 static const float B = 0.50; // Linear Strength
-static const float C = 0.1; // Linear Angle
+static const float C = 0.10; // Linear Angle
 static const float D = 0.20; // Toe Strength
 static const float E = 0.02; // Toe Numerator
 static const float F = 0.30; // Toe Denominator
@@ -48,12 +48,23 @@ float3 Uncharted2Tonemap(float3 x)
 float3 TonemapFilmic(float3 color, float E)
 {
   float exposure = globals.SceneExposure;
-  float3 curr = Uncharted2Tonemap(2.0 * exposure * E * color);
+  float3 curr = Uncharted2Tonemap(exposure * E * color);
   float3 whiteScale = 1.0f / Uncharted2Tonemap(W);
   return curr * whiteScale;
 }
 
+float linear_to_srgb_one(float theLinearValue) {
+  return theLinearValue <= 0.0031308f
+    ? theLinearValue * 12.92f
+    : pow(theLinearValue, 0.41666) * 1.055f - 0.055f;
+}
+
+float3 linear_to_srgb(float3 color) {
+  return float3(linear_to_srgb_one(color.r), linear_to_srgb_one(color.g), linear_to_srgb_one(color.b));
+}
+
 float4 PS(VSOut input) : SV_TARGET
 {
-    return float4(pow(TonemapFilmic(Source.Sample(LinearSampler, input.uv).rgb, Luminance[0].ExposureAdapted), 1 / 2.2), 1);
+  //return float4(linear_to_srgb(Source.Sample(LinearSampler, input.uv).rgb), 1);
+  return float4(linear_to_srgb(TonemapFilmic(Source.Sample(LinearSampler, input.uv).rgb, Luminance[0].ExposureAdapted)), 1);
 }

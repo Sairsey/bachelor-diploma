@@ -186,7 +186,7 @@ float4 ShadeCookTorrance(float3 Normal, float3 Position, float2 uv, ObjectMateri
       float3 LightPos = float3(0, 0, 0);
       float4x4 TransformMatrix = ObjectTransformData[LightSourcesPool[i].ObjectTransformIndex].transform;
       LightPos = mul(TransformMatrix, float4(LightPos, 1.0)).xyz;
-
+      
       L = LightPos - Position;
       float d = length(L);
       L = normalize(L);
@@ -222,7 +222,7 @@ float4 ShadeCookTorrance(float3 Normal, float3 Position, float2 uv, ObjectMateri
         continue;
       }
 
-      float attenuation = 1.0 / (
+      attenuation = 1.0 / (
         LightSourcesPool[i].ConstantAttenuation +
         LightSourcesPool[i].LinearAttenuation * d +
         LightSourcesPool[i].QuadricAttenuation * d * d);

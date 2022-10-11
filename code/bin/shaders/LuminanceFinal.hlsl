@@ -20,7 +20,7 @@ void CS(uint3 groupId : SV_GroupID, uint groupIndex : SV_GroupIndex)
     float value = 0;
     for (int i = 0; i < max(globals.height * 0.03125, 1); i++)
       for (int j = 0; j < max(globals.width * 0.03125, 1); j++)
-        value += Source[int2(i, j)].r;
+        value += Source[int2(j, i)].r;
 
     value /= max(globals.height * 0.03125, 1);
     value /= max(globals.width * 0.03125, 1);
@@ -30,8 +30,8 @@ void CS(uint3 groupId : SV_GroupID, uint groupIndex : SV_GroupIndex)
 
     averageLuminanceAdapted = max(averageLuminanceAdapted, 0.0001);
 
-    float keyValue = 1.f - 2.f / (2.f + log10(averageLuminance + 1));
-    float keyValueAdapted = 1.f - 2.f / (2.f + log10(averageLuminanceAdapted + 1));
+    float keyValue = 1.03f - 2.f / (2.f + log10(averageLuminance + 1));
+    float keyValueAdapted = 1.03f - 2.f / (2.f + log10(averageLuminanceAdapted + 1));
 
     Luminance[0].Luminance = averageLuminance;
     Luminance[0].LuminanceAdapted = averageLuminanceAdapted;

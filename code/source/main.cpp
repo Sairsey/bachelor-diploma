@@ -6,6 +6,7 @@
 #include "units/unit_stats.h"
 #include "units/unit_city.h"
 #include "units/unit_pbr_spheres.h"
+#include "units/unit_bathroom.h"
 
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
   _In_opt_ HINSTANCE hPrevInstance,
@@ -17,9 +18,10 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
   // Units
   Engine.AddUnit(new gdr::unit_base());
   Engine.AddUnit(new unit_control());
-  //Engine.AddUnit(new unit_frog()); 
+  //Engine.AddUnit(new unit_bathroom());
+  Engine.AddUnit(new unit_frog()); 
   //Engine.AddUnit(new unit_bread());
-  Engine.AddUnit(new unit_pbr_spheres());
+  //Engine.AddUnit(new unit_pbr_spheres());
   //Engine.AddUnit(new unit_city());
 
   Engine.AddUnit(new unit_stats());

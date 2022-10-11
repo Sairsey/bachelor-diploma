@@ -20,5 +20,5 @@ void unit_triangle::Initialize(void)
 
 void unit_triangle::Response(void)
 {
-  Engine->ObjectSystem->GetTransforms(Triangle).transform = mth::matr::Translate(mth::vec3f(0, 0, sin(Engine->GetTime()) / 2.0f));
+  Engine->ObjectSystem->NodesPool[Triangle].GetTransformEditable() = mth::matr::Translate(mth::vec3f(0, 0, sin(Engine->GetTime()) / 2.0f));
 }

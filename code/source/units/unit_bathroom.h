@@ -1,10 +1,10 @@
 #pragma once
 #include "unit_base.h"
 
-class unit_pbr_spheres : public gdr::unit_base
+class unit_bathroom : public gdr::unit_base
 {
 private:
-  std::vector<gdr::gdr_index> Spheres;
+  gdr::gdr_index Bathroom;
 public:
   void Initialize(void);
 
@@ -12,10 +12,10 @@ public:
 
   std::string GetName(void)
   {
-    return "unit_pbr_spheres";
+    return "unit_bathroom";
   }
 
-  ~unit_pbr_spheres(void)
+  ~unit_bathroom(void)
   {
   }
 };

@@ -4,7 +4,7 @@
 class unit_city : public gdr::unit_base
 {
 private:
-  gdr::gdr_object Frog;
+  gdr::gdr_index City;
 public:
   void Initialize(void);
 

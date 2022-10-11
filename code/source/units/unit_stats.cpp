@@ -23,9 +23,9 @@ void unit_stats::Initialize(void)
   ID3D12GraphicsCommandList* commandList;
   Engine->GetDevice().BeginUploadCommandList(&commandList);
   PROFILE_BEGIN(commandList, "unit_stats lights Init");
-  PointLightObject = Engine->ObjectSystem->CreateObjectsFromFile("bin/models/light_meshes/sphere.obj")[0];
-  DirLightObject = Engine->ObjectSystem->CreateObjectsFromFile("bin/models/light_meshes/dir.obj")[0];
-  SpotLightObject = Engine->ObjectSystem->CreateObjectsFromFile("bin/models/light_meshes/cone.obj")[0];
+  PointLightObject = Engine->ObjectSystem->CreateObjectFromFile("bin/models/light_meshes/sphere.obj");
+  DirLightObject = Engine->ObjectSystem->CreateObjectFromFile("bin/models/light_meshes/dir.obj");
+  SpotLightObject = Engine->ObjectSystem->CreateObjectFromFile("bin/models/light_meshes/cone.obj");
   PROFILE_END(commandList);
   Engine->GetDevice().CloseUploadCommandList();
 }
@@ -33,15 +33,15 @@ void unit_stats::Initialize(void)
 void unit_stats::Response(void)
 {
   // set all light objects transforms to zero
-  Engine->ObjectSystem->GetTransforms(PointLightObject).transform = mth::matr4f::Scale(0);
-  Engine->ObjectSystem->GetTransforms(SpotLightObject).transform = mth::matr4f::Scale(0);
-  Engine->ObjectSystem->GetTransforms(DirLightObject).transform = mth::matr4f::Scale(0);
+  Engine->ObjectSystem->NodesPool[PointLightObject].GetTransformEditable() = mth::matr4f::Scale(0);
+  Engine->ObjectSystem->NodesPool[SpotLightObject].GetTransformEditable() = mth::matr4f::Scale(0);
+  Engine->ObjectSystem->NodesPool[DirLightObject].GetTransformEditable() = mth::matr4f::Scale(0);
 
   // if light tool is active
   if (LightToolActive)
   {
     // choose right mesh
-    gdr::gdr_object ObjectType;
+    gdr::gdr_index ObjectType;
     if (Engine->LightsSystem->GetLight(CurrentLightToShow).LightSourceType == LIGHT_SOURCE_TYPE_DIRECTIONAL)
       ObjectType = DirLightObject;
     if (Engine->LightsSystem->GetLight(CurrentLightToShow).LightSourceType == LIGHT_SOURCE_TYPE_SPOT)
@@ -49,9 +49,9 @@ void unit_stats::Response(void)
     if (Engine->LightsSystem->GetLight(CurrentLightToShow).LightSourceType == LIGHT_SOURCE_TYPE_POINT)
       ObjectType = PointLightObject;
 
-    Engine->ObjectSystem->GetTransforms(ObjectType).transform = Engine->LightsSystem->GetTransform(CurrentLightToShow).transform;
+    Engine->ObjectSystem->NodesPool[ObjectType].GetTransformEditable() = Engine->LightsSystem->GetTransform(CurrentLightToShow).transform;
     if (ObjectType == DirLightObject)
-      Engine->ObjectSystem->GetTransforms(ObjectType).transform = Engine->ObjectSystem->GetTransforms(ObjectType).transform * mth::matr::Translate({ 0, 10, 0 });
+      Engine->ObjectSystem->NodesPool[ObjectType].GetTransformEditable() = Engine->ObjectSystem->NodesPool[ObjectType].GetTransformEditable() * mth::matr::Translate({0, 10, 0});
   }
   // Present mode
   Engine->AddLambdaForIMGUI(

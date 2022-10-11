@@ -149,6 +149,9 @@ void gdr::render::DrawFrame(void)
   if (!IsInited)
     return;
   PROFILE_CPU_BEGIN("DrawFrame");
+  PROFILE_CPU_BEGIN("Update objects transforms");
+  ObjectSystem->UpdateAllNodes();
+  PROFILE_CPU_END();
 
   ID3D12GraphicsCommandList* uploadCommandList;
   GetDevice().BeginUploadCommandList(&uploadCommandList);

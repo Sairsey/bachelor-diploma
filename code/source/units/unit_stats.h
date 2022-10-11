@@ -34,9 +34,9 @@ private:
   float AverageGPUMemoryUsagePlot;
   float MaxGPUMemoryPlot;
 
-  gdr::gdr_object PointLightObject;
-  gdr::gdr_object DirLightObject;
-  gdr::gdr_object SpotLightObject;
+  gdr::gdr_index PointLightObject;
+  gdr::gdr_index DirLightObject;
+  gdr::gdr_index SpotLightObject;
 
   int NullTransform;
 

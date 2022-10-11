@@ -4,7 +4,7 @@
 class unit_triangle : public gdr::unit_base
 {
 private:
-  gdr::gdr_object Triangle;
+  gdr::gdr_index Triangle;
 public:
   void Initialize(void);
 

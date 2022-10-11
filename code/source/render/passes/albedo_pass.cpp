@@ -246,10 +246,10 @@ void gdr::albedo_pass::CallDirectDraw(ID3D12GraphicsCommandList* currentCommandL
   currentCommandList->SetGraphicsRootSignature(RootSignature);
   currentCommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-  std::vector<gdr::gdr_object> objects_to_draw;
+  std::vector<gdr::gdr_index> objects_to_draw;
 
   // composite all transparents
-  for (gdr::gdr_object i = 0; i < Render->ObjectSystem->CPUPool.size(); i++)
+  for (gdr::gdr_index i = 0; i < Render->ObjectSystem->CPUPool.size(); i++)
   {
     if ((Render->ObjectSystem->CPUPool[i].ObjectParams & OBJECT_PARAMETER_TRANSPARENT) == 0)
     {

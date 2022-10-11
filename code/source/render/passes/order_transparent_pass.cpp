@@ -110,10 +110,10 @@ void gdr::order_transparent_pass::CallDirectDraw(ID3D12GraphicsCommandList* curr
   currentCommandList->SetGraphicsRootSignature(RootSignature);
   currentCommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-  std::vector<gdr::gdr_object> objects_to_draw;
+  std::vector<gdr::gdr_index> objects_to_draw;
 
   // composite all transparents
-  for (gdr::gdr_object i = 0; i < Render->ObjectSystem->CPUPool.size(); i++)
+  for (gdr::gdr_index i = 0; i < Render->ObjectSystem->CPUPool.size(); i++)
   {
     if (Render->ObjectSystem->CPUPool[i].ObjectParams & OBJECT_PARAMETER_TRANSPARENT)
     {
@@ -123,12 +123,15 @@ void gdr::order_transparent_pass::CallDirectDraw(ID3D12GraphicsCommandList* curr
 
   // Sort them
   std::sort(objects_to_draw.begin(), objects_to_draw.end(), 
-    [&](const gdr::gdr_object& a, const gdr::gdr_object& b)
+    [&](const gdr::gdr_index& a, const gdr::gdr_index& b)
     {
-      ObjectTransform &a_transform = Render->ObjectSystem->GetTransforms(a);
-      ObjectTransform &b_transform = Render->ObjectSystem->GetTransforms(b);
+      ObjectTransform a_transform = Render->TransformsSystem->CPUData[Render->ObjectSystem->CPUPool[a].ObjectTransformIndex];
+      ObjectTransform b_transform = Render->TransformsSystem->CPUData[Render->ObjectSystem->CPUPool[b].ObjectTransformIndex];
       mth::vec3f a_position = (a_transform.maxAABB + a_transform.minAABB) / 2.0;
       mth::vec3f b_position = (b_transform.maxAABB + b_transform.minAABB) / 2.0;
+
+      a_position = a_transform.transform * a_position;
+      b_position = b_transform.transform * b_position;
 
       mth::vec3f cam_pos = Render->GlobalsSystem->CPUData.CameraPos;
 

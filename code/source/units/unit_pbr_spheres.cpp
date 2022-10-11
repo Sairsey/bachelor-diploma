@@ -18,13 +18,13 @@ void unit_pbr_spheres::Initialize(void)
     PROFILE_BEGIN(commandList, "unit_pbr_spheres Init");
     for (int i = 0; i < 1000; i++)
     {
-      Spheres.push_back(Engine->ObjectSystem->CreateObjectsFromFile("bin/models/pbr_sphere/pbr_sphere.glb")[0]);
+      Spheres.push_back(Engine->ObjectSystem->CreateObjectFromFile("bin/models/pbr_sphere/pbr_sphere.glb"));
       int k = Spheres.size() - 1;
 
-      double dist = (Engine->ObjectSystem->GetTransforms(Spheres[k]).maxAABB - Engine->ObjectSystem->GetTransforms(Spheres[k]).minAABB).Lenght();
+      double dist = (Engine->ObjectSystem->NodesPool[Spheres[k]].GetTransform().maxAABB - Engine->ObjectSystem->NodesPool[Spheres[k]].GetTransform().minAABB).Lenght();
       alpha = sqrt(alpha * alpha + dist);
       double radius = alpha * 2;
-      Engine->ObjectSystem->GetTransforms(Spheres[k]).transform = mth::matr::Translate(mth::vec3f(float(sin(alpha) * radius), 0, float(cos(alpha) * radius)));
+      Engine->ObjectSystem->NodesPool[Spheres[k]].GetTransformEditable() = mth::matr::Translate(mth::vec3f(float(sin(alpha) * radius), 0, float(cos(alpha) * radius)));
     }
     PROFILE_END(commandList);
     Engine->GetDevice().CloseUploadCommandList();

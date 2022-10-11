@@ -28,7 +28,7 @@ struct GlobalData
 struct ObjectTransform
 {
   float4x4 transform;
-  float4x4 transformInversedTransposed;
+  float4x4 transformInversedTransposed; // Not used for now...
   // AABB
   float3 minAABB;
   float3 maxAABB;
@@ -74,12 +74,13 @@ struct ObjectMaterial
 
 struct ObjectIndices
 {
-  UINT ObjectTransformIndex; // index of ObjectTransform
-  UINT ObjectMaterialIndex; // index of ObjectMaterial
   UINT ObjectParams;        // MASK with some parameters for object
+  UINT ObjectMaterialIndex; // index of ObjectMaterial
+  UINT ObjectTransformIndex; // index of ObjectTransform
 };
 
 #define OBJECT_PARAMETER_TRANSPARENT 0x1       // Set if object is transparent
+#define OBJECT_PARAMETER_SKINNED     0x2       // Set if object is skinned
 
 struct ComputeRootConstants
 {

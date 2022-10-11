@@ -521,10 +521,10 @@ void gdr::oit_transparent_pass::CallDirectDraw(ID3D12GraphicsCommandList* curren
   currentCommandList->SetGraphicsRootSignature(RootSignature);
   currentCommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-  std::vector<gdr::gdr_object> objects_to_draw;
+  std::vector<gdr::gdr_index> objects_to_draw;
 
   // gather all transparents
-  for (gdr::gdr_object i = 0; i < Render->ObjectSystem->CPUPool.size(); i++)
+  for (gdr::gdr_index i = 0; i < Render->ObjectSystem->CPUPool.size(); i++)
   {
     if (Render->ObjectSystem->CPUPool[i].ObjectParams & OBJECT_PARAMETER_TRANSPARENT)
     {

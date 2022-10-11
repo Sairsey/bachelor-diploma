@@ -162,6 +162,9 @@
     <ClCompile Include="source\render\passes\tonemap_pass.cpp">
       <Filter>Source Files\Render\Passes</Filter>
     </ClCompile>
+    <ClCompile Include="source\units\unit_bathroom.cpp">
+      <Filter>Source Files\Units</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\p_header.h">
@@ -313,6 +316,9 @@
     </ClInclude>
     <ClInclude Include="source\render\passes\tonemap_pass.h">
       <Filter>Source Files\Render\Passes</Filter>
+    </ClInclude>
+    <ClInclude Include="source\units\unit_bathroom.h">
+      <Filter>Source Files\Units</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

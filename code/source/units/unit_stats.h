@@ -27,6 +27,12 @@ private:
   std::vector<float> CPURenderTimePlot;
   float AverageCPURenderTimePlot;
 
+  std::vector<float> CPUUpdateTimePlot;
+  float AverageCPUUpdateTimePlot;
+
+  std::vector<float> CPUFrameRenderTimePlot;
+  float AverageCPUFrameRenderTimePlot;
+
   std::vector<float> DeviceRenderTimePlot;
   float AverageDeviceRenderTimePlot;
 

@@ -13,6 +13,8 @@ void unit_stats::Initialize(void)
   
   StatsToolActive = true;
   CPURenderTimePlot.resize(PlotWindowWidth);
+  CPUUpdateTimePlot.resize(PlotWindowWidth);
+  CPUFrameRenderTimePlot.resize(PlotWindowWidth);
   DeviceRenderTimePlot.resize(PlotWindowWidth);
   GPUMemoryUsagePlot.resize(PlotWindowWidth);
   CurrentPlotIndex = 0;
@@ -405,6 +407,8 @@ void unit_stats::Response(void)
 
   CPURenderTimePlot[CurrentPlotIndex] = Engine->GetGlobalDeltaTime() * 1000.0;
   DeviceRenderTimePlot[CurrentPlotIndex] = Engine->DeviceFrameCounter.GetMSec();
+  CPUUpdateTimePlot[CurrentPlotIndex] = Engine->UpdateBuffersTime / 1000.0 / 1000.0;
+  CPUFrameRenderTimePlot[CurrentPlotIndex] = Engine->DrawFrameTime / 1000.0 / 1000.0;
 
   DXGI_QUERY_VIDEO_MEMORY_INFO gpu_info;
   ((IDXGIAdapter3 *)Engine->GetDevice().GetAdapter())->QueryVideoMemoryInfo(0, DXGI_MEMORY_SEGMENT_GROUP_LOCAL, &gpu_info);
@@ -415,6 +419,16 @@ void unit_stats::Response(void)
   for (int i = 0; i < CPURenderTimePlot.size(); i++)
     AverageCPURenderTimePlot += CPURenderTimePlot[i];
   AverageCPURenderTimePlot /= CPURenderTimePlot.size();
+
+  AverageCPUUpdateTimePlot = 0;
+  for (int i = 0; i < CPUUpdateTimePlot.size(); i++)
+      AverageCPUUpdateTimePlot += CPUUpdateTimePlot[i];
+  AverageCPUUpdateTimePlot /= CPUUpdateTimePlot.size();
+
+  AverageCPUFrameRenderTimePlot = 0;
+  for (int i = 0; i < CPUFrameRenderTimePlot.size(); i++)
+      AverageCPUFrameRenderTimePlot += CPUFrameRenderTimePlot[i];
+  AverageCPUFrameRenderTimePlot /= CPUFrameRenderTimePlot.size();
 
   AverageDeviceRenderTimePlot = 0;
   for (int i = 0; i < DeviceRenderTimePlot.size(); i++)
@@ -456,7 +470,9 @@ void unit_stats::Response(void)
       }
 
       ImGui::Text("Average FPS = %.4g", Engine->GetFPS());
-      ImGui::Text("Average CPU Render Time = %.4g ms", AverageCPURenderTimePlot);
+      ImGui::Text("Average Render Time on CPU= %.4g ms", AverageCPURenderTimePlot);
+      ImGui::Text("Average Time for Upload CL = %.4g ms", AverageCPUUpdateTimePlot);
+      ImGui::Text("Average Time for Render CL = %.4g ms", AverageCPUFrameRenderTimePlot);
       ImGui::Text("Average Device Render Time = %f ms", AverageDeviceRenderTimePlot);
       ImGui::Text("Average GPU Usage = %f MB", AverageGPUMemoryUsagePlot);
       ImGui::Text("Max GPU budget = %f MB", MaxGPUMemoryPlot);

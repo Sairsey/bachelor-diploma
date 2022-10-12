@@ -719,6 +719,33 @@ HRESULT gdr::device::UpdateBuffer(ID3D12GraphicsCommandList* pCommandList, ID3D1
   return E_FAIL;
 }
 
+HRESULT gdr::device::UpdateBufferOffset(ID3D12GraphicsCommandList* pCommandList, ID3D12Resource* pBuffer, size_t bufferOffset, const void* pData, size_t dataSize)
+{
+#ifdef _DEBUG
+  D3D12_RESOURCE_DESC desc = pBuffer->GetDesc();
+  assert(desc.Dimension == D3D12_RESOURCE_DIMENSION_BUFFER);
+  assert(desc.Width >= dataSize + bufferOffset);
+#endif
+
+  assert(CurrentUploadCmdList == pCommandList);
+
+  UINT64 allocStartOffset = 0;
+  UINT8* pAlloc = nullptr;
+  auto allocRes = UploadBuffer->Alloc(dataSize, allocStartOffset, pAlloc, D3D12_CONSTANT_BUFFER_DATA_PLACEMENT_ALIGNMENT);
+  assert(allocRes == ring_buffer_result::Ok);
+  if (allocRes == ring_buffer_result::Ok)
+  {
+    memcpy(pAlloc, pData, dataSize);
+
+    pCommandList->CopyBufferRegion(pBuffer, bufferOffset, UploadBuffer->GetBuffer(), allocStartOffset, dataSize);
+
+    return S_OK;
+  }
+
+  return E_FAIL;
+}
+
+
 // In case we need huge data to be copied
 void gdr::device::WaitAllUploadLists(void)
 {

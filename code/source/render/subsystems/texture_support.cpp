@@ -188,7 +188,7 @@ void gdr::textures_support::UpdateGPUData(ID3D12GraphicsCommandList* pCommandLis
       
       D3D12_SHADER_RESOURCE_VIEW_DESC texDesc = {};
       texDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-      texDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+      texDesc.Format = CPUPool[i].TextureResource.Resource->GetDesc().Format;
       texDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
       texDesc.Texture2D.MipLevels = (UINT)CPUPool[i].NumOfMips;
       Render->GetDevice().GetDXDevice()->CreateShaderResourceView(CPUPool[i].TextureResource.Resource, &texDesc, TextureDescr);

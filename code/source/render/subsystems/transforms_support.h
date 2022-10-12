@@ -10,10 +10,15 @@ namespace gdr
   {
   private:
     render* Render; // pointer on Render
-    std::vector<ObjectTransform> StoredCopy; // stored copy to check if data has changed
+    size_t StoredSize; // stored copy to check if data has changed
     D3D12_CPU_DESCRIPTOR_HANDLE CPUDescriptor;
     D3D12_GPU_DESCRIPTOR_HANDLE GPUDescriptor;
-    
+
+    // transform chunk for update
+    const int CHUNK_SIZE = 128 * sizeof(ObjectTransform); // 5Kb approx
+
+    std::vector<bool> ChunkMarkings;
+
     void UpdateInverseTranspose();
 
   public:
@@ -24,6 +29,8 @@ namespace gdr
 
     std::vector<ObjectTransform> CPUData;  // data stored in CPU
     GPUResource GPUData; // data stored in GPU
+
+    void MarkChunkByTransformIndex(size_t index);
 
     // Destructor 
     ~transforms_support(void);

@@ -10,7 +10,7 @@ namespace gdr
   // Device creation parameters
   struct device_create_params
   {
-    bool DebugLayer = true;
+    bool DebugLayer = false;
     bool DebugShaders = true;
     int  CmdListCount = 2;
     int  UploadListCount = 2;
@@ -223,6 +223,8 @@ namespace gdr
       bool BeginUploadCommandList(ID3D12GraphicsCommandList** ppCommandList);
       // Update GPU buffer
       HRESULT UpdateBuffer(ID3D12GraphicsCommandList* pCommandList, ID3D12Resource* pBuffer, const void* pData, size_t dataSize);
+      // Update GPU buffer
+      HRESULT UpdateBufferOffset(ID3D12GraphicsCommandList* pCommandList, ID3D12Resource* pBuffer, size_t bufferOffset, const void* pData, size_t dataSize);
       // Update GPU Texture
       HRESULT UpdateTexture(ID3D12GraphicsCommandList* pCommandList, ID3D12Resource* pTexture, const void* pData, size_t dataSize);
       // Close command list for uploading

@@ -65,7 +65,9 @@ namespace gdr
       // used while parsing
       std::string directory;
 
-      std::unordered_map<std::string, std::vector<gdr_node>> LoadedObjectTypes;
+      std::unordered_map<std::string, gdr_index> LoadedFiles;
+
+      std::queue<gdr_index> NodesToRecalc;
 
       // Load texture function
       int LoadTextureFromAssimp(aiString *path, aiScene* scene, std::string directory, bool isSrgb = false);
@@ -90,7 +92,7 @@ namespace gdr
       gdr_index CreateObject(const vertex* pVertex, size_t vertexCount, const UINT32* pIndices, size_t indexCount);
 
       // function which will import data and return gdr_object
-      //gdr_object DublicateObject(gdr_object original);
+      gdr_index DublicateObject(gdr_index original, gdr_index parent = -1);
 
       // function which will import data and return index for gdr_node
       gdr_index CreateObjectFromFile(std::string fileName);
@@ -98,11 +100,7 @@ namespace gdr
       // Recompute Translations and AABBs
       void UpdateAllNodes(void);
 
-      // function which will return transfroms by object index
-      //ObjectTransform &GetTransforms(gdr_node object);
-
-      // function which will return material by object index
-      //ObjectMaterial &GetMaterial(gdr_node object);
+      void MarkNodeToRecalc(gdr_index nodeIndex);
 
       // default de-structor
       ~object_support();

@@ -16,6 +16,7 @@
 #include <d3dcompiler.h>
 #include <d3dx12.h>
 
+#include <chrono>
 #include <string>
 #include <functional>
 #include <unordered_map>

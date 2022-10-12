@@ -139,7 +139,7 @@ int gdr::cube_textures_support::Load(
     }
 
     HRESULT hr = Render->GetDevice().CreateGPUResource(
-    CD3DX12_RESOURCE_DESC::Tex2D(DXGI_FORMAT_R8G8B8A8_UNORM, width, height, 6, mips),
+    CD3DX12_RESOURCE_DESC::Tex2D(DXGI_FORMAT_R8G8B8A8_UNORM_SRGB, width, height, 6, mips),
      D3D12_RESOURCE_STATE_COMMON,
      nullptr,
      CPUPool[NewTextureIndex].TextureResource,
@@ -178,7 +178,7 @@ void gdr::cube_textures_support::UpdateGPUData(ID3D12GraphicsCommandList* pComma
       
       D3D12_SHADER_RESOURCE_VIEW_DESC texDesc = {};
       texDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-      texDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+      texDesc.Format = CPUPool[i].TextureResource.Resource->GetDesc().Format;
       texDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURECUBE;
       texDesc.TextureCube.MipLevels = 1;
       texDesc.TextureCube.MostDetailedMip = 0;

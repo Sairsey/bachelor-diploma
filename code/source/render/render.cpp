@@ -156,6 +156,7 @@ void gdr::render::DrawFrame(void)
 
   ID3D12GraphicsCommandList* uploadCommandList;
   GetDevice().BeginUploadCommandList(&uploadCommandList);
+  auto updateStart = std::chrono::system_clock::now();
   PROFILE_BEGIN(uploadCommandList, "Update indirect SRVs and UAVs");
   // Update all subsytems except globals, it will be updated in each pass
   IndirectSystem->UpdateGPUData(uploadCommandList);
@@ -175,13 +176,16 @@ void gdr::render::DrawFrame(void)
   PROFILE_BEGIN(uploadCommandList, "Update Lights");
   LightsSystem->UpdateGPUData(uploadCommandList);
   PROFILE_END(uploadCommandList);
-  GetDevice().CloseUploadCommandList();
+  GetDevice().CloseUploadCommandListBeforeRenderCommandList();
+  auto updateEnd = std::chrono::system_clock::now();
+  UpdateBuffersTime = std::chrono::duration_cast<std::chrono::nanoseconds>(updateEnd - updateStart).count();
 
   ID3D12GraphicsCommandList* pCommandList = nullptr;
   ID3D12Resource* pBackBuffer = nullptr;
   D3D12_CPU_DESCRIPTOR_HANDLE rtvHandle;
   if (Device.BeginRenderCommandList(&pCommandList, &pBackBuffer, &rtvHandle))
   {
+    auto renderStart = std::chrono::system_clock::now();
     PROFILE_BEGIN(pCommandList, "Frame");
     DeviceFrameCounter.Start(pCommandList);
     HRESULT hr = S_OK;
@@ -231,9 +235,10 @@ void gdr::render::DrawFrame(void)
       Device.TransitResourceState(pCommandList, pBackBuffer, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
     }
 
-
     PROFILE_END(pCommandList);
     Device.CloseSubmitAndPresentRenderCommandList(false);
+    auto renderEnd = std::chrono::system_clock::now();
+    DrawFrameTime = std::chrono::duration_cast<std::chrono::nanoseconds>(renderEnd - renderStart).count();
   }
   PROFILE_CPU_END();
 }

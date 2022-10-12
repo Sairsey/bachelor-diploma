@@ -104,6 +104,7 @@ LightSource& gdr::light_sources_support::GetLight(gdr_light Index)
 }
 ObjectTransform& gdr::light_sources_support::GetTransform(gdr_light Index)
 {
+  Render->TransformsSystem->MarkChunkByTransformIndex(CPUData[Index].ObjectTransformIndex);
   return Render->TransformsSystem->CPUData[CPUData[Index].ObjectTransformIndex];
 }
 

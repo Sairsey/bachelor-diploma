@@ -17,6 +17,7 @@ ObjectTransform gdr::gdr_node::GetTransform()
 mth::matr4f& gdr::gdr_node::GetTransformEditable()
 {
   IsTransformCalculated = false;
+  Render->ObjectSystem->MarkNodeToRecalc(Index);
   if (NodeType == gdr_node_type::mesh)
     return Render->ObjectSystem->NodesPool[ParentIndex].LocalTransform;
   else
@@ -89,51 +90,41 @@ gdr::gdr_index gdr::object_support::CreateObject(const vertex* pVertex, size_t v
 }
 
 // function which will import data and return gdr_object
-/*gdr::gdr_object gdr::object_support::DublicateObject(gdr_object original)
+gdr::gdr_index gdr::object_support::DublicateObject(gdr::gdr_index original, gdr::gdr_index parent)
 {
-  Render->GeometrySystem->CPUPool.push_back(Render->GeometrySystem->CPUPool[original]);
-  Render->GeometrySystem->CPUPool[Render->GeometrySystem->CPUPool.size() - 1].IsDublicated = true;
-  ObjectIndices new_record;
-  new_record.ObjectTransformIndex = -1;
-  new_record.ObjectMaterialIndex = -1;
-  new_record.ObjectParams = 0;
+  gdr::gdr_node Node(Render);
+  Node.Name = NodesPool[original].Name + " dublicate";
+  Node.ParentIndex = parent;
+  Node.Index = NodesPool.size();
+  Node.LocalTransform = NodesPool[original].LocalTransform;
+  Node.IsTransformCalculated = false;
+  Node.NodeType = NodesPool[original].NodeType;
 
-  new_record.ObjectMaterialIndex = CPUPool[original].ObjectMaterialIndex;
+  // Copy Transforms
+  ObjectTransform newTransform = NodesPool[original].GetTransform();
+  Render->TransformsSystem->CPUData.push_back(newTransform);
+  Node.TransformIndex = Render->TransformsSystem->CPUData.size() - 1;
 
-  // check transparency
+  if (Node.NodeType == gdr_node_type::mesh)
   {
-    if (Render->MaterialsSystem->CPUData[new_record.ObjectMaterialIndex].KaMapIndex != -1)
-    {
-      new_record.ObjectParams |= 
-      Render->TexturesSystem->CPUPool[Render->MaterialsSystem->CPUData[new_record.ObjectMaterialIndex].KaMapIndex].IsTransparent 
-      ? OBJECT_PARAMETER_TRANSPARENT 
-      : 0;
-    }
-    if (Render->MaterialsSystem->CPUData[new_record.ObjectMaterialIndex].KdMapIndex != -1)
-    {
-      new_record.ObjectParams |=
-        Render->TexturesSystem->CPUPool[Render->MaterialsSystem->CPUData[new_record.ObjectMaterialIndex].KdMapIndex].IsTransparent
-        ? OBJECT_PARAMETER_TRANSPARENT
-        : 0;
-    }
-    if (Render->MaterialsSystem->CPUData[new_record.ObjectMaterialIndex].KsMapIndex != -1)
-    {
-      new_record.ObjectParams |=
-        Render->TexturesSystem->CPUPool[Render->MaterialsSystem->CPUData[new_record.ObjectMaterialIndex].KsMapIndex].IsTransparent
-        ? OBJECT_PARAMETER_TRANSPARENT
-        : 0;
-    }
-  }
+      Node.MeshIndex = CPUPool.size();
+      
+      // create new entry in object system`s CPUPool
+      CPUPool.push_back(CPUPool[NodesPool[original].MeshIndex]);
+      // override transforms
+      CPUPool[Node.MeshIndex].ObjectTransformIndex = Node.TransformIndex;
 
-  if (CPUPool[original].ObjectTransformIndex != -1)
-  {
-    Render->TransformsSystem->CPUData.push_back(Render->TransformsSystem->CPUData[CPUPool[original].ObjectTransformIndex]);
-    new_record.ObjectTransformIndex = (UINT)Render->TransformsSystem->CPUData.size() - 1;
+      // copy geometry
+      Render->GeometrySystem->CPUPool.push_back(Render->GeometrySystem->CPUPool[NodesPool[original].MeshIndex]);
+      Render->GeometrySystem->CPUPool[Node.MeshIndex].IsDublicated = true;
   }
-  
-  CPUPool.push_back(new_record);
-  return CPUPool.size() - 1;
-}*/
+  NodesPool.push_back(Node);
+
+  for (int i = 0; i < NodesPool[original].Childs.size(); i++)
+      NodesPool[Node.Index].Childs.push_back(DublicateObject(NodesPool[original].Childs[i], Node.Index));
+
+  return Node.Index;
+}
 
 int gdr::object_support::LoadTextureFromAssimp(aiString *path, aiScene* scene, std::string directory, bool isSrgb)
 {
@@ -204,6 +195,7 @@ gdr::gdr_index gdr::object_support::LoadAssimpTree(const aiScene* scene, aiNode*
     Render->TransformsSystem->CPUData[NodesPool[Node.Index].TransformIndex].minAABB.X = min(NodesPool[NodesPool[Node.Index].Childs[i]].GetTransform().minAABB.X, NodesPool[Node.Index].GetTransform().minAABB.X);
     Render->TransformsSystem->CPUData[NodesPool[Node.Index].TransformIndex].minAABB.Y = min(NodesPool[NodesPool[Node.Index].Childs[i]].GetTransform().minAABB.Y, NodesPool[Node.Index].GetTransform().minAABB.Y);
     Render->TransformsSystem->CPUData[NodesPool[Node.Index].TransformIndex].minAABB.Z = min(NodesPool[NodesPool[Node.Index].Childs[i]].GetTransform().minAABB.Z, NodesPool[Node.Index].GetTransform().minAABB.Z);
+    Render->TransformsSystem->MarkChunkByTransformIndex(NodesPool[Node.Index].TransformIndex);
   }
 
   return Node.Index;
@@ -261,6 +253,7 @@ gdr::gdr_index gdr::object_support::LoadAssimpTreeMesh(const aiScene* scene, aiM
   Render->TransformsSystem->CPUData[NodesPool[ParentNode].TransformIndex].minAABB.X = min(NodesPool[object_node].GetTransform().minAABB.X, NodesPool[ParentNode].GetTransform().minAABB.X);
   Render->TransformsSystem->CPUData[NodesPool[ParentNode].TransformIndex].minAABB.Y = min(NodesPool[object_node].GetTransform().minAABB.Y, NodesPool[ParentNode].GetTransform().minAABB.Y);
   Render->TransformsSystem->CPUData[NodesPool[ParentNode].TransformIndex].minAABB.Z = min(NodesPool[object_node].GetTransform().minAABB.Z, NodesPool[ParentNode].GetTransform().minAABB.Z);
+  Render->TransformsSystem->MarkChunkByTransformIndex(NodesPool[ParentNode].TransformIndex);
   
   // Second - delete Transform from TransformsPool
   Render->TransformsSystem->CPUData.pop_back();
@@ -361,14 +354,10 @@ gdr::gdr_index gdr::object_support::CreateObjectFromFile(std::string fileName)
   // Create an instance of the Importer class
   Assimp::Importer importer;
 
-  /*
-  if (LoadedObjectTypes.find(fileName) != LoadedObjectTypes.end())
+  if (LoadedFiles.find(fileName) != LoadedFiles.end())
   {
-    for (auto &objects : LoadedObjectTypes[fileName])
-      result.push_back(DublicateObject(objects));
-    return result;
+    return DublicateObject(LoadedFiles[fileName]);
   }
-  */
 
   size_t last_slash_idx = fileName.rfind('\\');
   if (std::string::npos != last_slash_idx)
@@ -397,7 +386,6 @@ gdr::gdr_index gdr::object_support::CreateObjectFromFile(std::string fileName)
   newTransform.transformInversedTransposed = mth::matr::Identity();
   Render->TransformsSystem->CPUData.push_back(newTransform);
 
-
   // create node for this scene
   gdr_node FileNode(Render);
   FileNode.Name = fileName;
@@ -412,160 +400,22 @@ gdr::gdr_index gdr::object_support::CreateObjectFromFile(std::string fileName)
 
   NodesPool[FileNode.Index].Childs.push_back(LoadAssimpTree(scene, scene->mRootNode, FileNode.Index));
 
-  Render->TransformsSystem->CPUData[NodesPool[FileNode.Index].TransformIndex].maxAABB.X = max(NodesPool[NodesPool[FileNode.Index].Childs[0]].GetTransform().maxAABB.X, NodesPool[FileNode.Index].GetTransform().maxAABB.X);
-  Render->TransformsSystem->CPUData[NodesPool[FileNode.Index].TransformIndex].maxAABB.Y = max(NodesPool[NodesPool[FileNode.Index].Childs[0]].GetTransform().maxAABB.Y, NodesPool[FileNode.Index].GetTransform().maxAABB.Y);
-  Render->TransformsSystem->CPUData[NodesPool[FileNode.Index].TransformIndex].maxAABB.Z = max(NodesPool[NodesPool[FileNode.Index].Childs[0]].GetTransform().maxAABB.Z, NodesPool[FileNode.Index].GetTransform().maxAABB.Z);
-  Render->TransformsSystem->CPUData[NodesPool[FileNode.Index].TransformIndex].minAABB.X = min(NodesPool[NodesPool[FileNode.Index].Childs[0]].GetTransform().minAABB.X, NodesPool[FileNode.Index].GetTransform().minAABB.X);
-  Render->TransformsSystem->CPUData[NodesPool[FileNode.Index].TransformIndex].minAABB.Y = min(NodesPool[NodesPool[FileNode.Index].Childs[0]].GetTransform().minAABB.Y, NodesPool[FileNode.Index].GetTransform().minAABB.Y);
-  Render->TransformsSystem->CPUData[NodesPool[FileNode.Index].TransformIndex].minAABB.Z = min(NodesPool[NodesPool[FileNode.Index].Childs[0]].GetTransform().minAABB.Z, NodesPool[FileNode.Index].GetTransform().minAABB.Z);
+  importer.FreeScene();
+
+  Render->TransformsSystem->CPUData[NodesPool[FileNode.Index].TransformIndex].maxAABB = NodesPool[NodesPool[FileNode.Index].Childs[0]].GetTransform().maxAABB;
+  Render->TransformsSystem->CPUData[NodesPool[FileNode.Index].TransformIndex].minAABB = NodesPool[NodesPool[FileNode.Index].Childs[0]].GetTransform().minAABB;
+  Render->TransformsSystem->MarkChunkByTransformIndex(NodesPool[FileNode.Index].TransformIndex);
+  MarkNodeToRecalc(FileNode.Index);
+
+  LoadedFiles[fileName] = FileNode.Index;
 
   return FileNode.Index;
+}
 
-  /*
-
-  for (unsigned int meshIndex = 0; meshIndex < scene->mNumMeshes; meshIndex++)
-  {
-    aiMesh* Mesh = scene->mMeshes[meshIndex];
-
-    std::vector<vertex> vertices;
-    std::vector<UINT32> indices;
-
-    vertices.reserve(Mesh->mNumVertices);
-    indices.reserve(Mesh->mNumFaces * 3);
-
-    for (int j = 0; j < (int)Mesh->mNumFaces; j++)
-    {
-      if (Mesh->mFaces[j].mNumIndices != 3)
-      {
-        continue;
-      }
-      indices.push_back(Mesh->mFaces[j].mIndices[0]);
-      indices.push_back(Mesh->mFaces[j].mIndices[1]);
-      indices.push_back(Mesh->mFaces[j].mIndices[2]);
-    }
-
-    for (int j = 0; j < (int)Mesh->mNumVertices; j++)
-    {
-      vertex V;
-      V.Pos= mth::vec3f({ Mesh->mVertices[j].x, Mesh->mVertices[j].y, Mesh->mVertices[j].z });
-      V.Normal = mth::vec3f({ Mesh->mNormals[j].x, Mesh->mNormals[j].y, Mesh->mNormals[j].z });
-      V.Normal.Normalize();
-      aiVector3D uv;
-
-      if (Mesh->mTextureCoords[0])
-        uv = Mesh->mTextureCoords[0][j];
-
-      V.UV = mth::vec2f({ uv.x, uv.y });
-
-      V.Tangent = mth::vec3f{Mesh->mTangents[j].x, Mesh->mTangents[j].y, Mesh->mTangents[j].z};
-      V.Tangent.Normalize();
-
-      vertices.push_back(V);
-    }
-
-    if (indices.size() == 0)
-      continue;
-
-    result.push_back(CreateObject(vertices.data(), vertices.size(), indices.data(), indices.size()));
-
-    ObjectMaterial &mat = GetMaterial(result[result.size() - 1]);
-
-    aiColor3D color(0.f, 0.f, 0.f);
-    float shininess = mat.Ph;
-
-    scene->mMaterials[Mesh->mMaterialIndex]->Get(AI_MATKEY_COLOR_DIFFUSE, color);
-    mat.Kd = mth::vec3f(color.r, color.g, color.b);
-
-    scene->mMaterials[Mesh->mMaterialIndex]->Get(AI_MATKEY_COLOR_AMBIENT, color);
-    mat.Ka = mth::vec3f(color.r, color.g, color.b);
-
-    scene->mMaterials[Mesh->mMaterialIndex]->Get(AI_MATKEY_COLOR_SPECULAR, color);
-    mat.Ks = mth::vec3f(color.r, color.g, color.b);
-
-    scene->mMaterials[Mesh->mMaterialIndex]->Get(AI_MATKEY_SHININESS, shininess);
-    mat.Ph = shininess / 4.0f;
-
-    if (mat.Ph == 0.f)
-      mat.Ph = 1.0f;
-
-    std::string directory;
-    size_t last_slash_idx = fileName.rfind('\\');
-    if (std::string::npos != last_slash_idx)
-    {
-      directory = fileName.substr(0, last_slash_idx);
-    }
-    else
-    {
-      size_t last_slash_idx = fileName.rfind('/');
-      if (std::string::npos != last_slash_idx)
-      {
-        directory = fileName.substr(0, last_slash_idx) + "/";
-      }
-    }
-
-    aiShadingMode shadingModel;
-    scene->mMaterials[Mesh->mMaterialIndex]->Get(AI_MATKEY_SHADING_MODEL, shadingModel);
-
-    if (shadingModel & aiShadingMode::aiShadingMode_CookTorrance)
-    {
-      {
-        aiString str;
-        scene->mMaterials[Mesh->mMaterialIndex]->GetTexture(aiTextureType_DIFFUSE, 0, &str);
-        mat.KdMapIndex = LoadTextureFromAssimp(&str, const_cast<aiScene *>(scene), directory, true);
-      }
-      {
-        aiString str;
-        scene->mMaterials[Mesh->mMaterialIndex]->GetTexture(AI_MATKEY_METALLIC_TEXTURE, &str);
-        mat.KsMapIndex = LoadTextureFromAssimp(&str, const_cast<aiScene*>(scene), directory);
-      }
-
-
-      scene->mMaterials[Mesh->mMaterialIndex]->Get(AI_MATKEY_METALLIC_FACTOR, mat.Ks.B);
-      scene->mMaterials[Mesh->mMaterialIndex]->Get(AI_MATKEY_ROUGHNESS_FACTOR, mat.Ks.G);
-      mat.Ks.B = max(0.001, mat.Ks.B);
-
-      mat.ShadeType = MATERIAL_SHADER_COOKTORRANCE;
-    }
-    else
-    {
-      {
-        aiString str;
-        scene->mMaterials[Mesh->mMaterialIndex]->GetTexture(aiTextureType_DIFFUSE, 0, &str);
-        mat.KdMapIndex = LoadTextureFromAssimp(&str, const_cast<aiScene*>(scene), directory, true);
-      }
-      {
-        aiString str;
-        scene->mMaterials[Mesh->mMaterialIndex]->GetTexture(aiTextureType_AMBIENT, 0, &str);
-        mat.KaMapIndex = LoadTextureFromAssimp(&str, const_cast<aiScene*>(scene), directory);
-      }
-      {
-        aiString str;
-        scene->mMaterials[Mesh->mMaterialIndex]->GetTexture(aiTextureType_SPECULAR, 0, &str);
-        mat.KsMapIndex = LoadTextureFromAssimp(&str, const_cast<aiScene*>(scene), directory);
-      }
-      mat.ShadeType = MATERIAL_SHADER_PHONG;
-    }
-
-    // check transparency
-    if (mat.KdMapIndex != -1)
-    {
-      CPUPool[CPUPool.size() - 1].ObjectParams |=
-        Render->TexturesSystem->CPUPool[mat.KdMapIndex].IsTransparent
-        ? OBJECT_PARAMETER_TRANSPARENT
-        : 0;
-    }
-
-    // check normalmap
-    {
-      aiString str;
-      scene->mMaterials[Mesh->mMaterialIndex]->GetTexture(aiTextureType_NORMALS, 0, &str);
-      mat.NormalMapIndex = LoadTextureFromAssimp(&str, const_cast<aiScene*>(scene), directory);
-    }
-  }
-  LoadedObjectTypes[fileName] = result;
-  
-  return result;
-  */
+void gdr::object_support::MarkNodeToRecalc(gdr_index nodeIndex)
+{
+  if (nodeIndex != -1)
+    NodesToRecalc.push(nodeIndex);
 }
 
 // Recompute Translations and AABBs
@@ -576,6 +426,7 @@ void gdr::object_support::UpdateNode(gdr_index nodeIndex)
   else
     NodesPool[nodeIndex].GlobalTransform = NodesPool[nodeIndex].LocalTransform * NodesPool[NodesPool[nodeIndex].ParentIndex].GlobalTransform;
   Render->TransformsSystem->CPUData[NodesPool[nodeIndex].TransformIndex].transform = NodesPool[nodeIndex].GlobalTransform;
+  Render->TransformsSystem->MarkChunkByTransformIndex(NodesPool[nodeIndex].TransformIndex);
   for (gdr_index i = 0; i < NodesPool[nodeIndex].Childs.size(); i++)
     UpdateNode(NodesPool[nodeIndex].Childs[i]);
   NodesPool[nodeIndex].IsTransformCalculated = true;
@@ -584,23 +435,14 @@ void gdr::object_support::UpdateNode(gdr_index nodeIndex)
 // Recompute Translations and AABBs
 void gdr::object_support::UpdateAllNodes(void)
 {
-  for (gdr_index startNodeIndex = 0; startNodeIndex < NodesPool.size(); startNodeIndex++)
+  while (!NodesToRecalc.empty())
+  {
+    gdr_index startNodeIndex = NodesToRecalc.front();
     if (NodesPool[startNodeIndex].IsTransformCalculated == false)
       UpdateNode(startNodeIndex);
+    NodesToRecalc.pop();
+  }
 }
-
-/*
-ObjectTransform& gdr::object_support::GetTransforms(gdr_object object)
-{
-  return Render->TransformsSystem->CPUData[CPUPool[object].ObjectTransformIndex];
-}
-
-// function which will return material by object index
-ObjectMaterial& gdr::object_support::GetMaterial(gdr_object object)
-{
-  return Render->MaterialsSystem->CPUData[CPUPool[object].ObjectMaterialIndex];
-}
-*/
 
 // destructor
 gdr::object_support::~object_support()

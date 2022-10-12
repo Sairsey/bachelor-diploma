@@ -7,6 +7,8 @@ gdr::transforms_support::transforms_support(render* Rnd)
 {
   Render = Rnd;
   GPUData.Resource = nullptr;
+  ChunkMarkings.resize(0);
+  StoredSize = 0;
 }
 
 void gdr::transforms_support::UpdateInverseTranspose(void)
@@ -32,50 +34,59 @@ void gdr::transforms_support::UpdateInverseTranspose(void)
 
 void gdr::transforms_support::UpdateGPUData(ID3D12GraphicsCommandList* pCommandList)
 {
-  // if buffers are not the same
-  if (CPUData.size() != StoredCopy.size() ||
-    memcmp(&CPUData[0], &StoredCopy[0], sizeof(ObjectTransform) * CPUData.size()) != 0)
+  // if buffers are not the same size - recreate everything
+  if (CPUData.size() != StoredSize)
   {
-
-    if (CPUData.size() != StoredCopy.size() && GPUData.Resource != nullptr)
+    if (GPUData.Resource != nullptr)
     {
       Render->GetDevice().ReleaseGPUResource(GPUData);
       GPUData.Resource = nullptr;
     }
+    Render->GetDevice().CreateGPUResource(CD3DX12_RESOURCE_DESC::Buffer({ sizeof(ObjectTransform) * CPUData.size() }),
+      D3D12_RESOURCE_STATE_COPY_DEST,
+      nullptr,
+      GPUData,
+      &CPUData[0],
+      sizeof(ObjectTransform) * CPUData.size());
+    GPUData.Resource->SetName(L"Transfroms pool");
 
-    // Now updating on GPU and only for those, who are ready to draw
-    //UpdateInverseTranspose();
+    Render->GetDevice().AllocateStaticDescriptors(1, CPUDescriptor, GPUDescriptor);
+    D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
+    srvDesc.Format = DXGI_FORMAT_UNKNOWN;
+    srvDesc.ViewDimension = D3D12_SRV_DIMENSION_BUFFER;
+    srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+    srvDesc.Buffer.NumElements = (UINT)CPUData.size();
+    srvDesc.Buffer.StructureByteStride = sizeof(ObjectTransform);
+    srvDesc.Buffer.Flags = D3D12_BUFFER_SRV_FLAG_NONE;
 
-    if (GPUData.Resource == nullptr)
-    {
-      Render->GetDevice().CreateGPUResource(CD3DX12_RESOURCE_DESC::Buffer({ sizeof(ObjectTransform) * CPUData.size() }),
-        D3D12_RESOURCE_STATE_COPY_DEST,
-        nullptr,
-        GPUData,
-        &CPUData[0],
-        sizeof(ObjectTransform) * CPUData.size());
-      GPUData.Resource->SetName(L"Transfroms pool");
+    Render->GetDevice().GetDXDevice()->CreateShaderResourceView(GPUData.Resource, &srvDesc, CPUDescriptor);
+    ChunkMarkings.resize(ceil(1.0 * CPUData.size() * sizeof(ObjectTransform) / CHUNK_SIZE), false);
 
-      Render->GetDevice().AllocateStaticDescriptors(1, CPUDescriptor, GPUDescriptor);
-      D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
-      srvDesc.Format = DXGI_FORMAT_UNKNOWN;
-      srvDesc.ViewDimension = D3D12_SRV_DIMENSION_BUFFER;
-      srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-      srvDesc.Buffer.NumElements = (UINT)CPUData.size();
-      srvDesc.Buffer.StructureByteStride = sizeof(ObjectTransform);
-      srvDesc.Buffer.Flags = D3D12_BUFFER_SRV_FLAG_NONE;
-
-
-      Render->GetDevice().GetDXDevice()->CreateShaderResourceView(GPUData.Resource, &srvDesc, CPUDescriptor);
-    }
-    else
-    {
-      Render->GetDevice().UpdateBuffer(pCommandList, GPUData.Resource, &CPUData[0], sizeof(ObjectTransform) * CPUData.size());
-    }
-
-    StoredCopy = CPUData;
+    StoredSize = CPUData.size();
   }
+  else
+  {
+    for (int i = 0; i < ChunkMarkings.size(); i++)
+    {
+      if (ChunkMarkings[i]) // if chunk changed
+      {
+        int source_offset = i * CHUNK_SIZE;
+        int dataSize = min(sizeof(ObjectTransform) * CPUData.size() - source_offset, CHUNK_SIZE); // Real size of chunk      
+        Render->GetDevice().UpdateBufferOffset(pCommandList, GPUData.Resource, source_offset, (byte*)&CPUData[0] + source_offset, dataSize); // update only 1 chunk
+        ChunkMarkings[i] = false;
+      }
+    }
+  }
+
 }
+
+void gdr::transforms_support::MarkChunkByTransformIndex(size_t index)
+{
+  size_t chunk_index = floor(1.0 * ((byte*)&CPUData[index] - (byte*)&CPUData[0]) / CHUNK_SIZE);
+  if (chunk_index < ChunkMarkings.size())
+    ChunkMarkings[chunk_index] = true;
+}
+
 
 gdr::transforms_support::~transforms_support()
 {

@@ -20,7 +20,7 @@ namespace gdr
 
   struct render_runtime_params
   {
-    bool IsIndirect = false;     // Enables indirect draw
+    bool IsIndirect = true;     // Enables indirect draw
     bool IsCulling = false;      // Enables culling
     bool IsTransparent = false; // Enables Transparency support
   };
@@ -103,6 +103,8 @@ namespace gdr
       light_sources_support* LightsSystem; //System to store info about lights
       render_targets_support* RenderTargets; //System to store info about lights
 
+      long long UpdateBuffersTime;
+      long long DrawFrameTime;
       device_time_query DeviceFrameCounter;
   };
 }

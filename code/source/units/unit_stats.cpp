@@ -306,6 +306,14 @@ void unit_stats::Response(void)
 
         ImGui::Image((ImTextureID)true_texture_handle.ptr, ImVec2((float)128, (float)128));
       }
+      ImGui::Text("Opacity Texture index %d", Engine->MaterialsSystem->CPUData[CurrentMaterialToShow].OpacityMapIndex);
+      if (Engine->MaterialsSystem->CPUData[CurrentMaterialToShow].OpacityMapIndex != -1)
+      {
+          D3D12_GPU_DESCRIPTOR_HANDLE true_texture_handle = Engine->TexturesSystem->TextureTableGPU;
+          true_texture_handle.ptr += Engine->MaterialsSystem->CPUData[CurrentMaterialToShow].OpacityMapIndex * Engine->GetDevice().GetSRVDescSize();
+
+          ImGui::Image((ImTextureID)true_texture_handle.ptr, ImVec2((float)128, (float)128));
+      }
       ImGui::End();
     });
 

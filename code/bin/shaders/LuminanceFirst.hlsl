@@ -27,6 +27,10 @@ VSOut VS(VSIn input)
 float PS(VSOut input) : SV_TARGET
 {
   float3 color = Source.Sample(LinearSampler, input.uv).rgb;
-  float value = log(0.2126 * color.r + 0.7152 * color.g + 0.0722 * color.b + 1.0);
+  float value = log(max(0.2126 * color.r + 0.7152 * color.g + 0.0722 * color.b + 1.0, 1.0));
+  if (isinf(color.r) || isinf(color.g) || isinf(color.b))
+  {
+	  value = 0;
+  }
   return value;
 }

@@ -14,10 +14,12 @@ ObjectMaterial gdr::materials_support::DefaultMaterial(void)
   mat.Kd = mth::vec3f(0.7f, 0.7f, 0.7f);
   mat.Ks = mth::vec3f(0.1f, 0.1f, 0.1f);
   mat.Ph = 30.0f;
+  mat.Opacity = 1.0f;
   mat.KaMapIndex = -1;
   mat.KdMapIndex = -1;
   mat.KsMapIndex = -1;
   mat.NormalMapIndex = -1;
+  mat.OpacityMapIndex = -1;
   return mat;
 }
 

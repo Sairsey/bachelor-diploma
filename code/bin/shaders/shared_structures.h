@@ -61,10 +61,12 @@ struct ObjectMaterial
   float3 Kd; // in case of PBR Kd.xyz - Albedo
   float3 Ks; // in case of PBR Ks.b - metallic, Ks.g - roughness
   float Ph;
+  float Opacity;
   int KaMapIndex;
   int KdMapIndex;
   int KsMapIndex;
   int NormalMapIndex;
+  int OpacityMapIndex;
 };
 
 #define MATERIAL_SHADER_DIFFUSE 0

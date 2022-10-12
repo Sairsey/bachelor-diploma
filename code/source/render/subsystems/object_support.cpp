@@ -281,6 +281,9 @@ gdr::gdr_index gdr::object_support::LoadAssimpTreeMesh(const aiScene* scene, aiM
   scene->mMaterials[mesh->mMaterialIndex]->Get(AI_MATKEY_COLOR_SPECULAR, color);
   mat.Ks = mth::vec3f(color.r, color.g, color.b);
 
+  scene->mMaterials[mesh->mMaterialIndex]->Get(AI_MATKEY_OPACITY, shininess);
+  mat.Opacity = shininess;
+
   scene->mMaterials[mesh->mMaterialIndex]->Get(AI_MATKEY_SHININESS, shininess);
   mat.Ph = shininess / 4.0f;
 
@@ -303,9 +306,20 @@ gdr::gdr_index gdr::object_support::LoadAssimpTreeMesh(const aiScene* scene, aiM
       mat.KsMapIndex = LoadTextureFromAssimp(&str, const_cast<aiScene*>(scene), directory);
     }
 
+    {
+      aiString str;
+      scene->mMaterials[mesh->mMaterialIndex]->GetTexture(aiTextureType_OPACITY, 0, &str);
+      mat.OpacityMapIndex = LoadTextureFromAssimp(&str, const_cast<aiScene*>(scene), directory);
+    }
 
-    scene->mMaterials[mesh->mMaterialIndex]->Get(AI_MATKEY_METALLIC_FACTOR, mat.Ks.B);
-    scene->mMaterials[mesh->mMaterialIndex]->Get(AI_MATKEY_ROUGHNESS_FACTOR, mat.Ks.G);
+    if (scene->mMaterials[mesh->mMaterialIndex]->Get(AI_MATKEY_METALLIC_FACTOR, mat.Ks.B) != aiReturn_SUCCESS)
+    {
+        mat.Ks.B = 1.0;
+    }
+    if (scene->mMaterials[mesh->mMaterialIndex]->Get(AI_MATKEY_ROUGHNESS_FACTOR, mat.Ks.G) != aiReturn_SUCCESS)
+    {
+        mat.Ks.G = 1.0;
+    }
 
     mat.ShadeType = MATERIAL_SHADER_COOKTORRANCE;
   }
@@ -337,6 +351,8 @@ gdr::gdr_index gdr::object_support::LoadAssimpTreeMesh(const aiScene* scene, aiM
       ? OBJECT_PARAMETER_TRANSPARENT
       : 0;
   }
+  if (mat.Opacity != 1.0 || mat.OpacityMapIndex != -1)
+    CPUPool[CPUPool.size() - 1].ObjectParams |= OBJECT_PARAMETER_TRANSPARENT;
 
   // check normalmap
   {

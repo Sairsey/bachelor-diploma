@@ -43,6 +43,7 @@ namespace gdr
     enum struct tonemap_buffer_registers
     {
       globals_buffer_register = 0, // some globals data like time/matrix VP/ etc.  Supported
+      luminance_variables_register,
     };
 
     // 't' registers
@@ -68,8 +69,8 @@ namespace gdr
     enum struct root_parameters_luminance_final_indices
     {
       globals_buffer_index = 0,
-      source_texture_index,
       luminance_variables_index,
+      source_texture_index,
       total_root_parameters
     };
 

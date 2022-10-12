@@ -2,13 +2,16 @@
 
 Texture2D Source: register(t0);
 SamplerState LinearSampler : register(s0);  // Texture sampler
-RWStructuredBuffer<LuminanceVariables> Luminance: register(u0);
 
 cbuffer GlobalValues : register (b0)
 {
   GlobalData globals;
 }
 
+cbuffer Luminance : register(b1)
+{
+    LuminanceVariables data;
+}
 
 struct VSIn
 {
@@ -66,5 +69,5 @@ float3 linear_to_srgb(float3 color) {
 float4 PS(VSOut input) : SV_TARGET
 {
   //return float4(linear_to_srgb(Source.Sample(LinearSampler, input.uv).rgb), 1);
-  return float4(linear_to_srgb(TonemapFilmic(Source.Sample(LinearSampler, input.uv).rgb, Luminance[0].ExposureAdapted)), 1);
+  return float4(linear_to_srgb(TonemapFilmic(Source.Sample(LinearSampler, input.uv).rgb, data.ExposureAdapted)), 1);
 }

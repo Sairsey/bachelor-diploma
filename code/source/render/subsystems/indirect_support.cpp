@@ -60,6 +60,7 @@ void gdr::indirect_support::UpdateGPUData(ID3D12GraphicsCommandList* pCommandLis
         CommandsSRV,
         &CPUData[0],
         CPUData.size() * sizeof(indirect_command));
+      CommandsSRV.Resource->SetName(L"CommandsSRV");
 
       D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
       srvDesc.Format = DXGI_FORMAT_UNKNOWN;
@@ -70,7 +71,6 @@ void gdr::indirect_support::UpdateGPUData(ID3D12GraphicsCommandList* pCommandLis
       srvDesc.Buffer.Flags = D3D12_BUFFER_SRV_FLAG_NONE;
 
       Render->GetDevice().GetDXDevice()->CreateShaderResourceView(CommandsSRV.Resource, &srvDesc, CommandsSRVCPUDescriptor);
-      CommandsSRV.Resource->SetName(L"CommandsSRV");
     }
 
 
@@ -87,6 +87,7 @@ void gdr::indirect_support::UpdateGPUData(ID3D12GraphicsCommandList* pCommandLis
         D3D12_RESOURCE_STATE_COPY_DEST,
         nullptr,
         CommandsUAV[i]);
+      CommandsUAV[i].Resource->SetName(L"CommandsUAV");
 
       D3D12_UNORDERED_ACCESS_VIEW_DESC uavDesc = {};
       uavDesc.Format = DXGI_FORMAT_UNKNOWN;
@@ -98,7 +99,6 @@ void gdr::indirect_support::UpdateGPUData(ID3D12GraphicsCommandList* pCommandLis
       uavDesc.Buffer.Flags = D3D12_BUFFER_UAV_FLAG_NONE;
 
       Render->GetDevice().GetDXDevice()->CreateUnorderedAccessView(CommandsUAV[i].Resource, CommandsUAV[i].Resource, &uavDesc, CommandsUAVCPUDescriptor[i]);
-      CommandsUAV[i].Resource->SetName(L"CommandsUAV");
     }
 
     // Create Reset data
@@ -112,6 +112,7 @@ void gdr::indirect_support::UpdateGPUData(ID3D12GraphicsCommandList* pCommandLis
         CommandsUAVReset,
         &data,
         sizeof(UINT));
+      CommandsUAVReset.Resource->SetName(L"CommandsUAVReset");
     }
   }
 }

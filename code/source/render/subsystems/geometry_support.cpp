@@ -28,7 +28,7 @@ bool gdr::geometry_support::CreateGeometry(const vertex* pVertex, size_t vertexC
   if (res)
   {
     res = Render->GetDevice().CreateGPUResource(CD3DX12_RESOURCE_DESC::Buffer({ indexCount * sizeof(UINT32) }), D3D12_RESOURCE_STATE_INDEX_BUFFER, nullptr, geom.IndexBuffer, pIndices, indexCount * sizeof(UINT32));
-    geom.IndexBuffer.Resource->SetName(L"vertex_buffer");
+    geom.IndexBuffer.Resource->SetName(L"index_buffer");
   }
   if (res)
   {

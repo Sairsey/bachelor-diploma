@@ -85,6 +85,7 @@ void gdr::hdr_copy_pass::Initialize(void)
         ScreenVertexBuffer,
         vertices,
         5 * sizeof(float) * 6);
+      ScreenVertexBuffer.Resource->SetName(L"HDR Copy Screen vertex buffer");
     }
     {
       ScreenVertexBufferView.BufferLocation = ScreenVertexBuffer.Resource->GetGPUVirtualAddress();

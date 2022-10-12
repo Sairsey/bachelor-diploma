@@ -27,7 +27,6 @@ void gdr::light_sources_support::UpdateGPUData(ID3D12GraphicsCommandList* pComma
         GPUData,
         &CPUData[0],
         sizeof(LightSource) * CPUData.size());
-
       GPUData.Resource->SetName(L"Lights Pool");
 
       D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};

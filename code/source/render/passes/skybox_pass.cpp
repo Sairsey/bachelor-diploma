@@ -134,6 +134,8 @@ void gdr::skybox_pass::Initialize(void)
         ScreenVertexBuffer,
         skyboxVertices,
         3 * sizeof(float) * 36);
+      ScreenVertexBuffer.Resource->SetName(L"Skybox Screen vertex buffer");
+
     }
     {
       ScreenVertexBufferView.BufferLocation = ScreenVertexBuffer.Resource->GetGPUVirtualAddress();

@@ -141,6 +141,7 @@ void gdr::render_targets_support::CreateTextures()
       0,
       flags);
     HRESULT hr = Render->GetDevice().CreateGPUResource(desc, D3D12_RESOURCE_STATE_COMMON, NULL, Textures[i]);
+    Textures[i].Resource->SetName(L"RenderTarget");
   }
   // create rtv for each render target
   for (int i = 1; i < (int)render_targets_enum::target_count; i++)

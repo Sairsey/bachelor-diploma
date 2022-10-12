@@ -42,7 +42,6 @@ void gdr::materials_support::UpdateGPUData(ID3D12GraphicsCommandList* pCommandLi
         GPUData,
         &CPUData[0],
         sizeof(ObjectMaterial) * CPUData.size());
-
       GPUData.Resource->SetName(L"Materials Pool");
 
       Render->GetDevice().AllocateStaticDescriptors(1, CPUDescriptor, GPUDescriptor);

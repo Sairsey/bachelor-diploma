@@ -19,6 +19,7 @@ bool gdr::render::CreateDepthStencil(void)
     &depthOptimizedClearValue,
     DepthBuffer
   );
+  DepthBuffer.Resource->SetName(L"DepthStencil buffer");
   if (res)
   {
     D3D12_DEPTH_STENCIL_VIEW_DESC dsvView = {};

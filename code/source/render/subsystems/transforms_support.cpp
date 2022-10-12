@@ -54,6 +54,7 @@ void gdr::transforms_support::UpdateGPUData(ID3D12GraphicsCommandList* pCommandL
         GPUData,
         &CPUData[0],
         sizeof(ObjectTransform) * CPUData.size());
+      GPUData.Resource->SetName(L"Transfroms pool");
 
       Render->GetDevice().AllocateStaticDescriptors(1, CPUDescriptor, GPUDescriptor);
       D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
@@ -64,7 +65,6 @@ void gdr::transforms_support::UpdateGPUData(ID3D12GraphicsCommandList* pCommandL
       srvDesc.Buffer.StructureByteStride = sizeof(ObjectTransform);
       srvDesc.Buffer.Flags = D3D12_BUFFER_SRV_FLAG_NONE;
 
-      GPUData.Resource->SetName(L"Transfroms pool");
 
       Render->GetDevice().GetDXDevice()->CreateShaderResourceView(GPUData.Resource, &srvDesc, CPUDescriptor);
     }

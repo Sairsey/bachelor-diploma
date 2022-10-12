@@ -82,6 +82,7 @@ void gdr::debug_pass::Initialize(void)
       VertexBuffer,
       &Vertices[0],
       3 * sizeof(float) * Vertices.size());
+    VertexBuffer.Resource->SetName(L"Debug Vertex buffer");
   }
   {
     VertexBufferView.BufferLocation = VertexBuffer.Resource->GetGPUVirtualAddress();
@@ -96,6 +97,7 @@ void gdr::debug_pass::Initialize(void)
       IndexBuffer,
       &Indices[0],
       sizeof(UINT32) * Indices.size());
+    IndexBuffer.Resource->SetName(L"Debug Index buffer");
   }
   {
     IndexBufferView.BufferLocation = IndexBuffer.Resource->GetGPUVirtualAddress();

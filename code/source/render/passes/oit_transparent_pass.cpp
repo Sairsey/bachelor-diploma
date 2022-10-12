@@ -26,6 +26,7 @@ void gdr::oit_transparent_pass::Initialize(void)
     CD3DX12_DESCRIPTOR_RANGE bindlessTexturesDesc[1];  // Textures Pool
     CD3DX12_DESCRIPTOR_RANGE cubeBindlessTexturesDesc[1];  // Textures Pool
     CD3DX12_DESCRIPTOR_RANGE descr = {};
+    CD3DX12_DESCRIPTOR_RANGE descr2 = {};
 
     params[(int)root_parameters_draw_indices::globals_buffer_index].InitAsConstantBufferView((int)transparent_buffer_registers::globals_buffer_register);
     
@@ -54,12 +55,16 @@ void gdr::oit_transparent_pass::Initialize(void)
       params[(int)root_parameters_draw_indices::cube_texture_pool_index].InitAsDescriptorTable(1, cubeBindlessTexturesDesc);
     }
 
-    params[(int)root_parameters_draw_indices::oit_lists_index].InitAsUnorderedAccessView((int)transparent_uav_registers::oit_lists_register);
+    // UAV set as Descriptor range
+    {
+      descr.Init(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 1, (int)transparent_uav_registers::oit_lists_register);
+      params[(int)root_parameters_draw_indices::oit_lists_index].InitAsDescriptorTable(1, &descr);
+    }
 
     // UAV set as Descriptor range
     {
-      descr.Init(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 1, (int)transparent_uav_registers::oit_pool_register);
-      params[(int)root_parameters_draw_indices::oit_pool_index].InitAsDescriptorTable(1, &descr);
+      descr2.Init(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 1, (int)transparent_uav_registers::oit_pool_register);
+      params[(int)root_parameters_draw_indices::oit_pool_index].InitAsDescriptorTable(1, &descr2);
     }
 
 
@@ -129,6 +134,7 @@ void gdr::oit_transparent_pass::Initialize(void)
       D3D12_RESOURCE_STATE_COPY_DEST,
       nullptr,
       OITPool);
+    OITPool.Resource->SetName(L"OIT Pool");
 
     D3D12_UNORDERED_ACCESS_VIEW_DESC uavDesc = {};
     uavDesc.Format = DXGI_FORMAT_UNKNOWN;
@@ -140,7 +146,6 @@ void gdr::oit_transparent_pass::Initialize(void)
     uavDesc.Buffer.Flags = D3D12_BUFFER_UAV_FLAG_NONE;
 
     Render->GetDevice().GetDXDevice()->CreateUnorderedAccessView(OITPool.Resource, OITPool.Resource, &uavDesc, OITPoolCPUDescriptor);
-    OITPool.Resource->SetName(L"OIT Pool");
 
     // SRV for OIT Pool
     D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
@@ -244,6 +249,7 @@ void gdr::oit_transparent_pass::Initialize(void)
         ScreenVertexBuffer,
         &vertices[0],
         3 * sizeof(float) * 3);
+      ScreenVertexBuffer.Resource->SetName(L"OIT Screen vertex buffer");
     }
     {
       ScreenVertexBufferView.BufferLocation = ScreenVertexBuffer.Resource->GetGPUVirtualAddress();
@@ -344,6 +350,7 @@ void gdr::oit_transparent_pass::CreateOITLists(void)
     D3D12_RESOURCE_STATE_COPY_DEST,
     nullptr,
     OITLists);
+  OITLists.Resource->SetName(L"OIT Lists");
 
   D3D12_UNORDERED_ACCESS_VIEW_DESC uavDesc = {};
   uavDesc.Format = DXGI_FORMAT_UNKNOWN;
@@ -355,7 +362,6 @@ void gdr::oit_transparent_pass::CreateOITLists(void)
   uavDesc.Buffer.Flags = D3D12_BUFFER_UAV_FLAG_NONE;
 
   Render->GetDevice().GetDXDevice()->CreateUnorderedAccessView(OITLists.Resource, nullptr, &uavDesc, OITListsCPUDescriptor);
-  OITLists.Resource->SetName(L"OIT Lists");
 
   D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
   srvDesc.Format = DXGI_FORMAT_UNKNOWN;
@@ -490,8 +496,12 @@ void gdr::oit_transparent_pass::CallDirectDraw(ID3D12GraphicsCommandList* curren
             D3D12_RESOURCE_STATE_COMMON,
             nullptr,
             OITListsClearBuffer, OITListsClearVector.data(), CurrentOITListsSize);
+          OITListsClearBuffer.Resource->SetName(L"OIT Lists clear buffer");
           Render->GetDevice().ClearUploadListReference();
-
+          Render->GetDevice().TransitResourceState(
+              currentCommandList,
+              OITListsClearBuffer.Resource,
+              D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_COPY_SOURCE);
         }
       }
 
@@ -556,9 +566,9 @@ void gdr::oit_transparent_pass::CallDirectDraw(ID3D12GraphicsCommandList* curren
       currentCommandList->SetGraphicsRootDescriptorTable(
         (int)root_parameters_draw_indices::texture_pool_index,
         Render->TexturesSystem->TextureTableGPU);
-      currentCommandList->SetGraphicsRootUnorderedAccessView(
+      currentCommandList->SetGraphicsRootDescriptorTable(
         (int)root_parameters_draw_indices::oit_lists_index,
-        OITLists.Resource->GetGPUVirtualAddress());
+        OITListsGPUDescriptor);
       currentCommandList->SetGraphicsRootShaderResourceView(
         (int)root_parameters_draw_indices::light_sources_pool_index,
         Render->LightsSystem->GPUData.Resource->GetGPUVirtualAddress());
@@ -572,6 +582,15 @@ void gdr::oit_transparent_pass::CallDirectDraw(ID3D12GraphicsCommandList* curren
 
     currentCommandList->DrawIndexedInstanced(geom.IndexCount, 1, 0, 0, 0);
   }
+
+  Render->GetDevice().TransitResourceState(
+      currentCommandList,
+      OITLists.Resource,
+      D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+  Render->GetDevice().TransitResourceState(
+      currentCommandList,
+      OITPool.Resource,
+      D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
 
   // after we drawn every object, we need to Draw fullscreen  with special shader
   currentCommandList->SetPipelineState(ComposePSO);
@@ -593,12 +612,12 @@ void gdr::oit_transparent_pass::CallDirectDraw(ID3D12GraphicsCommandList* curren
   Render->GetDevice().TransitResourceState(
     currentCommandList,
     OITLists.Resource,
-    D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_COPY_DEST);
+    D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_COPY_DEST);
 
   Render->GetDevice().TransitResourceState(
     currentCommandList,
     OITPool.Resource,
-    D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_COPY_DEST);
+    D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_COPY_DEST);
 }
 
 void gdr::oit_transparent_pass::CallIndirectDraw(ID3D12GraphicsCommandList* currentCommandList)
@@ -705,9 +724,9 @@ void gdr::oit_transparent_pass::CallIndirectDraw(ID3D12GraphicsCommandList* curr
   currentCommandList->SetGraphicsRootDescriptorTable(
     (int)root_parameters_draw_indices::texture_pool_index,
     Render->TexturesSystem->TextureTableGPU);
-  currentCommandList->SetGraphicsRootUnorderedAccessView(
+  currentCommandList->SetGraphicsRootDescriptorTable(
     (int)root_parameters_draw_indices::oit_lists_index,
-    OITLists.Resource->GetGPUVirtualAddress());
+    OITListsGPUDescriptor);
   currentCommandList->SetGraphicsRootDescriptorTable(
     (int)root_parameters_draw_indices::oit_pool_index,
     OITPoolGPUDescriptor);
@@ -730,6 +749,16 @@ void gdr::oit_transparent_pass::CallIndirectDraw(ID3D12GraphicsCommandList* curr
     currentCommandList,
     Render->IndirectSystem->CommandsUAV[OurUAVIndex].Resource,
     D3D12_RESOURCE_STATE_INDIRECT_ARGUMENT, D3D12_RESOURCE_STATE_COPY_DEST);
+
+  Render->GetDevice().TransitResourceState(
+      currentCommandList,
+      OITLists.Resource,
+      D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+  Render->GetDevice().TransitResourceState(
+      currentCommandList,
+      OITPool.Resource,
+      D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+
   PROFILE_END(currentCommandList);
   PROFILE_BEGIN(currentCommandList, "Draw Fullscreen rect");
   // after we drawn every object, we need to Draw fullscreen  with special shader
@@ -752,12 +781,12 @@ void gdr::oit_transparent_pass::CallIndirectDraw(ID3D12GraphicsCommandList* curr
   Render->GetDevice().TransitResourceState(
     currentCommandList,
     OITLists.Resource,
-    D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_COPY_DEST);
+      D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_COPY_DEST);
 
   Render->GetDevice().TransitResourceState(
     currentCommandList,
     OITPool.Resource,
-    D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_COPY_DEST);
+      D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_COPY_DEST);
   PROFILE_END(currentCommandList, "Draw Fullscreen rect");
 }
 

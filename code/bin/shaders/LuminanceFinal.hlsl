@@ -28,13 +28,14 @@ void CS(uint3 groupId : SV_GroupID, uint groupIndex : SV_GroupIndex)
     float averageLuminance = exp(value) - 1;
     float averageLuminanceAdapted = Luminance[0].LuminanceAdapted + (averageLuminance - Luminance[0].LuminanceAdapted) * (1.0 - exp(-globals.DeltaTime));
 
-    averageLuminanceAdapted = max(averageLuminanceAdapted, 0.0001);
+    if (averageLuminanceAdapted > 0.0001)
+    {
+        float keyValue = 1.03f - 2.f / (2.f + log10(averageLuminance + 1));
+        float keyValueAdapted = 1.03f - 2.f / (2.f + log10(averageLuminanceAdapted + 1));
 
-    float keyValue = 1.03f - 2.f / (2.f + log10(averageLuminance + 1));
-    float keyValueAdapted = 1.03f - 2.f / (2.f + log10(averageLuminanceAdapted + 1));
-
-    Luminance[0].Luminance = averageLuminance;
-    Luminance[0].LuminanceAdapted = averageLuminanceAdapted;
-    Luminance[0].Exposure = keyValue / averageLuminance;
-    Luminance[0].ExposureAdapted = keyValue / averageLuminanceAdapted;
+        Luminance[0].Luminance = averageLuminance;
+        Luminance[0].LuminanceAdapted = averageLuminanceAdapted;
+        Luminance[0].Exposure = keyValue / averageLuminance;
+        Luminance[0].ExposureAdapted = keyValue / averageLuminanceAdapted;
+    }
 }

@@ -28,7 +28,7 @@ void gdr::tonemap_pass::Initialize(void)
     D3D12_DESCRIPTOR_RANGE descRanges[1] = {};
 
     {
-      descRanges[0].BaseShaderRegister = 0;
+      descRanges[0].BaseShaderRegister = (UINT)tonemap_texture_registers::texture_register;
       descRanges[0].NumDescriptors = 1;
       descRanges[0].OffsetInDescriptorsFromTableStart = 0;
       descRanges[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
@@ -50,18 +50,27 @@ void gdr::tonemap_pass::Initialize(void)
     std::vector<CD3DX12_ROOT_PARAMETER> params;
     params.resize((int)root_parameters_luminance_final_indices::total_root_parameters);
     D3D12_DESCRIPTOR_RANGE descRanges[1] = {};
+    D3D12_DESCRIPTOR_RANGE uavDesc[1] = {};
 
     {
-      descRanges[0].BaseShaderRegister = 0;
+      descRanges[0].BaseShaderRegister = (UINT)tonemap_texture_registers::texture_register;
       descRanges[0].NumDescriptors = 1;
       descRanges[0].OffsetInDescriptorsFromTableStart = 0;
       descRanges[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
       descRanges[0].RegisterSpace = 0;
     }
 
+    {
+      uavDesc[0].BaseShaderRegister = (UINT)tonemap_uav_registers::luminance_variables_register;
+      uavDesc[0].NumDescriptors = 1;
+      uavDesc[0].OffsetInDescriptorsFromTableStart = 0;
+      uavDesc[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_UAV;
+      uavDesc[0].RegisterSpace = 0;
+    }
+
     params[(int)root_parameters_luminance_final_indices::globals_buffer_index].InitAsConstantBufferView((int)tonemap_buffer_registers::globals_buffer_register);
     params[(int)root_parameters_luminance_final_indices::source_texture_index].InitAsDescriptorTable(1, descRanges);
-    params[(int)root_parameters_luminance_final_indices::luminance_variables_index].InitAsUnorderedAccessView((int)tonemap_uav_registers::luminance_variables_register);
+    params[(int)root_parameters_luminance_final_indices::luminance_variables_index].InitAsDescriptorTable(1, uavDesc);
 
     CD3DX12_STATIC_SAMPLER_DESC samplerDescs[1];
     samplerDescs[0].Init(0, D3D12_FILTER_MIN_MAG_MIP_LINEAR);
@@ -76,18 +85,27 @@ void gdr::tonemap_pass::Initialize(void)
     std::vector<CD3DX12_ROOT_PARAMETER> params;
     params.resize((int)root_parameters_tonemap_indices::total_root_parameters);
     D3D12_DESCRIPTOR_RANGE descRanges[1] = {};
+    D3D12_DESCRIPTOR_RANGE uavDesc[1] = {};
 
     {
-      descRanges[0].BaseShaderRegister = 0;
+      descRanges[0].BaseShaderRegister = (UINT)tonemap_texture_registers::texture_register;
       descRanges[0].NumDescriptors = 1;
       descRanges[0].OffsetInDescriptorsFromTableStart = 0;
       descRanges[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
       descRanges[0].RegisterSpace = 0;
     }
 
+    {
+      uavDesc[0].BaseShaderRegister = (UINT)tonemap_uav_registers::luminance_variables_register;
+      uavDesc[0].NumDescriptors = 1;
+      uavDesc[0].OffsetInDescriptorsFromTableStart = 0;
+      uavDesc[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_UAV;
+      uavDesc[0].RegisterSpace = 0;
+    }
+
     params[(int)root_parameters_tonemap_indices::globals_buffer_index].InitAsConstantBufferView((int)tonemap_buffer_registers::globals_buffer_register);
     params[(int)root_parameters_tonemap_indices::hdr_texture_index].InitAsDescriptorTable(1, descRanges);
-    params[(int)root_parameters_tonemap_indices::luminance_variables_index].InitAsUnorderedAccessView((int)tonemap_uav_registers::luminance_variables_register);
+    params[(int)root_parameters_tonemap_indices::luminance_variables_index].InitAsConstantBufferView((int)tonemap_buffer_registers::luminance_variables_register);
 
     CD3DX12_STATIC_SAMPLER_DESC samplerDescs[1];
     samplerDescs[0].Init(0, D3D12_FILTER_MIN_MAG_MIP_LINEAR);
@@ -201,6 +219,7 @@ void gdr::tonemap_pass::Initialize(void)
         ScreenVertexBuffer,
         vertices,
         5 * sizeof(float) * 6);
+      ScreenVertexBuffer.Resource->SetName(L"Tonemap Screen vertex buffer");
     }
     {
       ScreenVertexBufferView.BufferLocation = ScreenVertexBuffer.Resource->GetGPUVirtualAddress();
@@ -214,23 +233,32 @@ void gdr::tonemap_pass::Initialize(void)
 
   // 10) Create Luminance Variables buffer 
   {
-    Render->GetDevice().AllocateStaticDescriptors(1, LuminanceBufferCPU, LuminanceBufferGPU);
+    Render->GetDevice().AllocateStaticDescriptors(2, LuminanceBufferCPU, LuminanceBufferGPU);
     Render->GetDevice().CreateGPUResource(
-      CD3DX12_RESOURCE_DESC::Buffer({ sizeof(LuminanceVariables)}, D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS),
+      CD3DX12_RESOURCE_DESC::Buffer(Align(sizeof(LuminanceVariables), (size_t)D3D12_CONSTANT_BUFFER_DATA_PLACEMENT_ALIGNMENT), D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS),
       D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER,
       nullptr,
       LuminanceBuffer);
 
+    LuminanceBuffer.Resource->SetName(L"Luminance data");
+
     D3D12_UNORDERED_ACCESS_VIEW_DESC uavDesc = {};
-    uavDesc.Format = DXGI_FORMAT_UNKNOWN;
     uavDesc.ViewDimension = D3D12_UAV_DIMENSION_BUFFER;
-    uavDesc.Buffer.FirstElement = 0;
+    uavDesc.Format = DXGI_FORMAT_UNKNOWN;
+    uavDesc.Buffer.CounterOffsetInBytes = 0;
     uavDesc.Buffer.NumElements = 1;
     uavDesc.Buffer.StructureByteStride = sizeof(LuminanceVariables);
     uavDesc.Buffer.Flags = D3D12_BUFFER_UAV_FLAG_NONE;
 
-    Render->GetDevice().GetDXDevice()->CreateUnorderedAccessView(LuminanceBuffer.Resource, NULL, &uavDesc, LuminanceBufferCPU);
-    LuminanceBuffer.Resource->SetName(L"Luminance data");
+    Render->GetDevice().GetDXDevice()->CreateUnorderedAccessView(LuminanceBuffer.Resource, nullptr, &uavDesc, LuminanceBufferCPU);
+
+    D3D12_CONSTANT_BUFFER_VIEW_DESC cbDesc = {};
+    cbDesc.BufferLocation = LuminanceBuffer.Resource->GetGPUVirtualAddress();
+    cbDesc.SizeInBytes = Align(sizeof(LuminanceVariables), (size_t)D3D12_CONSTANT_BUFFER_DATA_PLACEMENT_ALIGNMENT);
+
+    D3D12_CPU_DESCRIPTOR_HANDLE descr = LuminanceBufferCPU;
+    descr.ptr += Render->GetDevice().GetSRVDescSize();
+    Render->GetDevice().GetDXDevice()->CreateConstantBufferView(&cbDesc, descr);
   }
 }
 
@@ -272,11 +300,12 @@ void gdr::tonemap_pass::CallDirectDraw(ID3D12GraphicsCommandList* currentCommand
     PROFILE_END(currentCommandList);
   }
 
+  Render->RenderTargets->Set(currentCommandList, render_targets_enum::target_display);
+
   {
     PROFILE_BEGIN(currentCommandList, "final luminance");
     currentCommandList->SetPipelineState(LuminanceFinalPSO);
     currentCommandList->SetComputeRootSignature(LuminanceFinalRootSignature);
-    currentCommandList->IASetVertexBuffers(0, 1, &ScreenVertexBufferView);
 
     D3D12_GPU_DESCRIPTOR_HANDLE tmp_descr = Render->RenderTargets->ShaderResourceViewsGPU;
     tmp_descr.ptr += (int)(render_targets_enum::target_frame_lum_final) * Render->GetDevice().GetSRVDescSize();
@@ -284,23 +313,23 @@ void gdr::tonemap_pass::CallDirectDraw(ID3D12GraphicsCommandList* currentCommand
     currentCommandList->SetComputeRootConstantBufferView(
       (int)root_parameters_luminance_final_indices::globals_buffer_index, Render->GlobalsSystem->GPUData.Resource->GetGPUVirtualAddress());
 
-    currentCommandList->SetComputeRootDescriptorTable(
-      (int)root_parameters_luminance_final_indices::source_texture_index, tmp_descr);
-
-    currentCommandList->SetComputeRootUnorderedAccessView(
-      (int)root_parameters_luminance_final_indices::luminance_variables_index, LuminanceBuffer.Resource->GetGPUVirtualAddress());
-
     Render->GetDevice().TransitResourceState(currentCommandList, LuminanceBuffer.Resource, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
     
+    currentCommandList->SetComputeRootDescriptorTable(
+        (int)root_parameters_luminance_final_indices::source_texture_index, tmp_descr);
+
+    currentCommandList->SetComputeRootDescriptorTable(
+        (int)root_parameters_luminance_final_indices::luminance_variables_index, LuminanceBufferGPU);
+
     currentCommandList->Dispatch(1, 1, 1);
 
     Render->GetDevice().TransitResourceState(currentCommandList, LuminanceBuffer.Resource, D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER);
     PROFILE_END(currentCommandList);
   }
 
+
   {
     PROFILE_BEGIN(currentCommandList, "Combine to Display");
-    Render->RenderTargets->Set(currentCommandList, render_targets_enum::target_display);
 
     // after we drawn every object, we need to Draw fullscreen  with special shader
     currentCommandList->SetPipelineState(TonemapPSO);
@@ -315,8 +344,8 @@ void gdr::tonemap_pass::CallDirectDraw(ID3D12GraphicsCommandList* currentCommand
     currentCommandList->SetGraphicsRootDescriptorTable(
       (int)root_parameters_tonemap_indices::hdr_texture_index, tmp_descr);
 
-    currentCommandList->SetGraphicsRootUnorderedAccessView(
-      (int)root_parameters_tonemap_indices::luminance_variables_index, LuminanceBuffer.Resource->GetGPUVirtualAddress());
+    currentCommandList->SetGraphicsRootConstantBufferView(
+        (int)root_parameters_tonemap_indices::luminance_variables_index, LuminanceBuffer.Resource->GetGPUVirtualAddress());
 
     currentCommandList->DrawInstanced(6, 1, 0, 0);
     PROFILE_END(currentCommandList);

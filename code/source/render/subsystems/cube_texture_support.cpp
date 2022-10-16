@@ -102,9 +102,24 @@ int gdr::cube_textures_support::Load(
     int width, height;
     int components;
 
+    bool isHdr;
+
+    isHdr = stbi_is_hdr(namePosX.c_str());
+
     // get width and height
-    UINT8* stb_buffer = stbi_load(namePosX.c_str(), &width, &height, &components, 0);
-    stbi_image_free(stb_buffer);
+    
+    if (isHdr)
+    { 
+      float* stb_buffer;
+      stb_buffer = stbi_loadf(namePosX.c_str(), &width, &height, &components, 0);
+      stbi_image_free(stb_buffer);
+    }
+    else
+    {
+      UINT8* stb_buffer;
+      stb_buffer = stbi_load(namePosX.c_str(), &width, &height, &components, 0);
+      stbi_image_free(stb_buffer);
+    }
 
     std::vector<std::string> names;
     names.push_back(namePosX);
@@ -117,34 +132,65 @@ int gdr::cube_textures_support::Load(
     UINT mips = 1;
     size_t dataSize = width * height * 6 * 4;
 
-    UINT8* pBuffer = new UINT8[dataSize];
+    UINT8* pBuffer = nullptr;
+    float* pBufferFloat = nullptr;
 
-    for (size_t i = 0; i < names.size(); i++)
+    if (isHdr)
     {
-      stb_buffer = stbi_load(names[i].c_str(), &width, &height, &components, 0);
-      assert(stb_buffer != NULL);
-        
-      if (components == 4)
-        memcpy(pBuffer + i * height * width * 4, stb_buffer, width * height * 4);
-      else
-        for (int y = 0; y < height; y++)
-          for (int x = 0; x < width; x++)
-            for (int c = 0; c < 4; c++)
-              if (c < components)
-                pBuffer[i * height * width * 4 + y * width * 4 + x * 4 + c] = stb_buffer[y * width * components + x * components + c];
-              else
-                pBuffer[i * height * width * 4 + y * width * 4 + x * 4 + c] = 255;
+      pBufferFloat = new float[dataSize];
+      float* stb_buffer;
+      for (size_t i = 0; i < names.size(); i++)
+      {
+        stb_buffer = stbi_loadf(names[i].c_str(), &width, &height, &components, 0);
+        assert(stb_buffer != NULL);
 
-      stbi_image_free(stb_buffer);
+        if (components == 4)
+          memcpy(pBufferFloat + i * height * width * 4, stb_buffer, width * height * 4 * sizeof(float));
+        else
+          for (int y = 0; y < height; y++)
+            for (int x = 0; x < width; x++)
+              for (int c = 0; c < 4; c++)
+                if (c < components)
+                  pBufferFloat[i * height * width * 4 + y * width * 4 + x * 4 + c] = stb_buffer[y * width * components + x * components + c];
+                else
+                  pBufferFloat[i * height * width * 4 + y * width * 4 + x * 4 + c] = 1.0;
+
+        stbi_image_free(stb_buffer);
+      }
+    }
+    else
+    {
+      pBuffer = new UINT8[dataSize];
+      UINT8* stb_buffer;
+      for (size_t i = 0; i < names.size(); i++)
+      {
+        stb_buffer = stbi_load(names[i].c_str(), &width, &height, &components, 0);
+        assert(stb_buffer != NULL);
+          
+        if (components == 4)
+          memcpy(pBuffer + i * height * width * 4, stb_buffer, width * height * 4 * sizeof(UINT8));
+        else
+          for (int y = 0; y < height; y++)
+            for (int x = 0; x < width; x++)
+              for (int c = 0; c < 4; c++)
+                if (c < components)
+                  pBuffer[i * height * width * 4 + y * width * 4 + x * 4 + c] = stb_buffer[y * width * components + x * components + c];
+                else
+                  pBuffer[i * height * width * 4 + y * width * 4 + x * 4 + c] = 255;
+
+        stbi_image_free(stb_buffer);
+      }
     }
 
     HRESULT hr = Render->GetDevice().CreateGPUResource(
-    CD3DX12_RESOURCE_DESC::Tex2D(DXGI_FORMAT_R8G8B8A8_UNORM_SRGB, width, height, 6, mips),
+    CD3DX12_RESOURCE_DESC::Tex2D(
+     isHdr ? DXGI_FORMAT_R32G32B32A32_FLOAT : DXGI_FORMAT_R8G8B8A8_UNORM_SRGB,
+     width, height, 6, mips),
      D3D12_RESOURCE_STATE_COMMON,
      nullptr,
      CPUPool[NewTextureIndex].TextureResource,
-     pBuffer,
-     dataSize);
+     isHdr ? (UINT8*)pBufferFloat : pBuffer,
+     dataSize * (isHdr ? sizeof(float) : sizeof(UINT8)));
     if (SUCCEEDED(hr))
     {
       CPUPool[NewTextureIndex].Name = namePosX + namePosY + namePosZ + nameNegX + nameNegY + nameNegZ;
@@ -156,8 +202,12 @@ int gdr::cube_textures_support::Load(
       MessageBox(NULL, L"CANNOT allocate texture", L"CANNOT Create geometry", MB_OK);
     }
 
-    delete[] pBuffer;
+    if (isHdr)
+      delete[] pBufferFloat;
+    else
+      delete[] pBuffer;
     pBuffer = nullptr;
+    pBufferFloat = nullptr;
   }
   else
   {

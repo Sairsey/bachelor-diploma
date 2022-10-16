@@ -17,12 +17,18 @@ void unit_control::Initialize(void)
   Engine->GetDevice().BeginUploadCommandList(&commandList);
   PROFILE_BEGIN(commandList, "skybox Init");
   Engine->GlobalsSystem->CPUData.SkyboxCubemapIndex = Engine->CubeTexturesSystem->Load(
-    "bin/cubemaps/yokohama/posx.jpg",
+  /*  "bin/cubemaps/yokohama/posx.jpg",
     "bin/cubemaps/yokohama/negx.jpg",
     "bin/cubemaps/yokohama/posy.jpg",
     "bin/cubemaps/yokohama/negy.jpg",
     "bin/cubemaps/yokohama/posz.jpg",
-    "bin/cubemaps/yokohama/negz.jpg");
+    "bin/cubemaps/yokohama/negz.jpg"); */
+    "bin/cubemaps/alexapt/px.hdr",
+    "bin/cubemaps/alexapt/nx.hdr",
+    "bin/cubemaps/alexapt/py.hdr",
+    "bin/cubemaps/alexapt/ny.hdr",
+    "bin/cubemaps/alexapt/pz.hdr",
+    "bin/cubemaps/alexapt/nz.hdr");
   PROFILE_END(commandList);
   Engine->GetDevice().CloseUploadCommandList();
 }

@@ -226,7 +226,7 @@ float4 ShadeCookTorrance(float3 Normal, float3 Position, float2 uv, ObjectMateri
     //precompute roughness square
     float G = GGX_PartialGeometry(NV, roughness) * GGX_PartialGeometry(NL, roughness);
     float D = GGX_Distribution(NH, roughness);
-    float3 F = FresnelSchlick(F0, HV);
+    float3 F = FresnelSchlick(F0, NV);
 
     float3 KSpecular = F;
     float3 Specular = KSpecular * G * D / max(4.0 * (NV) * (NL), 0.001);

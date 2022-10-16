@@ -97,80 +97,164 @@ int gdr::textures_support::Load(std::string name, bool isSrgb)
     int width, height;
     int components;
 
-    UINT8* stb_buffer = stbi_load(name.c_str(), &width, &height, &components, 0);
-    if (stb_buffer != NULL)
+    bool isHdr;
+
+    isHdr = stbi_is_hdr(name.c_str());
+
+    if (isHdr)
     {
-      // resize image
+      float* stb_buffer = stbi_loadf(name.c_str(), &width, &height, &components, 0);
+      if (stb_buffer != NULL)
       {
-        int new_width = NearestPowerOf2(width);
-        int new_height = NearestPowerOf2(height);
-        UINT8* new_stb_buffer = (UINT8 *)malloc(new_width * new_height * components);
-        stbir_resize_uint8(stb_buffer, width, height, 0, new_stb_buffer, new_width, new_height, 0, components);
+        // resize image
+        {
+          int new_width = NearestPowerOf2(width);
+          int new_height = NearestPowerOf2(height);
+          float* new_stb_buffer = (float*)malloc(new_width * new_height * components * sizeof(float));
+          stbir_resize_float(stb_buffer, width, height, 0, new_stb_buffer, new_width, new_height, 0, components);
+          stbi_image_free(stb_buffer);
+
+          stb_buffer = new_stb_buffer;
+          width = new_width;
+          height = new_height;
+        }
+
+        UINT mips = 0;
+        size_t dataSize = width * height * 4;
+
+        float* pBuffer = new float[dataSize];
+
+        if (components == 4)
+          memcpy(pBuffer, stb_buffer, width * height * 4 * sizeof(float));
+        else
+          for (int y = 0; y < height; y++)
+            for (int x = 0; x < width; x++)
+              for (int c = 0; c < 4; c++)
+                if (c < components)
+                  pBuffer[y * width * 4 + x * 4 + c] = stb_buffer[y * width * components + x * components + c];
+                else
+                  pBuffer[y * width * 4 + x * 4 + c] = 1.0;
+
+        if (components == 4)
+        {
+          for (int y = 0; y < height && !CPUPool[NewTextureIndex].IsTransparent; y++)
+            for (int x = 0; x < width && !CPUPool[NewTextureIndex].IsTransparent; x++)
+              // if we have any semi-transparent pixel
+              if (pBuffer[y * width * 4 + x * 4 + 3] != 1.0)
+              {
+                CPUPool[NewTextureIndex].IsTransparent = true;
+              }
+        }
+
+        HRESULT hr = Render->GetDevice().CreateGPUResource(
+          CD3DX12_RESOURCE_DESC::Tex2D(
+            DXGI_FORMAT_R32G32B32A32_FLOAT,
+            width, height, 1, 1),
+          D3D12_RESOURCE_STATE_COMMON,
+          nullptr,
+          CPUPool[NewTextureIndex].TextureResource,
+          pBuffer,
+          dataSize * sizeof(float));
+        if (SUCCEEDED(hr))
+        {
+          CPUPool[NewTextureIndex].Name = name;
+          CPUPool[NewTextureIndex].W = width;
+          CPUPool[NewTextureIndex].H = height;
+          CPUPool[NewTextureIndex].NumOfMips = 1;
+          CPUPool[NewTextureIndex].IsUsed = true;
+          hr = CPUPool[NewTextureIndex].TextureResource.Resource->SetName(charToWString(name.c_str()).c_str());
+        }
+        else
+        {
+          MessageBox(NULL, L"CANNOT allocate texture", L"CANNOT Create geometry", MB_OK);
+        }
+
         stbi_image_free(stb_buffer);
-
-        stb_buffer = new_stb_buffer;
-        width = new_width;
-        height = new_height;
-      }
-
-      UINT mips = 0;
-      size_t dataSize = CalculateSizeWithMips(width, height, mips);
-
-      UINT8* pBuffer = new UINT8[dataSize];
-
-      if (components == 4)
-        memcpy(pBuffer, stb_buffer, width * height * 4);
-      else
-        for (int y = 0; y < height; y++)
-          for (int x = 0; x < width; x++)
-            for (int c = 0; c < 4; c++)
-              if (c < components)
-                pBuffer[y * width * 4 + x * 4 + c] = stb_buffer[y * width * components + x * components + c];
-              else
-                pBuffer[y * width * 4 + x * 4 + c] = 255;
-
-      if (components == 4)
-      {
-        for (int y = 0; y < height && !CPUPool[NewTextureIndex].IsTransparent; y++)
-          for (int x = 0; x < width && !CPUPool[NewTextureIndex].IsTransparent; x++)
-            // if we have any semi-transparent pixel
-            if (pBuffer[y * width * 4 + x * 4 + 3] != 255)
-            {
-              CPUPool[NewTextureIndex].IsTransparent = true;
-            }
-      }
-
-      GenerateMips(pBuffer, width, height, mips - 1);
-      HRESULT hr = Render->GetDevice().CreateGPUResource(
-        CD3DX12_RESOURCE_DESC::Tex2D(
-        isSrgb ? DXGI_FORMAT_R8G8B8A8_UNORM_SRGB : DXGI_FORMAT_R8G8B8A8_UNORM,
-        width, height, 1, mips),
-        D3D12_RESOURCE_STATE_COMMON,
-        nullptr,
-        CPUPool[NewTextureIndex].TextureResource,
-        pBuffer,
-        dataSize);
-      if (SUCCEEDED(hr))
-      {
-        CPUPool[NewTextureIndex].Name = name;
-        CPUPool[NewTextureIndex].W = width;
-        CPUPool[NewTextureIndex].H = height;
-        CPUPool[NewTextureIndex].NumOfMips = mips;
-        CPUPool[NewTextureIndex].IsUsed = true;
-        hr = CPUPool[NewTextureIndex].TextureResource.Resource->SetName(charToWString(name.c_str()).c_str());
+        delete[] pBuffer;
+        pBuffer = nullptr;
       }
       else
       {
-        MessageBox(NULL, L"CANNOT allocate texture", L"CANNOT Create geometry", MB_OK);
+        printf("Error");
       }
-
-      stbi_image_free(stb_buffer);
-      delete[] pBuffer;
-      pBuffer = nullptr;
     }
     else
     {
-      printf("Error");
+      UINT8* stb_buffer = stbi_load(name.c_str(), &width, &height, &components, 0);
+      if (stb_buffer != NULL)
+      {
+        // resize image
+        {
+          int new_width = NearestPowerOf2(width);
+          int new_height = NearestPowerOf2(height);
+          UINT8* new_stb_buffer = (UINT8 *)malloc(new_width * new_height * components);
+          stbir_resize_uint8(stb_buffer, width, height, 0, new_stb_buffer, new_width, new_height, 0, components);
+          stbi_image_free(stb_buffer);
+
+          stb_buffer = new_stb_buffer;
+          width = new_width;
+          height = new_height;
+        }
+
+        UINT mips = 0;
+        size_t dataSize = CalculateSizeWithMips(width, height, mips);
+
+        UINT8* pBuffer = new UINT8[dataSize];
+
+        if (components == 4)
+          memcpy(pBuffer, stb_buffer, width * height * 4);
+        else
+          for (int y = 0; y < height; y++)
+            for (int x = 0; x < width; x++)
+              for (int c = 0; c < 4; c++)
+                if (c < components)
+                  pBuffer[y * width * 4 + x * 4 + c] = stb_buffer[y * width * components + x * components + c];
+                else
+                  pBuffer[y * width * 4 + x * 4 + c] = 255;
+
+        if (components == 4)
+        {
+          for (int y = 0; y < height && !CPUPool[NewTextureIndex].IsTransparent; y++)
+            for (int x = 0; x < width && !CPUPool[NewTextureIndex].IsTransparent; x++)
+              // if we have any semi-transparent pixel
+              if (pBuffer[y * width * 4 + x * 4 + 3] != 255)
+              {
+                CPUPool[NewTextureIndex].IsTransparent = true;
+              }
+        }
+
+        GenerateMips(pBuffer, width, height, mips - 1);
+        HRESULT hr = Render->GetDevice().CreateGPUResource(
+          CD3DX12_RESOURCE_DESC::Tex2D(
+          isSrgb ? DXGI_FORMAT_R8G8B8A8_UNORM_SRGB : DXGI_FORMAT_R8G8B8A8_UNORM,
+          width, height, 1, mips),
+          D3D12_RESOURCE_STATE_COMMON,
+          nullptr,
+          CPUPool[NewTextureIndex].TextureResource,
+          pBuffer,
+          dataSize);
+        if (SUCCEEDED(hr))
+        {
+          CPUPool[NewTextureIndex].Name = name;
+          CPUPool[NewTextureIndex].W = width;
+          CPUPool[NewTextureIndex].H = height;
+          CPUPool[NewTextureIndex].NumOfMips = mips;
+          CPUPool[NewTextureIndex].IsUsed = true;
+          hr = CPUPool[NewTextureIndex].TextureResource.Resource->SetName(charToWString(name.c_str()).c_str());
+        }
+        else
+        {
+          MessageBox(NULL, L"CANNOT allocate texture", L"CANNOT Create geometry", MB_OK);
+        }
+
+        stbi_image_free(stb_buffer);
+        delete[] pBuffer;
+        pBuffer = nullptr;
+      }
+      else
+      {
+        printf("Error");
+      }
     }
   }
   return NewTextureIndex;

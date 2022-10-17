@@ -7,6 +7,10 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Diploma", "Diploma.vcxproj"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "imgui", "thirdparty\projects\imgui\imgui.vcxproj", "{D45E2DCD-DFDE-471B-9760-A36906B9C284}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "cubemap_baker", "tools\cubemap_baker\cubemap_baker.vcxproj", "{FFFF93A5-4472-405B-B266-DF4E5F6995B6}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tools", "Tools", "{E67718D4-F269-4DAD-AF33-BC15ED5EBB62}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -31,9 +35,20 @@ Global
 		{D45E2DCD-DFDE-471B-9760-A36906B9C284}.Release|x64.Build.0 = Release|x64
 		{D45E2DCD-DFDE-471B-9760-A36906B9C284}.Release|x86.ActiveCfg = Release|Win32
 		{D45E2DCD-DFDE-471B-9760-A36906B9C284}.Release|x86.Build.0 = Release|Win32
+		{FFFF93A5-4472-405B-B266-DF4E5F6995B6}.Debug|x64.ActiveCfg = Debug|x64
+		{FFFF93A5-4472-405B-B266-DF4E5F6995B6}.Debug|x64.Build.0 = Debug|x64
+		{FFFF93A5-4472-405B-B266-DF4E5F6995B6}.Debug|x86.ActiveCfg = Debug|Win32
+		{FFFF93A5-4472-405B-B266-DF4E5F6995B6}.Debug|x86.Build.0 = Debug|Win32
+		{FFFF93A5-4472-405B-B266-DF4E5F6995B6}.Release|x64.ActiveCfg = Release|x64
+		{FFFF93A5-4472-405B-B266-DF4E5F6995B6}.Release|x64.Build.0 = Release|x64
+		{FFFF93A5-4472-405B-B266-DF4E5F6995B6}.Release|x86.ActiveCfg = Release|Win32
+		{FFFF93A5-4472-405B-B266-DF4E5F6995B6}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{FFFF93A5-4472-405B-B266-DF4E5F6995B6} = {E67718D4-F269-4DAD-AF33-BC15ED5EBB62}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {4BF9A4FE-B090-4819-9F73-D0702FA98AC8}

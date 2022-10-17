@@ -33,6 +33,11 @@ namespace gdr
       std::string namePosZ,
       std::string nameNegZ);
 
+    // Load Texture with mips
+    int LoadMips(
+      std::string directory,
+      int mipsAmount);
+
     // Update data on GPU in case we need it 
     void UpdateGPUData(ID3D12GraphicsCommandList* pCommandList);
 

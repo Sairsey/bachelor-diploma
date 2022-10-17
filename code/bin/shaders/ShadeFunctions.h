@@ -205,6 +205,10 @@ float4 ShadeCookTorrance(float3 Normal, float3 Position, float2 uv, ObjectMateri
 
   resultColor = 0.0;
 
+  float3 F0 = 0.04;
+  F0 = lerp(F0, albedo, metallic);
+  float NV = max(dot(Normal, V), 0.0);
+
   for (uint i = 0; i < globals.LightsAmount; i++)
   {
     float3 L;
@@ -216,44 +220,9 @@ float4 ShadeCookTorrance(float3 Normal, float3 Position, float2 uv, ObjectMateri
     float3 H = normalize(V + L);
     //precompute dots
     float NL = max(dot(Normal, L), 0.0);
-    float NV = max(dot(Normal, V), 0.0);
     float NH = max(dot(Normal, H), 0.0);
     float HV = max(dot(H, V), 0.0);
-
-    float3 F0 = 0.04;
-    F0 = lerp(F0, albedo, metallic);
     
-    //precompute roughness square
-    float G = GGX_PartialGeometry(NV, roughness) * GGX_PartialGeometry(NL, roughness);
-    float D = GGX_Distribution(NH, roughness);
-    float3 F = FresnelSchlick(F0, NV);
-
-    float3 KSpecular = F;
-    float3 Specular = KSpecular * G * D / max(4.0 * (NV) * (NL), 0.001);
-    float3 KDiffuse = float3(1.0, 1.0, 1.0) - F;
-    float3 Diffuse = albedo / PI * KDiffuse * (1.0 - metallic);
-
-    resultColor += LColor * (Diffuse + Specular) * NL;
-  }
-  
-  // enviroment color
-  if (0)
-  {
-    // lets pretent we get only light from point Light Source by normal
-    float3 r = reflect(-V, Normal);
-    float3 L = r;
-    float3 LColor = CubeTexturesPool[globals.SkyboxCubemapIndex].Sample(LinearSampler, r).rgb;
-
-    float3 H = normalize(V + L);
-    //precompute dots
-    float NL = max(dot(Normal, L), 0.0);
-    float NV = max(dot(Normal, V), 0.0);
-    float NH = max(dot(Normal, H), 0.0);
-    float HV = max(dot(H, V), 0.0);
-
-    float3 F0 = 0.04;
-    F0 = lerp(F0, albedo, metallic);
-
     //precompute roughness square
     float G = GGX_PartialGeometry(NV, roughness) * GGX_PartialGeometry(NL, roughness);
     float D = GGX_Distribution(NH, roughness);
@@ -264,7 +233,30 @@ float4 ShadeCookTorrance(float3 Normal, float3 Position, float2 uv, ObjectMateri
     float3 KDiffuse = float3(1.0, 1.0, 1.0) - F;
     float3 Diffuse = albedo / PI * KDiffuse * (1.0 - metallic);
 
-    resultColor += LColor * Specular * NL;
+    resultColor += LColor * (Diffuse + Specular) * NL;
+  }
+  
+  // enviroment color
+  if (globals.SkyboxCubemapIndex != -1)
+  {
+    // lets pretent we get only light from point Light Source by normal
+    float3 r = reflect(-V, Normal);
+
+    float3 F = FresnelSchlickEnv(F0, NV, roughness);
+    float3 KSpecular = F;
+    float3 KDiffuse = float3(1.0, 1.0, 1.0) - F;
+
+    static const float MAX_REFLECTION_LOD = 4.0;
+    float3 prefilteredColor = CubeTexturesPool[globals.PrefilteredCubemapIndex].SampleLevel(LinearSampler, r, roughness * MAX_REFLECTION_LOD).rgb;
+    float2 envBRDF = TexturesPool[globals.BRDFLUTIndex].Sample(LinearSampler, float2(NV, roughness)).rg;
+    float3 Specular = prefilteredColor * (F0 * envBRDF.x + envBRDF.y);
+
+    float3 Irradience = CubeTexturesPool[globals.IrradienceCubemapIndex].Sample(LinearSampler, Normal).rgb;
+    KDiffuse *= (1.0 - metallic);
+    float3 Diffuse = Irradience * albedo;
+
+    float3 Ambient = KDiffuse * Diffuse  + Specular;
+    resultColor += Ambient;
   }
 
   return float4(resultColor, alpha);

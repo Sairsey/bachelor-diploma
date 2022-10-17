@@ -290,7 +290,7 @@ gdr::gdr_index gdr::object_support::LoadAssimpTreeMesh(const aiScene* scene, aiM
   if (mat.Ph == 0.f)
     mat.Ph = 1.0f;
 
-  aiShadingMode shadingModel;
+  aiShadingMode shadingModel = (aiShadingMode)0x0;
   scene->mMaterials[mesh->mMaterialIndex]->Get(AI_MATKEY_SHADING_MODEL, shadingModel);
 
   if (shadingModel & aiShadingMode::aiShadingMode_CookTorrance)

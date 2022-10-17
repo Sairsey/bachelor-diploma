@@ -21,7 +21,11 @@ struct GlobalData
   UINT width;  // Screen size 
   UINT height; // Screen size 
   UINT LightsAmount; // Amount of active lights
-  int SkyboxCubemapIndex; // Index of skybox in cubemap pool
+  int SkyboxCubemapIndex;      // Index of skybox in cubemap pool
+  int PrefilteredCubemapIndex; // Index of prefiltered color in cubemap pool
+  int IrradienceCubemapIndex;  // Index of skybox in cubemap pool
+  int BRDFLUTIndex;            // Index of BRDF Lookup texture in textures pool
+
   float SceneExposure;    // Scene exposure
 };
 

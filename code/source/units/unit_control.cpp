@@ -17,18 +17,27 @@ void unit_control::Initialize(void)
   Engine->GetDevice().BeginUploadCommandList(&commandList);
   PROFILE_BEGIN(commandList, "skybox Init");
   Engine->GlobalsSystem->CPUData.SkyboxCubemapIndex = Engine->CubeTexturesSystem->Load(
-  /*  "bin/cubemaps/yokohama/posx.jpg",
-    "bin/cubemaps/yokohama/negx.jpg",
-    "bin/cubemaps/yokohama/posy.jpg",
-    "bin/cubemaps/yokohama/negy.jpg",
-    "bin/cubemaps/yokohama/posz.jpg",
-    "bin/cubemaps/yokohama/negz.jpg"); */
-    "bin/cubemaps/alexapt/px.hdr",
-    "bin/cubemaps/alexapt/nx.hdr",
-    "bin/cubemaps/alexapt/py.hdr",
-    "bin/cubemaps/alexapt/ny.hdr",
-    "bin/cubemaps/alexapt/pz.hdr",
-    "bin/cubemaps/alexapt/nz.hdr");
+    "bin/cubemaps/alexapt/cubemap/px.hdr",
+    "bin/cubemaps/alexapt/cubemap/nx.hdr",
+    "bin/cubemaps/alexapt/cubemap/py.hdr",
+    "bin/cubemaps/alexapt/cubemap/ny.hdr",
+    "bin/cubemaps/alexapt/cubemap/pz.hdr",
+    "bin/cubemaps/alexapt/cubemap/nz.hdr");
+
+  Engine->GlobalsSystem->CPUData.IrradienceCubemapIndex = Engine->CubeTexturesSystem->Load(
+    "bin/cubemaps/alexapt/irradiance/px.hdr",
+    "bin/cubemaps/alexapt/irradiance/nx.hdr",
+    "bin/cubemaps/alexapt/irradiance/py.hdr",
+    "bin/cubemaps/alexapt/irradiance/ny.hdr",
+    "bin/cubemaps/alexapt/irradiance/pz.hdr",
+    "bin/cubemaps/alexapt/irradiance/nz.hdr");
+
+  Engine->GlobalsSystem->CPUData.PrefilteredCubemapIndex = Engine->CubeTexturesSystem->LoadMips(
+    "bin/cubemaps/alexapt/prefiltered",
+    5);
+
+  Engine->GlobalsSystem->CPUData.BRDFLUTIndex = Engine->TexturesSystem->Load("bin/cubemaps/alexapt/brdf.hdr");
+
   PROFILE_END(commandList);
   Engine->GetDevice().CloseUploadCommandList();
 }

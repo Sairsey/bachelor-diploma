@@ -6,6 +6,9 @@ gdr::globals_support::globals_support(render* Rnd)
   StoredCopy.time = 0;
   CPUData.time = 1;
   CPUData.SkyboxCubemapIndex = -1;
+  CPUData.PrefilteredCubemapIndex = -1;
+  CPUData.IrradienceCubemapIndex = -1;
+  CPUData.BRDFLUTIndex = -1;
   CPUData.SceneExposure = 8.0;
   GPUData.Resource = nullptr;
 }

@@ -216,6 +216,116 @@ int gdr::cube_textures_support::Load(
   return NewTextureIndex;
 }
 
+// Load Texture
+int gdr::cube_textures_support::LoadMips(
+  std::string directory,
+  int mipsAmount)
+{
+  // check if we already have this texture
+  for (int i = 0; i < MAX_CUBE_TEXTURE_AMOUNT; i++)
+    if (CPUPool[i].IsUsed && CPUPool[i].Name == directory)
+      return i;
+
+  int NewTextureIndex = -1;
+  for (int i = 0; i < MAX_CUBE_TEXTURE_AMOUNT; i++)
+    if (!CPUPool[i].IsUsed)
+    {
+      NewTextureIndex = i;
+      break;
+    }
+
+  if (NewTextureIndex != -1)
+  {
+    int maxWidth, maxHeight;
+    int components;
+
+    // get width and height
+    float* stb_buffer;
+    stb_buffer = stbi_loadf((directory + "\\0\\px.hdr").c_str(), &maxWidth, &maxHeight, &components, 0);
+    stbi_image_free(stb_buffer);
+    
+    // Calculate size
+    size_t dataSize = 0;
+    int currW = maxWidth, currH = maxHeight;
+    for (int i = 0; i < mipsAmount; i++)
+    {
+      dataSize += currW * currH;
+      currW /= 2;
+      currH /= 2;
+    }
+    dataSize *= 4 * sizeof(float) * 6;
+    
+    // allocate Buffer
+    float* pBufferFloat = nullptr;
+    pBufferFloat = new float[dataSize / sizeof(float)];
+
+    std::vector<std::string> names;
+    for (int i = 0; i < mipsAmount; i++)
+      names.push_back(directory + "\\" + std::to_string(i) + "\\" + "px.hdr");
+    for (int i = 0; i < mipsAmount; i++)
+      names.push_back(directory + "\\" + std::to_string(i) + "\\" + "nx.hdr");
+    for (int i = 0; i < mipsAmount; i++)
+      names.push_back(directory + "\\" + std::to_string(i) + "\\" + "py.hdr");
+    for (int i = 0; i < mipsAmount; i++)
+      names.push_back(directory + "\\" + std::to_string(i) + "\\" + "ny.hdr");
+    for (int i = 0; i < mipsAmount; i++)
+      names.push_back(directory + "\\" + std::to_string(i) + "\\" + "pz.hdr");
+    for (int i = 0; i < mipsAmount; i++)
+      names.push_back(directory + "\\" + std::to_string(i) + "\\" + "nz.hdr");
+
+    float *dest_buffer = pBufferFloat;
+
+    for (size_t i = 0; i < names.size(); i++)
+    {
+      int width, height;
+      stb_buffer = stbi_loadf(names[i].c_str(), &width, &height, &components, 0);
+      assert(stb_buffer != NULL);
+
+      if (components == 4)
+        memcpy(dest_buffer, stb_buffer, width * height * 4 * sizeof(float));
+      else
+        for (int y = 0; y < height; y++)
+          for (int x = 0; x < width; x++)
+            for (int c = 0; c < 4; c++)
+              if (c < components)
+                dest_buffer[y * width * 4 + x * 4 + c] = stb_buffer[y * width * components + x * components + c];
+              else
+                dest_buffer[y * width * 4 + x * 4 + c] = 1.0;
+
+      stbi_image_free(stb_buffer);
+      dest_buffer += width * height * 4;
+    }
+    
+    HRESULT hr = Render->GetDevice().CreateGPUResource(
+      CD3DX12_RESOURCE_DESC::Tex2D(
+        DXGI_FORMAT_R32G32B32A32_FLOAT,
+        maxWidth, maxHeight, 6, mipsAmount),
+      D3D12_RESOURCE_STATE_COMMON,
+      nullptr,
+      CPUPool[NewTextureIndex].TextureResource,
+      pBufferFloat,
+      dataSize);
+    if (SUCCEEDED(hr))
+    {
+      CPUPool[NewTextureIndex].Name = directory;
+      CPUPool[NewTextureIndex].IsUsed = true;
+      hr = CPUPool[NewTextureIndex].TextureResource.Resource->SetName(charToWString(CPUPool[NewTextureIndex].Name.c_str()).c_str());
+    }
+    else
+    {
+      MessageBox(NULL, L"CANNOT allocate texture", L"CANNOT Create geometry", MB_OK);
+    }
+
+    delete[] pBufferFloat;
+    pBufferFloat = nullptr;
+  }
+  else
+  {
+    printf("Error");
+  }
+  return NewTextureIndex;
+}
+
 // Update data on GPU in case we need it 
 void gdr::cube_textures_support::UpdateGPUData(ID3D12GraphicsCommandList* pCommandList)
 {
@@ -230,7 +340,7 @@ void gdr::cube_textures_support::UpdateGPUData(ID3D12GraphicsCommandList* pComma
       texDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
       texDesc.Format = CPUPool[i].TextureResource.Resource->GetDesc().Format;
       texDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURECUBE;
-      texDesc.TextureCube.MipLevels = 1;
+      texDesc.TextureCube.MipLevels = CPUPool[i].TextureResource.Resource->GetDesc().MipLevels;
       texDesc.TextureCube.MostDetailedMip = 0;
       texDesc.TextureCube.ResourceMinLODClamp = 0.0f;
       Render->GetDevice().GetDXDevice()->CreateShaderResourceView(CPUPool[i].TextureResource.Resource, &texDesc, TextureDescr);

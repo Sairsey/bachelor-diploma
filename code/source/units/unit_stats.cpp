@@ -269,7 +269,7 @@ void unit_stats::Response(void)
       }
       if (Engine->MaterialsSystem->CPUData[CurrentMaterialToShow].ShadeType == MATERIAL_SHADER_COOKTORRANCE)
       {
-        ImGui::DragFloat("Roughness", &Engine->MaterialsSystem->CPUData[CurrentMaterialToShow].Ks[2], 0.001);
+        ImGui::DragFloat("Roughness", &Engine->MaterialsSystem->CPUData[CurrentMaterialToShow].Ks.G, 0.001);
         ImGui::Text("Roughness Texture index %d", Engine->MaterialsSystem->CPUData[CurrentMaterialToShow].KsMapIndex);
         if (Engine->MaterialsSystem->CPUData[CurrentMaterialToShow].KsMapIndex != -1)
         {
@@ -278,7 +278,7 @@ void unit_stats::Response(void)
 
           ImGui::Image((ImTextureID)true_texture_handle.ptr, ImVec2((float)128, (float)128));
         }
-        ImGui::ColorEdit3("Albedo", &Engine->MaterialsSystem->CPUData[CurrentMaterialToShow].Kd[0]);
+        ImGui::ColorEdit3("Albedo", &Engine->MaterialsSystem->CPUData[CurrentMaterialToShow].Kd.X);
         ImGui::Text("Albedo Texture index %d", Engine->MaterialsSystem->CPUData[CurrentMaterialToShow].KdMapIndex);
         if (Engine->MaterialsSystem->CPUData[CurrentMaterialToShow].KdMapIndex != -1)
         {
@@ -287,7 +287,7 @@ void unit_stats::Response(void)
 
           ImGui::Image((ImTextureID)true_texture_handle.ptr, ImVec2((float)128, (float)128));
         }
-        ImGui::DragFloat("Metallic", &Engine->MaterialsSystem->CPUData[CurrentMaterialToShow].Ks[1], 0.001);
+        ImGui::DragFloat("Metallic", &Engine->MaterialsSystem->CPUData[CurrentMaterialToShow].Ks.B, 0.001);
         ImGui::Text("Metallic Texture index %d", Engine->MaterialsSystem->CPUData[CurrentMaterialToShow].KsMapIndex);
         if (Engine->MaterialsSystem->CPUData[CurrentMaterialToShow].KsMapIndex != -1)
         {

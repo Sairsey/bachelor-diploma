@@ -4,9 +4,26 @@ gdr::indirect_support::indirect_support(render* Rnd)
 {
   Render = Rnd;
   CommandsUAVReset.Resource = nullptr;
-  CommandsSRV.Resource = nullptr;
-  for (int i = 0; i < TotalUAV; i++)
-    CommandsUAV[i].Resource = nullptr;
+  for (int i = 0; i < (int)indirect_command_enum::TotalBuffers; i++)
+  {
+    CommandsBuffer[i].Resource = nullptr;
+    Render->GetDevice().AllocateStaticDescriptors(1, CommandsCPUDescriptor[i], CommandsGPUDescriptor[i]);
+  }
+
+  argumentDescs[0].Type = D3D12_INDIRECT_ARGUMENT_TYPE_CONSTANT;
+  argumentDescs[0].Constant.RootParameterIndex = index_buffer_index; // because Root parameter 0 is descriptor handle
+  argumentDescs[0].Constant.Num32BitValuesToSet = sizeof(ObjectIndices) / sizeof(int32_t);
+
+  argumentDescs[1].Type = D3D12_INDIRECT_ARGUMENT_TYPE_VERTEX_BUFFER_VIEW;
+  argumentDescs[1].VertexBuffer.Slot = 0;
+
+  argumentDescs[2].Type = D3D12_INDIRECT_ARGUMENT_TYPE_INDEX_BUFFER_VIEW;
+
+  argumentDescs[3].Type = D3D12_INDIRECT_ARGUMENT_TYPE_DRAW_INDEXED;
+
+  commandSignatureDesc.pArgumentDescs = argumentDescs;
+  commandSignatureDesc.NumArgumentDescs = _countof(argumentDescs);
+  commandSignatureDesc.ByteStride = sizeof(indirect_command);
 }
 
 // We pack the UAV counter into the same buffer as the commands rather than create
@@ -21,19 +38,32 @@ static UINT AlignForUavCounter(UINT bufferSize)
 
 void gdr::indirect_support::UpdateGPUData(ID3D12GraphicsCommandList* pCommandList)
 {
+  if (CommandsUAVReset.Resource == nullptr)
+  {
+    // Create Reset data
+    {
+      UINT data = 0;
+      // create buffer big enough for all commands
+      Render->GetDevice().CreateGPUResource(
+        CD3DX12_RESOURCE_DESC::Buffer({ sizeof(UINT) }),
+        D3D12_RESOURCE_STATE_COPY_DEST,
+        nullptr,
+        CommandsUAVReset,
+        &data,
+        sizeof(UINT));
+      CommandsUAVReset.Resource->SetName(L"CommandsUAVReset");
+    }
+  }
+
   // if we added or removed objects
   if (CPUData.size() != Render->ObjectSystem->CPUPool.size())
   {
     // free data
-    for (int i = 0; i < TotalUAV; i++)
-      if (CommandsUAV[i].Resource != nullptr)
+    for (int i = 0; i < (int)indirect_command_enum::TotalBuffers; i++)
+      if (CommandsBuffer[i].Resource != nullptr)
       {
-        Render->GetDevice().ReleaseGPUResource(CommandsUAV[i]);
+        Render->GetDevice().ReleaseGPUResource(CommandsBuffer[i]);
       }
-    if (CommandsSRV.Resource != nullptr)
-    {
-      Render->GetDevice().ReleaseGPUResource(CommandsSRV);
-    }
 
     // fill CPUData
     CPUData.resize(Render->ObjectSystem->CPUPool.size());
@@ -50,17 +80,16 @@ void gdr::indirect_support::UpdateGPUData(ID3D12GraphicsCommandList* pCommandLis
       CPUData[i].DrawArguments.StartInstanceLocation = 0;
     }
 
-    Render->GetDevice().AllocateStaticDescriptors(1, CommandsSRVCPUDescriptor, CommandsSRVGPUDescriptor);
     // Create SRV
     {
       Render->GetDevice().CreateGPUResource(
         CD3DX12_RESOURCE_DESC::Buffer({ CPUData.size() * sizeof(indirect_command) }),
         D3D12_RESOURCE_STATE_COPY_DEST,
         nullptr,
-        CommandsSRV,
+        CommandsBuffer[(int)indirect_command_enum::All],
         &CPUData[0],
         CPUData.size() * sizeof(indirect_command));
-      CommandsSRV.Resource->SetName(L"CommandsSRV");
+      CommandsBuffer[(int)indirect_command_enum::All].Resource->SetName(L"All commands SRV");
 
       D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
       srvDesc.Format = DXGI_FORMAT_UNKNOWN;
@@ -70,24 +99,22 @@ void gdr::indirect_support::UpdateGPUData(ID3D12GraphicsCommandList* pCommandLis
       srvDesc.Buffer.StructureByteStride = sizeof(indirect_command);
       srvDesc.Buffer.Flags = D3D12_BUFFER_SRV_FLAG_NONE;
 
-      Render->GetDevice().GetDXDevice()->CreateShaderResourceView(CommandsSRV.Resource, &srvDesc, CommandsSRVCPUDescriptor);
+      Render->GetDevice().GetDXDevice()->CreateShaderResourceView(CommandsBuffer[(int)indirect_command_enum::All].Resource, &srvDesc, CommandsCPUDescriptor[(int)indirect_command_enum::All]);
     }
-
 
     // aligned UAV size
     UINT UAVSize = AlignForUavCounter((UINT)CPUData.size() * sizeof(indirect_command));
     CounterOffset = UAVSize;
 
     // CreateUAVs
-    for (int i = 0; i < TotalUAV; i++)
+    for (int i = 1; i < (int)indirect_command_enum::TotalBuffers; i++)
     {
-      Render->GetDevice().AllocateStaticDescriptors(1, CommandsUAVCPUDescriptor[i], CommandsUAVGPUDescriptor[i]);
       Render->GetDevice().CreateGPUResource(
         CD3DX12_RESOURCE_DESC::Buffer({ UAVSize + sizeof(UINT) }, D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS),
         D3D12_RESOURCE_STATE_COPY_DEST,
         nullptr,
-        CommandsUAV[i]);
-      CommandsUAV[i].Resource->SetName(L"CommandsUAV");
+        CommandsBuffer[i]);
+      CommandsBuffer[i].Resource->SetName((L"CommandsUAV " + std::to_wstring(i)).c_str());
 
       D3D12_UNORDERED_ACCESS_VIEW_DESC uavDesc = {};
       uavDesc.Format = DXGI_FORMAT_UNKNOWN;
@@ -98,37 +125,44 @@ void gdr::indirect_support::UpdateGPUData(ID3D12GraphicsCommandList* pCommandLis
       uavDesc.Buffer.CounterOffsetInBytes = UAVSize;
       uavDesc.Buffer.Flags = D3D12_BUFFER_UAV_FLAG_NONE;
 
-      Render->GetDevice().GetDXDevice()->CreateUnorderedAccessView(CommandsUAV[i].Resource, CommandsUAV[i].Resource, &uavDesc, CommandsUAVCPUDescriptor[i]);
+      Render->GetDevice().GetDXDevice()->CreateUnorderedAccessView(CommandsBuffer[i].Resource, CommandsBuffer[i].Resource, &uavDesc, CommandsCPUDescriptor[i]);
     }
-
-    // Create Reset data
+  }
+  else
+  {
+    for (int i = 1; i < (int)indirect_command_enum::TotalBuffers; i++)
     {
-      UINT data = 0;
-      // create buffer big enough for all commands
-      Render->GetDevice().CreateGPUResource(
-        CD3DX12_RESOURCE_DESC::Buffer({ sizeof(UINT) }),
-        D3D12_RESOURCE_STATE_COPY_DEST,
-        nullptr,
-        CommandsUAVReset,
-        &data,
+      // transit state from indirect argument to CopyDest
+      Render->GetDevice().TransitResourceState(
+        pCommandList,
+        Render->IndirectSystem->CommandsBuffer[i].Resource,
+        D3D12_RESOURCE_STATE_INDIRECT_ARGUMENT, D3D12_RESOURCE_STATE_COPY_DEST);
+      pCommandList->CopyBufferRegion(
+        Render->IndirectSystem->CommandsBuffer[i].Resource,
+        Render->IndirectSystem->CounterOffset,
+        Render->IndirectSystem->CommandsUAVReset.Resource,
+        0,
         sizeof(UINT));
-      CommandsUAVReset.Resource->SetName(L"CommandsUAVReset");
     }
+  }
+
+  // transit state from COPY_DEST to Unordered ACCESS
+  for (int i = 1; i < (int)indirect_command_enum::TotalBuffers; i++)
+  {
+    Render->GetDevice().TransitResourceState(
+      pCommandList,
+      Render->IndirectSystem->CommandsBuffer[i].Resource,
+      D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
   }
 }
 
 gdr::indirect_support::~indirect_support()
 {
-  for (int i = 0; i < TotalUAV; i++)
-    if (CommandsUAV[i].Resource != nullptr)
+  for (int i = 0; i < (int)indirect_command_enum::TotalBuffers; i++)
+    if (CommandsBuffer[i].Resource != nullptr)
     {
-      Render->GetDevice().ReleaseGPUResource(CommandsUAV[i]);
+      Render->GetDevice().ReleaseGPUResource(CommandsBuffer[i]);
     }
-  if (CommandsSRV.Resource != nullptr)
-  {
-    Render->GetDevice().ReleaseGPUResource(CommandsSRV);
-  }
-
   if (CommandsUAVReset.Resource != nullptr)
   {
     Render->GetDevice().ReleaseGPUResource(CommandsUAVReset);

@@ -32,9 +32,11 @@ struct IndirectCommand
     uint2 _pad1;
 };
 
-StructuredBuffer<ObjectTransform> ObjectTransformData     : register(t2);    // SRV: Data with transforms which stored per object
-StructuredBuffer<IndirectCommand> inputCommands           : register(t0);    // SRV: Indirect commands
-AppendStructuredBuffer<IndirectCommand> outputCommands    : register(u0);    // UAV: Processed indirect commands
+StructuredBuffer<ObjectTransform> ObjectTransformData           : register(t2);    // SRV: Data with transforms which stored per object
+StructuredBuffer<IndirectCommand> inputCommands                 : register(t0);    // SRV: Indirect commands
+AppendStructuredBuffer<IndirectCommand> opaqueCommands          : register(u0);    // UAV: Processed indirect commands
+AppendStructuredBuffer<IndirectCommand> opaqueCulledCommands    : register(u1);    // UAV: Processed indirect commands
+AppendStructuredBuffer<IndirectCommand> transCommands           : register(u3);    // UAV: Processed indirect commands
 cbuffer RootConstants : register (b0)                                        // RootConstant : General data
 {
   ComputeRootConstants globals;
@@ -92,17 +94,29 @@ void CS(uint3 groupId : SV_GroupID, uint groupIndex : SV_GroupIndex)
     {
         // if transparent - forget about it
         if (inputCommands[index].indices.ObjectParams & OBJECT_PARAMETER_TRANSPARENT)
-          return;
-        
-        // if culling disabled - add.
-        if (!globals.enableCulling ||
-            CullAABBFrustum(
-                globals.VP,
-                ObjectTransformData[inputCommands[index].indices.ObjectTransformIndex].transform,
-                ObjectTransformData[inputCommands[index].indices.ObjectTransformIndex].minAABB,
-                ObjectTransformData[inputCommands[index].indices.ObjectTransformIndex].maxAABB))
         {
-            outputCommands.Append(inputCommands[index]);
+          if (!globals.enableCulling ||
+            CullAABBFrustum(
+              globals.VP,
+              ObjectTransformData[inputCommands[index].indices.ObjectTransformIndex].transform,
+              ObjectTransformData[inputCommands[index].indices.ObjectTransformIndex].minAABB,
+              ObjectTransformData[inputCommands[index].indices.ObjectTransformIndex].maxAABB))
+          {
+            transCommands.Append(inputCommands[index]);
+          }
         }
+        else
+        {
+          opaqueCommands.Append(inputCommands[index]);
+          if (!globals.enableCulling ||
+            CullAABBFrustum(
+              globals.VP,
+              ObjectTransformData[inputCommands[index].indices.ObjectTransformIndex].transform,
+              ObjectTransformData[inputCommands[index].indices.ObjectTransformIndex].minAABB,
+              ObjectTransformData[inputCommands[index].indices.ObjectTransformIndex].maxAABB))
+          {
+            opaqueCulledCommands.Append(inputCommands[index]);
+          }
+        }        
     }
 }

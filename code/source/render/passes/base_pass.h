@@ -28,12 +28,6 @@ namespace gdr
     /* Function to get name */
     virtual std::string GetName(void) { return "base_pass"; };
 
-    /* Function to call compute shader */
-    virtual void CallCompute(ID3D12GraphicsCommandList* currentCommandList) {};
-
-    /* Function to sync result of compute shader */
-    virtual void SyncCompute(ID3D12GraphicsCommandList* currentCommandList) {};
-
     /* Function to call Direct draw shader */
     virtual void CallDirectDraw(ID3D12GraphicsCommandList* currentCommandList) {};
 

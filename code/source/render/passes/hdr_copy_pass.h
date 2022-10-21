@@ -45,12 +45,6 @@ namespace gdr
     /* Function to Initialize every PSO/InputLayout/Shaders we need */
     void Initialize(void) override;
 
-    /* Function to call compute shader */
-    //void CallCompute(ID3D12GraphicsCommandList* currentCommandList) override;
-
-    /* Function to sync result of compute shader */
-    //void SyncCompute(ID3D12GraphicsCommandList* currentCommandList) override;
-
     /* Function to call Direct draw shader */
     void CallDirectDraw(ID3D12GraphicsCommandList* currentCommandList) override;
 

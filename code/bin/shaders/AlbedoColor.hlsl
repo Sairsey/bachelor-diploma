@@ -13,12 +13,11 @@ cbuffer Indices : register(b1)
   ObjectIndices indices;
 }
 
-StructuredBuffer<ObjectTransform> ObjectTransformData : register(t2);    // SRV: Data with transforms which stored per object
-StructuredBuffer<ObjectMaterial> ObjectMaterialData : register(t3);      // SRV: Data with materials which stored per object
-Texture2D TexturesPool[]  : register(t4, space1);                        // Bindless Pool with all textures
-StructuredBuffer<LightSource> LightSourcesPool  : register(t5);          // SRV: Data with lights
-TextureCube CubeTexturesPool[] : register(t6, space2);                   // Bindless Pool with all textures
-
+StructuredBuffer<ObjectTransform> ObjectTransformData : register(t0);    // SRV: Data with transforms which stored per object
+StructuredBuffer<ObjectMaterial> ObjectMaterialData : register(t1);      // SRV: Data with materials which stored per object
+Texture2D TexturesPool[]  : register(t2, space1);                        // Bindless Pool with all textures
+StructuredBuffer<LightSource> LightSourcesPool  : register(t3);          // SRV: Data with lights
+TextureCube CubeTexturesPool[] : register(t4, space2);                   // Bindless Pool with all textures
 
 // add all shade functions
 #include "ShadeFunctions.h"

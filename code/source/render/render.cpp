@@ -83,6 +83,7 @@ bool gdr::render::Init(engine* Eng)
   if (localIsInited)
   {
     Passes.push_back(new debug_pass());
+    Passes.push_back(new visibility_pass());
     Passes.push_back(new albedo_pass());
     Passes.push_back(new skybox_pass());
     Passes.push_back(new oit_transparent_pass());
@@ -157,10 +158,6 @@ void gdr::render::DrawFrame(void)
   ID3D12GraphicsCommandList* uploadCommandList;
   GetDevice().BeginUploadCommandList(&uploadCommandList);
   auto updateStart = std::chrono::system_clock::now();
-  PROFILE_BEGIN(uploadCommandList, "Update indirect SRVs and UAVs");
-  // Update all subsytems except globals, it will be updated in each pass
-  IndirectSystem->UpdateGPUData(uploadCommandList);
-  PROFILE_END(uploadCommandList);
   PROFILE_BEGIN(uploadCommandList, "Update transforms");
   TransformsSystem->UpdateGPUData(uploadCommandList);
   PROFILE_END(uploadCommandList);
@@ -188,6 +185,14 @@ void gdr::render::DrawFrame(void)
     auto renderStart = std::chrono::system_clock::now();
     PROFILE_BEGIN(pCommandList, "Frame");
     DeviceFrameCounter.Start(pCommandList);
+
+    PROFILE_BEGIN(pCommandList, "Update indirect SRVs and UAVs");
+    GetDevice().SetCommandListAsUpload(pCommandList);
+    // Update all subsytems except globals, it will be updated in each pass
+    IndirectSystem->UpdateGPUData(pCommandList);
+    GetDevice().ClearUploadListReference();
+    PROFILE_END(pCommandList);
+
     HRESULT hr = S_OK;
     D3D12_CPU_DESCRIPTOR_HANDLE dsvHandle = DSVHeap->GetCPUDescriptorHandleForHeapStart();
     if (Device.TransitResourceState(pCommandList, pBackBuffer, D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET))
@@ -207,17 +212,14 @@ void gdr::render::DrawFrame(void)
       RenderTargets->SaveDepthStencilBuffer(&dsvHandle);
       RenderTargets->SaveDisplayBuffer(&rtvHandle, pBackBuffer);
 
+      ID3D12DescriptorHeap* pDescriptorHeaps = GetDevice().GetDescriptorHeap();
+      pCommandList->SetDescriptorHeaps(1, &pDescriptorHeaps);
+
       RenderTargets->Set(pCommandList, render_targets_enum::target_display);
 
       assert(Passes.size() >= 1);
       for (int i = 0; i < Passes.size(); i++)
       {
-        PROFILE_BEGIN(pCommandList, (Passes[i]->GetName() + " compute call").c_str());
-        Passes[i]->CallCompute(pCommandList);
-        PROFILE_END(pCommandList);
-        PROFILE_BEGIN(pCommandList, (Passes[i]->GetName() + " compute sync").c_str());
-        Passes[i]->SyncCompute(pCommandList);
-        PROFILE_END(pCommandList);
         if (Params.IsIndirect)
         {
           PROFILE_BEGIN(pCommandList, (Passes[i]->GetName() + " Indirect draw").c_str());

@@ -21,7 +21,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
   //Engine.AddUnit(new unit_bathroom());
   Engine.AddUnit(new unit_frog()); 
   //Engine.AddUnit(new unit_bread());
-  //Engine.AddUnit(new unit_pbr_spheres());
+  Engine.AddUnit(new unit_pbr_spheres());
   //Engine.AddUnit(new unit_city());
 
   Engine.AddUnit(new unit_stats());

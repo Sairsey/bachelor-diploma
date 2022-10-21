@@ -492,8 +492,10 @@ void unit_stats::Response(void)
       ImGui::Text("Current project time %g", Engine->GetTime());
       ImGui::Checkbox("Indirect Render", &Engine->Params.IsIndirect);
       if (Engine->Params.IsIndirect)
+      {
         ImGui::Checkbox("Culling", &Engine->Params.IsCulling);
-
+        ImGui::Checkbox("Lock view", &Engine->Params.IsVisibilityLocked);
+      }
       ImGui::Checkbox("Transparents Render", &Engine->Params.IsTransparent);
       bool pause = Engine->GetPause();
       if (ImGui::Checkbox("Pause", &pause))

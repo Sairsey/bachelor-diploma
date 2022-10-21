@@ -17,7 +17,6 @@ void gdr::oit_transparent_pass::Initialize(void)
   Render->GetDevice().CompileShader(_T("bin/shaders/OITTransparentColor.hlsl"), {}, shader_stage::Pixel, &PixelShader);
   Render->GetDevice().CompileShader(_T("bin/shaders/OITTransparentCompose.hlsl"), {}, shader_stage::Vertex, &ComposeVertexShader);
   Render->GetDevice().CompileShader(_T("bin/shaders/OITTransparentCompose.hlsl"), {}, shader_stage::Pixel, &ComposePixelShader);
-  Render->GetDevice().CompileShader(_T("bin/shaders/OITTransparentCull.hlsl"), {}, shader_stage::Compute, &ComputeShader);
 
   // 2) Create root signature 
   {
@@ -261,84 +260,9 @@ void gdr::oit_transparent_pass::Initialize(void)
     Render->GetDevice().CloseUploadCommandList();
   }
 
-  // 10) Create root signature for compute
-  {
-    std::vector<CD3DX12_ROOT_PARAMETER> params;
-    CD3DX12_DESCRIPTOR_RANGE descr = {};
-
-    params.resize((int)root_parameters_compute_indices::total_root_parameters);
-
-    {
-      params[(int)root_parameters_compute_indices::compute_params_index].InitAsConstants(
-        sizeof(ComputeRootConstants) / sizeof(int32_t),
-        (int)transparent_buffer_registers::globals_buffer_register);
-    }
-
-    {
-      params[(int)root_parameters_compute_indices::transform_pool_index].InitAsShaderResourceView(
-        (int)transparent_texture_registers::object_transform_pool_register);
-    }
-
-    {
-      params[(int)root_parameters_compute_indices::in_commands_pool_index].InitAsShaderResourceView(
-        (int)transparent_texture_registers::command_pool_register);
-    }
-
-    // UAV set as Descriptor range
-    {
-      descr.Init(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 1, (int)transparent_uav_registers::indirect_command_pool_register);
-
-      params[(int)root_parameters_compute_indices::out_commands_pool_index].InitAsDescriptorTable(
-        1, &descr);
-    }
-
-    if (params.size() != 0)
-    {
-      CD3DX12_ROOT_SIGNATURE_DESC rootSignatureDesc;
-      rootSignatureDesc.Init((UINT)params.size(), &params[0], 0U, nullptr, D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
-      Render->GetDevice().CreateRootSignature(rootSignatureDesc, &ComputeRootSignature);
-    }
-    else
-    {
-      CD3DX12_ROOT_SIGNATURE_DESC rootSignatureDesc;
-      rootSignatureDesc.Init(0U, nullptr, 0U, nullptr, D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
-
-      Render->GetDevice().CreateRootSignature(rootSignatureDesc, &ComputeRootSignature);
-    }
-  }
-
   // 11) Create Command signature
   {
-    // Each command consists of a CBV update and a DrawInstanced call.
-    D3D12_INDIRECT_ARGUMENT_DESC argumentDescs[4] = {};
-
-    argumentDescs[0].Type = D3D12_INDIRECT_ARGUMENT_TYPE_CONSTANT;
-    argumentDescs[0].Constant.RootParameterIndex = (int)root_parameters_draw_indices::index_buffer_index; // because Root parameter 0 is descriptor handle
-    argumentDescs[0].Constant.Num32BitValuesToSet = sizeof(ObjectIndices) / sizeof(int32_t);
-
-    argumentDescs[1].Type = D3D12_INDIRECT_ARGUMENT_TYPE_VERTEX_BUFFER_VIEW;
-    argumentDescs[1].VertexBuffer.Slot = 0;
-
-    argumentDescs[2].Type = D3D12_INDIRECT_ARGUMENT_TYPE_INDEX_BUFFER_VIEW;
-
-    argumentDescs[3].Type = D3D12_INDIRECT_ARGUMENT_TYPE_DRAW_INDEXED;
-
-    D3D12_COMMAND_SIGNATURE_DESC commandSignatureDesc = {};
-    commandSignatureDesc.pArgumentDescs = argumentDescs;
-    commandSignatureDesc.NumArgumentDescs = _countof(argumentDescs);
-    commandSignatureDesc.ByteStride = sizeof(indirect_command);
-
-    Render->GetDevice().GetDXDevice()->CreateCommandSignature(&commandSignatureDesc, RootSignature, IID_PPV_ARGS(&CommandSignature));
-  }
-
-  // 12) Create compute PSO
-  {
-    // Describe and create the compute pipeline state object (PSO).
-    D3D12_COMPUTE_PIPELINE_STATE_DESC computePsoDesc = {};
-    computePsoDesc.pRootSignature = ComputeRootSignature;
-    computePsoDesc.CS = CD3DX12_SHADER_BYTECODE(ComputeShader);
-
-    Render->GetDevice().CreateComputePSO(computePsoDesc, &ComputePSO);
+    Render->GetDevice().GetDXDevice()->CreateCommandSignature(&Render->IndirectSystem->commandSignatureDesc, RootSignature, IID_PPV_ARGS(&CommandSignature));
   }
 }
 
@@ -381,71 +305,6 @@ void gdr::oit_transparent_pass::CreateOITLists(void)
     OITListsClearVector[i].RootIndex = 0xFFFFFFFF;
   }
   OITListsClearBuffer.Resource = nullptr;
-}
-
-void gdr::oit_transparent_pass::CallCompute(ID3D12GraphicsCommandList* currentCommandList)
-{
-  if (!Render->Params.IsTransparent)
-    return;
-
-  // at first get our UAV
-  OurUAVIndex = Render->IndirectSystem->CurrentUAV;
-  Render->IndirectSystem->CurrentUAV = (Render->IndirectSystem->CurrentUAV + 1) % Render->IndirectSystem->TotalUAV;
-
-  currentCommandList->CopyBufferRegion(
-    Render->IndirectSystem->CommandsUAV[OurUAVIndex].Resource,
-    Render->IndirectSystem->CounterOffset,
-    Render->IndirectSystem->CommandsUAVReset.Resource,
-    0,
-    sizeof(UINT));
-
-  Render->GetDevice().TransitResourceState(
-    currentCommandList,
-    Render->IndirectSystem->CommandsUAV[OurUAVIndex].Resource,
-    D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
-
-  currentCommandList->SetPipelineState(ComputePSO);
-
-  ID3D12DescriptorHeap* pDescriptorHeaps = Render->GetDevice().GetDescriptorHeap();
-  currentCommandList->SetDescriptorHeaps(1, &pDescriptorHeaps);
-  currentCommandList->SetComputeRootSignature(ComputeRootSignature);
-
-  // update CPUComputeRootConstants
-  CPUComputeRootConstants.VP = Render->PlayerCamera.GetVP();
-  CPUComputeRootConstants.enableCulling = Render->Params.IsCulling;
-  CPUComputeRootConstants.commandCount = (float)Render->IndirectSystem->CPUData.size();
-
-  // set Root constants buffers etc
-  currentCommandList->SetComputeRoot32BitConstants(
-    (int)root_parameters_compute_indices::compute_params_index, // root parameter index
-    sizeof(ComputeRootConstants) / sizeof(int32_t),
-    &CPUComputeRootConstants,
-    0);
-
-  currentCommandList->SetComputeRootShaderResourceView(
-    (int)root_parameters_compute_indices::transform_pool_index, // root parameter index
-    Render->TransformsSystem->GPUData.Resource->GetGPUVirtualAddress());
-
-  currentCommandList->SetComputeRootShaderResourceView(
-    (int)root_parameters_compute_indices::in_commands_pool_index, // root parameter index
-    Render->IndirectSystem->CommandsSRV.Resource->GetGPUVirtualAddress());
-
-  currentCommandList->SetComputeRootDescriptorTable(
-    (int)root_parameters_compute_indices::out_commands_pool_index, // root parameter index
-    Render->IndirectSystem->CommandsUAVGPUDescriptor[OurUAVIndex]);
-
-  currentCommandList->Dispatch(static_cast<UINT>(ceil(Render->IndirectSystem->CPUData.size() / float(ComputeThreadBlockSize))), 1, 1);
-}
-
-void gdr::oit_transparent_pass::SyncCompute(ID3D12GraphicsCommandList* currentCommandList)
-{
-  if (!Render->Params.IsTransparent)
-    return;
-
-  Render->GetDevice().TransitResourceState(
-    currentCommandList,
-    Render->IndirectSystem->CommandsUAV[OurUAVIndex].Resource,
-    D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_INDIRECT_ARGUMENT);
 }
 
 void gdr::oit_transparent_pass::CallDirectDraw(ID3D12GraphicsCommandList* currentCommandList)
@@ -512,12 +371,6 @@ void gdr::oit_transparent_pass::CallDirectDraw(ID3D12GraphicsCommandList* curren
         OITListsClearBuffer.Resource,
         0,
         CurrentOITListsSize);
-
-      //Render->GetDevice().SetCommandListAsUpload(currentCommandList);
-      //Render->GetDevice().UpdateBuffer(currentCommandList, OITLists.Resource, OITListsClearVector.data(), CurrentOITListsSize);
-      //Render->GetDevice().ClearUploadListReference();
-
-
 
       Render->GetDevice().TransitResourceState(
         currentCommandList,
@@ -690,12 +543,6 @@ void gdr::oit_transparent_pass::CallIndirectDraw(ID3D12GraphicsCommandList* curr
         0,
         CurrentOITListsSize);
 
-      //Render->GetDevice().SetCommandListAsUpload(currentCommandList);
-      //Render->GetDevice().UpdateBuffer(currentCommandList, OITLists.Resource, OITListsClearVector.data(), CurrentOITListsSize);
-      //Render->GetDevice().ClearUploadListReference();
-
-
-
       Render->GetDevice().TransitResourceState(
         currentCommandList,
         OITLists.Resource,
@@ -740,15 +587,10 @@ void gdr::oit_transparent_pass::CallIndirectDraw(ID3D12GraphicsCommandList* curr
   currentCommandList->ExecuteIndirect(
     CommandSignature,
     (UINT)Render->IndirectSystem->CPUData.size(),
-    Render->IndirectSystem->CommandsUAV[OurUAVIndex].Resource,
+    Render->IndirectSystem->CommandsBuffer[(int)indirect_command_enum::TransparentsCulled].Resource,
     0,
-    Render->IndirectSystem->CommandsUAV[OurUAVIndex].Resource,
+    Render->IndirectSystem->CommandsBuffer[(int)indirect_command_enum::TransparentsCulled].Resource,
     Render->IndirectSystem->CounterOffset); // stride to counter
-
-  Render->GetDevice().TransitResourceState(
-    currentCommandList,
-    Render->IndirectSystem->CommandsUAV[OurUAVIndex].Resource,
-    D3D12_RESOURCE_STATE_INDIRECT_ARGUMENT, D3D12_RESOURCE_STATE_COPY_DEST);
 
   Render->GetDevice().TransitResourceState(
       currentCommandList,
@@ -793,10 +635,7 @@ void gdr::oit_transparent_pass::CallIndirectDraw(ID3D12GraphicsCommandList* curr
 
 gdr::oit_transparent_pass::~oit_transparent_pass(void)
 {
-  ComputePSO->Release();
   CommandSignature->Release();
-  ComputeRootSignature->Release();
-  ComputeShader->Release();
 
   Render->GetDevice().ReleaseGPUResource(OITPool);
   if (OITListsClearBuffer.Resource != nullptr)

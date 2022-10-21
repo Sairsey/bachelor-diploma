@@ -20,9 +20,10 @@ namespace gdr
 
   struct render_runtime_params
   {
-    bool IsIndirect = true;     // Enables indirect draw
+    bool IsIndirect = false;     // Enables indirect draw
     bool IsCulling = false;      // Enables culling
     bool IsTransparent = false; // Enables Transparency support
+    bool IsVisibilityLocked = false;
   };
 
   /* Render representation class */

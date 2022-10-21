@@ -26,6 +26,7 @@
 
 
 #include "render/passes/base_pass.h"
+#include "render/passes/visibility_pass.h"
 
 #include "render/passes/albedo_pass.h"
 

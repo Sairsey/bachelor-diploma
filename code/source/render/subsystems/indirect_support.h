@@ -16,19 +16,31 @@ namespace gdr
     byte _pad1[8];
   };
 #pragma pack(pop)
+
+  // Struct which represent all UAVs with commands
+  enum struct indirect_command_enum
+  { 
+    All,                                  // SRV with all commands
+    OpaqueAll,                            // UAV with all Opaque commands
+    OpaqueFrustrumCulled,                 // UAV with culled Opaque commands
+    OpaqueCulled = OpaqueFrustrumCulled,  // UAV with culled Opaque commands
+    TransparentsCulled,                   // UAV with culled Transparents
+    TotalBuffers,
+  }; // Total amount of UAVs
+
   
   // Indirect data representation class
   class indirect_support
   {
   public:
-    enum { TotalUAV = 2 }; // Total amount of UAVs
   private:
     render* Render; // pointer on Render
 
-    D3D12_CPU_DESCRIPTOR_HANDLE CommandsSRVCPUDescriptor;
-    D3D12_CPU_DESCRIPTOR_HANDLE CommandsUAVCPUDescriptor[TotalUAV];
-    D3D12_GPU_DESCRIPTOR_HANDLE CommandsSRVGPUDescriptor;
+    D3D12_CPU_DESCRIPTOR_HANDLE CommandsCPUDescriptor[(int)indirect_command_enum::TotalBuffers];
+
   public:
+    const int index_buffer_index = 1;                 // root parameter for buffer with indices in pools
+
     // Constructor
     indirect_support(render* Rnd);
 
@@ -39,14 +51,14 @@ namespace gdr
     ~indirect_support(void);
 
     std::vector<indirect_command> CPUData;      // data stored in CPU
-    // GPU buffer which contains all commands
-    GPUResource CommandsSRV;
 
-    // GPU buffers which contains filtered commands
-    int CurrentUAV = 0; // current used UAV
-    GPUResource CommandsUAV[TotalUAV];                 // Buffer for filtered commands
-    D3D12_GPU_DESCRIPTOR_HANDLE CommandsUAVGPUDescriptor[TotalUAV]; // GPU Descriptors for 
-    GPUResource CommandsUAVReset;                      // Buffer for reset
-    UINT CounterOffset;                                // Offset to Counter
+    D3D12_COMMAND_SIGNATURE_DESC commandSignatureDesc = {};
+    D3D12_INDIRECT_ARGUMENT_DESC argumentDescs[4] = {};
+
+    // GPU buffer which contains all commands
+    D3D12_GPU_DESCRIPTOR_HANDLE CommandsGPUDescriptor[(int)indirect_command_enum::TotalBuffers]; // GPU Descriptors
+    GPUResource CommandsBuffer[(int)indirect_command_enum::TotalBuffers];  // Buffer for filtered commands
+    GPUResource CommandsUAVReset;                               // Buffer for reset
+    UINT CounterOffset;                                         // Offset to Counter
   };
 }

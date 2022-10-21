@@ -66,19 +66,32 @@ bool CullAABBFrustum(
         float4(maxAABB.x, maxAABB.y, maxAABB.z, 1.0) // X Y Z
     };
 
-    bool inside = false;
+    for (int corner_idx = 0; corner_idx < 8; corner_idx++)
+    {
+        corners[corner_idx] = mul(VP, mul(transform, corners[corner_idx]));
+        corners[corner_idx] /= abs(corners[corner_idx].w);
+    }
+
+    bool LeftPlaneResult = true;
+    bool RightPlaneResult = true;
+    bool TopPlaneResult = true;
+    bool BottomPlaneResult = true;
+    bool FarPlaneResult = true;
+    bool NearPlaneResult = true;
 
     for (int corner_idx = 0; corner_idx < 8; corner_idx++)
     {
-        // Transform vertex
-        float4 corner = mul(VP, mul(transform, corners[corner_idx]));
+        LeftPlaneResult = LeftPlaneResult && corners[corner_idx].x <= -1;
+        RightPlaneResult = RightPlaneResult && corners[corner_idx].x >= 1;
 
-        // Check vertex against clip space bounds
-        inside = inside ||
-            within(-corner.w, corner.x, corner.w) &&
-            within(-corner.w, corner.y, corner.w) &&
-            within(0.0f, corner.z, corner.w);
+        BottomPlaneResult = BottomPlaneResult && corners[corner_idx].y <= -1;
+        TopPlaneResult = TopPlaneResult && corners[corner_idx].y >= 1;
+
+        FarPlaneResult = FarPlaneResult && corners[corner_idx].z >= 1;
+        NearPlaneResult = NearPlaneResult && corners[corner_idx].z <= 0;
     }
+
+    bool inside = !(LeftPlaneResult || RightPlaneResult || TopPlaneResult || BottomPlaneResult || FarPlaneResult || NearPlaneResult);
     return inside;
 }
 
@@ -108,6 +121,7 @@ void CS(uint3 groupId : SV_GroupID, uint groupIndex : SV_GroupIndex)
         else
         {
           opaqueCommands.Append(inputCommands[index]);
+
           if (!globals.enableCulling ||
             CullAABBFrustum(
               globals.VP,

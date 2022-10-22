@@ -168,6 +168,9 @@
     <ClCompile Include="source\render\passes\visibility_pass.cpp">
       <Filter>Source Files\Render\Passes</Filter>
     </ClCompile>
+    <ClCompile Include="source\input\input.cpp">
+      <Filter>Source Files\Input</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\p_header.h">

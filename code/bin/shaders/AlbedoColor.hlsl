@@ -54,6 +54,7 @@ VSOut VS(VSIn input)
     return output;
 }
 
+[earlydepthstencil]
 float4 PS(VSOut input) : SV_TARGET
 {
     ObjectMaterial myMaterial = ObjectMaterialData[indices.ObjectMaterialIndex];

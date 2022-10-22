@@ -23,7 +23,7 @@ void gdr::globals_support::UpdateGPUData(ID3D12GraphicsCommandList* pCommandList
       size_t CBufferGPUSize = Align(sizeof(GlobalData), (size_t)D3D12_CONSTANT_BUFFER_DATA_PLACEMENT_ALIGNMENT);
 
       Render->GetDevice().CreateGPUResource(CD3DX12_RESOURCE_DESC::Buffer({ CBufferGPUSize }),
-        D3D12_RESOURCE_STATE_COPY_DEST,
+        D3D12_RESOURCE_STATE_COMMON,
         nullptr,
         GPUData,
         &CPUData,
@@ -39,7 +39,15 @@ void gdr::globals_support::UpdateGPUData(ID3D12GraphicsCommandList* pCommandList
     }
     else
     {
+      Render->GetDevice().TransitResourceState(
+        pCommandList,
+        GPUData.Resource,
+        D3D12_RESOURCE_STATE_COMMON, D3D12_RESOURCE_STATE_COPY_DEST);
       Render->GetDevice().UpdateBuffer(pCommandList, GPUData.Resource, &CPUData, sizeof(GlobalData));
+      Render->GetDevice().TransitResourceState(
+        pCommandList,
+        GPUData.Resource,
+        D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_COMMON);
     }
 
     StoredCopy = CPUData;

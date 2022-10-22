@@ -15,18 +15,22 @@ using float4 = mth::vec4f;
 struct GlobalData
 {
   float4x4 VP; // camera view-proj
+  
   float3 CameraPos; // Camera position
   float time; // Time in seconds
+  
   float DeltaTime; // Delta time in seconds
   UINT width;  // Screen size 
   UINT height; // Screen size 
   UINT LightsAmount; // Amount of active lights
+  
   int SkyboxCubemapIndex;      // Index of skybox in cubemap pool
   int PrefilteredCubemapIndex; // Index of prefiltered color in cubemap pool
   int IrradienceCubemapIndex;  // Index of skybox in cubemap pool
   int BRDFLUTIndex;            // Index of BRDF Lookup texture in textures pool
-
+  
   float SceneExposure;    // Scene exposure
+  int pad[3];
 };
 
 struct ObjectTransform
@@ -80,8 +84,9 @@ struct ObjectMaterial
 
 struct ObjectIndices
 {
-  UINT ObjectParams;        // MASK with some parameters for object
-  UINT ObjectMaterialIndex; // index of ObjectMaterial
+  UINT ObjectIndex;          // Filled in Compute Shader
+  UINT ObjectParams;         // MASK with some parameters for object
+  UINT ObjectMaterialIndex;  // index of ObjectMaterial
   UINT ObjectTransformIndex; // index of ObjectTransform
 };
 

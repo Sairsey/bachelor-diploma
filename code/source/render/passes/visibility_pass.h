@@ -9,16 +9,25 @@ namespace gdr
   {
   // will draw plane
   private:
+    ID3DBlob* DepthPrepassVertexShader; // Culling only objects in frustum
+    ID3DBlob* DepthPrepassPixelShader; // Culling only objects in frustum
+    ID3D12RootSignature* DepthPrepassRootSignature; // Culling only objects in frustum
+    ID3D12PipelineState* DepthPrepassPSO; // Culling only objects in frustum
+
     ID3DBlob* FrustumCullComputeShader; // Culling only objects in frustum
-    ID3D12RootSignature* FrustumCullRootSignature;
+    ID3D12RootSignature* FrustumCullRootSignature; // Culling only objects in frustum
     ComputeRootConstants CPUComputeRootConstants;
 
     ID3D12PipelineState* FrustumCullPSO;
 
+    // Command signatures
+    ID3D12CommandSignature* CommandSignature;
+
     // 'b' registers
     enum struct buffer_registers
     {
-      compute_root_constants = 0
+      compute_root_constants = 0,
+      index_buffer_register        // buffer which contains indices in every pool  Supported
     };
 
     // 't' registers
@@ -49,6 +58,15 @@ namespace gdr
       opaque_frustum_command_pool_index,
       transparent_culled_command_pool_index,
       total_root_parameters
+    };
+
+    // indices in root_parameters
+    enum struct root_parameters_depth_prepass_indices
+    {
+      globals_buffer_index = 0,           // root parameter for global buffer
+      index_buffer_index,                 // root parameter for buffer with indices in pools
+      transform_pool_index,               // root parameter for buffer with transforms
+      total_root_parameters,
     };
   public:
 

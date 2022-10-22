@@ -105,32 +105,30 @@ void CS(uint3 groupId : SV_GroupID, uint groupIndex : SV_GroupIndex)
     // than commands.
     if (index < globals.commandCount)
     {
-        // if transparent - forget about it
-        if (inputCommands[index].indices.ObjectParams & OBJECT_PARAMETER_TRANSPARENT)
-        {
-          if (!globals.enableCulling ||
-            CullAABBFrustum(
-              globals.VP,
-              ObjectTransformData[inputCommands[index].indices.ObjectTransformIndex].transform,
-              ObjectTransformData[inputCommands[index].indices.ObjectTransformIndex].minAABB,
-              ObjectTransformData[inputCommands[index].indices.ObjectTransformIndex].maxAABB))
-          {
-            transCommands.Append(inputCommands[index]);
-          }
-        }
-        else
-        {
-          opaqueCommands.Append(inputCommands[index]);
+        IndirectCommand command = inputCommands[index];
+        // save index
+        command.indices.ObjectIndex = index;
+        bool visible = !globals.enableCulling ||
+          CullAABBFrustum(
+            globals.VP,
+            ObjectTransformData[command.indices.ObjectTransformIndex].transform,
+            ObjectTransformData[command.indices.ObjectTransformIndex].minAABB,
+            ObjectTransformData[command.indices.ObjectTransformIndex].maxAABB);
+        bool opaque = !(command.indices.ObjectParams & OBJECT_PARAMETER_TRANSPARENT);
 
-          if (!globals.enableCulling ||
-            CullAABBFrustum(
-              globals.VP,
-              ObjectTransformData[inputCommands[index].indices.ObjectTransformIndex].transform,
-              ObjectTransformData[inputCommands[index].indices.ObjectTransformIndex].minAABB,
-              ObjectTransformData[inputCommands[index].indices.ObjectTransformIndex].maxAABB))
-          {
-            opaqueCulledCommands.Append(inputCommands[index]);
-          }
-        }        
+        if (opaque)
+        {
+          opaqueCommands.Append(command);
+        }
+
+        if (opaque && visible)
+        {
+          opaqueCulledCommands.Append(command);
+        }
+
+        if (!opaque && visible)
+        {
+          transCommands.Append(command);
+        }
     }
 }

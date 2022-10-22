@@ -4,6 +4,8 @@ void gdr::visibility_pass::Initialize(void)
 {
   // 1) Load shaders
   Render->GetDevice().CompileShader(_T("bin/shaders/FrustumVisibility.hlsl"), {}, shader_stage::Compute, &FrustumCullComputeShader);
+  Render->GetDevice().CompileShader(_T("bin/shaders/DepthPrepassVisibility.hlsl"), {}, shader_stage::Vertex, &DepthPrepassVertexShader);
+  Render->GetDevice().CompileShader(_T("bin/shaders/DepthPrepassVisibility.hlsl"), {}, shader_stage::Pixel, &DepthPrepassPixelShader);
 
   // 2) Create root signature for frustum compute
   {
@@ -65,9 +67,57 @@ void gdr::visibility_pass::Initialize(void)
     Render->GetDevice().CreateComputePSO(computePsoDesc, &FrustumCullPSO);
   }
 
-  // 4) Fill data for command signature
+  // 4) Create root signature for Depth Prepass
   {
-    // Each command consists of a CBV update and a DrawInstanced call.
+    std::vector<CD3DX12_ROOT_PARAMETER> params;
+
+    params.resize((int)root_parameters_depth_prepass_indices::total_root_parameters);
+
+    params[(int)root_parameters_depth_prepass_indices::globals_buffer_index].InitAsConstantBufferView((int)buffer_registers::compute_root_constants);
+    params[(int)root_parameters_depth_prepass_indices::index_buffer_index].InitAsConstants(sizeof(ObjectIndices) / sizeof(int32_t), (int)buffer_registers::index_buffer_register);
+    params[(int)root_parameters_depth_prepass_indices::transform_pool_index].InitAsShaderResourceView((int)texture_registers::object_transform_pool_register);
+
+    CD3DX12_ROOT_SIGNATURE_DESC rootSignatureDesc;
+    rootSignatureDesc.Init((UINT)params.size(), &params[0], 0U, nullptr, D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
+    Render->GetDevice().CreateRootSignature(rootSignatureDesc, &DepthPrepassRootSignature);
+  }
+
+  // 5) Create Input Layout
+  static const D3D12_INPUT_ELEMENT_DESC inputElementDescs[] =
+  {
+      { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+      { "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+      { "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 24, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+      { "TANGENT", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 32, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+  };
+
+  // 4) Create PSO
+  // Describe and create the graphics pipeline state object (PSO).
+  {
+    D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc = {};
+    psoDesc.InputLayout = { inputElementDescs, 4 };
+    psoDesc.pRootSignature = DepthPrepassRootSignature;
+    psoDesc.VS = CD3DX12_SHADER_BYTECODE(DepthPrepassVertexShader);
+    psoDesc.PS = CD3DX12_SHADER_BYTECODE(DepthPrepassPixelShader);
+    psoDesc.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
+    psoDesc.RasterizerState.CullMode = D3D12_CULL_MODE_NONE;
+    psoDesc.BlendState = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
+    psoDesc.DepthStencilState.DepthEnable = TRUE;
+    psoDesc.DepthStencilState.DepthFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL;
+    psoDesc.DepthStencilState.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ALL;
+    psoDesc.DepthStencilState.StencilEnable = FALSE;
+    psoDesc.SampleMask = UINT_MAX;
+    psoDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
+    psoDesc.NumRenderTargets = 1;
+    psoDesc.RTVFormats[0] = Render->RenderTargets->TargetParams[(int)render_targets_enum::target_frame_indices].Format;
+    psoDesc.DSVFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
+    psoDesc.SampleDesc.Count = 1;
+    Render->GetDevice().CreatePSO(psoDesc, &DepthPrepassPSO);
+  }
+
+  // 6) Create Command signature
+  {
+    Render->GetDevice().GetDXDevice()->CreateCommandSignature(&Render->IndirectSystem->commandSignatureDesc, DepthPrepassRootSignature, IID_PPV_ARGS(&CommandSignature));
   }
 }
 
@@ -82,7 +132,22 @@ void gdr::visibility_pass::CallDirectDraw(ID3D12GraphicsCommandList* currentComm
   // 3) Draw fullscreen rect and fill bool array with correct data
   // 4) Cull with bool array indirect_command_enum::OpaqueFrustrumCulled;
 
-  // For now we can do only first, without any trouble
+  // In case we have Direct render
+  /*
+  if (!Render->Params.IsIndirect)
+  {
+    // Transit resource state of buffers to INDIRECT_ARGUMENT.
+    for (int i = 1; i < (int)indirect_command_enum::TotalBuffers; i++)
+    {
+      // transit state from indirect argument to Unordered ACCESS
+      Render->GetDevice().TransitResourceState(
+        currentCommandList,
+        Render->IndirectSystem->CommandsBuffer[i].Resource,
+        D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_INDIRECT_ARGUMENT);
+    }
+    return;
+  }
+  */
 
   // 1) Frustum Culling
   {
@@ -128,9 +193,55 @@ void gdr::visibility_pass::CallDirectDraw(ID3D12GraphicsCommandList* currentComm
     currentCommandList->Dispatch(static_cast<UINT>(ceil(Render->IndirectSystem->CPUData.size() / float(ComputeThreadBlockSize))), 1, 1);
   }
 
+  Render->GetDevice().TransitResourceState(
+    currentCommandList,
+    Render->IndirectSystem->CommandsBuffer[(int)indirect_command_enum::OpaqueCulled].Resource,
+    D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_INDIRECT_ARGUMENT);
+
+  // 2) Draw all Opaque FrustumCulled on screen (Also Z-prepass)
+  if (0)
+  {
+    // Set correct Render Target
+    Render->RenderTargets->Set(currentCommandList, render_targets_enum::target_frame_indices);
+    // Update Globals
+    Render->GlobalsSystem->CPUData.CameraPos = Render->PlayerCamera.GetPos();
+    Render->GlobalsSystem->CPUData.VP = Render->PlayerCamera.GetVP();
+
+    PROFILE_BEGIN(currentCommandList, "Update globals");
+    Render->GetDevice().SetCommandListAsUpload(currentCommandList);
+    Render->GlobalsSystem->UpdateGPUData(currentCommandList);
+    Render->GetDevice().ClearUploadListReference();
+    PROFILE_END(currentCommandList);
+
+    // set common params
+    currentCommandList->SetPipelineState(DepthPrepassPSO);
+    currentCommandList->SetGraphicsRootSignature(DepthPrepassRootSignature);
+    currentCommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+    currentCommandList->SetGraphicsRootConstantBufferView(
+      (int)root_parameters_depth_prepass_indices::globals_buffer_index,
+      Render->GlobalsSystem->GPUData.Resource->GetGPUVirtualAddress());
+    // root_parameters_draw_indices::index_buffer_index will be set via indirect
+    currentCommandList->SetGraphicsRootShaderResourceView(
+      (int)root_parameters_depth_prepass_indices::transform_pool_index,
+      Render->TransformsSystem->GPUData.Resource->GetGPUVirtualAddress());
+    currentCommandList->ExecuteIndirect(
+      CommandSignature,
+      (UINT)Render->IndirectSystem->CPUData.size(),
+      Render->IndirectSystem->CommandsBuffer[(int)indirect_command_enum::OpaqueCulled].Resource,
+      0,
+      Render->IndirectSystem->CommandsBuffer[(int)indirect_command_enum::OpaqueCulled].Resource,
+      Render->IndirectSystem->CounterOffset); // stride to counter
+
+    // set previous render target
+    Render->RenderTargets->Set(currentCommandList, render_targets_enum::target_frame_hdr);
+  }
+
   // Transit resource state of buffers to INDIRECT_ARGUMENT.
   for (int i = 1; i < (int)indirect_command_enum::TotalBuffers; i++)
   {
+    if (i == (int)indirect_command_enum::OpaqueCulled)
+      continue;
     // transit state from indirect argument to Unordered ACCESS
     Render->GetDevice().TransitResourceState(
       currentCommandList,

@@ -18,8 +18,8 @@ namespace gdr
     int  UploadHeapSizeMb = 1024;
     int  DynamicHeapSizeMb = 16;
     int  ReadbackHeapSizeMb = 1;
-    int  DynamicDescCount = 16384 * 16;
-    int  StaticDescCount = 16384 * 16;
+    int  DynamicDescCount = 16384;
+    int  StaticDescCount = 16384;
     int  RenderTargetViewCount = 256;
     int  QueryCount = 128;
   };

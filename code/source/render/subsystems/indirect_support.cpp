@@ -84,7 +84,7 @@ void gdr::indirect_support::UpdateGPUData(ID3D12GraphicsCommandList* pCommandLis
     {
       Render->GetDevice().CreateGPUResource(
         CD3DX12_RESOURCE_DESC::Buffer({ CPUData.size() * sizeof(indirect_command) }),
-        D3D12_RESOURCE_STATE_COPY_DEST,
+        D3D12_RESOURCE_STATE_COMMON,
         nullptr,
         CommandsBuffer[(int)indirect_command_enum::All],
         &CPUData[0],

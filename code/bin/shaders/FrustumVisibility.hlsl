@@ -114,6 +114,7 @@ bool CullAABBFrustum(
     bool BottomPlaneResult = true;
     bool FarPlaneResult = true;
     bool NearPlaneResult = true;
+    bool IsIntersectNear = false;
 
     for (int corner_idx = 0; corner_idx < 8; corner_idx++)
     {

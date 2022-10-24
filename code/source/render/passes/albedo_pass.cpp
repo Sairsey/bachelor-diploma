@@ -92,12 +92,67 @@ void gdr::albedo_pass::Initialize(void)
   }
 }
 
+bool CullAABBFrustum(
+  float4x4 VP,
+  float4x4 transform,
+  float3 minAABB,
+  float3 maxAABB)
+{
+  // Use our min max to define eight corners
+  float3 corners[8] = {
+      float3(minAABB.X, minAABB.Y, minAABB.Z), // x y z
+      float3(maxAABB.X, minAABB.Y, minAABB.Z), // X y z
+      float3(minAABB.X, maxAABB.Y, minAABB.Z), // x Y z
+      float3(maxAABB.X, maxAABB.Y, minAABB.Z), // X Y z
+
+      float3(minAABB.X, minAABB.Y, maxAABB.Z), // x y Z
+      float3(maxAABB.X, minAABB.Y, maxAABB.Z), // X y Z
+      float3(minAABB.X, maxAABB.Y, maxAABB.Z), // x Y Z
+      float3(maxAABB.X, maxAABB.Y, maxAABB.Z) // X Y Z
+  };
+
+  float4x4 matr = (transform * VP).Transposed();
+  for (int corner_idx = 0; corner_idx < 8; corner_idx++)
+  {
+    if (corners[corner_idx].X * matr[3][0] + corners[corner_idx].Y * matr[3][1] + corners[corner_idx].Z * matr[3][2] + matr[3][3] > 0)
+      corners[corner_idx] = corners[corner_idx] * matr;
+    else
+      corners[corner_idx] = corners[corner_idx] * matr * -1 ;
+  }
+
+  bool LeftPlaneResult = true;
+  bool RightPlaneResult = true;
+  bool TopPlaneResult = true;
+  bool BottomPlaneResult = true;
+  bool FarPlaneResult = true;
+  bool NearPlaneResult = true;
+
+  for (int corner_idx = 0; corner_idx < 8; corner_idx++)
+  {
+    LeftPlaneResult = LeftPlaneResult && (corners[corner_idx].X < -1);
+    RightPlaneResult = RightPlaneResult && (corners[corner_idx].X > 1);
+
+    BottomPlaneResult = BottomPlaneResult && (corners[corner_idx].Y <= -1);
+    TopPlaneResult = TopPlaneResult && (corners[corner_idx].Y >= 1);
+
+    FarPlaneResult = FarPlaneResult && (corners[corner_idx].Z >= 1);
+    NearPlaneResult = NearPlaneResult && (corners[corner_idx].Z <= 0);
+  }
+
+  bool inside = !(LeftPlaneResult || RightPlaneResult || TopPlaneResult || BottomPlaneResult || FarPlaneResult || NearPlaneResult);
+  return inside;
+}
+
 void gdr::albedo_pass::CallDirectDraw(ID3D12GraphicsCommandList* currentCommandList)
 {
+  static mth::matr4f VP = mth::matr::Identity();
   Render->RenderTargets->Set(currentCommandList, render_targets_enum::target_frame_hdr);
   // Update Globals
   Render->GlobalsSystem->CPUData.CameraPos = Render->PlayerCamera.GetPos();
   Render->GlobalsSystem->CPUData.VP = Render->PlayerCamera.GetVP();
+
+  if (!Render->Params.IsVisibilityLocked)
+    VP = Render->GlobalsSystem->CPUData.VP;
 
   PROFILE_BEGIN(currentCommandList, "Update globals");
   Render->GetDevice().SetCommandListAsUpload(currentCommandList);
@@ -115,7 +170,13 @@ void gdr::albedo_pass::CallDirectDraw(ID3D12GraphicsCommandList* currentCommandL
   // composite all transparents
   for (gdr::gdr_index i = 0; i < Render->ObjectSystem->CPUPool.size(); i++)
   {
-    if ((Render->ObjectSystem->CPUPool[i].ObjectParams & OBJECT_PARAMETER_TRANSPARENT) == 0)
+    int transformIndex = Render->ObjectSystem->CPUPool[i].ObjectTransformIndex;
+    bool visible = !Render->Params.IsCulling || CullAABBFrustum(
+      VP,
+      Render->TransformsSystem->CPUData[transformIndex].transform,
+      Render->TransformsSystem->CPUData[transformIndex].minAABB,
+      Render->TransformsSystem->CPUData[transformIndex].maxAABB);
+    if ((Render->ObjectSystem->CPUPool[i].ObjectParams & OBJECT_PARAMETER_TRANSPARENT) == 0 && visible)
     {
       objects_to_draw.push_back(i);
     }
@@ -202,13 +263,6 @@ void gdr::albedo_pass::CallIndirectDraw(ID3D12GraphicsCommandList* currentComman
       0,
       Render->IndirectSystem->CommandsBuffer[(int)indirect_command_enum::OpaqueCulled].Resource,
       Render->IndirectSystem->CounterOffset); // stride to counter
-
-      /*
-  Render->GetDevice().TransitResourceState(
-    currentCommandList,
-    Render->IndirectSystem->CommandsUAV[OurUAVIndex].Resource,
-    D3D12_RESOURCE_STATE_INDIRECT_ARGUMENT, D3D12_RESOURCE_STATE_COPY_DEST);
-    */
 }
 
 gdr::albedo_pass::~albedo_pass(void)

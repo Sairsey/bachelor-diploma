@@ -9,12 +9,12 @@ gdr::render::render() : IsInited(false), PlayerCamera(mth::vec3f(0, 0, 1), mth::
 bool gdr::render::CreateDepthStencil(void)
 {
   D3D12_CLEAR_VALUE depthOptimizedClearValue = {};
-  depthOptimizedClearValue.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+  depthOptimizedClearValue.Format = DXGI_FORMAT_D32_FLOAT;
   depthOptimizedClearValue.DepthStencil.Depth = 1.0f;
   depthOptimizedClearValue.DepthStencil.Stencil = 0;
 
   bool res = Device.CreateGPUResource(
-    CD3DX12_RESOURCE_DESC::Tex2D(DXGI_FORMAT_D24_UNORM_S8_UINT, Engine->Width, Engine->Height, 1, 0, 1, 0, D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL),
+    CD3DX12_RESOURCE_DESC::Tex2D(DXGI_FORMAT_D32_FLOAT, Engine->Width, Engine->Height, 1, 0, 1, 0, D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL),
     D3D12_RESOURCE_STATE_DEPTH_WRITE,
     &depthOptimizedClearValue,
     DepthBuffer
@@ -23,7 +23,7 @@ bool gdr::render::CreateDepthStencil(void)
   if (res)
   {
     D3D12_DEPTH_STENCIL_VIEW_DESC dsvView = {};
-    dsvView.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+    dsvView.Format = DXGI_FORMAT_D32_FLOAT;
     dsvView.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
     dsvView.Flags = D3D12_DSV_FLAG_NONE;
 
@@ -77,6 +77,7 @@ bool gdr::render::Init(engine* Eng)
     CubeTexturesSystem= new gdr::cube_textures_support(this);
     LightsSystem = new gdr::light_sources_support(this);
     RenderTargets = new gdr::render_targets_support(this);
+    HierDepth = new gdr::hier_depth_support(this);
   }
 
   // init passes
@@ -87,6 +88,7 @@ bool gdr::render::Init(engine* Eng)
     Passes.push_back(new albedo_pass());
     Passes.push_back(new skybox_pass());
     Passes.push_back(new oit_transparent_pass());
+    Passes.push_back(new hier_depth_pass());
     Passes.push_back(new tonemap_pass());
     //Passes.push_back(new hdr_copy_pass());
     Passes.push_back(new imgui_pass());
@@ -261,6 +263,7 @@ void gdr::render::Term(void)
   if (!IsInited)
     return;
 
+  delete HierDepth;
   delete RenderTargets;
   delete LightsSystem;
   delete TexturesSystem;

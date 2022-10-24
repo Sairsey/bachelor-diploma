@@ -171,6 +171,12 @@
     <ClCompile Include="source\input\input.cpp">
       <Filter>Source Files\Input</Filter>
     </ClCompile>
+    <ClCompile Include="source\render\subsystems\hier_depth_support.cpp">
+      <Filter>Source Files\Render\SubSystems</Filter>
+    </ClCompile>
+    <ClCompile Include="source\render\passes\hier_depth_pass.cpp">
+      <Filter>Source Files\Render\Passes</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\p_header.h">
@@ -327,6 +333,12 @@
       <Filter>Source Files\Units</Filter>
     </ClInclude>
     <ClInclude Include="source\render\passes\visibility_pass.h">
+      <Filter>Source Files\Render\Passes</Filter>
+    </ClInclude>
+    <ClInclude Include="source\render\subsystems\hier_depth_support.h">
+      <Filter>Source Files\Render\SubSystems</Filter>
+    </ClInclude>
+    <ClInclude Include="source\render\passes\hier_depth_pass.h">
       <Filter>Source Files\Render\Passes</Filter>
     </ClInclude>
   </ItemGroup>

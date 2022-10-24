@@ -133,7 +133,7 @@ void gdr::tonemap_pass::Initialize(void)
     psoDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
     psoDesc.NumRenderTargets = 1;
     psoDesc.RTVFormats[0] = Render->RenderTargets->TargetParams[(int)render_targets_enum::target_frame_lum_final].Format;
-    psoDesc.DSVFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
+    psoDesc.DSVFormat = Render->DepthBuffer.Resource->GetDesc().Format;
     psoDesc.SampleDesc.Count = 1;
 
     Render->GetDevice().CreatePSO(psoDesc, &FirstPSO);
@@ -157,7 +157,7 @@ void gdr::tonemap_pass::Initialize(void)
     psoDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
     psoDesc.NumRenderTargets = 1;
     psoDesc.RTVFormats[0] = Render->RenderTargets->TargetParams[(int)render_targets_enum::target_frame_lum_final].Format;
-    psoDesc.DSVFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
+    psoDesc.DSVFormat = Render->DepthBuffer.Resource->GetDesc().Format;
     psoDesc.SampleDesc.Count = 1;
 
     Render->GetDevice().CreatePSO(psoDesc, &CopyPSO);
@@ -190,7 +190,7 @@ void gdr::tonemap_pass::Initialize(void)
     psoDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
     psoDesc.NumRenderTargets = 1;
     psoDesc.RTVFormats[0] = Render->RenderTargets->TargetParams[(int)render_targets_enum::target_display].Format;
-    psoDesc.DSVFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
+    psoDesc.DSVFormat = Render->DepthBuffer.Resource->GetDesc().Format;
     psoDesc.SampleDesc.Count = 1;
 
     Render->GetDevice().CreatePSO(psoDesc, &TonemapPSO);

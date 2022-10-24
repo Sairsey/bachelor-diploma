@@ -36,6 +36,10 @@ void gdr::globals_support::UpdateGPUData(ID3D12GraphicsCommandList* pCommandList
       cbvDesc.BufferLocation = GPUData.Resource->GetGPUVirtualAddress();
       cbvDesc.SizeInBytes = (UINT)CBufferGPUSize;
       Render->GetDevice().GetDXDevice()->CreateConstantBufferView(&cbvDesc, CPUDescriptor);
+      Render->GetDevice().TransitResourceState(
+        pCommandList,
+        GPUData.Resource,
+        D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_COMMON);
     }
     else
     {

@@ -22,13 +22,13 @@
 #include "render/subsystems/texture_support.h"
 #include "render/subsystems/cube_texture_support.h"
 #include "render/subsystems/render_target_support.h"
-
-
+#include "render/subsystems/hier_depth_support.h"
 
 #include "render/passes/base_pass.h"
 #include "render/passes/visibility_pass.h"
 
 #include "render/passes/albedo_pass.h"
+#include "render/passes/hier_depth_pass.h"
 
 #include "render/passes/order_transparent_pass.h"
 #include "render/passes/oit_transparent_pass.h"

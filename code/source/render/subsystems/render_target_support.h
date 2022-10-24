@@ -37,8 +37,6 @@ namespace gdr
     D3D12_CPU_DESCRIPTOR_HANDLE RenderTargetViews[(long)render_targets_enum::target_count];
     D3D12_CPU_DESCRIPTOR_HANDLE ShaderResourceViewsCPU[(long)render_targets_enum::target_count];
 
-    D3D12_CPU_DESCRIPTOR_HANDLE DepthStencilView;
-
     render_targets_enum CurrentRT = render_targets_enum::target_none;
 
     // function to create all textures allocated for render targets
@@ -46,6 +44,8 @@ namespace gdr
     // function to delete all textures allocated for render targets
     void DeleteTextures();
   public:
+
+    D3D12_CPU_DESCRIPTOR_HANDLE DepthStencilView;
 
     // Formats for each render target view
     render_target_params TargetParams[(long)render_targets_enum::target_count] = {

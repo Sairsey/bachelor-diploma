@@ -17,6 +17,7 @@ namespace gdr
   class cube_textures_support;
   class light_sources_support;
   class render_targets_support;
+  class hier_depth_support;
 
   struct render_runtime_params
   {
@@ -43,7 +44,6 @@ namespace gdr
       std::vector<base_pass *> Passes;
 
       // Depth-Stencil buffer support
-      GPUResource DepthBuffer;
       ID3D12DescriptorHeap* DSVHeap;
     public:
       /* Default Contructor */
@@ -92,6 +92,8 @@ namespace gdr
       render_runtime_params Params;
       // Current player camera
       mth::cam3<float> PlayerCamera;
+      // Depth buffer resource
+      GPUResource DepthBuffer;
       // Subsystems
       globals_support *GlobalsSystem; // Store camera info and other important stuff
       indirect_support* IndirectSystem; // support of SRVs and UAVs for indirect draw
@@ -103,6 +105,7 @@ namespace gdr
       cube_textures_support* CubeTexturesSystem; // System to store info about cube textures
       light_sources_support* LightsSystem; //System to store info about lights
       render_targets_support* RenderTargets; //System to store info about lights
+      hier_depth_support* HierDepth; //System to store and generate Hierarhical Depth Texture
 
       long long UpdateBuffersTime;
       long long DrawFrameTime;

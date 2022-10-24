@@ -37,6 +37,9 @@ StructuredBuffer<IndirectCommand> inputCommands                 : register(t0); 
 AppendStructuredBuffer<IndirectCommand> opaqueCommands          : register(u0);    // UAV: Processed indirect commands
 AppendStructuredBuffer<IndirectCommand> opaqueCulledCommands    : register(u1);    // UAV: Processed indirect commands
 AppendStructuredBuffer<IndirectCommand> transCommands           : register(u3);    // UAV: Processed indirect commands
+Texture2D HierDepth : register(t3);    // SRV: Data with transforms which stored per object
+SamplerState SamplePoint: register(s0);
+
 cbuffer RootConstants : register (b0)                                        // RootConstant : General data
 {
   ComputeRootConstants globals;
@@ -45,6 +48,39 @@ cbuffer RootConstants : register (b0)                                        // 
 bool within(float a, float t, float b)
 {
     return (t >= a && t <= b);
+}
+
+bool CullOcclusion(float4 screenSpaceCorners[8])
+{
+  float4 corner = screenSpaceCorners[0] / screenSpaceCorners[0].w;
+  float depth = corner.z;
+  float2 minCSBB = corner.xy;
+  float2 maxCSBB = minCSBB;
+  for (int i = 0; i < 8; i++)
+  {
+    corner = screenSpaceCorners[i] / screenSpaceCorners[i].w;
+    depth = min(corner.z, depth);
+    minCSBB.x = min(minCSBB.x, corner.x);
+    minCSBB.y = min(minCSBB.y, corner.y);
+    maxCSBB.x = max(maxCSBB.x, corner.x);
+    maxCSBB.y = max(maxCSBB.y, corner.y);
+  }
+
+  uint width, height, mipCount;
+  HierDepth.GetDimensions(0, width, height, mipCount);
+
+  float2 minSSBB = minCSBB * float2(0.5, -0.5) + (0.5).xx;
+  float2 maxSSBB = maxCSBB * float2(0.5, -0.5) + (0.5).xx;
+  float2 WH = (maxSSBB - minSSBB) * float2(width, height);
+  float param = min(ceil(log2(max(WH.x, WH.y) / 2.0)), mipCount - 1);
+  
+  float HierDepth1 = HierDepth.SampleLevel(SamplePoint, float2(minSSBB.x, minSSBB.y), param);
+  float HierDepth2 = HierDepth.SampleLevel(SamplePoint, float2(maxSSBB.x, minSSBB.y), param);
+  float HierDepth3 = HierDepth.SampleLevel(SamplePoint, float2(minSSBB.x, maxSSBB.y), param);
+  float HierDepth4 = HierDepth.SampleLevel(SamplePoint, float2(maxSSBB.x, maxSSBB.y), param);
+  
+  float HierDepthColor = max(max(HierDepth1, HierDepth2), max(HierDepth3, HierDepth4));
+  return HierDepthColor - depth >= 0;
 }
 
 bool CullAABBFrustum(
@@ -89,9 +125,11 @@ bool CullAABBFrustum(
 
         FarPlaneResult = FarPlaneResult && corners[corner_idx].z >= 1;
         NearPlaneResult = NearPlaneResult && corners[corner_idx].z <= 0;
+        IsIntersectNear = IsIntersectNear || corners[corner_idx].z <= 0;
     }
 
     bool inside = !(LeftPlaneResult || RightPlaneResult || TopPlaneResult || BottomPlaneResult || FarPlaneResult || NearPlaneResult);
+    inside = inside && (IsIntersectNear || CullOcclusion(corners));
     return inside;
 }
 

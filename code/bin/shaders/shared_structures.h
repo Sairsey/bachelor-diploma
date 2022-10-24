@@ -98,6 +98,8 @@ struct ComputeRootConstants
   float4x4 VP;
   UINT enableCulling;
   UINT commandCount;
+  UINT width;  // Screen size 
+  UINT height; // Screen size 
 };
 
 struct OITList

@@ -5,6 +5,8 @@ gdr::hier_depth_support::hier_depth_support(render* Rnd)
   Render = Rnd;
   Texture.Resource = nullptr;
 
+  Render->GetDevice().AllocateStaticDescriptors(1, TextureCPUDescriptorHandle, TextureGPUDescriptorHandle);
+
   for (int i = 0; i < MAX_AMOUNT_OF_MIPS; i++)
   {
     Render->GetDevice().AllocateStaticDescriptors(1, CPUDescriptorHandles[2 * i], GPUDescriptorHandles[2 * i]);
@@ -56,7 +58,7 @@ gdr::hier_depth_support::hier_depth_support(render* Rnd)
 static int CalculateMipMapsAmount(int W, int H)
 {
   int res = 0;
-  for (res = 0; W > 1 && H > 1; res++)
+  for (res = 0; W >= 1 && H >= 1; res++)
   {
     W /= 2;
     H /= 2;
@@ -88,6 +90,16 @@ void gdr::hier_depth_support::Generate(ID3D12GraphicsCommandList* pCommandList)
       Texture
     );
     Texture.Resource->SetName(L"Hierachical Depth texture");
+
+    D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
+    srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+    srvDesc.Format = Texture.Resource->GetDesc().Format;
+    srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+    srvDesc.Texture2D.MipLevels = MipsAmount;
+    srvDesc.Texture2D.MostDetailedMip = 0;
+
+    Render->GetDevice().GetDXDevice()->CreateShaderResourceView(Texture.Resource, &srvDesc, TextureCPUDescriptorHandle);
+
     Render->GetDevice().TransitResourceState(
       pCommandList,
       Texture.Resource,
@@ -139,17 +151,17 @@ void gdr::hier_depth_support::Generate(ID3D12GraphicsCommandList* pCommandList)
   pCommandList->SetComputeRootSignature(RootSignature);
 
   struct {
-    float TexX;
-    float TexY;
+    int PrevW;
+    int PrevH;
     int W;
     int H;
   } data;
 
-  data.W = Render->DepthBuffer.Resource->GetDesc().Width / 2;
-  data.H = Render->DepthBuffer.Resource->GetDesc().Height / 2;
+  data.PrevW = Render->DepthBuffer.Resource->GetDesc().Width;
+  data.PrevH = Render->DepthBuffer.Resource->GetDesc().Height;
 
-  data.TexX = 1.0 / data.W;
-  data.TexY = 1.0 / data.H;
+  data.W = data.PrevW / 2;
+  data.H = data.PrevH / 2;
 
   // Calculate Mips
   for (int i = 1; i < MipsAmount; i++)
@@ -184,11 +196,11 @@ void gdr::hier_depth_support::Generate(ID3D12GraphicsCommandList* pCommandList)
 
     pCommandList->Dispatch(max(ceil(data.W / 32.0), 1u), max(ceil(data.H / 32.0), 1u), 1);
 
-    data.W /= 2;
-    data.H /= 2;
+    data.PrevW = data.W;
+    data.PrevH = data.H;
 
-    data.TexX = 1.0 / data.W;
-    data.TexY = 1.0 / data.H;
+    data.W = data.PrevW / 2;
+    data.H = data.PrevH / 2;
 
     CD3DX12_RESOURCE_BARRIER bar = CD3DX12_RESOURCE_BARRIER::UAV(Texture.Resource);
     pCommandList->ResourceBarrier(1, &bar);

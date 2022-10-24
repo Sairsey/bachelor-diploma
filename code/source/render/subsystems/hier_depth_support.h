@@ -55,6 +55,8 @@ namespace gdr
 
     // Hierarchical Depth Texture
     GPUResource Texture;
+    D3D12_CPU_DESCRIPTOR_HANDLE TextureCPUDescriptorHandle;
+    D3D12_GPU_DESCRIPTOR_HANDLE TextureGPUDescriptorHandle;
 
     // Destructor 
     ~hier_depth_support(void);

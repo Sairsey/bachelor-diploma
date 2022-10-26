@@ -17,11 +17,11 @@ namespace mth
   template<class Type>
     inline vec3<Type> operator*( const vec3<Type> &Vec, const matr4<Type> &Matr )
     {
-      Type w = Vec.X * Matr[3][0] + Vec.Y * Matr[3][1] + Vec.Z * Matr[3][2] + Matr[3][3];
+      Type w = Vec.X * Matr[0][3] + Vec.Y * Matr[1][3] + Vec.Z * Matr[2][3] + Matr[3][3];
 
-      return vec3<Type>(Vec.X * Matr[0][0] + Vec.Y * Matr[0][1] + Vec.Z * Matr[0][2] + Matr[0][3],
-                        Vec.X * Matr[1][0] + Vec.Y * Matr[1][1] + Vec.Z * Matr[1][2] + Matr[1][3],
-                        Vec.X * Matr[2][0] + Vec.Y * Matr[2][1] + Vec.Z * Matr[2][2] + Matr[2][3]) / w;
+      return vec3<Type>(Vec.X * Matr[0][0] + Vec.Y * Matr[1][0] + Vec.Z * Matr[2][0] + Matr[3][0],
+                        Vec.X * Matr[0][1] + Vec.Y * Matr[1][1] + Vec.Z * Matr[2][1] + Matr[3][1],
+                        Vec.X * Matr[0][2] + Vec.Y * Matr[1][2] + Vec.Z * Matr[2][2] + Matr[3][2]) / w;
     } /* End of 'operator*' funciton */
 
   /* Multiplication 3 components vector by 4x4 matrix
@@ -37,11 +37,11 @@ namespace mth
   template<class Type>
     inline vec3<Type> operator*( const matr4<Type> &Matr, const vec3<Type> &Vec )
     {
-      Type w = Vec.X * Matr[3][0] + Vec.Y * Matr[3][1] + Vec.Z * Matr[3][2] + Matr[3][3];
+      Type w = Vec.X * Matr[0][3] + Vec.Y * Matr[1][3] + Vec.Z * Matr[2][3] + Matr[3][3];
 
-      return vec3<Type>(Vec.X * Matr[0][0] + Vec.Y * Matr[0][1] + Vec.Z * Matr[0][2] + Matr[0][3],
-                        Vec.X * Matr[1][0] + Vec.Y * Matr[1][1] + Vec.Z * Matr[1][2] + Matr[1][3],
-                        Vec.X * Matr[2][0] + Vec.Y * Matr[2][1] + Vec.Z * Matr[2][2] + Matr[2][3]) / w;
+      return vec3<Type>(Vec.X * Matr[0][0] + Vec.Y * Matr[1][0] + Vec.Z * Matr[2][0] + Matr[3][0],
+                        Vec.X * Matr[0][1] + Vec.Y * Matr[1][1] + Vec.Z * Matr[2][1] + Matr[3][1],
+                        Vec.X * Matr[0][2] + Vec.Y * Matr[1][2] + Vec.Z * Matr[2][2] + Matr[3][2]) / w;
     } /* End of 'operator*' funciton */
 
   /* Multiplication 3 components vector by 4x4 matrix

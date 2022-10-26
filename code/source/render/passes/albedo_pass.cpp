@@ -111,13 +111,13 @@ bool CullAABBFrustum(
       float3(maxAABB.X, maxAABB.Y, maxAABB.Z) // X Y Z
   };
 
-  float4x4 matr = (transform * VP).Transposed();
+  float4x4 matr = transform * VP;
   for (int corner_idx = 0; corner_idx < 8; corner_idx++)
   {
-    if (corners[corner_idx].X * matr[3][0] + corners[corner_idx].Y * matr[3][1] + corners[corner_idx].Z * matr[3][2] + matr[3][3] > 0)
+    if (corners[corner_idx].X * matr[0][3] + corners[corner_idx].Y * matr[1][3] + corners[corner_idx].Z * matr[2][3] + matr[3][3] > 0)
       corners[corner_idx] = corners[corner_idx] * matr;
     else
-      corners[corner_idx] = corners[corner_idx] * matr * -1 ;
+      corners[corner_idx] = corners[corner_idx] * matr * -1;
   }
 
   bool LeftPlaneResult = true;

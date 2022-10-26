@@ -18,10 +18,10 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
   // Units
   Engine.AddUnit(new gdr::unit_base());
   Engine.AddUnit(new unit_control());
-  //Engine.AddUnit(new unit_bathroom());
-  Engine.AddUnit(new unit_frog()); 
+  Engine.AddUnit(new unit_bathroom());
+  //Engine.AddUnit(new unit_frog()); 
   //Engine.AddUnit(new unit_bread());
-  Engine.AddUnit(new unit_pbr_spheres());
+  //Engine.AddUnit(new unit_pbr_spheres());
   //Engine.AddUnit(new unit_city());
 
   Engine.AddUnit(new unit_stats());
@@ -30,6 +30,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
   mth::vec3f V1(1, 0, 0);
   mth::vec3f V2(0, 1, 0);
   auto res = V1 cross V2;
+  auto res2 = V1 * mth::matr4f::Translate(1);
   assert(res == mth::vec3f(0, 0, 1));
 
   return (int)Engine.Run();

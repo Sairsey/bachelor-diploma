@@ -48,11 +48,11 @@ void unit_control::Response(void)
   {
     if (Engine->Mdx != 0)
     {
-        Engine->PlayerCamera.RotateAroundLocY(-Engine->Mdx * 0.1);
+        Engine->PlayerCamera.RotateAroundLocY(Engine->Mdx * 0.1);
     }
     if (Engine->Mdy != 0)
     {
-        Engine->PlayerCamera.RotateAroundLocRight(-Engine->Mdy * 0.1);
+        Engine->PlayerCamera.RotateAroundLocRight(Engine->Mdy * 0.1);
     }
   }
 

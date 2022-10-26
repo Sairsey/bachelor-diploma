@@ -71,8 +71,15 @@ bool CullOcclusion(float4 screenSpaceCorners[8])
 
   float2 minSSBB = minCSBB * float2(0.5, -0.5) + (0.5).xx;
   float2 maxSSBB = maxCSBB * float2(0.5, -0.5) + (0.5).xx;
+
+  // clamp values so they are
+  maxSSBB = max(maxSSBB, (0).xx);
+  minSSBB = max(minSSBB, (0).xx);
+  maxSSBB = min(maxSSBB, (1).xx);
+  minSSBB = min(minSSBB, (1).xx);
+
   float2 WH = (maxSSBB - minSSBB) * float2(width, height);
-  float param = min(ceil(log2(max(WH.x, WH.y) / 2.0)), mipCount - 1);
+  float param = min(ceil(log2(max(WH.x, WH.y))), mipCount - 1);
   
   float HierDepth1 = HierDepth.SampleLevel(SamplePoint, float2(minSSBB.x, minSSBB.y), param);
   float HierDepth2 = HierDepth.SampleLevel(SamplePoint, float2(maxSSBB.x, minSSBB.y), param);

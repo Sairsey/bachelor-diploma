@@ -5,11 +5,11 @@
 void unit_bathroom::Initialize(void)
 {
   ID3D12GraphicsCommandList* commandList;
-  Engine->GetDevice().BeginUploadCommandList(&commandList);
-  PROFILE_BEGIN(commandList, "unit_bathroom Init");
+  //Engine->GetDevice().BeginUploadCommandList(&commandList);
+  //PROFILE_BEGIN(commandList, "unit_bathroom Init");
   Bathroom = Engine->ObjectSystem->CreateObjectFromFile("bin/models/bathroom/bathroom.glb");
-  PROFILE_END(commandList);
-  Engine->GetDevice().CloseUploadCommandList();
+  //PROFILE_END(commandList);
+  //Engine->GetDevice().CloseUploadCommandList();
 }
 
 void unit_bathroom::Response(void)

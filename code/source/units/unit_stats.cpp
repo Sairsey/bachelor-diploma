@@ -23,13 +23,13 @@ void unit_stats::Initialize(void)
 
   // load all objects for lights
   ID3D12GraphicsCommandList* commandList;
-  Engine->GetDevice().BeginUploadCommandList(&commandList);
-  PROFILE_BEGIN(commandList, "unit_stats lights Init");
+  //Engine->GetDevice().BeginUploadCommandList(&commandList);
+  //PROFILE_BEGIN(commandList, "unit_stats lights Init");
   PointLightObject = Engine->ObjectSystem->CreateObjectFromFile("bin/models/light_meshes/sphere.obj");
   DirLightObject = Engine->ObjectSystem->CreateObjectFromFile("bin/models/light_meshes/dir.obj");
   SpotLightObject = Engine->ObjectSystem->CreateObjectFromFile("bin/models/light_meshes/cone.obj");
-  PROFILE_END(commandList);
-  Engine->GetDevice().CloseUploadCommandList();
+  //PROFILE_END(commandList);
+  //Engine->GetDevice().CloseUploadCommandList();
 }
 
 void unit_stats::Response(void)

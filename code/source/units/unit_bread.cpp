@@ -14,8 +14,8 @@ void unit_bread::Initialize(void)
     // thi is huge data copy, so clear ring buffer every step
     Engine->GetDevice().WaitAllUploadLists();
 
-    Engine->GetDevice().BeginUploadCommandList(&commandList);
-    PROFILE_BEGIN(commandList, "unit_bread Init");
+    //Engine->GetDevice().BeginUploadCommandList(&commandList);
+    //PROFILE_BEGIN(commandList, "unit_bread Init");
     for (int i = 0; i < 1000; i++)
     {
       Bread.push_back(Engine->ObjectSystem->CreateObjectFromFile("bin/models/bread/bread.obj"));
@@ -26,8 +26,8 @@ void unit_bread::Initialize(void)
       double radius = alpha * 2;
       Translations.push_back(mth::matr::Translate(mth::vec3f(float(sin(alpha) * radius), 0, float(cos(alpha) * radius))));
     }
-    PROFILE_END(commandList);
-    Engine->GetDevice().CloseUploadCommandList();
+    //PROFILE_END(commandList);
+    //Engine->GetDevice().CloseUploadCommandList();
   }
 }
 

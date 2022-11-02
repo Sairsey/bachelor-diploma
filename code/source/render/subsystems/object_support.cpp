@@ -180,7 +180,15 @@ gdr::gdr_index gdr::object_support::LoadAssimpTree(const aiScene* scene, aiNode*
   // for all meshes
   for (unsigned int i = 0; i < node->mNumMeshes; i++)
   {
+    ID3D12GraphicsCommandList* commandList;
+    Render->GetDevice().BeginUploadCommandList(&commandList);
+    PROFILE_BEGIN(commandList, scene->mMeshes[node->mMeshes[i]]->mName.C_Str());
+    
     gdr_index res = LoadAssimpTreeMesh(scene, scene->mMeshes[node->mMeshes[i]], Node.Index);
+    
+    PROFILE_END(commandList);
+    Render->GetDevice().CloseUploadCommandList();
+    Render->GetDevice().WaitAllUploadLists();
     if (res != -1)
       NodesPool[Node.Index].Childs.push_back(res);
   }

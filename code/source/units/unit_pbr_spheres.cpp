@@ -14,8 +14,8 @@ void unit_pbr_spheres::Initialize(void)
     // thi is huge data copy, so clear ring buffer every step
     Engine->GetDevice().WaitAllUploadLists();
 
-    Engine->GetDevice().BeginUploadCommandList(&commandList);
-    PROFILE_BEGIN(commandList, "unit_pbr_spheres Init");
+    //Engine->GetDevice().BeginUploadCommandList(&commandList);
+    //PROFILE_BEGIN(commandList, "unit_pbr_spheres Init");
     for (int i = 0; i < 1000; i++)
     {
       Spheres.push_back(Engine->ObjectSystem->CreateObjectFromFile("bin/models/pbr_sphere/pbr_sphere.glb"));
@@ -26,8 +26,8 @@ void unit_pbr_spheres::Initialize(void)
       double radius = alpha * 2;
       Engine->ObjectSystem->NodesPool[Spheres[k]].GetTransformEditable() = mth::matr::Translate(mth::vec3f(float(sin(alpha) * radius), 0, float(cos(alpha) * radius)));
     }
-    PROFILE_END(commandList);
-    Engine->GetDevice().CloseUploadCommandList();
+    //PROFILE_END(commandList);
+    //Engine->GetDevice().CloseUploadCommandList();
   }
 }
 

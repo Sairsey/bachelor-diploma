@@ -5,11 +5,11 @@
 void unit_frog::Initialize(void)
 {
   ID3D12GraphicsCommandList* commandList;
-    Engine->GetDevice().BeginUploadCommandList(&commandList);
+    //Engine->GetDevice().BeginUploadCommandList(&commandList);
     PROFILE_BEGIN(commandList, "unit_frog Init");
     Frog = Engine->ObjectSystem->CreateObjectFromFile("bin/models/crazy_frog/crazy_frog.obj");
     PROFILE_END(commandList);
-    Engine->GetDevice().CloseUploadCommandList();
+    //Engine->GetDevice().CloseUploadCommandList();
 }
 
 void unit_frog::Response(void)

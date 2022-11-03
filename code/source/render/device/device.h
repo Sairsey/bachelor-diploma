@@ -15,10 +15,10 @@ namespace gdr
     int  CmdListCount = 2;
     int  UploadListCount = 2;
     HWND hWnd = nullptr;
-    int  UploadHeapSizeMb = 1524;
+    int  UploadHeapSizeMb = 1024;
     int  DynamicHeapSizeMb = 16;
     int  ReadbackHeapSizeMb = 1;
-    int  DynamicDescCount = 16384;
+    int  DynamicDescCount = 16;
     int  StaticDescCount = 16384;
     int  RenderTargetViewCount = 256;
     int  QueryCount = 128;
@@ -117,9 +117,10 @@ namespace gdr
 
       // Is device inited correctly
       bool IsInited;
+      public:
       // Memory allocator
       D3D12MA::Allocator* D3DGPUMemAllocator;
-
+      private:
       IDXGIFactory* DxgiFactory; // factory for retrieving an adapter
       IDXGIAdapter* DxgiAdapter; // Current graphics adapter
       ID3D12Device* D3DDevice;  // Current device

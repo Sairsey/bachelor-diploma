@@ -17,7 +17,7 @@ namespace gdr
     GPUResource TextureResource;
   };
 
-  const int MAX_TEXTURE_AMOUNT = 1024;
+  const int MAX_TEXTURE_AMOUNT = 256;
 
   // Transforms data representation class
   class textures_support

@@ -134,19 +134,35 @@ int gdr::object_support::LoadTextureFromAssimp(aiString *path, aiScene* scene, s
   if (path->C_Str()[0] == '*')
   {
     fullpath = directory + scene->mTextures[textureNumber]->mFilename.C_Str() + (path->C_Str() + 1) + "." + scene->mTextures[textureNumber]->achFormatHint;
-    FILE *F;
-    fopen_s(&F, fullpath.c_str(), "wb");
-    fwrite(scene->mTextures[textureNumber]->pcData, 1, scene->mTextures[textureNumber]->mWidth, F);
-    fclose(F);
+    
+    DWORD dwAttrib = GetFileAttributesA(fullpath.c_str());
+    if (dwAttrib != INVALID_FILE_ATTRIBUTES && !(dwAttrib & FILE_ATTRIBUTE_DIRECTORY))
+    {
+
+    }
+    else
+    {
+      FILE *F;
+      fopen_s(&F, fullpath.c_str(), "wb");
+      fwrite(scene->mTextures[textureNumber]->pcData, 1, scene->mTextures[textureNumber]->mWidth, F);
+      fclose(F);
+    }
   }
   else
   {
     fullpath = directory + path->C_Str();
   }
+  ID3D12GraphicsCommandList* commandList;
+  Render->GetDevice().BeginUploadCommandList(&commandList);
+  PROFILE_BEGIN(commandList, fullpath.c_str());
+
   if (path->length != 0)
   {
     index = Render->TexturesSystem->Load(fullpath, isSrgb);
   }
+  PROFILE_END(commandList);
+  Render->GetDevice().CloseUploadCommandList();
+  Render->GetDevice().WaitAllUploadLists();
 
   return index;
 }
@@ -180,15 +196,9 @@ gdr::gdr_index gdr::object_support::LoadAssimpTree(const aiScene* scene, aiNode*
   // for all meshes
   for (unsigned int i = 0; i < node->mNumMeshes; i++)
   {
-    ID3D12GraphicsCommandList* commandList;
-    Render->GetDevice().BeginUploadCommandList(&commandList);
-    PROFILE_BEGIN(commandList, scene->mMeshes[node->mMeshes[i]]->mName.C_Str());
     
     gdr_index res = LoadAssimpTreeMesh(scene, scene->mMeshes[node->mMeshes[i]], Node.Index);
     
-    PROFILE_END(commandList);
-    Render->GetDevice().CloseUploadCommandList();
-    Render->GetDevice().WaitAllUploadLists();
     if (res != -1)
       NodesPool[Node.Index].Childs.push_back(res);
   }
@@ -214,6 +224,7 @@ gdr::gdr_index gdr::object_support::LoadAssimpTreeMesh(const aiScene* scene, aiM
 {
   std::vector<vertex> vertices;
   std::vector<UINT32> indices;
+  ID3D12GraphicsCommandList* commandList;
 
   vertices.reserve(mesh->mNumVertices);
   indices.reserve(mesh->mNumFaces * 3);
@@ -250,9 +261,19 @@ gdr::gdr_index gdr::object_support::LoadAssimpTreeMesh(const aiScene* scene, aiM
 
     vertices.push_back(V);
   }
+  Render->GetDevice().BeginUploadCommandList(&commandList);
+  PROFILE_BEGIN(commandList, (mesh->mName).C_Str());
 
   // Create object with some nodes
   gdr_index object_node = CreateObject(vertices.data(), vertices.size(), indices.data(), indices.size());
+
+  PROFILE_END(commandList);
+  Render->GetDevice().CloseUploadCommandList();
+  Render->GetDevice().WaitAllUploadLists();
+
+
+  vertices.clear();
+  indices.clear();
 
   // First - update info about AABB into parent Node
   Render->TransformsSystem->CPUData[NodesPool[ParentNode].TransformIndex].maxAABB.X = max(NodesPool[object_node].GetTransform().maxAABB.X, NodesPool[ParentNode].GetTransform().maxAABB.X);
@@ -306,6 +327,7 @@ gdr::gdr_index gdr::object_support::LoadAssimpTreeMesh(const aiScene* scene, aiM
     {
       aiString str;
       scene->mMaterials[mesh->mMaterialIndex]->GetTexture(aiTextureType_DIFFUSE, 0, &str);
+
       mat.KdMapIndex = LoadTextureFromAssimp(&str, const_cast<aiScene*>(scene), directory, true);
     }
     {

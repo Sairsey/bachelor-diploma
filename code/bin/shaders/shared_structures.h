@@ -36,7 +36,7 @@ struct GlobalData
 struct ObjectTransform
 {
   float4x4 transform;
-  float4x4 transformInversedTransposed; // Not used for now...
+  float4x4 transformBoneOffset; // Not used for now...
   // AABB
   float3 minAABB;
   float3 maxAABB;

@@ -13,6 +13,7 @@ gdr::transforms_support::transforms_support(render* Rnd)
 
 void gdr::transforms_support::UpdateInverseTranspose(void)
 {
+/*
   const auto processor_count = std::thread::hardware_concurrency();
   std::vector<std::future<void>> f;
 
@@ -30,6 +31,7 @@ void gdr::transforms_support::UpdateInverseTranspose(void)
   {
     f[thread_i].wait();
   }
+  */
 }
 
 void gdr::transforms_support::UpdateGPUData(ID3D12GraphicsCommandList* pCommandList)

@@ -57,7 +57,7 @@ gdr::gdr_index gdr::object_support::CreateObject(const vertex* pVertex, size_t v
   }
 
   newTransform.transform = mth::matr::Identity();
-  newTransform.transformInversedTransposed = mth::matr::Identity();
+  newTransform.transformBoneOffset = mth::matr::Identity();
   Render->TransformsSystem->CPUData.push_back(newTransform);
   // Construct Material
   Render->MaterialsSystem->CPUData.push_back(gdr::materials_support::DefaultMaterial());
@@ -168,14 +168,14 @@ int gdr::object_support::LoadTextureFromAssimp(aiString *path, aiScene* scene, s
 }
 
 // Load assimp tree recursive function
-gdr::gdr_index gdr::object_support::LoadAssimpTree(const aiScene* scene, aiNode* node, gdr_index ParentNode)
+gdr::gdr_index gdr::object_support::LoadAssimpTreeFirstPass(const aiScene* scene, aiNode* node, gdr_index ParentNode)
 {
   // Construct transform
   ObjectTransform newTransform;
   newTransform.maxAABB = 0;
   newTransform.minAABB = 0;
   newTransform.transform = mth::matr::Identity();
-  newTransform.transformInversedTransposed = mth::matr::Identity();
+  newTransform.transformBoneOffset = mth::matr::Identity();
   Render->TransformsSystem->CPUData.push_back(newTransform);
 
   // Load this node in Pool
@@ -193,10 +193,24 @@ gdr::gdr_index gdr::object_support::LoadAssimpTree(const aiScene* scene, aiNode*
   Node.GlobalTransform = mth::matr4f::Identity();
   NodesPool.push_back(Node);
 
+  tmpBoneMapping[node] = NodesPool.size() - 1;
+
+  // for all nodes
+  for (unsigned int i = 0; i < node->mNumChildren; i++)
+    NodesPool[Node.Index].Childs.push_back(LoadAssimpTreeFirstPass(scene, node->mChildren[i], Node.Index));
+
+  return Node.Index;
+}
+
+// Load assimp tree recursive function
+gdr::gdr_index gdr::object_support::LoadAssimpTreeSecondPass(const aiScene* scene, aiNode* node, gdr_index ParentNode, gdr_index CurrentNode)
+{
+  // Load this node in Pool
+  gdr_node &Node = NodesPool[CurrentNode];
+
   // for all meshes
   for (unsigned int i = 0; i < node->mNumMeshes; i++)
   {
-    
     gdr_index res = LoadAssimpTreeMesh(scene, scene->mMeshes[node->mMeshes[i]], Node.Index);
     
     if (res != -1)
@@ -206,7 +220,7 @@ gdr::gdr_index gdr::object_support::LoadAssimpTree(const aiScene* scene, aiNode*
   // for all nodes
   for (unsigned int i = 0; i < node->mNumChildren; i++)
   {
-    NodesPool[Node.Index].Childs.push_back(LoadAssimpTree(scene, node->mChildren[i], Node.Index));
+    LoadAssimpTreeSecondPass(scene, node->mChildren[i], Node.Index, NodesPool[Node.Index].Childs[i]);
     Render->TransformsSystem->CPUData[NodesPool[Node.Index].TransformIndex].maxAABB.X = max(NodesPool[NodesPool[Node.Index].Childs[i]].GetTransform().maxAABB.X, NodesPool[Node.Index].GetTransform().maxAABB.X);
     Render->TransformsSystem->CPUData[NodesPool[Node.Index].TransformIndex].maxAABB.Y = max(NodesPool[NodesPool[Node.Index].Childs[i]].GetTransform().maxAABB.Y, NodesPool[Node.Index].GetTransform().maxAABB.Y);
     Render->TransformsSystem->CPUData[NodesPool[Node.Index].TransformIndex].maxAABB.Z = max(NodesPool[NodesPool[Node.Index].Childs[i]].GetTransform().maxAABB.Z, NodesPool[Node.Index].GetTransform().maxAABB.Z);
@@ -228,6 +242,7 @@ gdr::gdr_index gdr::object_support::LoadAssimpTreeMesh(const aiScene* scene, aiM
 
   vertices.reserve(mesh->mNumVertices);
   indices.reserve(mesh->mNumFaces * 3);
+  bool isHasBones = mesh->HasBones();
 
   for (int j = 0; j < (int)mesh->mNumFaces; j++)
   {
@@ -259,8 +274,54 @@ gdr::gdr_index gdr::object_support::LoadAssimpTreeMesh(const aiScene* scene, aiM
     V.Tangent = mth::vec3f{ mesh->mTangents[j].x, mesh->mTangents[j].y, mesh->mTangents[j].z };
     V.Tangent.Normalize();
 
+    V.BonesIndices = mth::vec4<int>(-1, -1, -1, -1);
+    V.BonesWeights = mth::vec4f(0);
+
     vertices.push_back(V);
   }
+
+  // for all bones
+  for (int i = 0; i < (int)mesh->mNumBones; i++)
+  {
+    gdr_index ourIndex = tmpBoneMapping[mesh->mBones[i]->mNode];
+    Render->TransformsSystem->CPUData[NodesPool[ourIndex].TransformIndex].transformBoneOffset = mth::matr4f(
+        mesh->mBones[i]->mOffsetMatrix.a1, mesh->mBones[i]->mOffsetMatrix.b1, mesh->mBones[i]->mOffsetMatrix.c1, mesh->mBones[i]->mOffsetMatrix.d1,
+        mesh->mBones[i]->mOffsetMatrix.a2, mesh->mBones[i]->mOffsetMatrix.b2, mesh->mBones[i]->mOffsetMatrix.c2, mesh->mBones[i]->mOffsetMatrix.d2,
+        mesh->mBones[i]->mOffsetMatrix.a3, mesh->mBones[i]->mOffsetMatrix.b3, mesh->mBones[i]->mOffsetMatrix.c3, mesh->mBones[i]->mOffsetMatrix.d3,
+        mesh->mBones[i]->mOffsetMatrix.a4, mesh->mBones[i]->mOffsetMatrix.b4, mesh->mBones[i]->mOffsetMatrix.c4, mesh->mBones[i]->mOffsetMatrix.d4);
+    for (int j = 0; j < (int)mesh->mBones[i]->mNumWeights; j++)
+    {
+      int vertex_id = mesh->mBones[i]->mWeights[j].mVertexId;
+      float weight = mesh->mBones[i]->mWeights[j].mWeight;
+      if (weight == 0)
+        continue;
+      if (vertices[vertex_id].BonesIndices.X == -1)
+      {
+        vertices[vertex_id].BonesIndices.X = NodesPool[ourIndex].TransformIndex;
+        vertices[vertex_id].BonesWeights.X = weight;
+      }
+      else if (vertices[vertex_id].BonesIndices.Y == -1)
+      {
+        vertices[vertex_id].BonesIndices.Y = NodesPool[ourIndex].TransformIndex;
+        vertices[vertex_id].BonesWeights.Y = weight;
+      }
+      else if (vertices[vertex_id].BonesIndices.Z == -1)
+      {
+        vertices[vertex_id].BonesIndices.Z = NodesPool[ourIndex].TransformIndex;
+        vertices[vertex_id].BonesWeights.Z = weight;
+      }
+      else if (vertices[vertex_id].BonesIndices.W == -1)
+      {
+        vertices[vertex_id].BonesIndices.W = NodesPool[ourIndex].TransformIndex;
+        vertices[vertex_id].BonesWeights.W = weight;
+      }
+      else
+      {
+        OutputDebugString(L"ERROR! Number of Bone vertex index are greater than 4!!!\n");
+      }
+    }
+  }
+
   Render->GetDevice().BeginUploadCommandList(&commandList);
   PROFILE_BEGIN(commandList, (mesh->mName).C_Str());
 
@@ -294,7 +355,7 @@ gdr::gdr_index gdr::object_support::LoadAssimpTreeMesh(const aiScene* scene, aiM
   NodesPool[object_node].LocalTransform = mth::matr4f::Identity();
   NodesPool[object_node].GlobalTransform = mth::matr4f::Identity();
   NodesPool[object_node].IsTransformCalculated = false;
-  CPUPool[NodesPool[object_node].MeshIndex].ObjectTransformIndex = NodesPool[ParentNode].TransformIndex;
+  CPUPool[NodesPool[object_node].MeshIndex].ObjectTransformIndex = NodesPool[object_node].TransformIndex;
   
   ObjectMaterial& mat = NodesPool[object_node].GetMaterial();
 
@@ -384,6 +445,10 @@ gdr::gdr_index gdr::object_support::LoadAssimpTreeMesh(const aiScene* scene, aiM
   if (mat.Opacity != 1.0 || mat.OpacityMapIndex != -1)
     CPUPool[CPUPool.size() - 1].ObjectParams |= OBJECT_PARAMETER_TRANSPARENT;
 
+  // set bones
+  if (isHasBones)
+    CPUPool[CPUPool.size() - 1].ObjectParams |= OBJECT_PARAMETER_SKINNED;
+
   // check normalmap
   {
     aiString str;
@@ -422,14 +487,15 @@ gdr::gdr_index gdr::object_support::CreateObjectFromFile(std::string fileName)
   const aiScene* scene = importer.ReadFile(fileName,
     aiProcessPreset_TargetRealtime_Fast |
     aiProcess_SplitLargeMeshes |
-    aiProcess_FlipUVs);
+    aiProcess_FlipUVs |
+    aiProcess_PopulateArmatureData);
 
   // Construct default transform
   ObjectTransform newTransform;
   newTransform.maxAABB = 0;
   newTransform.minAABB = 0;
   newTransform.transform = mth::matr::Identity();
-  newTransform.transformInversedTransposed = mth::matr::Identity();
+  newTransform.transformBoneOffset = mth::matr::Identity();
   Render->TransformsSystem->CPUData.push_back(newTransform);
 
   // create node for this scene
@@ -444,10 +510,73 @@ gdr::gdr_index gdr::object_support::CreateObjectFromFile(std::string fileName)
   FileNode.IsTransformCalculated = false;
   NodesPool.push_back(FileNode);
 
-  NodesPool[FileNode.Index].Childs.push_back(LoadAssimpTree(scene, scene->mRootNode, FileNode.Index));
+  NodesPool[FileNode.Index].Childs.push_back(LoadAssimpTreeFirstPass(scene, scene->mRootNode, FileNode.Index));
+  //NodesPool[NodesPool[FileNode.Index].Childs[0]].LocalTransform = mth::matr4f::Identity();
+
+  LoadAssimpTreeSecondPass(scene, scene->mRootNode, FileNode.Index, NodesPool[FileNode.Index].Childs[0]);
+
+  if (scene->HasAnimations())
+  {
+    NodesPool[FileNode.Index].Duration = scene->mAnimations[0]->mDuration;
+    for (int k = 0; k < (int)scene->mAnimations[0]->mNumChannels; k++)
+    {
+      std::string NodeName = scene->mAnimations[0]->mChannels[k]->mNodeName.C_Str();
+      gdr_node *our_node = nullptr;
+      for (gdr_index i = FileNode.Index; i < NodesPool.size(); i++)
+        if (NodesPool[i].Name == NodeName)
+        {
+          our_node = &NodesPool[i];
+          break;
+        }
+
+      if (our_node == nullptr)
+      {
+        OutputDebugString(L"Invalid bone name in animation. Skipping\n");
+        continue;
+      }
+
+      our_node->AnimationKeyFramePositions.resize(scene->mAnimations[0]->mChannels[k]->mNumPositionKeys);
+
+      for (int i = 0; i < scene->mAnimations[0]->mChannels[k]->mNumPositionKeys; i++)
+      {
+        mth::vec3f position = {
+          scene->mAnimations[0]->mChannels[k]->mPositionKeys[i].mValue[0],
+          scene->mAnimations[0]->mChannels[k]->mPositionKeys[i].mValue[1],
+          scene->mAnimations[0]->mChannels[k]->mPositionKeys[i].mValue[2]};
+       
+        float time = scene->mAnimations[0]->mChannels[k]->mPositionKeys[i].mTime;
+        our_node->AnimationKeyFramePositions[i] = std::make_pair(time, position);
+      }
+
+      our_node->AnimationKeyFrameRotations.resize(scene->mAnimations[0]->mChannels[k]->mNumRotationKeys);
+
+      for (int i = 0; i < scene->mAnimations[0]->mChannels[k]->mNumRotationKeys; i++)
+      {
+        mth::vec4f rotationQuat = {
+          scene->mAnimations[0]->mChannels[k]->mRotationKeys[i].mValue.x,
+          scene->mAnimations[0]->mChannels[k]->mRotationKeys[i].mValue.y,
+          scene->mAnimations[0]->mChannels[k]->mRotationKeys[i].mValue.z,
+          scene->mAnimations[0]->mChannels[k]->mRotationKeys[i].mValue.w};
+        float time = scene->mAnimations[0]->mChannels[k]->mRotationKeys[i].mTime;
+        our_node->AnimationKeyFrameRotations[i] = std::make_pair(time, rotationQuat);
+      }
+
+      our_node->AnimationKeyFrameScales.resize(scene->mAnimations[0]->mChannels[k]->mNumScalingKeys);
+
+      for (int i = 0; i < scene->mAnimations[0]->mChannels[k]->mNumScalingKeys; i++)
+      {
+        mth::vec3f scale = {
+           scene->mAnimations[0]->mChannels[k]->mScalingKeys[i].mValue.x,
+           scene->mAnimations[0]->mChannels[k]->mScalingKeys[i].mValue.y,
+           scene->mAnimations[0]->mChannels[k]->mScalingKeys[i].mValue.z };
+        float time = scene->mAnimations[0]->mChannels[k]->mRotationKeys[i].mTime;
+        our_node->AnimationKeyFrameScales[i] = std::make_pair(time, scale);
+      }
+    }
+  }
 
   importer.FreeScene();
-
+  tmpBoneMapping.clear();
   Render->TransformsSystem->CPUData[NodesPool[FileNode.Index].TransformIndex].maxAABB = NodesPool[NodesPool[FileNode.Index].Childs[0]].GetTransform().maxAABB;
   Render->TransformsSystem->CPUData[NodesPool[FileNode.Index].TransformIndex].minAABB = NodesPool[NodesPool[FileNode.Index].Childs[0]].GetTransform().minAABB;
   Render->TransformsSystem->MarkChunkByTransformIndex(NodesPool[FileNode.Index].TransformIndex);
@@ -456,6 +585,92 @@ gdr::gdr_index gdr::object_support::CreateObjectFromFile(std::string fileName)
   LoadedFiles[fileName] = FileNode.Index;
 
   return FileNode.Index;
+}
+
+void gdr::object_support::SetAnimationTime(gdr_index nodeIndex, float time, float offset, float duration)
+{
+  if (duration == -1)
+    duration = NodesPool[nodeIndex].Duration;
+  
+  if (NodesPool[nodeIndex].AnimationKeyFramePositions.size() != 0)
+  {
+    float localAnimTime = fmod(time, duration - offset) + offset;
+    int positionKeyLow = NodesPool[nodeIndex].AnimationKeyFramePositions.size() - 1;
+    int positionKeyHigh = NodesPool[nodeIndex].AnimationKeyFramePositions.size() - 1;
+    for (int i = 0; i < NodesPool[nodeIndex].AnimationKeyFramePositions.size(); i++)
+    {
+      if (NodesPool[nodeIndex].AnimationKeyFramePositions[i].first <= localAnimTime)
+        positionKeyLow = i;
+      if (NodesPool[nodeIndex].AnimationKeyFramePositions[i].first >= localAnimTime)
+      {
+        positionKeyHigh = i;
+        break;
+      }
+    }
+
+    int rotationKeyLow = NodesPool[nodeIndex].AnimationKeyFrameRotations.size() - 1;
+    int rotationKeyHigh = NodesPool[nodeIndex].AnimationKeyFrameRotations.size() - 1;
+    for (int i = 0; i < NodesPool[nodeIndex].AnimationKeyFrameRotations.size(); i++)
+    {
+      if (NodesPool[nodeIndex].AnimationKeyFrameRotations[i].first <= localAnimTime)
+        rotationKeyLow = i;
+      if (NodesPool[nodeIndex].AnimationKeyFrameRotations[i].first >= localAnimTime)
+      {
+        rotationKeyHigh = i;
+        break;
+      }
+    }
+
+    int scaleKeyLow = NodesPool[nodeIndex].AnimationKeyFrameScales.size() - 1;
+    int scaleKeyHigh = NodesPool[nodeIndex].AnimationKeyFrameScales.size() - 1;
+    for (int i = 0; i < NodesPool[nodeIndex].AnimationKeyFrameScales.size(); i++)
+    {
+      if (NodesPool[nodeIndex].AnimationKeyFrameScales[i].first <= localAnimTime)
+        scaleKeyLow = i;
+      if (NodesPool[nodeIndex].AnimationKeyFrameScales[i].first >= localAnimTime)
+      {
+        scaleKeyHigh = i;
+        break;
+      }
+    }
+
+    float positionAlpha = positionKeyHigh != positionKeyLow ? 
+      (localAnimTime - NodesPool[nodeIndex].AnimationKeyFramePositions[positionKeyLow].first) /
+      (NodesPool[nodeIndex].AnimationKeyFramePositions[positionKeyHigh].first - NodesPool[nodeIndex].AnimationKeyFramePositions[positionKeyLow].first) : 0;
+
+    float rotationAlpha = rotationKeyHigh != rotationKeyLow ?
+      (localAnimTime - NodesPool[nodeIndex].AnimationKeyFrameRotations[rotationKeyLow].first) /
+      (NodesPool[nodeIndex].AnimationKeyFrameRotations[rotationKeyHigh].first - NodesPool[nodeIndex].AnimationKeyFrameRotations[rotationKeyLow].first) : 0;
+
+    float scaleAlpha = scaleKeyHigh != scaleKeyLow ?
+      (localAnimTime - NodesPool[nodeIndex].AnimationKeyFrameScales[scaleKeyLow].first) /
+      (NodesPool[nodeIndex].AnimationKeyFrameScales[scaleKeyHigh].first - NodesPool[nodeIndex].AnimationKeyFrameScales[scaleKeyLow].first) : 0;
+
+    mth::vec3f position = 
+      NodesPool[nodeIndex].AnimationKeyFramePositions[positionKeyLow].second * (1.0 - positionAlpha) +
+      NodesPool[nodeIndex].AnimationKeyFramePositions[positionKeyHigh].second * positionAlpha;
+
+    mth::vec4f rotationQuat =
+      NodesPool[nodeIndex].AnimationKeyFrameRotations[rotationKeyLow].second * (1.0 - rotationAlpha) +
+      NodesPool[nodeIndex].AnimationKeyFrameRotations[rotationKeyHigh].second * rotationAlpha;
+
+    mth::vec3f scale =
+      NodesPool[nodeIndex].AnimationKeyFrameScales[scaleKeyLow].second * (1.0 - scaleAlpha) +
+      NodesPool[nodeIndex].AnimationKeyFrameScales[scaleKeyHigh].second * scaleAlpha;
+
+    float angle = 2 * acos(rotationQuat.W) * MTH_R2D;
+    mth::vec3f axis = {
+       rotationQuat.X / sqrt(1 - rotationQuat.W * rotationQuat.W),
+       rotationQuat.Y / sqrt(1 - rotationQuat.W * rotationQuat.W),
+       rotationQuat.Z / sqrt(1 - rotationQuat.W * rotationQuat.W) };
+
+    axis.Normalize();
+
+    NodesPool[nodeIndex].GetTransformEditable() = mth::matr4f::Rotate(angle, axis) * mth::matr4f::Scale(scale) * mth::matr4f::Translate(position);
+  }
+
+  for (gdr_index i = 0; i < NodesPool[nodeIndex].Childs.size(); i++)
+    SetAnimationTime(NodesPool[nodeIndex].Childs[i], time, offset, duration);
 }
 
 void gdr::object_support::MarkNodeToRecalc(gdr_index nodeIndex)

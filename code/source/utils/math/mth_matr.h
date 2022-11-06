@@ -311,13 +311,13 @@ namespace mth
         matr4<Type> m = matr4<Type>::Identity();
         sincos(AngleInDegree, sinx, cosx);
         m[0][0] = cosx + Axis.X * Axis.X * (1 - cosx);
-        m[0][1] = Axis.X * Axis.Y * (1 - cosx) - Axis.Z * sinx;
-        m[0][2] = Axis.Z * Axis.X * (1 - cosx) + Axis.Y * sinx;
-        m[1][0] = Axis.Y * Axis.X * (1 - cosx) + Axis.Z * sinx;
+        m[1][0] = Axis.X * Axis.Y * (1 - cosx) - Axis.Z * sinx;
+        m[2][0] = Axis.Z * Axis.X * (1 - cosx) + Axis.Y * sinx;
+        m[0][1] = Axis.Y * Axis.X * (1 - cosx) + Axis.Z * sinx;
         m[1][1] = cosx + Axis.Y * Axis.Y * (1 - cosx);
-        m[1][2] = Axis.Z * Axis.Y * (1 - cosx) - Axis.X * sinx;
-        m[2][0] = Axis.Z * Axis.X * (1 - cosx) - Axis.Y * sinx;
-        m[2][1] = Axis.Z * Axis.Y * (1 - cosx) + Axis.X * sinx;
+        m[2][1] = Axis.Z * Axis.Y * (1 - cosx) - Axis.X * sinx;
+        m[0][2] = Axis.Z * Axis.X * (1 - cosx) - Axis.Y * sinx;
+        m[1][2] = Axis.Z * Axis.Y * (1 - cosx) + Axis.X * sinx;
         m[2][2] = cosx + Axis.Z * Axis.Z * (1 - cosx);
         return m;
       } /* End of 'Rotate' function */

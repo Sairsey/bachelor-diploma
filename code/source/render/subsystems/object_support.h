@@ -41,6 +41,10 @@ namespace gdr
 
       // Transforms for hierarchic computation
       mth::matr4f LocalTransform;
+      std::vector<std::pair<float, mth::vec3f>> AnimationKeyFramePositions;
+      std::vector<std::pair<float, mth::vec4f>> AnimationKeyFrameRotations;
+      std::vector< std::pair<float, mth::vec3f>> AnimationKeyFrameScales;
+      float Duration = -1;
       mth::matr4f GlobalTransform;
       bool IsTransformCalculated; // True if we need recalculation of Transforms
 
@@ -67,13 +71,18 @@ namespace gdr
 
       std::unordered_map<std::string, gdr_index> LoadedFiles;
 
+      std::unordered_map<aiNode *, gdr_index> tmpBoneMapping;
+
       std::queue<gdr_index> NodesToRecalc;
 
       // Load texture function
       int LoadTextureFromAssimp(aiString *path, aiScene* scene, std::string directory, bool isSrgb = false);
 
       // Load assimp tree recursive function
-      gdr_index LoadAssimpTree(const aiScene* scene, aiNode *node, gdr_index ParentNode);
+      gdr_index LoadAssimpTreeFirstPass(const aiScene* scene, aiNode* node, gdr_index ParentNode);
+
+      // Load assimp tree recursive function
+      gdr_index LoadAssimpTreeSecondPass(const aiScene* scene, aiNode *node, gdr_index ParentNode, gdr_index CurrentNode);
 
       // Load node from assimp tree recursive function
       gdr_index LoadAssimpTreeMesh(const aiScene* scene, aiMesh* mesh, gdr_index ParentNode);
@@ -101,6 +110,8 @@ namespace gdr
       void UpdateAllNodes(void);
 
       void MarkNodeToRecalc(gdr_index nodeIndex);
+
+      void SetAnimationTime(gdr_index nodeIndex, float time, float offset = 0, float duration = -1);
 
       // default de-structor
       ~object_support();

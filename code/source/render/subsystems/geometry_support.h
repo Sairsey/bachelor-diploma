@@ -11,6 +11,8 @@ namespace gdr
     mth::vec3f Normal;
     mth::vec2f UV;
     mth::vec3f Tangent;
+    mth::vec4<int> BonesIndices;
+    mth::vec4f BonesWeights;
   };
 
   // Geometry representation struct

@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -56,6 +56,7 @@
     <ClInclude Include="source\units\unit_base.h" />
     <ClInclude Include="source\units\unit_bathroom.h" />
     <ClInclude Include="source\units\unit_bread.h" />
+    <ClInclude Include="source\units\unit_chief.h" />
     <ClInclude Include="source\units\unit_city.h" />
     <ClInclude Include="source\units\unit_control.h" />
     <ClInclude Include="source\units\unit_frog.h" />
@@ -109,6 +110,7 @@
     <ClCompile Include="source\render\subsystems\transforms_support.cpp" />
     <ClCompile Include="source\units\unit_bathroom.cpp" />
     <ClCompile Include="source\units\unit_bread.cpp" />
+    <ClCompile Include="source\units\unit_chief.cpp" />
     <ClCompile Include="source\units\unit_city.cpp" />
     <ClCompile Include="source\units\unit_control.cpp" />
     <ClCompile Include="source\units\unit_frog.cpp" />

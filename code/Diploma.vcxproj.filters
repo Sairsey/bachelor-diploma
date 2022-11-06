@@ -177,6 +177,9 @@
     <ClCompile Include="source\render\passes\hier_depth_pass.cpp">
       <Filter>Source Files\Render\Passes</Filter>
     </ClCompile>
+    <ClCompile Include="source\units\unit_chief.cpp">
+      <Filter>Source Files\Units</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\p_header.h">
@@ -340,6 +343,9 @@
     </ClInclude>
     <ClInclude Include="source\render\passes\hier_depth_pass.h">
       <Filter>Source Files\Render\Passes</Filter>
+    </ClInclude>
+    <ClInclude Include="source\units\unit_chief.h">
+      <Filter>Source Files\Units</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

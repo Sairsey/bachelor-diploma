@@ -206,10 +206,10 @@ gdr::gdr_index gdr::object_support::LoadAssimpTreeFirstPass(const aiScene* scene
 gdr::gdr_index gdr::object_support::LoadAssimpTreeSecondPass(const aiScene* scene, aiNode* node, gdr_index ParentNode, gdr_index CurrentNode)
 {
   // Load this node in Pool
-  gdr_node &Node = NodesPool[CurrentNode];
+  gdr_node Node = NodesPool[CurrentNode];
 
   // for all meshes
-  for (unsigned int i = 0; i < node->mNumMeshes; i++)
+  for (int i = 0; i < node->mNumMeshes; i++)
   {
     gdr_index res = LoadAssimpTreeMesh(scene, scene->mMeshes[node->mMeshes[i]], Node.Index);
     
@@ -218,7 +218,7 @@ gdr::gdr_index gdr::object_support::LoadAssimpTreeSecondPass(const aiScene* scen
   }
 
   // for all nodes
-  for (unsigned int i = 0; i < node->mNumChildren; i++)
+  for (int i = 0; i < node->mNumChildren; i++)
   {
     LoadAssimpTreeSecondPass(scene, node->mChildren[i], Node.Index, NodesPool[Node.Index].Childs[i]);
     Render->TransformsSystem->CPUData[NodesPool[Node.Index].TransformIndex].maxAABB.X = max(NodesPool[NodesPool[Node.Index].Childs[i]].GetTransform().maxAABB.X, NodesPool[Node.Index].GetTransform().maxAABB.X);
@@ -256,6 +256,9 @@ gdr::gdr_index gdr::object_support::LoadAssimpTreeMesh(const aiScene* scene, aiM
   }
 
   if (indices.size() == 0)
+    return -1;
+
+  if (!mesh->HasTextureCoords(0))
     return -1;
 
   for (int j = 0; j < (int)mesh->mNumVertices; j++)
@@ -517,10 +520,11 @@ gdr::gdr_index gdr::object_support::CreateObjectFromFile(std::string fileName)
 
   if (scene->HasAnimations())
   {
-    NodesPool[FileNode.Index].Duration = scene->mAnimations[0]->mDuration;
-    for (int k = 0; k < (int)scene->mAnimations[0]->mNumChannels; k++)
+    aiAnimation *anim = scene->mAnimations[0];
+    NodesPool[FileNode.Index].Duration = anim->mDuration;
+    for (int k = 0; k < (int)anim->mNumChannels; k++)
     {
-      std::string NodeName = scene->mAnimations[0]->mChannels[k]->mNodeName.C_Str();
+      std::string NodeName = anim->mChannels[k]->mNodeName.C_Str();
       gdr_node *our_node = nullptr;
       for (gdr_index i = FileNode.Index; i < NodesPool.size(); i++)
         if (NodesPool[i].Name == NodeName)
@@ -535,41 +539,41 @@ gdr::gdr_index gdr::object_support::CreateObjectFromFile(std::string fileName)
         continue;
       }
 
-      our_node->AnimationKeyFramePositions.resize(scene->mAnimations[0]->mChannels[k]->mNumPositionKeys);
+      our_node->AnimationKeyFramePositions.resize(anim->mChannels[k]->mNumPositionKeys);
 
-      for (int i = 0; i < scene->mAnimations[0]->mChannels[k]->mNumPositionKeys; i++)
+      for (int i = 0; i < anim->mChannels[k]->mNumPositionKeys; i++)
       {
         mth::vec3f position = {
-          scene->mAnimations[0]->mChannels[k]->mPositionKeys[i].mValue[0],
-          scene->mAnimations[0]->mChannels[k]->mPositionKeys[i].mValue[1],
-          scene->mAnimations[0]->mChannels[k]->mPositionKeys[i].mValue[2]};
+          anim->mChannels[k]->mPositionKeys[i].mValue[0],
+          anim->mChannels[k]->mPositionKeys[i].mValue[1],
+          anim->mChannels[k]->mPositionKeys[i].mValue[2]};
        
-        float time = scene->mAnimations[0]->mChannels[k]->mPositionKeys[i].mTime;
+        float time = anim->mChannels[k]->mPositionKeys[i].mTime;
         our_node->AnimationKeyFramePositions[i] = std::make_pair(time, position);
       }
 
-      our_node->AnimationKeyFrameRotations.resize(scene->mAnimations[0]->mChannels[k]->mNumRotationKeys);
+      our_node->AnimationKeyFrameRotations.resize(anim->mChannels[k]->mNumRotationKeys);
 
-      for (int i = 0; i < scene->mAnimations[0]->mChannels[k]->mNumRotationKeys; i++)
+      for (int i = 0; i < anim->mChannels[k]->mNumRotationKeys; i++)
       {
         mth::vec4f rotationQuat = {
-          scene->mAnimations[0]->mChannels[k]->mRotationKeys[i].mValue.x,
-          scene->mAnimations[0]->mChannels[k]->mRotationKeys[i].mValue.y,
-          scene->mAnimations[0]->mChannels[k]->mRotationKeys[i].mValue.z,
-          scene->mAnimations[0]->mChannels[k]->mRotationKeys[i].mValue.w};
-        float time = scene->mAnimations[0]->mChannels[k]->mRotationKeys[i].mTime;
+          anim->mChannels[k]->mRotationKeys[i].mValue.x,
+          anim->mChannels[k]->mRotationKeys[i].mValue.y,
+          anim->mChannels[k]->mRotationKeys[i].mValue.z,
+          anim->mChannels[k]->mRotationKeys[i].mValue.w};
+        float time = anim->mChannels[k]->mRotationKeys[i].mTime;
         our_node->AnimationKeyFrameRotations[i] = std::make_pair(time, rotationQuat);
       }
 
-      our_node->AnimationKeyFrameScales.resize(scene->mAnimations[0]->mChannels[k]->mNumScalingKeys);
+      our_node->AnimationKeyFrameScales.resize(anim->mChannels[k]->mNumScalingKeys);
 
-      for (int i = 0; i < scene->mAnimations[0]->mChannels[k]->mNumScalingKeys; i++)
+      for (int i = 0; i < anim->mChannels[k]->mNumScalingKeys; i++)
       {
         mth::vec3f scale = {
-           scene->mAnimations[0]->mChannels[k]->mScalingKeys[i].mValue.x,
-           scene->mAnimations[0]->mChannels[k]->mScalingKeys[i].mValue.y,
-           scene->mAnimations[0]->mChannels[k]->mScalingKeys[i].mValue.z };
-        float time = scene->mAnimations[0]->mChannels[k]->mRotationKeys[i].mTime;
+           anim->mChannels[k]->mScalingKeys[i].mValue.x,
+           anim->mChannels[k]->mScalingKeys[i].mValue.y,
+           anim->mChannels[k]->mScalingKeys[i].mValue.z };
+        float time = anim->mChannels[k]->mRotationKeys[i].mTime;
         our_node->AnimationKeyFrameScales[i] = std::make_pair(time, scale);
       }
     }
@@ -660,11 +664,17 @@ void gdr::object_support::SetAnimationTime(gdr_index nodeIndex, float time, floa
 
     float angle = 2 * acos(rotationQuat.W) * MTH_R2D;
     mth::vec3f axis = {
-       rotationQuat.X / sqrt(1 - rotationQuat.W * rotationQuat.W),
-       rotationQuat.Y / sqrt(1 - rotationQuat.W * rotationQuat.W),
-       rotationQuat.Z / sqrt(1 - rotationQuat.W * rotationQuat.W) };
-
+      rotationQuat.X / sqrt(1 - rotationQuat.W * rotationQuat.W),
+      rotationQuat.Y / sqrt(1 - rotationQuat.W * rotationQuat.W),
+      rotationQuat.Z / sqrt(1 - rotationQuat.W * rotationQuat.W) 
+    };
     axis.Normalize();
+
+    if (rotationQuat.W == 1)
+    {
+      axis = {1, 0, 0};
+      angle = 0;
+    }
 
     NodesPool[nodeIndex].GetTransformEditable() = mth::matr4f::Rotate(angle, axis) * mth::matr4f::Scale(scale) * mth::matr4f::Translate(position);
   }

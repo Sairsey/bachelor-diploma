@@ -180,6 +180,9 @@
     <ClCompile Include="source\units\unit_chief.cpp">
       <Filter>Source Files\Units</Filter>
     </ClCompile>
+    <ClCompile Include="source\units\unit_specialist.cpp">
+      <Filter>Source Files\Units</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\p_header.h">
@@ -345,6 +348,9 @@
       <Filter>Source Files\Render\Passes</Filter>
     </ClInclude>
     <ClInclude Include="source\units\unit_chief.h">
+      <Filter>Source Files\Units</Filter>
+    </ClInclude>
+    <ClInclude Include="source\units\unit_specialist.h">
       <Filter>Source Files\Units</Filter>
     </ClInclude>
   </ItemGroup>

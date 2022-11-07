@@ -4,6 +4,7 @@
 /* Project namespace */
 namespace gdr
 {
+  #pragma pack(push, 1)
   // vertex representation struct
   struct vertex
   {
@@ -14,6 +15,7 @@ namespace gdr
     mth::vec4<int> BonesIndices;
     mth::vec4f BonesWeights;
   };
+  #pragma pack(pop)
 
   // Geometry representation struct
   struct geometry

@@ -272,6 +272,7 @@ namespace gdr
       inline ID3D12Device* GetDXDevice() const { return D3DDevice; }
       inline IDXGIAdapter* GetAdapter() const { return DxgiAdapter; }
       inline ID3D12DescriptorHeap* GetDescriptorHeap() const { return D3DDescriptorHeap;}
+      inline ID3D12CommandQueue* GetPresentQueue() const { return PresentQueue->GetQueue(); }
 
       // Get size of SRV
       inline UINT GetSRVDescSize() const { return SrvDescSize; }

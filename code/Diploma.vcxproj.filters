@@ -46,6 +46,9 @@
     <Filter Include="Source Files\Input">
       <UniqueIdentifier>{7fddf6b0-f893-435b-a056-63ad0ae38472}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Utils\ScreenGrab">
+      <UniqueIdentifier>{201829c0-24ba-4588-9d6e-bf17855d284c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\main.cpp">
@@ -182,6 +185,12 @@
     </ClCompile>
     <ClCompile Include="source\units\unit_specialist.cpp">
       <Filter>Source Files\Units</Filter>
+    </ClCompile>
+    <ClCompile Include="source\utils\ScreenGrab12.cpp">
+      <Filter>Source Files\Utils\ScreenGrab</Filter>
+    </ClCompile>
+    <ClCompile Include="source\render\subsystems\screenshot_subsystem.cpp">
+      <Filter>Source Files\Render\SubSystems</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -352,6 +361,12 @@
     </ClInclude>
     <ClInclude Include="source\units\unit_specialist.h">
       <Filter>Source Files\Units</Filter>
+    </ClInclude>
+    <ClInclude Include="source\utils\ScreenGrab12.h">
+      <Filter>Source Files\Utils\ScreenGrab</Filter>
+    </ClInclude>
+    <ClInclude Include="source\render\subsystems\screenshot_subsystem.h">
+      <Filter>Source Files\Render\SubSystems</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

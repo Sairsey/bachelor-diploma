@@ -1,6 +1,7 @@
 #include "p_header.h"
 
 #include "unit_stats.h"
+#include <iomanip>
 
 void unit_stats::Initialize(void)
 {
@@ -507,6 +508,44 @@ void unit_stats::Response(void)
       ImGui::DragFloat("Exposure", &Engine->GlobalsSystem->CPUData.SceneExposure, 0.1);
       if (ImGui::Button("Apply Camera Transform"))
         Engine->PlayerCamera.SetView(Engine->PlayerCamera.GetPos(), Engine->PlayerCamera.GetDir() + Engine->PlayerCamera.GetPos(), Engine->PlayerCamera.GetUp());
+      if (ImGui::Button("Save screenshot"))
+      {
+        std::string directory = "screenshots";
+        {
+          time_t t = std::time(nullptr);
+          tm tm;
+          localtime_s(&tm, &t);
+          std::ostringstream oss;
+          oss << std::put_time(&tm, "%Y_%m_%d_%H_%M_%S");
+          std::string str = oss.str();
+          directory += "\\"; 
+          directory += str;
+          directory += "\\";
+        }
+        std::wstring wstr = std::wstring(directory.begin(), directory.end());
+        {
+          const wchar_t* path = wstr.c_str();
+
+          wchar_t folder[MAX_PATH];
+          wchar_t* end;
+          ZeroMemory(folder, MAX_PATH * sizeof(wchar_t));
+
+          end = (wchar_t *)wcschr(path, L'\\');
+
+          while (end != NULL)
+          {
+            wcsncpy_s(folder, path, end - path + 1);
+            if (!CreateDirectory(folder, NULL))
+            {
+              DWORD err = GetLastError();
+            }
+            end = wcschr(++end, L'\\');
+          }
+        }
+
+        Engine->ScreenshotsSystem->RequestReadbackToFile(gdr::render_targets_enum::target_display, directory + "display.png");
+        Engine->ScreenshotsSystem->RequestReadbackToFile(gdr::render_targets_enum::target_frame_hdr, directory + "hdr.dds");
+      }
       ImGui::End();
     });
 

@@ -23,6 +23,7 @@
 #include "render/subsystems/cube_texture_support.h"
 #include "render/subsystems/render_target_support.h"
 #include "render/subsystems/hier_depth_support.h"
+#include "render/subsystems/screenshot_subsystem.h"
 
 #include "render/passes/base_pass.h"
 #include "render/passes/visibility_pass.h"

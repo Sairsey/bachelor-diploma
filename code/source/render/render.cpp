@@ -78,6 +78,7 @@ bool gdr::render::Init(engine* Eng)
     LightsSystem = new gdr::light_sources_support(this);
     RenderTargets = new gdr::render_targets_support(this);
     HierDepth = new gdr::hier_depth_support(this);
+    ScreenshotsSystem = new gdr::screenshot_support(this);
   }
 
   // init passes
@@ -238,13 +239,14 @@ void gdr::render::DrawFrame(void)
       DeviceFrameCounter.Stop(pCommandList);
       Device.TransitResourceState(pCommandList, pBackBuffer, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
     }
-
     PROFILE_END(pCommandList);
+
     Device.CloseSubmitAndPresentRenderCommandList(false);
     auto renderEnd = std::chrono::system_clock::now();
     DrawFrameTime = std::chrono::duration_cast<std::chrono::nanoseconds>(renderEnd - renderStart).count();
   }
   PROFILE_CPU_END();
+  ScreenshotsSystem->Update();
 }
 
 gdr::engine *gdr::render::GetEngine(void)
@@ -263,6 +265,7 @@ void gdr::render::Term(void)
   if (!IsInited)
     return;
 
+  delete ScreenshotsSystem;
   delete HierDepth;
   delete RenderTargets;
   delete LightsSystem;

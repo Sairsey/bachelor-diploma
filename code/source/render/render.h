@@ -18,6 +18,7 @@ namespace gdr
   class light_sources_support;
   class render_targets_support;
   class hier_depth_support;
+  class screenshot_support;
 
   struct render_runtime_params
   {
@@ -106,6 +107,7 @@ namespace gdr
       light_sources_support* LightsSystem; //System to store info about lights
       render_targets_support* RenderTargets; //System to store info about lights
       hier_depth_support* HierDepth; //System to store and generate Hierarhical Depth Texture
+      screenshot_support* ScreenshotsSystem; //System to store and generate Hierarhical Depth Texture
 
       long long UpdateBuffersTime;
       long long DrawFrameTime;

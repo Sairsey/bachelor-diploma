@@ -50,6 +50,7 @@
     <ClInclude Include="source\render\subsystems\materials_support.h" />
     <ClInclude Include="source\render\subsystems\object_support.h" />
     <ClInclude Include="source\render\subsystems\render_target_support.h" />
+    <ClInclude Include="source\render\subsystems\screenshot_subsystem.h" />
     <ClInclude Include="source\render\subsystems\texture_support.h" />
     <ClInclude Include="source\render\subsystems\transforms_support.h" />
     <ClInclude Include="source\timer\timer.h" />
@@ -72,6 +73,7 @@
     <ClInclude Include="source\utils\math\mth_vec.h" />
     <ClInclude Include="source\utils\read_file.h" />
     <ClInclude Include="source\utils\ring_buffer.h" />
+    <ClInclude Include="source\utils\ScreenGrab12.h" />
     <ClInclude Include="source\utils\utils.h" />
     <ClInclude Include="source\window\win.h" />
   </ItemGroup>
@@ -107,6 +109,7 @@
     <ClCompile Include="source\render\subsystems\materials_support.cpp" />
     <ClCompile Include="source\render\subsystems\object_support.cpp" />
     <ClCompile Include="source\render\subsystems\render_target_support.cpp" />
+    <ClCompile Include="source\render\subsystems\screenshot_subsystem.cpp" />
     <ClCompile Include="source\render\subsystems\texture_support.cpp" />
     <ClCompile Include="source\render\subsystems\transforms_support.cpp" />
     <ClCompile Include="source\units\unit_bathroom.cpp" />
@@ -122,6 +125,7 @@
     <ClCompile Include="source\utils\D3D12MemAlloc.cpp" />
     <ClInclude Include="source\utils\math\mth_cam.h" />
     <ClCompile Include="source\utils\read_file.cpp" />
+    <ClCompile Include="source\utils\ScreenGrab12.cpp" />
     <ClCompile Include="source\utils\stb_image.cpp" />
     <ClCompile Include="source\window\win.cpp" />
     <ClCompile Include="source\window\win_msg.cpp" />

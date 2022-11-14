@@ -6,6 +6,7 @@ class unit_cubemap_capture : public gdr::unit_base
 private:
   int plane_number;
   std::string directory;
+  mth::vec3f pos;
 public:
   void Initialize(void);
 

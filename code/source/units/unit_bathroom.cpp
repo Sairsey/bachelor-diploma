@@ -4,14 +4,10 @@
 
 void unit_bathroom::Initialize(void)
 {
-  ID3D12GraphicsCommandList* commandList;
-  //Engine->GetDevice().BeginUploadCommandList(&commandList);
-  //PROFILE_BEGIN(commandList, "unit_bathroom Init");
   Bathroom = Engine->ObjectSystem->CreateObjectFromFile("bin/models/bathroom/bathroom.glb");
-  //PROFILE_END(commandList);
-  //Engine->GetDevice().CloseUploadCommandList();
 }
 
 void unit_bathroom::Response(void)
 {
+  Engine->ObjectSystem->NodesPool[Bathroom].GetTransformEditable() = mth::matr::Scale(15 / 2.0) * mth::matr::RotateY(-90-30) * mth::matr::Translate({20 / 2.0, -0.2, 0});
 }

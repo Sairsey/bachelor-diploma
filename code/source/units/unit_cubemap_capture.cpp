@@ -180,6 +180,7 @@ void unit_cubemap_capture::Response(void)
       if (ImGui::Button("Capture cubemap at current position"))
       {
         plane_number = 0;
+        pos = Engine->PlayerCamera.GetPos();
         directory = "cubemaps";
         {
           time_t t = std::time(nullptr);
@@ -289,9 +290,10 @@ void unit_cubemap_capture::Response(void)
     std::string plane_name = names[plane_number];
     mth::vec3f dir = dirs[plane_number];
     mth::vec3f up = rights[plane_number] cross dirs[plane_number];
-    mth::vec3f pos = Engine->PlayerCamera.GetPos();
 
     Engine->PlayerCamera.SetView(pos, pos+dir, up);
+    Engine->PlayerCamera.SetProj(1, 1, 1000);
+    Engine->PlayerCamera.Resize(CUBEMAP_SIDE, CUBEMAP_SIDE);
 
     // request write to file and to memory
     Engine->ScreenshotsSystem->RequestReadbackToFile(gdr::render_targets_enum::target_frame_hdr, directory + plane_name);

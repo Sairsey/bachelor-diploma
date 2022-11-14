@@ -60,6 +60,7 @@
     <ClInclude Include="source\units\unit_chief.h" />
     <ClInclude Include="source\units\unit_city.h" />
     <ClInclude Include="source\units\unit_control.h" />
+    <ClInclude Include="source\units\unit_cubemap_capture.h" />
     <ClInclude Include="source\units\unit_frog.h" />
     <ClInclude Include="source\units\unit_pbr_spheres.h" />
     <ClInclude Include="source\units\unit_specialist.h" />
@@ -117,6 +118,7 @@
     <ClCompile Include="source\units\unit_chief.cpp" />
     <ClCompile Include="source\units\unit_city.cpp" />
     <ClCompile Include="source\units\unit_control.cpp" />
+    <ClCompile Include="source\units\unit_cubemap_capture.cpp" />
     <ClCompile Include="source\units\unit_frog.cpp" />
     <ClCompile Include="source\units\unit_pbr_spheres.cpp" />
     <ClCompile Include="source\units\unit_specialist.cpp" />

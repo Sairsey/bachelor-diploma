@@ -535,10 +535,7 @@ void unit_stats::Response(void)
           while (end != NULL)
           {
             wcsncpy_s(folder, path, end - path + 1);
-            if (!CreateDirectory(folder, NULL))
-            {
-              DWORD err = GetLastError();
-            }
+            CreateDirectory(folder, NULL);
             end = wcschr(++end, L'\\');
           }
         }

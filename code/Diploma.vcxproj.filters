@@ -192,6 +192,9 @@
     <ClCompile Include="source\render\subsystems\screenshot_subsystem.cpp">
       <Filter>Source Files\Render\SubSystems</Filter>
     </ClCompile>
+    <ClCompile Include="source\units\unit_cubemap_capture.cpp">
+      <Filter>Source Files\Units</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\p_header.h">
@@ -367,6 +370,9 @@
     </ClInclude>
     <ClInclude Include="source\render\subsystems\screenshot_subsystem.h">
       <Filter>Source Files\Render\SubSystems</Filter>
+    </ClInclude>
+    <ClInclude Include="source\units\unit_cubemap_capture.h">
+      <Filter>Source Files\Units</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

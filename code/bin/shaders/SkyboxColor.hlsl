@@ -30,6 +30,7 @@ VSOut VS(VSIn input)
     float4x4 transform = globals.VP;
     output.pos = mul(transform, float4(input.pos, 1)).xyww;
     output.TexCoords = normalize(input.pos);
+    output.TexCoords.z = -output.TexCoords.z;
     return output;
 }
 

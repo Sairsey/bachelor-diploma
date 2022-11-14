@@ -7,6 +7,7 @@ private:
   int plane_number;
   std::string directory;
   mth::vec3f pos;
+  int wait_frames;
 public:
   void Initialize(void);
 

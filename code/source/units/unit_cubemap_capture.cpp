@@ -9,6 +9,7 @@
 void unit_cubemap_capture::Initialize(void)
 {
   plane_number = -1;
+  wait_frames = 0;
 }
 
 /// Convert half-precision to IEEE single-precision.
@@ -181,6 +182,7 @@ void unit_cubemap_capture::Response(void)
       {
         plane_number = 0;
         pos = Engine->PlayerCamera.GetPos();
+        wait_frames = 5;
         directory = "cubemaps";
         {
           time_t t = std::time(nullptr);
@@ -214,7 +216,7 @@ void unit_cubemap_capture::Response(void)
       ImGui::End();
       });
   }
-  else 
+  else if (plane_number == 0 && wait_frames == 5)
   {
     RECT rect;
     rect.left = 0;
@@ -223,23 +225,21 @@ void unit_cubemap_capture::Response(void)
     rect.bottom = CUBEMAP_SIDE;
     AdjustWindowRect(&rect, WS_OVERLAPPEDWINDOW, FALSE);
     MoveWindow(Engine->hWnd, 0, 0, rect.right - rect.left, rect.bottom - rect.top, FALSE);
-
+    wait_frames--;
+  }
+  else if (wait_frames > 1)
+  {
+    wait_frames--;
+  }
+  else if (wait_frames == 1)
+  {
     const char* names[6] = {
       "/px.dds",
       "/py.dds",
-      "/pz.dds",
+      "/nz.dds",
       "/nx.dds",
       "/ny.dds",
-      "/nz.dds"
-    };
-
-    const char* namesHDR[6] = {
-      "/px.hdr",
-      "/py.hdr",
-      "/pz.hdr",
-      "/nx.hdr",
-      "/ny.hdr",
-      "/nz.hdr"
+      "/pz.dds"
     };
 
     mth::vec3f dirs[6] = {
@@ -253,16 +253,44 @@ void unit_cubemap_capture::Response(void)
 
     mth::vec3f rights[6] = {
       {0, 0, 1},
-      {-1, 0, 0},
+      {1, 0, 0},
       {-1, 0, 0},
       {0, 0, -1},
-      {-1, 0, 0},
+      {1, 0, 0},
       {1, 0, 0}
     };
-    
+
+    std::string plane_name = names[plane_number];
+    mth::vec3f dir = dirs[plane_number];
+    mth::vec3f up = rights[plane_number] cross dirs[plane_number];
+
+    Engine->PlayerCamera.SetView(pos, pos + dir, up);
+    Engine->PlayerCamera.SetProj(2, 1, 1000);
+    Engine->PlayerCamera.Resize(CUBEMAP_SIDE, CUBEMAP_SIDE);
+
+    // request write to file and to memory
+    Engine->ScreenshotsSystem->RequestReadbackToFile(gdr::render_targets_enum::target_frame_hdr, directory + plane_name);
+    Engine->ScreenshotsSystem->RequestReadbackToMem(gdr::render_targets_enum::target_frame_hdr);
+
+    wait_frames--;
+  }
+  else 
+  {
+    // wait 5 frames before next frame
+    wait_frames = 5;
+
+    const char* namesHDR[6] = {
+      "/px.hdr",
+      "/py.hdr",
+      "/nz.hdr",
+      "/nx.hdr",
+      "/ny.hdr",
+      "/pz.hdr"
+      };
+
     // process picture from previous frame
     std::vector<uint8_t> vector_of_data = Engine->ScreenshotsSystem->GetRequestedTexture(gdr::render_targets_enum::target_frame_hdr);
-    if (plane_number > 0)
+    
     {
       std::vector<float> data;
       data.reserve(CUBEMAP_SIDE * CUBEMAP_SIDE * 3);
@@ -278,27 +306,15 @@ void unit_cubemap_capture::Response(void)
         data.push_back(pixelF.B);
       }
 
-      stbi_write_hdr((directory + namesHDR[plane_number - 1]).c_str(), CUBEMAP_SIDE, CUBEMAP_SIDE, 3, &data[0]);
+      stbi_write_hdr((directory + namesHDR[plane_number]).c_str(), CUBEMAP_SIDE, CUBEMAP_SIDE, 3, &data[0]);
     }
+    
+    plane_number++;
 
     if (plane_number >= 6)
     {
       plane_number = -1;
       return;
     }
-
-    std::string plane_name = names[plane_number];
-    mth::vec3f dir = dirs[plane_number];
-    mth::vec3f up = rights[plane_number] cross dirs[plane_number];
-
-    Engine->PlayerCamera.SetView(pos, pos+dir, up);
-    Engine->PlayerCamera.SetProj(1, 1, 1000);
-    Engine->PlayerCamera.Resize(CUBEMAP_SIDE, CUBEMAP_SIDE);
-
-    // request write to file and to memory
-    Engine->ScreenshotsSystem->RequestReadbackToFile(gdr::render_targets_enum::target_frame_hdr, directory + plane_name);
-    Engine->ScreenshotsSystem->RequestReadbackToMem(gdr::render_targets_enum::target_frame_hdr);
-
-    plane_number++;
   }
 }

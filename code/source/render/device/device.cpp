@@ -32,13 +32,15 @@ gdr::device::device() :
  */
 bool gdr::device::Init(const device_create_params& params)
 {
+  UsedForCreationParams = params;
+
   IsInited = true;
   IsInited = IsInited && InitD3D12Device(params.DebugLayer);
   IsInited = IsInited && InitCommandQueue(params.CmdListCount, params.UploadListCount);
   IsInited = IsInited && InitSwapchain(params.CmdListCount, params.hWnd);
   IsInited = IsInited && InitGPUMemoryAllocator();
   IsInited = IsInited && InitDescriptorHeap(params.StaticDescCount + params.DynamicDescCount);
-  IsInited = IsInited && InitUploadEngine((UINT64)1 * params.UploadHeapSizeMb * 1024 * 1024, (UINT64)1 * params.DynamicHeapSizeMb * 1024 * 1024, params.DynamicDescCount);
+  IsInited = IsInited && InitUploadEngine((UINT64)1 * params.LoadtimeUploadHeapSizeMb * 1024 * 1024, (UINT64)1 * params.DynamicHeapSizeMb * 1024 * 1024, params.DynamicDescCount);
   IsInited = IsInited && InitRenderTargetViewHeap(params.RenderTargetViewCount);
   IsInited = IsInited && InitReadbackEngine((UINT64)1 * params.ReadbackHeapSizeMb * 1024 * 1024);
   IsInited = IsInited && InitQueries(params.QueryCount);
@@ -884,6 +886,15 @@ bool gdr::device::TransitResourceState(ID3D12GraphicsCommandList* pCommandList, 
   pCommandList->ResourceBarrier(1, &barrier);
 
   return true;
+}
+
+void gdr::device::ResizeUpdateBuffer(bool isRuntime)
+{
+  TermUploadEngine();
+  InitUploadEngine(
+    (UINT64)1 * (isRuntime ? UsedForCreationParams.RuntimeUploadHeapSizeMb : UsedForCreationParams.LoadtimeUploadHeapSizeMb) * 1024 * 1024,
+    (UINT64)1 * UsedForCreationParams.DynamicHeapSizeMb * 1024 * 1024,
+    UsedForCreationParams.DynamicDescCount);
 }
 
 bool gdr::device::CreateGPUResource(const D3D12_RESOURCE_DESC& desc, D3D12_RESOURCE_STATES initialResourceState, const D3D12_CLEAR_VALUE* pOptimizedClearValue, GPUResource& resource, const void* pInitialData, size_t initialDataSize)

@@ -18,6 +18,10 @@ class float_image
     int H = 0;
     int components = 0;
 
+  float_image()
+  {
+  }
+  
   float_image(std::string file_path)
   {    
     float *tmp_data = stbi_loadf(file_path.c_str(), &W, &H, &components, 0);
@@ -95,6 +99,128 @@ class float_image
   }
 
   ~float_image()
+  {
+  }
+
+};
+
+class float_cube_image
+{
+public:
+  // px, py, pz, nx, ny, nz
+  float_image data[6];
+  
+  float_cube_image(std::string dir)
+  {
+    data[0] = float_image(dir + "/px.hdr");
+    data[1] = float_image(dir + "/ny.hdr");
+    data[2] = float_image(dir + "/pz.hdr");
+    data[3] = float_image(dir + "/nx.hdr");
+    data[4] = float_image(dir + "/py.hdr");
+    data[5] = float_image(dir + "/nz.hdr");
+  }
+
+  mth::vec3f SampleCube(mth::vec3f Direction)
+  {
+    Direction.Normalize();
+
+    float absX = fabs(Direction.X);
+    float absY = fabs(Direction.Y);
+    float absZ = fabs(Direction.Z);
+
+    int isXPositive = Direction.X > 0 ? 1 : 0;
+    int isYPositive = Direction.Y > 0 ? 1 : 0;
+    int isZPositive = Direction.Z > 0 ? 1 : 0;
+
+    float maxAxis, uc, vc;
+
+    int index = -1;
+
+    // POSITIVE X
+    if (isXPositive && absX >= absY && absX >= absZ) {
+      // u (0 to 1) goes from +z to -z
+      // v (0 to 1) goes from -y to +y
+      maxAxis = absX;
+      uc = -Direction.Z;
+      vc = Direction.Y;
+      index = 0;
+    }
+    // NEGATIVE X
+    if (!isXPositive && absX >= absY && absX >= absZ) {
+      // u (0 to 1) goes from -z to +z
+      // v (0 to 1) goes from -y to +y
+      maxAxis = absX;
+      uc = Direction.Z;
+      vc = Direction.Y;
+      index = 3;
+    }
+    // POSITIVE Y
+    if (isYPositive && absY >= absX && absY >= absZ) {
+      // u (0 to 1) goes from -x to +x
+      // v (0 to 1) goes from +z to -z
+      maxAxis = absY;
+      uc = Direction.X;
+      vc = -Direction.Z;
+      index = 1;
+    }
+    // NEGATIVE Y
+    if (!isYPositive && absY >= absX && absY >= absZ) {
+      // u (0 to 1) goes from -x to +x
+      // v (0 to 1) goes from -z to +z
+      maxAxis = absY;
+      uc = Direction.X;
+      vc = Direction.Z;
+      index = 4;
+    }
+    // POSITIVE Z
+    if (isZPositive && absZ >= absX && absZ >= absY) {
+      // u (0 to 1) goes from -x to +x
+      // v (0 to 1) goes from -y to +y
+      maxAxis = absZ;
+      uc = Direction.X;
+      vc = Direction.Y;
+      index = 2;
+    }
+    // NEGATIVE Z
+    if (!isZPositive && absZ >= absX && absZ >= absY) {
+      // u (0 to 1) goes from +x to -x
+      // v (0 to 1) goes from -y to +y
+      maxAxis = absZ;
+      uc = -Direction.X;
+      vc = Direction.Y;
+      index = 5;
+    }
+
+    mth::vec2f uv;
+    // Convert range from -1 to 1 to 0 to 1
+    uv[0] = 0.5f * (uc / maxAxis + 1.0f);
+    uv[1] = 0.5f * (vc / maxAxis + 1.0f);
+
+    if (uv[1] < 0)
+      uv[1] += 1;
+    if (uv[0] < 0)
+      uv[0] += 1;
+
+    uv[0] *= (data[index].W - 1);
+    uv[1] *= (data[index].H - 1);
+
+    int up_u = ceil(uv[0]);
+    int down_u = floor(uv[0]);
+    int up_v = ceil(uv[1]);
+    int down_v = floor(uv[1]);
+    float a1 = uv[1] - down_v;
+    float a2 = uv[0] - down_u;
+
+    mth::vec3f c3 =
+      data[index].GetPixel(down_u, down_v) * ((1 - a2) * (1 - a1)) +
+      data[index].GetPixel(down_u, up_v) * ((1 - a2) * a1) +
+      data[index].GetPixel(up_u, down_v) * (a2 * (1 - a1)) +
+      data[index].GetPixel(up_u, up_v) * (a2 * a1);
+
+    return c3;
+  }
+
+  ~float_cube_image()
   {
   }
 

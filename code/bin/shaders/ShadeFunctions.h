@@ -247,15 +247,15 @@ float4 ShadeCookTorrance(float3 Normal, float3 Position, float2 uv, ObjectMateri
     float3 KDiffuse = float3(1.0, 1.0, 1.0) - F;
 
     static const float MAX_REFLECTION_LOD = 4.0;
-    float3 prefilteredColor = CubeTexturesPool[globals.PrefilteredCubemapIndex].SampleLevel(LinearSampler, r, roughness * MAX_REFLECTION_LOD).rgb;
+    float3 prefilteredColor = CubeTexturesPool[globals.PrefilteredCubemapIndex].SampleLevel(LinearSampler, float3(r.xy, -r.z), roughness * MAX_REFLECTION_LOD).rgb;
     float2 envBRDF = TexturesPool[globals.BRDFLUTIndex].Sample(LinearSampler, float2(NV, roughness)).rg;
     float3 Specular = prefilteredColor * (F0 * envBRDF.x + envBRDF.y);
 
-    float3 Irradience = CubeTexturesPool[globals.IrradienceCubemapIndex].Sample(LinearSampler, Normal).rgb;
+    float3 Irradience = CubeTexturesPool[globals.IrradienceCubemapIndex].Sample(LinearSampler, float3(Normal.xy, -Normal.z)).rgb;
     KDiffuse *= (1.0 - metallic);
     float3 Diffuse = Irradience * albedo;
 
-    float3 Ambient = KDiffuse * Diffuse  + Specular;
+    float3 Ambient = KDiffuse * Diffuse + Specular;
     resultColor += Ambient;
   }
 

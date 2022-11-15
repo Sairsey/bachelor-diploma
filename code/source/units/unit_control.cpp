@@ -25,18 +25,18 @@ void unit_control::Initialize(void)
     "bin/cubemaps/Forest/cubemap/nz.hdr");
 
   Engine->GlobalsSystem->CPUData.IrradienceCubemapIndex = Engine->CubeTexturesSystem->Load(
-    "bin/cubemaps/Forest/irradiance/px.hdr",
-    "bin/cubemaps/Forest/irradiance/nx.hdr",
-    "bin/cubemaps/Forest/irradiance/py.hdr",
-    "bin/cubemaps/Forest/irradiance/ny.hdr",
-    "bin/cubemaps/Forest/irradiance/pz.hdr",
-    "bin/cubemaps/Forest/irradiance/nz.hdr");
+    "bin/cubemaps/bathroom/irradiance/px.hdr",
+    "bin/cubemaps/bathroom/irradiance/nx.hdr",
+    "bin/cubemaps/bathroom/irradiance/py.hdr",
+    "bin/cubemaps/bathroom/irradiance/ny.hdr",
+    "bin/cubemaps/bathroom/irradiance/pz.hdr",
+    "bin/cubemaps/bathroom/irradiance/nz.hdr");
 
   Engine->GlobalsSystem->CPUData.PrefilteredCubemapIndex = Engine->CubeTexturesSystem->LoadMips(
-    "bin/cubemaps/Forest/prefiltered",
+    "bin/cubemaps/bathroom/prefiltered",
     5);
 
-  Engine->GlobalsSystem->CPUData.BRDFLUTIndex = Engine->TexturesSystem->Load("bin/cubemaps/Forest/brdf.hdr");
+  Engine->GlobalsSystem->CPUData.BRDFLUTIndex = Engine->TexturesSystem->Load("bin/cubemaps/bathroom/brdf.hdr");
 
   PROFILE_END(commandList);
   Engine->GetDevice().CloseUploadCommandList();

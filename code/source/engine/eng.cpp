@@ -37,6 +37,9 @@ VOID gdr::engine::Init(VOID)
   {
     unit->Initialize();
   }
+  render::GetDevice().WaitAllUploadLists();
+  render::GetDevice().WaitGPUIdle();
+  render::GetDevice().ResizeUpdateBuffer(true);
 }
 
 /* Change window size handle function.

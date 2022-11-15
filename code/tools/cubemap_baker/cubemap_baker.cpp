@@ -74,6 +74,41 @@ std::string AskDir(void)
 
 int main(void)
 {
+  if (MessageBox(NULL, "Build HDR image from cubemap?", "Question", MB_ICONQUESTION | MB_YESNO) == IDYES)
+  {
+    std::string CubemapDirectory = AskDir();
+    std::string OutputDirectory = AskDir();
+
+    float_cube_image cubemap(CubemapDirectory);
+
+    float_image hdr(cubemap.data[0].W * 4, cubemap.data[0].H * 3);
+
+    for (int i = 0; i < hdr.H; i++)
+    {
+      for (int j = 0; j < hdr.W; j++)
+      {
+        mth::vec3f Dir(0);
+        mth::vec2f uv = {1.0f * j / hdr.W, 1.0f * i / hdr.H};
+        uv[1] = -uv[1];
+        float theta = -MTH_PI / 2.0f + uv[1] * MTH_PI;
+        float phi = uv[0] * MTH_PI * 2.0f;
+
+        Dir.X = cos(theta) * cos(phi);
+        Dir.Y = sin(theta);
+        Dir.Z = cos(theta) * sin(phi);
+
+        Dir.Z = -Dir.Z;
+        Dir.X = -Dir.X;
+
+        mth::vec3f color = cubemap.SampleCube(Dir);
+
+        hdr.PutPixel(color, j, i);
+
+      }
+    }
+    hdr.Save(OutputDirectory + "/hdri.hdr");
+  }
+
   std::string HDRTexture = AskFile();
   std::string OutputDirectory = AskDir();
 

@@ -21,7 +21,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
   // Units
   Engine.AddUnit(new gdr::unit_base());
   Engine.AddUnit(new unit_control());
-  //Engine.AddUnit(new unit_specialist());
+  Engine.AddUnit(new unit_specialist());
   Engine.AddUnit(new unit_bathroom());
   Engine.AddUnit(new unit_cubemap_capture());
   //Engine.AddUnit(new unit_frog()); 

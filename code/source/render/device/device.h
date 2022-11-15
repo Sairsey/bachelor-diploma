@@ -15,7 +15,8 @@ namespace gdr
     int  CmdListCount = 2;
     int  UploadListCount = 2;
     HWND hWnd = nullptr;
-    int  UploadHeapSizeMb = 1024;
+    int  LoadtimeUploadHeapSizeMb = 1024;
+    int  RuntimeUploadHeapSizeMb = 128;
     int  DynamicHeapSizeMb = 16;
     int  ReadbackHeapSizeMb = 1;
     int  DynamicDescCount = 16;
@@ -36,6 +37,8 @@ namespace gdr
   class device
   {
     private:
+      device_create_params UsedForCreationParams;
+
       // Init D3D12 Device
       // ARGUMENTS: (bool) is enable debug 
       bool InitD3D12Device(bool DebugDevice);
@@ -283,6 +286,8 @@ namespace gdr
 
       // Wait GPU for Idle
       void WaitGPUIdle();
+
+      void ResizeUpdateBuffer(bool isRuntime = true);
 
       bool QueryTimestamp(ID3D12GraphicsCommandList* pCommandList, const std::function<void(UINT64)>& cb);
       UINT64 GetPresentQueueFrequency() const;

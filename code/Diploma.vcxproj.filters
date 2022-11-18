@@ -49,6 +49,9 @@
     <Filter Include="Source Files\Utils\ScreenGrab">
       <UniqueIdentifier>{201829c0-24ba-4588-9d6e-bf17855d284c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Physics">
+      <UniqueIdentifier>{aad23dbd-82e1-46d2-add5-52cf87ea54a6}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\main.cpp">
@@ -193,6 +196,15 @@
       <Filter>Source Files\Render\SubSystems</Filter>
     </ClCompile>
     <ClCompile Include="source\units\unit_cubemap_capture.cpp">
+      <Filter>Source Files\Units</Filter>
+    </ClCompile>
+    <ClCompile Include="source\physics\physics.cpp">
+      <Filter>Source Files\Physics</Filter>
+    </ClCompile>
+    <ClCompile Include="source\physics\physics_object.cpp">
+      <Filter>Source Files\Physics</Filter>
+    </ClCompile>
+    <ClCompile Include="source\units\unit_physic_spheres.cpp">
       <Filter>Source Files\Units</Filter>
     </ClCompile>
   </ItemGroup>
@@ -372,6 +384,12 @@
       <Filter>Source Files\Render\SubSystems</Filter>
     </ClInclude>
     <ClInclude Include="source\units\unit_cubemap_capture.h">
+      <Filter>Source Files\Units</Filter>
+    </ClInclude>
+    <ClInclude Include="source\physics\physics.h">
+      <Filter>Source Files\Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="source\units\unit_physic_spheres.h">
       <Filter>Source Files\Units</Filter>
     </ClInclude>
   </ItemGroup>

@@ -4,6 +4,9 @@
 // Windows Header Files
 #include <windows.h>
 
+#include "PhysX/PxPhysicsAPI.h"
+
+
 #include <tchar.h>
 #include <set>
 #include <assert.h>
@@ -26,6 +29,8 @@
 #define USE_PIX
 #include "WinPixEventRuntime/pix3.h"
 #include "imgui/imgui.h"
+
+
 
 #define PROFILE_MARKERS
 

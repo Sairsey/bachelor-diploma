@@ -174,9 +174,6 @@
     <ClCompile Include="source\units\unit_bathroom.cpp">
       <Filter>Source Files\Units</Filter>
     </ClCompile>
-    <ClCompile Include="source\render\passes\visibility_pass.cpp">
-      <Filter>Source Files\Render\Passes</Filter>
-    </ClCompile>
     <ClCompile Include="source\input\input.cpp">
       <Filter>Source Files\Input</Filter>
     </ClCompile>
@@ -209,6 +206,12 @@
     </ClCompile>
     <ClCompile Include="source\units\unit_physic_spheres.cpp">
       <Filter>Source Files\Units</Filter>
+    </ClCompile>
+    <ClCompile Include="source\render\passes\frustum_pass.cpp">
+      <Filter>Source Files\Render\Passes</Filter>
+    </ClCompile>
+    <ClCompile Include="source\render\passes\occlusion_pass.cpp">
+      <Filter>Source Files\Render\Passes</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -365,9 +368,6 @@
     <ClInclude Include="source\units\unit_bathroom.h">
       <Filter>Source Files\Units</Filter>
     </ClInclude>
-    <ClInclude Include="source\render\passes\visibility_pass.h">
-      <Filter>Source Files\Render\Passes</Filter>
-    </ClInclude>
     <ClInclude Include="source\render\subsystems\hier_depth_support.h">
       <Filter>Source Files\Render\SubSystems</Filter>
     </ClInclude>
@@ -400,6 +400,12 @@
     </ClInclude>
     <ClInclude Include="source\units\shooter\unit_shooter_enviroment.h">
       <Filter>Source Files\Units\Shooter</Filter>
+    </ClInclude>
+    <ClInclude Include="source\render\passes\frustum_pass.h">
+      <Filter>Source Files\Render\Passes</Filter>
+    </ClInclude>
+    <ClInclude Include="source\render\passes\occlusion_pass.h">
+      <Filter>Source Files\Render\Passes</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

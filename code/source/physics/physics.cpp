@@ -193,6 +193,9 @@ void gdr::physics::Update(double DeltaTime)
         ObjectsPool[i] = nullptr;
     }
     ForDelete.clear();
+
+    DeltaTime = min(DeltaTime, 1/30.0);
+
     if (DeltaTime > 0)
     {
       Scene->simulate(DeltaTime);
@@ -238,6 +241,7 @@ gdr::gdr_index gdr::physics::NewStaticMesh(physic_material Material, std::vector
     gdr_physics_object& Obj = *ObjectsPool[ObjectsPool.size() - 1];
     Obj.Body = Physics->createRigidStatic(physx::PxTransform(physx::PxIdentity));
     Obj.Material = Physics->createMaterial(Material.StaticFriction, Material.DynamicFriction, Material.Restitution);
+    Obj.MyIndex = ObjectsPool.size() - 1;
     {
         const unsigned CutSize = 65536;
         unsigned  CutCount = ((unsigned)Index.size() / 3 + CutSize - 1) / CutSize;
@@ -267,10 +271,10 @@ gdr::gdr_index gdr::physics::NewStaticMesh(physic_material Material, std::vector
             physx::PxTriangleMesh* Model = Physics->createTriangleMesh(readBuffer);
             physx::PxShape* Shape = Physics->createShape((physx::PxTriangleMeshGeometry(Model, physx::PxMeshScale(), physx::PxMeshGeometryFlag::eDOUBLE_SIDED)), *Obj.Material);
             Obj.Body->attachShape(*Shape);
+            Shape->userData = (void*)(Obj.MyIndex + 1);
             Shape->release();
         }
     }
-    Obj.MyIndex = ObjectsPool.size() - 1;
     Obj.Name = name;
     Obj.Body->userData = (void*)(Obj.MyIndex + 1);
     Scene->addActor(*Obj.Body);
@@ -283,6 +287,7 @@ gdr::gdr_index gdr::physics::NewDynamicMesh(physic_material Material, std::vecto
     gdr_physics_object& Obj = *ObjectsPool[ObjectsPool.size() - 1];
     Obj.Body = Physics->createRigidDynamic(physx::PxTransform(physx::PxIdentity));
     Obj.Material = Physics->createMaterial(Material.StaticFriction, Material.DynamicFriction, Material.Restitution);
+    Obj.MyIndex = ObjectsPool.size() - 1;
     {
         if (VertexBuffer.size() == 0)
             return -1;
@@ -307,9 +312,9 @@ gdr::gdr_index gdr::physics::NewDynamicMesh(physic_material Material, std::vecto
 
         physx::PxShape* Shape = Physics->createShape(physx::PxConvexMeshGeometry(Model), *Obj.Material);
         Obj.Body->attachShape(*Shape);
+        Shape->userData = (void*)(Obj.MyIndex + 1);
         Shape->release();
     }
-    Obj.MyIndex = ObjectsPool.size() - 1;
     Obj.Name = name;
     Obj.Body->userData = (void*)(Obj.MyIndex + 1);
     Scene->addActor(*Obj.Body);

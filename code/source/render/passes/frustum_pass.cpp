@@ -1,6 +1,6 @@
 #include "p_header.h"
 
-void gdr::visibility_pass::Initialize(void)
+void gdr::frustum_pass::Initialize(void)
 {
   // 1) Load shaders
   Render->GetDevice().CompileShader(_T("bin/shaders/FrustumVisibility.hlsl"), {}, shader_stage::Compute, &FrustumCullComputeShader);
@@ -8,7 +8,7 @@ void gdr::visibility_pass::Initialize(void)
   // 2) Create root signature for frustum compute
   {
     std::vector<CD3DX12_ROOT_PARAMETER> params;
-    CD3DX12_DESCRIPTOR_RANGE descr[4] = {};
+    CD3DX12_DESCRIPTOR_RANGE descr[3] = {};
 
     params.resize((int)root_parameters_frustum_indices::total_root_parameters);
 
@@ -28,14 +28,6 @@ void gdr::visibility_pass::Initialize(void)
         (int)texture_registers::all_command_pool_register);
     }
 
-    // UAV set as Descriptor range
-    {
-      descr[0].Init(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 1, (int)uav_registers::opaque_all_command_pool_register);
-
-      params[(int)root_parameters_frustum_indices::opaque_all_commands_pool_index].InitAsDescriptorTable(
-        1, &descr[0]);
-    }
-
     {
       descr[1].Init(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 1, (int)uav_registers::opaque_frustum_command_pool_register);
 
@@ -43,25 +35,8 @@ void gdr::visibility_pass::Initialize(void)
         1, &descr[1]);
     }
 
-    {
-      descr[2].Init(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 1, (int)uav_registers::transparent_culled_command_pool_register);
-
-      params[(int)root_parameters_frustum_indices::transparent_culled_command_pool_index].InitAsDescriptorTable(
-        1, &descr[2]);
-    }
-
-    {
-      descr[3].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, (int)texture_registers::hier_depth_register);
-
-      params[(int)root_parameters_frustum_indices::hier_depth_index].InitAsDescriptorTable(
-        1, &descr[3]);
-    }
-
-    CD3DX12_STATIC_SAMPLER_DESC samplerDescs[1];
-    samplerDescs[0].Init(0, D3D12_FILTER_MIN_MAG_MIP_POINT);
-
     CD3DX12_ROOT_SIGNATURE_DESC rootSignatureDesc;
-    rootSignatureDesc.Init((UINT)params.size(), &params[0], sizeof(samplerDescs) / sizeof(samplerDescs[0]), samplerDescs, D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
+    rootSignatureDesc.Init((UINT)params.size(), &params[0], 0, nullptr, D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
     Render->GetDevice().CreateRootSignature(rootSignatureDesc, &FrustumCullRootSignature);
   }
 
@@ -76,34 +51,19 @@ void gdr::visibility_pass::Initialize(void)
   }
 }
 
-void gdr::visibility_pass::CallDirectDraw(ID3D12GraphicsCommandList* currentCommandList)
+void gdr::frustum_pass::CallDirectDraw(ID3D12GraphicsCommandList* currentCommandList)
 {
   // Idea
-  // 1) cull every command to 
-  // indirect_command_enum::OpaqueAll;
+  // 1) cull every command to
   // indirect_command_enum::OpaqueFrustrumCulled;
-  // indirect_command_enum::TransparentsCulled;
-  // 2) Depth prepass plus write to texture indices of every object on screen
-  // 3) Draw fullscreen rect and fill bool array with correct data
-  // 4) Cull with bool array indirect_command_enum::OpaqueFrustrumCulled;
-  // /\
-  // ||  
-  // This idea is bad because we need to draw our scene 2 times. Lets do hierarchical-Z instead
-
+  // 2) use it for Depth prepass
+  // 3) Do Hier-Z
+  // 4) Cull with Hier-Z all commands
 
   // In case we have Direct render
-  
   if (!Render->Params.IsIndirect)
   {
-    // Transit resource state of buffers to INDIRECT_ARGUMENT.
-    for (int i = 1; i < (int)indirect_command_enum::TotalBuffers; i++)
-    {
-      // transit state from indirect argument to Unordered ACCESS
-      Render->GetDevice().TransitResourceState(
-        currentCommandList,
-        Render->IndirectSystem->CommandsBuffer[i].Resource,
-        D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_INDIRECT_ARGUMENT);
-    }
+    // do nothing
     return;
   }
 
@@ -141,38 +101,20 @@ void gdr::visibility_pass::CallDirectDraw(ID3D12GraphicsCommandList* currentComm
       Render->IndirectSystem->CommandsBuffer[(int)indirect_command_enum::All].Resource->GetGPUVirtualAddress());
 
     currentCommandList->SetComputeRootDescriptorTable(
-      (int)root_parameters_frustum_indices::opaque_all_commands_pool_index, // root parameter index
-      Render->IndirectSystem->CommandsGPUDescriptor[(int)indirect_command_enum::OpaqueAll]);
-
-    currentCommandList->SetComputeRootDescriptorTable(
       (int)root_parameters_frustum_indices::opaque_frustum_command_pool_index, // root parameter index
       Render->IndirectSystem->CommandsGPUDescriptor[(int)indirect_command_enum::OpaqueFrustrumCulled]);
-
-    currentCommandList->SetComputeRootDescriptorTable(
-      (int)root_parameters_frustum_indices::transparent_culled_command_pool_index, // root parameter index
-      Render->IndirectSystem->CommandsGPUDescriptor[(int)indirect_command_enum::TransparentsCulled]);
-
-    currentCommandList->SetComputeRootDescriptorTable(
-      (int)root_parameters_frustum_indices::hier_depth_index, // root parameter index
-      Render->HierDepth->TextureGPUDescriptorHandle);
 
     currentCommandList->Dispatch(static_cast<UINT>(ceil(Render->IndirectSystem->CPUData.size() / float(ComputeThreadBlockSize))), 1, 1);
   }
 
-  // Transit resource state of buffers to INDIRECT_ARGUMENT.
-  for (int i = 1; i < (int)indirect_command_enum::TotalBuffers; i++)
-  {
-    //if (i == (int)indirect_command_enum::OpaqueCulled)
-    //  continue;
-    // transit state from indirect argument to Unordered ACCESS
-    Render->GetDevice().TransitResourceState(
+  // Transit resource state of frustum culled buffer to INDIRECT_ARGUMENT.
+  Render->GetDevice().TransitResourceState(
       currentCommandList,
-      Render->IndirectSystem->CommandsBuffer[i].Resource,
+      Render->IndirectSystem->CommandsBuffer[(int)indirect_command_enum::OpaqueFrustrumCulled].Resource,
       D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_INDIRECT_ARGUMENT);
-  }
 }
 
-gdr::visibility_pass::~visibility_pass(void)
+gdr::frustum_pass::~frustum_pass(void)
 {
   FrustumCullRootSignature->Release();
   FrustumCullPSO->Release();

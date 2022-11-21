@@ -21,6 +21,7 @@ public:
 
   void Response(void)
   {
+    // Update boxes positions
     for (int i = 0; i < DynamicObjects.size(); i++)
     {
       gdr::gdr_node *Node = Engine->ObjectSystem->NodesPool[RenderObjects[1]].Find(Engine->GetPhysObject(DynamicObjects[i]).Name);

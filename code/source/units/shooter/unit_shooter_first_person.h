@@ -49,6 +49,19 @@ public:
         Engine->Mx = pt.x;
         Engine->My = pt.y;
       }
+      CURSORINFO info;
+      info.cbSize = sizeof(CURSORINFO);
+      if (GetCursorInfo(&info))
+        if (info.flags & CURSOR_SHOWING)
+          ShowCursor(0);
+    }
+    else
+    {
+      CURSORINFO info;
+      info.cbSize = sizeof(CURSORINFO);
+      if (GetCursorInfo(&info))
+        if (!(info.flags & CURSOR_SHOWING))
+          ShowCursor(TRUE);
     }
 
     // Set Camera position according to Capsule position
@@ -59,7 +72,7 @@ public:
 
     Engine->PlayerCamera.SetView(cameraPosition, cameraPosition + Engine->PlayerCamera.GetDir(), {0, 1, 0});
 
-    Engine->LightsSystem->GetTransform(PlayerLight).transform = mth::matr4f::Translate(capsulePosition);
+    Engine->LightsSystem->GetTransform(PlayerLight).transform = mth::matr4f::Translate(cameraPosition);
 
     // MOVING
     if (!Engine->GetPause())

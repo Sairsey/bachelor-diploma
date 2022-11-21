@@ -26,10 +26,11 @@
 #include "render/subsystems/screenshot_subsystem.h"
 
 #include "render/passes/base_pass.h"
-#include "render/passes/visibility_pass.h"
+#include "render/passes/frustum_pass.h"
+#include "render/passes/hier_depth_pass.h"
+#include "render/passes/occlusion_pass.h"
 
 #include "render/passes/albedo_pass.h"
-#include "render/passes/hier_depth_pass.h"
 
 #include "render/passes/order_transparent_pass.h"
 #include "render/passes/oit_transparent_pass.h"

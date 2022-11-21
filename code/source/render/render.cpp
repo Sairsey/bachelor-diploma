@@ -85,11 +85,12 @@ bool gdr::render::Init(engine* Eng)
   if (localIsInited)
   {
     Passes.push_back(new debug_pass());
-    Passes.push_back(new visibility_pass());
+    Passes.push_back(new frustum_pass());
+    Passes.push_back(new hier_depth_pass());
+    Passes.push_back(new occlusion_pass());
     Passes.push_back(new albedo_pass());
     Passes.push_back(new skybox_pass());
     Passes.push_back(new oit_transparent_pass());
-    Passes.push_back(new hier_depth_pass());
     Passes.push_back(new tonemap_pass());
     //Passes.push_back(new hdr_copy_pass());
     Passes.push_back(new imgui_pass());

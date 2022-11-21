@@ -5,15 +5,15 @@
 namespace gdr
 {
   /* Pass representation class */
-  class visibility_pass : public base_pass
+  class occlusion_pass : public base_pass
   {
   // will draw plane
   private:
-    ID3DBlob* FrustumCullComputeShader; // Culling only objects in frustum
-    ID3D12RootSignature* FrustumCullRootSignature; // Culling only objects in frustum
+    ID3DBlob* OcclusionCullComputeShader; // Culling only objects in frustum
+    ID3D12RootSignature* OcclusionCullRootSignature; // Culling only objects in frustum
     ComputeRootConstants CPUComputeRootConstants;
 
-    ID3D12PipelineState* FrustumCullPSO;
+    ID3D12PipelineState* OcclusionCullPSO;
 
     // Command signatures
     ID3D12CommandSignature* CommandSignature;
@@ -61,7 +61,7 @@ namespace gdr
     /* Function to get name */
     std::string GetName(void) override
     {
-      return "visibility_pass";
+      return "occlusion_pass";
     };
 
     /* Function to Initialize every PSO/InputLayout/Shaders we need */
@@ -71,6 +71,6 @@ namespace gdr
     void CallDirectDraw(ID3D12GraphicsCommandList* currentCommandList) override;
 
     /* Virtual Destructor */
-    ~visibility_pass() override;
+    ~occlusion_pass() override;
   };
 }

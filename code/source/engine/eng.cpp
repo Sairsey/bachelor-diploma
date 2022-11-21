@@ -79,7 +79,8 @@ VOID gdr::engine::Paint(HDC hDC)
  */
 VOID gdr::engine::Activate(BOOL IsActive)
 {
-
+  SetPause(!IsActive);
+  ShowCursor(IsActive);
 }
 
 /* Timer handle function.

@@ -61,6 +61,30 @@ void gdr::gdr_physics_object::AddVelocity(float3 Vel)
   BodyReal->setLinearVelocity(OldVelocity);
   return;
 }
+
+void gdr::gdr_physics_object::SetVelocity(float3 Vel)
+{
+  if (IsStatic)
+    return;
+  physx::PxRigidBody* BodyReal = Body->is<physx::PxRigidBody>();
+
+  physx::PxVec3 OldVelocity = BodyReal->getLinearVelocity();
+  OldVelocity[0] = Vel[0];
+  OldVelocity[1] = Vel[1];
+  OldVelocity[2] = Vel[2];
+  BodyReal->setLinearVelocity(OldVelocity);
+  return;
+}
+
+float3 gdr::gdr_physics_object::GetVelocity(void)
+{
+  if (IsStatic)
+    return {0, 0, 0};
+  physx::PxRigidBody* BodyReal = Body->is<physx::PxRigidBody>();
+  physx::PxVec3 OldVelocity = BodyReal->getLinearVelocity();
+  return {OldVelocity[0], OldVelocity[1], OldVelocity[2]};
+}
+
 void gdr::gdr_physics_object::SetPos(float3 Pos)
 {
   if (IsStatic)

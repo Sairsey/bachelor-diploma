@@ -1,4 +1,13 @@
 #include "p_header.h"
+#ifdef min
+#undef min
+#endif
+#include "assimp/Importer.hpp"
+#include "assimp/scene.h"
+#include "assimp/postprocess.h"
+#ifndef min
+#define min(a,b)            (((a) < (b)) ? (a) : (b))
+#endif
 
 #include <thread>
 
@@ -81,9 +90,11 @@ public:
         physx::PxActor* OtherActor = pairHeader.actors[1];
         if (MyActor->userData && OtherActor->userData)
         {
-            gdr::gdr_physics_object& Object = Phys->GetPhysObject((gdr::gdr_index)MyActor->userData);
-            gdr::gdr_physics_object& OtherObject = Phys->GetPhysObject((gdr::gdr_index)OtherActor->userData);
-            Object.CollideCallback(&Object, &OtherObject);
+            gdr::gdr_index ObjectIndex = (gdr::gdr_index)MyActor->userData - 1;
+            gdr::gdr_index OtherObjectIndex = (gdr::gdr_index)OtherActor->userData - 1;
+            gdr::gdr_physics_object *Object = ObjectIndex < Phys->GetObjectsAmount() ? &Phys->GetPhysObject(ObjectIndex) : nullptr;
+            gdr::gdr_physics_object *OtherObject = OtherObjectIndex < Phys->GetObjectsAmount() ? &Phys->GetPhysObject(OtherObjectIndex) : nullptr;
+            Object->CollideCallback(Object, OtherObject);
         }
       }
     }
@@ -143,8 +154,9 @@ gdr::physics::physics(bool IsVisualDebugger)
         pvdClient->setScenePvdFlag(physx::PxPvdSceneFlag::eTRANSMIT_SCENEQUERIES, true);
     }
 
-    physx::PxMaterial* Material = Physics->createMaterial(0.5f, 0.5f, 0.6f);
+    physx::PxMaterial* Material = Physics->createMaterial(1.f, 1.f, 0.1f);
     groundPlane = PxCreatePlane(*Physics, physx::PxPlane(0, 1, 0, 0), *Material);
+    groundPlane->userData = (void *)-1;
     Scene->addActor(*groundPlane);
 
     Material->release();
@@ -164,7 +176,7 @@ std::vector<gdr::ray_intersect> gdr::physics::Raycast(mth::vec3f Org, mth::vec3f
     for (uint32_t i = 0; i < buf.nbTouches; i++)
         if (buf.touches[i].actor->userData)
         {
-            gdr_index ObjectIndex = (gdr_index)buf.touches[i].actor->userData;
+            gdr_index ObjectIndex = (gdr_index)buf.touches[i].actor->userData - 1;
             ray_intersect A;
             A.PhysObjectIndex = ObjectIndex;
             A.Distance = buf.touches[i].distance;
@@ -181,8 +193,11 @@ void gdr::physics::Update(double DeltaTime)
         ObjectsPool[i] = nullptr;
     }
     ForDelete.clear();
-    Scene->simulate(DeltaTime);
-    Scene->fetchResults(true);
+    if (DeltaTime > 0)
+    {
+      Scene->simulate(DeltaTime);
+      Scene->fetchResults(true);
+    }
 }
 
 gdr::gdr_index gdr::physics::NewDynamicSphere(physic_material Material, double Radius, std::string name)
@@ -193,7 +208,7 @@ gdr::gdr_index gdr::physics::NewDynamicSphere(physic_material Material, double R
     Obj.Material = Physics->createMaterial(Material.StaticFriction, Material.DynamicFriction, Material.Restitution);
     physx::PxShape* SphereShape = physx::PxRigidActorExt::createExclusiveShape(*Obj.Body, physx::PxSphereGeometry(Radius), *Obj.Material);
     Obj.MyIndex = ObjectsPool.size() - 1;
-    Obj.Body->userData = (void*)Obj.MyIndex;
+    Obj.Body->userData = (void*)(Obj.MyIndex + 1);
     Obj.Name = name;
     Scene->addActor(*Obj.Body);
     return Obj.MyIndex;
@@ -212,7 +227,7 @@ gdr::gdr_index gdr::physics::NewDynamicCapsule(physic_material Material, double 
     Obj.MyIndex = ObjectsPool.size() - 1;
     Obj.Name = name;
     CapsuleShape->release();
-    Obj.Body->userData = (void*)Obj.MyIndex;
+    Obj.Body->userData = (void*)(Obj.MyIndex + 1);
     Scene->addActor(*Obj.Body);
     return Obj.MyIndex;
 }
@@ -221,7 +236,7 @@ gdr::gdr_index gdr::physics::NewStaticMesh(physic_material Material, std::vector
 {
     ObjectsPool.emplace_back(new gdr_physics_object()); // TODO - change on smart choosing
     gdr_physics_object& Obj = *ObjectsPool[ObjectsPool.size() - 1];
-    Obj.Body = Physics->createRigidDynamic(physx::PxTransform(physx::PxIdentity));
+    Obj.Body = Physics->createRigidStatic(physx::PxTransform(physx::PxIdentity));
     Obj.Material = Physics->createMaterial(Material.StaticFriction, Material.DynamicFriction, Material.Restitution);
     {
         const unsigned CutSize = 65536;
@@ -257,7 +272,7 @@ gdr::gdr_index gdr::physics::NewStaticMesh(physic_material Material, std::vector
     }
     Obj.MyIndex = ObjectsPool.size() - 1;
     Obj.Name = name;
-    Obj.Body->userData = (void*)Obj.MyIndex;
+    Obj.Body->userData = (void*)(Obj.MyIndex + 1);
     Scene->addActor(*Obj.Body);
     return Obj.MyIndex;
 }
@@ -296,7 +311,7 @@ gdr::gdr_index gdr::physics::NewDynamicMesh(physic_material Material, std::vecto
     }
     Obj.MyIndex = ObjectsPool.size() - 1;
     Obj.Name = name;
-    Obj.Body->userData = (void*)Obj.MyIndex;
+    Obj.Body->userData = (void*)(Obj.MyIndex + 1);
     Scene->addActor(*Obj.Body);
     return Obj.MyIndex;
 }
@@ -319,4 +334,95 @@ gdr::physics::~physics()
         PX_RELEASE(transport);
     }
     PX_RELEASE(Foundation);
+}
+
+std::vector<gdr::gdr_index> gdr::physics::NewStaticMeshAssimp(physic_material Material, std::string Filename)
+{
+  // Create an instance of the Importer class
+  Assimp::Importer importer;
+
+  const aiScene* scene = importer.ReadFile(Filename, aiProcess_PreTransformVertices);
+
+  std::vector<gdr::gdr_index> result;
+
+  for (int i = 0; i < scene->mNumMeshes; i++)
+  {
+    std::vector<vertex> vertices;
+    std::vector<UINT32> indices;
+    aiMesh *mesh = scene->mMeshes[i];
+
+    for (int j = 0; j < (int)mesh->mNumFaces; j++)
+    {
+      if (mesh->mFaces[j].mNumIndices != 3)
+      {
+        continue;
+      }
+      indices.push_back(mesh->mFaces[j].mIndices[0]);
+      indices.push_back(mesh->mFaces[j].mIndices[1]);
+      indices.push_back(mesh->mFaces[j].mIndices[2]);
+    }
+
+    for (int j = 0; j < (int)mesh->mNumVertices; j++)
+    {
+      vertex V;
+      V.Pos = mth::vec3f({ mesh->mVertices[j].x, mesh->mVertices[j].y, mesh->mVertices[j].z });
+
+      vertices.push_back(V);
+    }
+
+    result.push_back(NewStaticMesh(Material, vertices, indices, mesh->mName.C_Str()));
+  }
+
+  importer.FreeScene();
+  return result;
+}
+std::vector<gdr::gdr_index> gdr::physics::NewDynamicMeshAssimp(physic_material Material, std::string Filename)
+{
+  // Create an instance of the Importer class
+  Assimp::Importer importer;
+
+  const aiScene* scene = importer.ReadFile(Filename, aiProcess_PreTransformVertices);
+
+  std::vector<gdr::gdr_index> result;
+
+  for (int i = 0; i < scene->mNumMeshes; i++)
+  {
+    std::vector<vertex> vertices;
+    std::vector<UINT32> indices;
+    aiMesh* mesh = scene->mMeshes[i];
+
+    for (int j = 0; j < (int)mesh->mNumFaces; j++)
+    {
+      if (mesh->mFaces[j].mNumIndices != 3)
+      {
+        continue;
+      }
+      indices.push_back(mesh->mFaces[j].mIndices[0]);
+      indices.push_back(mesh->mFaces[j].mIndices[1]);
+      indices.push_back(mesh->mFaces[j].mIndices[2]);
+    }
+
+    mth::vec3f Center;
+
+    for (int j = 0; j < (int)mesh->mNumVertices; j++)
+    {
+      vertex V;
+      V.Pos = mth::vec3f({ mesh->mVertices[j].x, mesh->mVertices[j].y, mesh->mVertices[j].z });
+      Center += V.Pos;
+      vertices.push_back(V);
+    }
+
+    Center /= mesh->mNumVertices;
+
+    for (int j = 0; j < (int)mesh->mNumVertices; j++)
+    {
+      vertices[j].Pos -= Center;
+    }
+
+    result.push_back(NewDynamicMesh(Material, vertices, indices, mesh->mName.C_Str()));
+    ObjectsPool[result[result.size() - 1]]->SetPos(Center);
+  }
+
+  importer.FreeScene();
+  return result;
 }

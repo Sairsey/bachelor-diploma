@@ -56,6 +56,8 @@ namespace gdr
       ObjectTransform GetTransform();
       mth::matr4f &GetTransformEditable();
       ObjectMaterial &GetMaterial();
+
+      gdr_node* Find(std::string name);
   };
 
   // Object system representation class

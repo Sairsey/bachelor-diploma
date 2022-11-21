@@ -52,6 +52,9 @@
     <Filter Include="Source Files\Physics">
       <UniqueIdentifier>{aad23dbd-82e1-46d2-add5-52cf87ea54a6}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Units\Shooter">
+      <UniqueIdentifier>{6bf18f29-94f8-49c9-bce9-1e60dada9521}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\main.cpp">
@@ -391,6 +394,12 @@
     </ClInclude>
     <ClInclude Include="source\units\unit_physic_spheres.h">
       <Filter>Source Files\Units</Filter>
+    </ClInclude>
+    <ClInclude Include="source\units\shooter\unit_shooter_first_person.h">
+      <Filter>Source Files\Units\Shooter</Filter>
+    </ClInclude>
+    <ClInclude Include="source\units\shooter\unit_shooter_enviroment.h">
+      <Filter>Source Files\Units\Shooter</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

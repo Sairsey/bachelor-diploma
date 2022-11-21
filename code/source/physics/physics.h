@@ -38,7 +38,9 @@ namespace gdr
 
         mth::matr4f GetTransform(void);
         double GetMass(void);
+        void SetVelocity(float3 Vel);
         void AddVelocity(float3 Vel);
+        float3 GetVelocity(void);
         void Stop(void);
         void ApplyForce(float3 F);
         void SetPos(float3 Pos);
@@ -73,11 +75,14 @@ namespace gdr
       std::vector<ray_intersect> Raycast(mth::vec3f Org, mth::vec3f Dir, float MaxLength);
       void Update(double DeltaTime);
       gdr_physics_object& GetPhysObject(gdr_index ObjectIndex) { return *ObjectsPool[ObjectIndex]; }
+      size_t GetObjectsAmount(void) { return ObjectsPool.size(); }
 
       gdr_index NewDynamicSphere(physic_material Material, double Radius, std::string name);
       gdr_index NewDynamicCapsule(physic_material Material, double Radius, double HalfHeight, std::string name);
       gdr_index NewStaticMesh(physic_material Material, std::vector<vertex> VertexBuffer, std::vector<UINT32> Index, std::string name);
       gdr_index NewDynamicMesh(physic_material Material, std::vector<vertex> VertexBuffer, std::vector<UINT32> Index, std::string name);
+      std::vector<gdr_index> NewStaticMeshAssimp(physic_material Material, std::string Filename);
+      std::vector<gdr_index> NewDynamicMeshAssimp(physic_material Material, std::string Filename);
       void DeletePhysObject(gdr_index ToDelete);
 
       ~physics();

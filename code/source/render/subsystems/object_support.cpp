@@ -19,7 +19,7 @@ mth::matr4f& gdr::gdr_node::GetTransformEditable()
   IsTransformCalculated = false;
   Render->ObjectSystem->MarkNodeToRecalc(Index);
   if (NodeType == gdr_node_type::mesh)
-    return Render->ObjectSystem->NodesPool[ParentIndex].LocalTransform;
+    return Render->ObjectSystem->NodesPool[ParentIndex].GetTransformEditable();
   else
     return LocalTransform;
 }
@@ -28,6 +28,21 @@ ObjectMaterial& gdr::gdr_node::GetMaterial()
 {
   assert(NodeType == gdr_node_type::mesh);
   return Render->MaterialsSystem->CPUData[Render->ObjectSystem->CPUPool[MeshIndex].ObjectMaterialIndex];
+}
+
+gdr::gdr_node* gdr::gdr_node::Find(std::string name)
+{
+  if (Name == name)
+    return this;
+
+  for (int i = 0; i < Childs.size(); i++)
+  {
+    gdr_node* subFind = Render->ObjectSystem->NodesPool[Childs[i]].Find(name);
+    if (subFind)
+      return subFind;
+  }
+
+  return nullptr;
 }
 
 // default constructor

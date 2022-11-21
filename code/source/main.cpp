@@ -11,6 +11,17 @@
 #include "units/unit_specialist.h"
 #include "units/unit_cubemap_capture.h"
 #include "units/unit_physic_spheres.h"
+#include "units/shooter/unit_shooter_first_person.h"
+#include "units/shooter/unit_shooter_enviroment.h"
+//#include "units/shooter/unit_shooter_enemy_spawner.h"
+//#include "units/shooter/unit_shooter_gun.h"
+
+enum EXAMPLE
+{
+  NONE,
+  SPECIALIST,
+  SHOOTER
+};
 
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
   _In_opt_ HINSTANCE hPrevInstance,
@@ -19,17 +30,37 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 {
   gdr::engine Engine;
   
+  EXAMPLE usedExample = SHOOTER;
+
+  if (usedExample == SPECIALIST)
+  {
+    Engine.AddUnit(new unit_control());
+    Engine.AddUnit(new unit_specialist());
+    Engine.AddUnit(new unit_bathroom());
+  }
+  else if (usedExample == SHOOTER)
+  {
+    Engine.AddUnit(new unit_shooter_first_person());
+    Engine.AddUnit(new unit_shooter_enviroment());
+    //Engine.AddUnit(new unit_shooter_enemy_spawner());
+    //Engine.AddUnit(new unit_shooter_gun());
+  }
+  else
+  {
+    Engine.AddUnit(new gdr::unit_base());
+    Engine.AddUnit(new unit_control());
+    //Engine.AddUnit(new unit_specialist());
+    //Engine.AddUnit(new unit_bathroom());
+    //Engine.AddUnit(new unit_phys_spheres());
+    //Engine.AddUnit(new unit_cubemap_capture());
+    //Engine.AddUnit(new unit_frog()); 
+    //Engine.AddUnit(new unit_bread());
+    //Engine.AddUnit(new unit_pbr_spheres());
+    //Engine.AddUnit(new unit_city());
+  }
+
   // Units
-  Engine.AddUnit(new gdr::unit_base());
-  Engine.AddUnit(new unit_control());
-  //Engine.AddUnit(new unit_specialist());
-  //Engine.AddUnit(new unit_bathroom());
-  Engine.AddUnit(new unit_phys_spheres());
-  //Engine.AddUnit(new unit_cubemap_capture());
-  //Engine.AddUnit(new unit_frog()); 
-  //Engine.AddUnit(new unit_bread());
-  //Engine.AddUnit(new unit_pbr_spheres());
-  //Engine.AddUnit(new unit_city());
+
 
   Engine.AddUnit(new unit_stats());
 

@@ -24,7 +24,7 @@ void unit_specialist::Response(void)
     first = false;
   }
 
-  //Engine->PlayerCamera.SetView({0, 2, 6}, {0, 1.9, 5.1}, {0, 1, 0});
+  Engine->PlayerCamera.SetView({0, 2, 6}, {0, 1.9, 5.1}, {0, 1, 0});
 
   if (Engine->GetTime() - time_start >= 0)
   {

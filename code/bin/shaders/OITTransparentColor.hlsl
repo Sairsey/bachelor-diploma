@@ -95,6 +95,9 @@ float4 PS(VSOut input) : SV_TARGET
       Normal = normalize(mul(TBN, Normal));
     }
 
+    float val = dot(Normal, globals.CameraPos - input.unmodifiedPos.xyz);
+
+    Normal *= val / abs(val);
     uint2 screen_pos = uint2(input.pos.x - 0.5, input.pos.y - 0.5);
     float4 col = Shade(Normal, input.unmodifiedPos.xyz, input.uv, myMaterial);
     uint new_element_index = OITPool.IncrementCounter();

@@ -14,7 +14,7 @@ private:
 public:
   void Initialize(void)
   {
-    PlayerCapsule = Engine->NewDynamicCapsule(gdr::physic_material(), PlayerWidth / 2.0, (PlayerHeight - PlayerWidth / 2.0) / 2.0, "PlayerCapsule");
+    PlayerCapsule = Engine->NewDynamicCapsule(gdr::physic_material(), PlayerWidth / 2.0, (PlayerHeight - PlayerWidth) / 2.0, "PlayerCapsule");
     // disable rotation
     Engine->GetPhysObject(PlayerCapsule).ToggleRotation();
     Engine->GetPhysObject(PlayerCapsule).SetPos({0, 1, 0});
@@ -68,7 +68,7 @@ public:
     mth::matr4f capsuleTransform = Engine->GetPhysObject(PlayerCapsule).GetTransform();
 
     mth::vec3f capsulePosition = mth::vec3f(capsuleTransform[3][0], capsuleTransform[3][1], capsuleTransform[3][2]);
-    mth::vec3f cameraPosition = capsulePosition + mth::vec3f(0, 1, 0) * PlayerHeight;
+    mth::vec3f cameraPosition = capsulePosition + mth::vec3f(0, 1, 0) * PlayerHeight / 2.0;
 
     Engine->PlayerCamera.SetView(cameraPosition, cameraPosition + Engine->PlayerCamera.GetDir(), {0, 1, 0});
 

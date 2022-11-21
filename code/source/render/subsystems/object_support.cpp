@@ -594,14 +594,20 @@ gdr::gdr_index gdr::object_support::CreateObjectFromFile(std::string fileName)
     }
   }
 
+  bool noBones = true;
+  for (int i = 0; i < scene->mNumMeshes && noBones; i++)
+    if (scene->mMeshes[i]->HasBones())
+      noBones = false;
+
+  if (noBones)
+    LoadedFiles[fileName] = FileNode.Index;
+
   importer.FreeScene();
   tmpBoneMapping.clear();
   Render->TransformsSystem->CPUData[NodesPool[FileNode.Index].TransformIndex].maxAABB = NodesPool[NodesPool[FileNode.Index].Childs[0]].GetTransform().maxAABB;
   Render->TransformsSystem->CPUData[NodesPool[FileNode.Index].TransformIndex].minAABB = NodesPool[NodesPool[FileNode.Index].Childs[0]].GetTransform().minAABB;
   Render->TransformsSystem->MarkChunkByTransformIndex(NodesPool[FileNode.Index].TransformIndex);
   MarkNodeToRecalc(FileNode.Index);
-
-  LoadedFiles[fileName] = FileNode.Index;
 
   return FileNode.Index;
 }

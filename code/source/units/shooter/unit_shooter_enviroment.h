@@ -17,6 +17,36 @@ public:
     // add boxes
     RenderObjects.push_back(Engine->ObjectSystem->CreateObjectFromFile("bin/models/shooter_enviroment/dynamic_env.glb"));
     DynamicObjects = Engine->NewDynamicMeshAssimp(gdr::physic_material(), "bin/models/shooter_enviroment/dynamic_env.glb");
+    /*
+    ID3D12GraphicsCommandList* commandList;
+    Engine->GetDevice().BeginUploadCommandList(&commandList);
+    PROFILE_BEGIN(commandList, "skybox Init");
+    // Add skybox
+    Engine->GlobalsSystem->CPUData.SkyboxCubemapIndex = Engine->CubeTexturesSystem->Load(
+      "bin/cubemaps/Night/cubemap/px.hdr",
+      "bin/cubemaps/Night/cubemap/nx.hdr",
+      "bin/cubemaps/Night/cubemap/py.hdr",
+      "bin/cubemaps/Night/cubemap/ny.hdr",
+      "bin/cubemaps/Night/cubemap/pz.hdr",
+      "bin/cubemaps/Night/cubemap/nz.hdr");
+
+    Engine->GlobalsSystem->CPUData.IrradienceCubemapIndex = Engine->CubeTexturesSystem->Load(
+      "bin/cubemaps/Night/irradiance/px.hdr",
+      "bin/cubemaps/Night/irradiance/nx.hdr",
+      "bin/cubemaps/Night/irradiance/py.hdr",
+      "bin/cubemaps/Night/irradiance/ny.hdr",
+      "bin/cubemaps/Night/irradiance/pz.hdr",
+      "bin/cubemaps/Night/irradiance/nz.hdr");
+
+    Engine->GlobalsSystem->CPUData.PrefilteredCubemapIndex = Engine->CubeTexturesSystem->LoadMips(
+      "bin/cubemaps/Night/prefiltered",
+      5);
+
+    Engine->GlobalsSystem->CPUData.BRDFLUTIndex = Engine->TexturesSystem->Load("bin/cubemaps/Night/brdf.hdr");
+
+    PROFILE_END(commandList);
+    Engine->GetDevice().CloseUploadCommandList();
+    */
   }
 
   void Response(void)

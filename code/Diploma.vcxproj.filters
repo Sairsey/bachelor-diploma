@@ -407,5 +407,14 @@
     <ClInclude Include="source\render\passes\occlusion_pass.h">
       <Filter>Source Files\Render\Passes</Filter>
     </ClInclude>
+    <ClInclude Include="source\units\shooter\unit_shooter_enemy.h">
+      <Filter>Source Files\Units\Shooter</Filter>
+    </ClInclude>
+    <ClInclude Include="source\units\shooter\unit_shooter_enemy_spawner.h">
+      <Filter>Source Files\Units\Shooter</Filter>
+    </ClInclude>
+    <ClInclude Include="source\units\shooter\unit_shooter_gun.h">
+      <Filter>Source Files\Units\Shooter</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

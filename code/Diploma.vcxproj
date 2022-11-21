@@ -56,8 +56,11 @@
     <ClInclude Include="source\render\subsystems\texture_support.h" />
     <ClInclude Include="source\render\subsystems\transforms_support.h" />
     <ClInclude Include="source\timer\timer.h" />
+    <ClInclude Include="source\units\shooter\unit_shooter_enemy.h" />
+    <ClInclude Include="source\units\shooter\unit_shooter_enemy_spawner.h" />
     <ClInclude Include="source\units\shooter\unit_shooter_enviroment.h" />
     <ClInclude Include="source\units\shooter\unit_shooter_first_person.h" />
+    <ClInclude Include="source\units\shooter\unit_shooter_gun.h" />
     <ClInclude Include="source\units\unit_base.h" />
     <ClInclude Include="source\units\unit_bathroom.h" />
     <ClInclude Include="source\units\unit_bread.h" />

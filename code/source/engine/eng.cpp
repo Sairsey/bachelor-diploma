@@ -33,9 +33,9 @@ gdr::engine::~engine()
  */
 VOID gdr::engine::Init(VOID)
 {
-  for (auto &unit : Units)
+  for (int i = 0; i < Units.size(); i++) // We can add units while initializing, so lets Initialize in for loop
   {
-    unit->Initialize();
+    Units[i]->Initialize();
   }
   render::GetDevice().WaitAllUploadLists();
   render::GetDevice().WaitGPUIdle();

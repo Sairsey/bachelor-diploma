@@ -13,8 +13,8 @@
 #include "units/unit_physic_spheres.h"
 #include "units/shooter/unit_shooter_first_person.h"
 #include "units/shooter/unit_shooter_enviroment.h"
-//#include "units/shooter/unit_shooter_enemy_spawner.h"
-//#include "units/shooter/unit_shooter_gun.h"
+#include "units/shooter/unit_shooter_enemy_spawner.h"
+#include "units/shooter/unit_shooter_gun.h"
 
 enum EXAMPLE
 {
@@ -42,8 +42,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
   {
     Engine.AddUnit(new unit_shooter_first_person());
     Engine.AddUnit(new unit_shooter_enviroment());
-    //Engine.AddUnit(new unit_shooter_enemy_spawner());
-    //Engine.AddUnit(new unit_shooter_gun());
+    Engine.AddUnit(new unit_shooter_enemy_spawner(1000));
+    Engine.AddUnit(new unit_shooter_gun());
   }
   else
   {

@@ -94,7 +94,10 @@ public:
             gdr::gdr_index OtherObjectIndex = (gdr::gdr_index)OtherActor->userData - 1;
             gdr::gdr_physics_object *Object = ObjectIndex < Phys->GetObjectsAmount() ? &Phys->GetPhysObject(ObjectIndex) : nullptr;
             gdr::gdr_physics_object *OtherObject = OtherObjectIndex < Phys->GetObjectsAmount() ? &Phys->GetPhysObject(OtherObjectIndex) : nullptr;
-            Object->CollideCallback(Object, OtherObject);
+            if (Object)
+              Object->CollideCallback(Object, OtherObject);
+            if (OtherObject)
+              OtherObject->CollideCallback(OtherObject, Object);
         }
       }
     }
@@ -137,7 +140,8 @@ gdr::physics::physics(bool IsVisualDebugger)
     sceneDesc.filterShader = physx::PxDefaultSimulationFilterShader;
     sceneDesc.cudaContextManager = CudaContextManager;
 
-    sceneDesc.flags |= physx::PxSceneFlag::eENABLE_GPU_DYNAMICS;
+    sceneDesc.flags |= physx::PxSceneFlag::eENABLE_GPU_DYNAMICS ;
+    sceneDesc.flags |= physx::PxSceneFlag::eENABLE_PCM;
     sceneDesc.broadPhaseType = physx::PxBroadPhaseType::eGPU;
     sceneDesc.filterShader = physx::contactReportFilterShader;
     sceneDesc.simulationEventCallback = &gContactReportCallback;

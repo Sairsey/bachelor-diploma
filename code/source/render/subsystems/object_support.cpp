@@ -675,9 +675,9 @@ void gdr::object_support::SetAnimationTime(gdr_index nodeIndex, float time, floa
       NodesPool[nodeIndex].AnimationKeyFramePositions[positionKeyLow].second * (1.0 - positionAlpha) +
       NodesPool[nodeIndex].AnimationKeyFramePositions[positionKeyHigh].second * positionAlpha;
 
-    mth::vec4f rotationQuat =
-      NodesPool[nodeIndex].AnimationKeyFrameRotations[rotationKeyLow].second * (1.0 - rotationAlpha) +
-      NodesPool[nodeIndex].AnimationKeyFrameRotations[rotationKeyHigh].second * rotationAlpha;
+    mth::vec4f rotationQuat = NodesPool[nodeIndex].AnimationKeyFrameRotations[rotationKeyLow]
+    .second
+    .slerp(NodesPool[nodeIndex].AnimationKeyFrameRotations[rotationKeyHigh].second, rotationAlpha);
 
     mth::vec3f scale =
       NodesPool[nodeIndex].AnimationKeyFrameScales[scaleKeyLow].second * (1.0 - scaleAlpha) +

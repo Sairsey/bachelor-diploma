@@ -30,7 +30,9 @@ struct GlobalData
   int BRDFLUTIndex;            // Index of BRDF Lookup texture in textures pool
   
   float SceneExposure;    // Scene exposure
-  int pad[3];
+  
+  bool IsIBL;             // Trigger IBL
+  int pad[2];
 };
 
 struct ObjectTransform

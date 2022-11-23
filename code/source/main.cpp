@@ -11,6 +11,9 @@
 #include "units/unit_specialist.h"
 #include "units/unit_cubemap_capture.h"
 #include "units/unit_physic_spheres.h"
+
+#include "units/unit_pit.h"
+
 #include "units/shooter/unit_shooter_first_person.h"
 #include "units/shooter/unit_shooter_enviroment.h"
 #include "units/shooter/unit_shooter_enemy_spawner.h"
@@ -20,7 +23,8 @@ enum EXAMPLE
 {
   NONE,
   SPECIALIST,
-  SHOOTER
+  SHOOTER,
+  PIT
 };
 
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
@@ -30,7 +34,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 {
   gdr::engine Engine;
   
-  EXAMPLE usedExample = SHOOTER;
+  EXAMPLE usedExample = NONE;
 
   if (usedExample == SPECIALIST)
   {
@@ -45,14 +49,20 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     Engine.AddUnit(new unit_shooter_enemy_spawner(1000));
     Engine.AddUnit(new unit_shooter_gun());
   }
+  else if (usedExample == PIT)
+  {
+      Engine.AddUnit(new unit_control());
+      Engine.AddUnit(new unit_pit(1000));
+      Engine.AddUnit(new unit_phys_spheres());
+  }
   else
   {
     Engine.AddUnit(new gdr::unit_base());
     Engine.AddUnit(new unit_control());
     //Engine.AddUnit(new unit_specialist());
-    //Engine.AddUnit(new unit_bathroom());
+    Engine.AddUnit(new unit_bathroom());
     //Engine.AddUnit(new unit_phys_spheres());
-    //Engine.AddUnit(new unit_cubemap_capture());
+    Engine.AddUnit(new unit_cubemap_capture());
     //Engine.AddUnit(new unit_frog()); 
     //Engine.AddUnit(new unit_bread());
     //Engine.AddUnit(new unit_pbr_spheres());

@@ -102,15 +102,6 @@ void gdr::occlusion_pass::CallDirectDraw(ID3D12GraphicsCommandList* currentComma
     return;
   }
 
-  // Transit resource state of buffers to D3D12_RESOURCE_STATE_UNORDERED_ACCESS.
-  for (int i = 1; i < (int)indirect_command_enum::TotalBuffers; i++)
-  {
-    Render->GetDevice().TransitResourceState(
-      currentCommandList,
-      Render->IndirectSystem->CommandsBuffer[i].Resource,
-      D3D12_RESOURCE_STATE_INDIRECT_ARGUMENT, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
-  }
-
   // 1) Frustum Culling
   {
     currentCommandList->SetPipelineState(OcclusionCullPSO);

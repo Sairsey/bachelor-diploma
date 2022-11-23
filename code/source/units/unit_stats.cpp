@@ -501,6 +501,7 @@ void unit_stats::Response(void)
         Engine->SetPause(pause);
       }
       ImGui::Checkbox("Present Mode", &PresentMode);
+      ImGui::Checkbox("Image Based Lighting", &Engine->GlobalsSystem->CPUData.IsIBL);
 
       ImGui::DragFloat3("Camera Position", const_cast<float *>(&Engine->PlayerCamera.GetPos().X), 0.1);
       ImGui::DragFloat3("Camera Direction", const_cast<float*>(&Engine->PlayerCamera.GetDir().X), 0.1);
@@ -543,6 +544,7 @@ void unit_stats::Response(void)
         Engine->ScreenshotsSystem->RequestReadbackToFile(gdr::render_targets_enum::target_display, directory + "display.png");
         Engine->ScreenshotsSystem->RequestReadbackToFile(gdr::render_targets_enum::target_frame_hdr, directory + "hdr.dds");
       }
+
       ImGui::End();
     });
 

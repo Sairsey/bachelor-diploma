@@ -237,7 +237,7 @@ float4 ShadeCookTorrance(float3 Normal, float3 Position, float2 uv, ObjectMateri
   }
   
   // enviroment color
-  if (globals.SkyboxCubemapIndex != -1)
+  if (globals.SkyboxCubemapIndex != -1 && globals.IsIBL)
   {
     // lets pretent we get only light from point Light Source by normal
     float3 r = reflect(-V, Normal);

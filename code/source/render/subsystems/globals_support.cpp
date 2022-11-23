@@ -10,6 +10,7 @@ gdr::globals_support::globals_support(render* Rnd)
   CPUData.IrradienceCubemapIndex = -1;
   CPUData.BRDFLUTIndex = -1;
   CPUData.SceneExposure = 8.0;
+  CPUData.IsIBL = true;
   GPUData.Resource = nullptr;
 }
 

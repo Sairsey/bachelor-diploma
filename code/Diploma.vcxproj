@@ -71,6 +71,7 @@
     <ClInclude Include="source\units\unit_frog.h" />
     <ClInclude Include="source\units\unit_pbr_spheres.h" />
     <ClInclude Include="source\units\unit_physic_spheres.h" />
+    <ClInclude Include="source\units\unit_pit.h" />
     <ClInclude Include="source\units\unit_specialist.h" />
     <ClInclude Include="source\units\unit_stats.h" />
     <ClInclude Include="source\units\unit_triangle.h" />

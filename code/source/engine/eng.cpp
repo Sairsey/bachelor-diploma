@@ -88,6 +88,7 @@ VOID gdr::engine::Activate(BOOL IsActive)
  */
 VOID gdr::engine::Timer(VOID)
 {
+  PROFILE_CPU_BEGIN("ENGINE TICK");
   // update Time
   timer_support::Response();
   input_support::Response(hWnd);
@@ -110,6 +111,7 @@ VOID gdr::engine::Timer(VOID)
   PROFILE_CPU_END();
   timer_support::IncreaseFrameCounter();
   render::DrawFrame();
+  PROFILE_CPU_END();
 }
 
 /* Free CPU time handling function.

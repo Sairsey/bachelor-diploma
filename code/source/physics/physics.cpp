@@ -199,12 +199,13 @@ void gdr::physics::Update(double DeltaTime)
     ForDelete.clear();
 
     DeltaTime = min(DeltaTime, 1/30.0);
-
+    PROFILE_CPU_BEGIN("Physics update")
     if (DeltaTime > 0)
     {
       Scene->simulate(DeltaTime);
       Scene->fetchResults(true);
     }
+    PROFILE_CPU_END("Physics update")
 }
 
 gdr::gdr_index gdr::physics::NewDynamicSphere(physic_material Material, double Radius, std::string name)
@@ -305,8 +306,8 @@ gdr::gdr_index gdr::physics::NewDynamicMesh(physic_material Material, std::vecto
         convexDesc.points.count = Vert.size();
         convexDesc.points.stride = sizeof(mth::vec3f);
         convexDesc.points.data = Vert.data();
-        convexDesc.flags = physx::PxConvexFlag::eCOMPUTE_CONVEX;
-        convexDesc.vertexLimit = 100;
+        convexDesc.flags = physx::PxConvexFlag::eCOMPUTE_CONVEX | physx::PxConvexFlag::eGPU_COMPATIBLE;
+        convexDesc.vertexLimit = 64;
 
         physx::PxDefaultMemoryOutputStream buf;
         if (!Cooking->cookConvexMesh(convexDesc, buf))

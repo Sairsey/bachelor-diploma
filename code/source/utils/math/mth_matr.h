@@ -134,6 +134,19 @@ namespace mth
                            0, 0, 0, 1);
       } /* End of 'Identity' funciton */
 
+      /* matrix generator from quaternion And position
+       * ARGUMENTS: None.
+       * RETURNS: (matr4<Type>) matrix
+       */
+      inline static matr4<Type> FromQuaternionAndPosition(vec4<Type> quat, vec3<Type> pos)
+      {
+        return matr4<Type>(
+            1 - 2 * quat.Y * quat.Y - 2 * quat.Z * quat.Z, 2 * quat.X * quat.Y - 2 * quat.Z * quat.W, 2 * quat.X * quat.Z + 2 * quat.Y * quat.W, 0,
+            2 * quat.X * quat.Y + 2 * quat.Z * quat.W, 1 - 2 * quat.X * quat.X - 2 * quat.Z * quat.Z, 2 * quat.Z * quat.Y - 2 * quat.X * quat.W, 0,
+            2 * quat.X * quat.Z - 2 * quat.Y * quat.W, 2 * quat.Z * quat.Y + 2 * quat.X * quat.W, 1 - 2 * quat.X * quat.X - 2 * quat.Y * quat.Y, 0,
+                           pos.X, pos.Y, pos.Z, 1);
+      }
+
       /* Rotation around X axis transformation matrix setup function.
        * ARGUMENTS:
        *   - rotation angle in degrees:

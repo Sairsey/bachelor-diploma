@@ -25,10 +25,7 @@ void gdr::gdr_physics_object::ToggleTranslation(void)
 mth::matr4f gdr::gdr_physics_object::GetTransform(void)
 {
   physx::PxTransform Trans = Body->getGlobalPose();
-  float angle = 0;
-  physx::PxVec3 axis = {};
-  Trans.q.toRadiansAndUnitAxis(angle, axis);
-  return mth::matr4f::Rotate(angle * MTH_R2D, { axis[0], axis[1], axis[2] }) * mth::matr4f::Translate({ Trans.p[0], Trans.p[1], Trans.p[2] });
+  return mth::matr4f::FromQuaternionAndPosition({Trans.q.x, Trans.q.y, Trans.q.z, Trans.q.w}, {Trans.p[0], Trans.p[1], Trans.p[2]});
 }
 void gdr::gdr_physics_object::ChangeDensity(float Density)
 {

@@ -191,21 +191,35 @@ std::vector<gdr::ray_intersect> gdr::physics::Raycast(mth::vec3f Org, mth::vec3f
 
 void gdr::physics::Update(double DeltaTime)
 {
+    static double counter = 0;
+    static bool isFirst = true;
     for (const auto& i : ForDelete)
     {
         delete ObjectsPool[i];
         ObjectsPool[i] = nullptr;
     }
     ForDelete.clear();
-
-    DeltaTime = min(DeltaTime, 1/30.0);
-    PROFILE_CPU_BEGIN("Physics update")
-    if (DeltaTime > 0)
+    if (isFirst)
     {
-      Scene->simulate(DeltaTime);
-      Scene->fetchResults(true);
+      Scene->simulate(PHYSICS_TICK);
+      isFirst = false;
+      return;
     }
-    PROFILE_CPU_END("Physics update")
+    counter += DeltaTime;
+
+    PROFILE_CPU_BEGIN("Physics update")
+    if (Scene->checkResults() && counter >= PHYSICS_TICK)
+    {
+      isPhysicsChanged = true;
+      Scene->fetchResults(true);
+      Scene->simulate(PHYSICS_TICK);
+      counter = 0;
+    }
+    else
+    {
+      isPhysicsChanged = false;
+    }
+    PROFILE_CPU_END()
 }
 
 gdr::gdr_index gdr::physics::NewDynamicSphere(physic_material Material, double Radius, std::string name)

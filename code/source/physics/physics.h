@@ -52,6 +52,8 @@ namespace gdr
         ~gdr_physics_object();
   };
 
+  const double PHYSICS_TICK = 1 / 60.0;
+
   // Physics class representation. Realisation can be found in physics.cpp
   class physics
   {
@@ -70,7 +72,10 @@ namespace gdr
       physx::PxScene* Scene;                               // Scene repr
       physx::PxRigidStatic* groundPlane;                   // Ground plane object
       std::vector<gdr_physics_object *> ObjectsPool;
+
   public:
+      bool isPhysicsChanged = false;                      // True if transforms are changed
+
       physics(bool IsVisualDebugger = true);
       std::vector<ray_intersect> Raycast(mth::vec3f Org, mth::vec3f Dir, float MaxLength);
       void Update(double DeltaTime);

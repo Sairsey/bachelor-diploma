@@ -25,7 +25,11 @@ void gdr::gdr_physics_object::ToggleTranslation(void)
 mth::matr4f gdr::gdr_physics_object::GetTransform(void)
 {
   physx::PxTransform Trans = Body->getGlobalPose();
-  return mth::matr4f::FromQuaternionAndPosition({Trans.q.x, Trans.q.y, Trans.q.z, Trans.q.w}, {Trans.p[0], Trans.p[1], Trans.p[2]});
+  physx::PxMat44 Matr(Trans);
+  mth::matr4f ans;
+  std::copy(&Matr[0][0], &Matr[3][3], &ans[0][0]);
+  ans[3][3] = 1;
+  return ans;
 }
 void gdr::gdr_physics_object::ChangeDensity(float Density)
 {

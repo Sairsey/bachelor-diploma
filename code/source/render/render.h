@@ -92,7 +92,7 @@ namespace gdr
       // Current params
       render_runtime_params Params;
       // Current player camera
-      mth::cam3<float> PlayerCamera;
+      mth::cam PlayerCamera;
       // Depth buffer resource
       GPUResource DepthBuffer;
       // Subsystems

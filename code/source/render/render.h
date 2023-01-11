@@ -7,25 +7,9 @@ namespace gdr
 {
   class engine;
   class base_pass;
-  class geometry_support;
-  class globals_support;
-  class object_support;
-  class transforms_support;
-  class materials_support;
-  class indirect_support;
-  class textures_support;
-  class cube_textures_support;
-  class light_sources_support;
-  class render_targets_support;
-  class hier_depth_support;
-  class screenshot_support;
-
   struct render_runtime_params
   {
     bool IsIndirect = false;     // Enables indirect draw
-    bool IsCulling = false;      // Enables culling
-    bool IsTransparent = false; // Enables Transparency support
-    bool IsVisibilityLocked = false;
   };
 
   /* Render representation class */
@@ -95,7 +79,9 @@ namespace gdr
       mth::cam PlayerCamera;
       // Depth buffer resource
       GPUResource DepthBuffer;
+
       // Subsystems
+#if 0
       globals_support *GlobalsSystem; // Store camera info and other important stuff
       indirect_support* IndirectSystem; // support of SRVs and UAVs for indirect draw
       geometry_support *GeometrySystem; // support of geometry creation
@@ -108,6 +94,7 @@ namespace gdr
       render_targets_support* RenderTargets; //System to store info about lights
       hier_depth_support* HierDepth; //System to store and generate Hierarhical Depth Texture
       screenshot_support* ScreenshotsSystem; //System to store and generate Hierarhical Depth Texture
+#endif
 
       long long UpdateBuffersTime;
       long long DrawFrameTime;

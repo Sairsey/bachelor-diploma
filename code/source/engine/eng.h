@@ -12,8 +12,10 @@ namespace gdr
     public win,
     public render,
     public timer_support,
-    public input_support,
-    public physics
+    public input_support
+#if PHYSICS_ENABLED
+    public physics,
+#endif
   {
     private:
       /* Vector of all units we will draw */

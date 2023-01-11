@@ -1,8 +1,7 @@
 #pragma once
 #include "def.h"
-#include "render/subsystems/geometry_support.h"
-#include "render/subsystems/object_support.h"
 
+#if PHYSICS_ENABLED
 namespace gdr
 {
   //physic material 
@@ -94,3 +93,4 @@ namespace gdr
   };
 }
 
+#endif

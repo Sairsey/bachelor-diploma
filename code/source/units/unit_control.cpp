@@ -1,7 +1,9 @@
 #include "p_header.h"
 #include <time.h>
+#if 0
 
 #include "unit_control.h"
+
 
 void unit_control::Initialize(void)
 {
@@ -10,6 +12,7 @@ void unit_control::Initialize(void)
   CameraSpeedStep = 10;
 
   CameraSpeed = MinCameraSpeed;
+  
   DefaultLight = Engine->LightsSystem->AddDirectionalLightSource();
   Engine->LightsSystem->GetTransform(DefaultLight).transform = mth::matr4f::RotateX(30);
   Engine->LightsSystem->GetLight(DefaultLight).Color = mth::vec3f(1, 1, 1);
@@ -76,8 +79,6 @@ void unit_control::Response(void)
     if (CameraSpeed > MaxCameraSpeed)
       CameraSpeed = MinCameraSpeed;
   }
-
-
-
-
 }
+
+#endif

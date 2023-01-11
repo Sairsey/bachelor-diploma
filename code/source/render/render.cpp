@@ -64,37 +64,9 @@ bool gdr::render::Init(engine* Eng)
     localIsInited = localIsInited && CreateDepthStencil();
   }
 
-  //init subsystems
-  if (localIsInited)
-  {
-    GeometrySystem = new gdr::geometry_support(this);
-    ObjectSystem = new gdr::object_support(this);
-    GlobalsSystem = new gdr::globals_support(this);
-    TransformsSystem = new gdr::transforms_support(this);
-    IndirectSystem = new gdr::indirect_support(this);
-    MaterialsSystem = new gdr::materials_support(this);
-    TexturesSystem = new gdr::textures_support(this);
-    CubeTexturesSystem= new gdr::cube_textures_support(this);
-    LightsSystem = new gdr::light_sources_support(this);
-    RenderTargets = new gdr::render_targets_support(this);
-    HierDepth = new gdr::hier_depth_support(this);
-    ScreenshotsSystem = new gdr::screenshot_support(this);
-  }
-
   // init passes
   if (localIsInited)
   {
-    Passes.push_back(new frustum_pass());
-    Passes.push_back(new hier_depth_pass());
-    Passes.push_back(new occlusion_pass());
-    Passes.push_back(new debug_pass());
-    Passes.push_back(new albedo_pass());
-    Passes.push_back(new skybox_pass());
-    Passes.push_back(new oit_transparent_pass());
-    Passes.push_back(new tonemap_pass());
-    //Passes.push_back(new hdr_copy_pass());
-    Passes.push_back(new imgui_pass());
-
     for (auto& pass : Passes)
     {
       pass->SetRender(this);
@@ -109,6 +81,7 @@ bool gdr::render::Init(engine* Eng)
 
 void gdr::render::AddLambdaForIMGUI(std::function<void(void)> func)
 {
+#if 0
   for (auto& pass : Passes)
   {
     if (pass->GetName() == "imgui_pass")
@@ -119,6 +92,7 @@ void gdr::render::AddLambdaForIMGUI(std::function<void(void)> func)
       break;
     }
   }
+#endif
 }
 
 /* Resize frame function
@@ -135,7 +109,7 @@ void gdr::render::Resize(UINT w, UINT h)
 
   PlayerCamera.Resize(w, h);
 
-  RenderTargets->Resize(w, h);
+  //RenderTargets->Resize(w, h);
 
   if (DepthBuffer.Resource != nullptr)
   {
@@ -154,33 +128,11 @@ void gdr::render::DrawFrame(void)
 {
   if (!IsInited)
     return;
-  PROFILE_CPU_BEGIN("DrawFrame");
-  PROFILE_CPU_BEGIN("Update objects transforms");
-  ObjectSystem->UpdateAllNodes();
-  PROFILE_CPU_END();
-
+  PROFILE_CPU_BEGIN("gdr::render::DrawFrame");
   ID3D12GraphicsCommandList* uploadCommandList;
   GetDevice().BeginUploadCommandList(&uploadCommandList);
-  auto updateStart = std::chrono::system_clock::now();
-  PROFILE_BEGIN(uploadCommandList, "Update transforms");
-  TransformsSystem->UpdateGPUData(uploadCommandList);
-  PROFILE_END(uploadCommandList);
-  PROFILE_BEGIN(uploadCommandList, "Update materials");
-  MaterialsSystem->UpdateGPUData(uploadCommandList);
-  PROFILE_END(uploadCommandList);
-  PROFILE_BEGIN(uploadCommandList, "Update Textures");
-  TexturesSystem->UpdateGPUData(uploadCommandList);
-  PROFILE_END(uploadCommandList);
-  PROFILE_BEGIN(uploadCommandList, "Update cube Textures");
-  CubeTexturesSystem->UpdateGPUData(uploadCommandList);
-  PROFILE_END(uploadCommandList);
-  PROFILE_BEGIN(uploadCommandList, "Update Lights");
-  LightsSystem->UpdateGPUData(uploadCommandList);
-  PROFILE_END(uploadCommandList);
   GetDevice().CloseUploadCommandListBeforeRenderCommandList();
-  auto updateEnd = std::chrono::system_clock::now();
-  UpdateBuffersTime = std::chrono::duration_cast<std::chrono::nanoseconds>(updateEnd - updateStart).count();
-
+  
   ID3D12GraphicsCommandList* pCommandList = nullptr;
   ID3D12Resource* pBackBuffer = nullptr;
   D3D12_CPU_DESCRIPTOR_HANDLE rtvHandle;
@@ -189,13 +141,6 @@ void gdr::render::DrawFrame(void)
     auto renderStart = std::chrono::system_clock::now();
     PROFILE_BEGIN(pCommandList, "Frame");
     DeviceFrameCounter.Start(pCommandList);
-
-    PROFILE_BEGIN(pCommandList, "Update indirect SRVs and UAVs");
-    GetDevice().SetCommandListAsUpload(pCommandList);
-    // Update all subsytems except globals, it will be updated in each pass
-    IndirectSystem->UpdateGPUData(pCommandList);
-    GetDevice().ClearUploadListReference();
-    PROFILE_END(pCommandList);
 
     HRESULT hr = S_OK;
     D3D12_CPU_DESCRIPTOR_HANDLE dsvHandle = DSVHeap->GetCPUDescriptorHandleForHeapStart();
@@ -213,15 +158,14 @@ void gdr::render::DrawFrame(void)
       pCommandList->ClearDepthStencilView(dsvHandle, D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.0f, 0, 1, &Rect);
 
       // Save DepthStencil and Display buffers
-      RenderTargets->SaveDepthStencilBuffer(&dsvHandle);
-      RenderTargets->SaveDisplayBuffer(&rtvHandle, pBackBuffer);
+      //RenderTargets->SaveDepthStencilBuffer(&dsvHandle);
+      //RenderTargets->SaveDisplayBuffer(&rtvHandle, pBackBuffer);
 
       ID3D12DescriptorHeap* pDescriptorHeaps = GetDevice().GetDescriptorHeap();
       pCommandList->SetDescriptorHeaps(1, &pDescriptorHeaps);
 
-      RenderTargets->Set(pCommandList, render_targets_enum::target_display);
+      //RenderTargets->Set(pCommandList, render_targets_enum::target_display);
 
-      assert(Passes.size() >= 1);
       for (int i = 0; i < Passes.size(); i++)
       {
         if (Params.IsIndirect)
@@ -247,7 +191,6 @@ void gdr::render::DrawFrame(void)
     DrawFrameTime = std::chrono::duration_cast<std::chrono::nanoseconds>(renderEnd - renderStart).count();
   }
   PROFILE_CPU_END();
-  ScreenshotsSystem->Update();
 }
 
 gdr::engine *gdr::render::GetEngine(void)
@@ -266,22 +209,8 @@ void gdr::render::Term(void)
   if (!IsInited)
     return;
 
-  delete ScreenshotsSystem;
-  delete HierDepth;
-  delete RenderTargets;
-  delete LightsSystem;
-  delete TexturesSystem;
-  delete CubeTexturesSystem;
-  delete IndirectSystem;
-  delete MaterialsSystem; 
-  delete TransformsSystem;
-  delete ObjectSystem;
-  delete GeometrySystem;
-  delete GlobalsSystem;
   for (auto& pass : Passes)
-  {
     delete pass;
-  }
   Device.ReleaseGPUResource(DepthBuffer);
   DSVHeap->Release();
   Passes.clear();

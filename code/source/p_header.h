@@ -12,6 +12,7 @@
 
 #include "render/render.h"
 
+#if 0
 #include "render/subsystems/globals_support.h"
 #include "render/subsystems/geometry_support.h"
 #include "render/subsystems/transforms_support.h"
@@ -24,8 +25,11 @@
 #include "render/subsystems/render_target_support.h"
 #include "render/subsystems/hier_depth_support.h"
 #include "render/subsystems/screenshot_subsystem.h"
+#endif
 
 #include "render/passes/base_pass.h"
+
+#if 0
 #include "render/passes/frustum_pass.h"
 #include "render/passes/hier_depth_pass.h"
 #include "render/passes/occlusion_pass.h"
@@ -43,6 +47,7 @@
 #include "render/passes/tonemap_pass.h"
 
 #include "render/passes/imgui_pass.h"
+#endif
 
 #include "physics/physics.h"
 

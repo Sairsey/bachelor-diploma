@@ -40,7 +40,7 @@
 #pragma comment(lib, "PhysX/lib_release/PhysXFoundation_64.lib")
 #pragma comment(lib, "PhysX/lib_release/PhysXCommon_64.lib")
 #endif
-
+#if PHYSICS_ENABLED
 namespace physx
 {
   PxFilterFlags contactReportFilterShader(PxFilterObjectAttributes attributes0, PxFilterData filterData0,
@@ -450,3 +450,4 @@ std::vector<gdr::gdr_index> gdr::physics::NewDynamicMeshAssimp(physic_material M
   importer.FreeScene();
   return result;
 }
+#endif

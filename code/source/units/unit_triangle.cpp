@@ -1,7 +1,7 @@
 #include "p_header.h"
 
+#if 0
 #include "unit_triangle.h"
-
 void unit_triangle::Initialize(void)
 {
   static const gdr::vertex vertices[3] = {
@@ -22,3 +22,4 @@ void unit_triangle::Response(void)
 {
   Engine->ObjectSystem->NodesPool[Triangle].GetTransformEditable() = mth::matr::Translate(mth::vec3f(0, 0, sin(Engine->GetTime()) / 2.0f));
 }
+#endif

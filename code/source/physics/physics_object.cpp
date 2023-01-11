@@ -1,4 +1,5 @@
 #include "p_header.h"
+#if PHYSICS_ENABLED
 
 void gdr::gdr_physics_object::ToggleRotation(void)
 {
@@ -142,3 +143,4 @@ gdr::gdr_physics_object::~gdr_physics_object()
         Material = nullptr;
     }
 }
+#endif

@@ -1,4 +1,5 @@
 #include "p_header.h"
+#ifdef UNITS_ENABLED
 #include "units/unit_control.h"
 #include "units/unit_triangle.h"
 #include "units/unit_bread.h"
@@ -27,6 +28,7 @@ enum EXAMPLE
   PIT
 };
 
+#endif
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
   _In_opt_ HINSTANCE hPrevInstance,
   _In_ LPWSTR    lpCmdLine,
@@ -34,6 +36,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 {
   gdr::engine Engine;
   
+#ifdef UNITS_ENABLED
   EXAMPLE usedExample = NONE;
 
   if (usedExample == SPECIALIST)
@@ -73,6 +76,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
 
   Engine.AddUnit(new unit_stats());
+#endif
 
   // math smoke test
   mth::vec3f V1(1, 0, 0);

@@ -1,8 +1,8 @@
 #include "p_header.h"
 
+#if 0
 #include "unit_stats.h"
 #include <iomanip>
-
 void unit_stats::Initialize(void)
 {
   TransformToolActive = false;
@@ -554,3 +554,4 @@ void unit_stats::Response(void)
     StatsToolActive = true;
   }
 }
+#endif

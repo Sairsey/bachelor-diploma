@@ -1,9 +1,9 @@
 #include "p_header.h"
 
+#if 0
 #include "unit_cubemap_capture.h"
 #include "stb_image_write.h"
 #include <iomanip>
-
 #define CUBEMAP_SIDE 512
 
 void unit_cubemap_capture::Initialize(void)
@@ -318,3 +318,5 @@ void unit_cubemap_capture::Response(void)
     }
   }
 }
+
+#endif

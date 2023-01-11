@@ -1,5 +1,5 @@
 #include "p_header.h"
-
+#if 0
 #include "unit_bread.h"
 
 #include <thread>
@@ -18,10 +18,10 @@ void unit_bread::Initialize(void)
     //PROFILE_BEGIN(commandList, "unit_bread Init");
     for (int i = 0; i < 1000; i++)
     {
-      Bread.push_back(Engine->ObjectSystem->CreateObjectFromFile("bin/models/bread/bread.obj"));
+      //Bread.push_back(Engine->ObjectSystem->CreateObjectFromFile("bin/models/bread/bread.obj"));
       int k = Bread.size() - 1;
 
-      double dist = (Engine->ObjectSystem->NodesPool[Bread[k]].GetTransform().maxAABB - Engine->ObjectSystem->NodesPool[Bread[k]].GetTransform().minAABB).Lenght();
+      //double dist = (Engine->ObjectSystem->NodesPool[Bread[k]].GetTransform().maxAABB - Engine->ObjectSystem->NodesPool[Bread[k]].GetTransform().minAABB).Lenght();
       alpha = sqrt(alpha * alpha + dist);
       double radius = alpha * 2;
       Translations.push_back(mth::matr::Translate(mth::vec3f(float(sin(alpha) * radius), 0, float(cos(alpha) * radius))));
@@ -57,6 +57,7 @@ void unit_bread::Response(void)
   /* single-thread computing */
   for (int i = 0; i < Bread.size(); i++)
   {
-    Engine->ObjectSystem->NodesPool[Bread[i]].GetTransformEditable() = rotation * Translations[i];
+    //Engine->ObjectSystem->NodesPool[Bread[i]].GetTransformEditable() = rotation * Translations[i];
   }
 }
+#endif

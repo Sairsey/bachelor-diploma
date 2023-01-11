@@ -1,4 +1,5 @@
 #include "p_header.h"
+#if 0
 #include <Windows.h>
 #include "unit_specialist.h"
 #include <Mmsystem.h>
@@ -37,3 +38,4 @@ void unit_specialist::Response(void)
   Engine->ObjectSystem->NodesPool[Crash3].GetTransformEditable() = mth::matr::Translate({ -2, 0 ,0 });
   Engine->ObjectSystem->NodesPool[Crash2].GetTransformEditable() = mth::matr::Translate({ 2, 0 ,0 });
 }
+#endif

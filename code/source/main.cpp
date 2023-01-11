@@ -1,4 +1,11 @@
 #include "p_header.h"
+#include "units/stats/unit_frame_times.h"
+
+// TODO:
+// 1) Fix Resize
+// 2) Restore everything
+
+
 #ifdef UNITS_ENABLED
 #include "units/unit_control.h"
 #include "units/unit_triangle.h"
@@ -77,6 +84,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
   Engine.AddUnit(new unit_stats());
 #endif
+
+  Engine.AddUnit(new unit_frame_times());
 
   // math smoke test
   mth::vec3f V1(1, 0, 0);

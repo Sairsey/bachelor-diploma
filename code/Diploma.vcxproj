@@ -19,6 +19,8 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="bin\shaders\shared\cpu_gpu_shared.h" />
+    <ClInclude Include="bin\shaders\shared\indirect_structures.h" />
     <ClInclude Include="source\def.h" />
     <ClInclude Include="source\engine\eng.h" />
     <ClInclude Include="source\input\input.h" />
@@ -30,13 +32,18 @@
     <ClInclude Include="source\render\device\device_time_query.h" />
     <ClInclude Include="source\render\device\gpu_ring_buffer.h" />
     <ClInclude Include="source\render\passes\base_pass.h" />
+    <ClInclude Include="source\render\passes\imgui_pass.h" />
     <ClInclude Include="source\render\render.h" />
+    <ClInclude Include="source\render\subsystems\globals_subsystem.h" />
+    <ClInclude Include="source\render\subsystems\render_target_subsystem.h" />
+    <ClInclude Include="source\render\subsystems\object_transforms_subsystem.h" />
     <ClInclude Include="source\timer\timer.h" />
     <ClInclude Include="source\units\shooter\unit_shooter_enemy.h" />
     <ClInclude Include="source\units\shooter\unit_shooter_enemy_spawner.h" />
     <ClInclude Include="source\units\shooter\unit_shooter_enviroment.h" />
     <ClInclude Include="source\units\shooter\unit_shooter_first_person.h" />
     <ClInclude Include="source\units\shooter\unit_shooter_gun.h" />
+    <ClInclude Include="source\units\stats\unit_frame_times.h" />
     <ClInclude Include="source\units\unit_base.h" />
     <ClInclude Include="source\units\unit_bathroom.h" />
     <ClInclude Include="source\units\unit_bread.h" />
@@ -77,7 +84,11 @@
     <ClCompile Include="source\render\device\d3dinclude.cpp" />
     <ClCompile Include="source\render\device\device.cpp" />
     <ClCompile Include="source\render\device\device_time_query.cpp" />
+    <ClCompile Include="source\render\passes\imgui_pass.cpp" />
     <ClCompile Include="source\render\render.cpp" />
+    <ClCompile Include="source\render\subsystems\globals_subsystem.cpp" />
+    <ClCompile Include="source\render\subsystems\render_target_subsystem.cpp" />
+    <ClCompile Include="source\render\subsystems\object_transforms_subsystem.cpp" />
     <ClCompile Include="source\units\unit_bathroom.cpp" />
     <ClCompile Include="source\units\unit_bread.cpp" />
     <ClCompile Include="source\units\unit_chief.cpp" />

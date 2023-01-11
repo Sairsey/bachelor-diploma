@@ -64,12 +64,22 @@ bool gdr::render::Init(engine* Eng)
     localIsInited = localIsInited && CreateDepthStencil();
   }
 
+  // init subsystems
+  if (localIsInited) 
+  {
+      GlobalsSystem = new globals_subsystem(this);
+      RenderTargetsSystem = new render_targets_subsystem(this);
+      ObjectTransformsSystem = new object_transforms_subsystem(this);
+  }
+
   // init passes
   if (localIsInited)
   {
+    Passes.push_back(new imgui_pass());
     for (auto& pass : Passes)
     {
       pass->SetRender(this);
+      pass->DeviceTimeCounter = device_time_query(&Device);
       pass->Initialize();
     }
   }
@@ -81,7 +91,6 @@ bool gdr::render::Init(engine* Eng)
 
 void gdr::render::AddLambdaForIMGUI(std::function<void(void)> func)
 {
-#if 0
   for (auto& pass : Passes)
   {
     if (pass->GetName() == "imgui_pass")
@@ -92,7 +101,6 @@ void gdr::render::AddLambdaForIMGUI(std::function<void(void)> func)
       break;
     }
   }
-#endif
 }
 
 /* Resize frame function
@@ -109,7 +117,7 @@ void gdr::render::Resize(UINT w, UINT h)
 
   PlayerCamera.Resize(w, h);
 
-  //RenderTargets->Resize(w, h);
+  RenderTargetsSystem->Resize(w, h);
 
   if (DepthBuffer.Resource != nullptr)
   {
@@ -129,8 +137,26 @@ void gdr::render::DrawFrame(void)
   if (!IsInited)
     return;
   PROFILE_CPU_BEGIN("gdr::render::DrawFrame");
+
   ID3D12GraphicsCommandList* uploadCommandList;
   GetDevice().BeginUploadCommandList(&uploadCommandList);
+  {
+    PROFILE_BEGIN(uploadCommandList, "Update Globals");
+    GlobalsSystem->CPUData.VP = PlayerCamera.GetVP(); // camera view-proj
+    GlobalsSystem->CPUData.CameraPos = PlayerCamera.GetPos(); // Camera position
+    GlobalsSystem->CPUData.time = Engine->GetGlobalTime(); // Time in seconds
+
+    GlobalsSystem->CPUData.DeltaTime = Engine->GetDeltaTime(); // Delta time in seconds	
+    GlobalsSystem->CPUData.width = Engine->Width;  // Screen size 
+    GlobalsSystem->CPUData.height = Engine->Height; // Screen size 
+    GlobalsSystem->UpdateGPUData(uploadCommandList);
+    PROFILE_END(uploadCommandList);
+  }
+  {
+      PROFILE_BEGIN(uploadCommandList, "Update Transforms");
+      ObjectTransformsSystem->UpdateGPUData(uploadCommandList);
+      PROFILE_END(uploadCommandList);
+  }
   GetDevice().CloseUploadCommandListBeforeRenderCommandList();
   
   ID3D12GraphicsCommandList* pCommandList = nullptr;
@@ -158,16 +184,17 @@ void gdr::render::DrawFrame(void)
       pCommandList->ClearDepthStencilView(dsvHandle, D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.0f, 0, 1, &Rect);
 
       // Save DepthStencil and Display buffers
-      //RenderTargets->SaveDepthStencilBuffer(&dsvHandle);
-      //RenderTargets->SaveDisplayBuffer(&rtvHandle, pBackBuffer);
+      RenderTargetsSystem->SaveDepthStencilBuffer(&dsvHandle);
+      RenderTargetsSystem->SaveDisplayBuffer(&rtvHandle, pBackBuffer);
 
       ID3D12DescriptorHeap* pDescriptorHeaps = GetDevice().GetDescriptorHeap();
       pCommandList->SetDescriptorHeaps(1, &pDescriptorHeaps);
 
-      //RenderTargets->Set(pCommandList, render_targets_enum::target_display);
+      RenderTargetsSystem->Set(pCommandList, render_targets_enum::target_display);
 
       for (int i = 0; i < Passes.size(); i++)
       {
+        Passes[i]->DeviceTimeCounter.Start(pCommandList);
         if (Params.IsIndirect)
         {
           PROFILE_BEGIN(pCommandList, (Passes[i]->GetName() + " Indirect draw").c_str());
@@ -180,6 +207,7 @@ void gdr::render::DrawFrame(void)
           Passes[i]->CallDirectDraw(pCommandList);
           PROFILE_END(pCommandList);
         }
+        Passes[i]->DeviceTimeCounter.Stop(pCommandList);
       }
       DeviceFrameCounter.Stop(pCommandList);
       Device.TransitResourceState(pCommandList, pBackBuffer, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
@@ -188,7 +216,7 @@ void gdr::render::DrawFrame(void)
 
     Device.CloseSubmitAndPresentRenderCommandList(false);
     auto renderEnd = std::chrono::system_clock::now();
-    DrawFrameTime = std::chrono::duration_cast<std::chrono::nanoseconds>(renderEnd - renderStart).count();
+    CPUDrawFrameTime = std::chrono::duration_cast<std::chrono::nanoseconds>(renderEnd - renderStart).count();
   }
   PROFILE_CPU_END();
 }
@@ -208,6 +236,12 @@ void gdr::render::Term(void)
 {
   if (!IsInited)
     return;
+
+  {
+      delete GlobalsSystem;
+      delete RenderTargetsSystem;
+      delete ObjectTransformsSystem;
+  }
 
   for (auto& pass : Passes)
     delete pass;

@@ -12,10 +12,12 @@
 
 #include "render/render.h"
 
+#include "render/subsystems/globals_subsystem.h"
+#include "render/subsystems/object_transforms_subsystem.h"
+#include "render/subsystems/render_target_subsystem.h"
 #if 0
-#include "render/subsystems/globals_support.h"
 #include "render/subsystems/geometry_support.h"
-#include "render/subsystems/transforms_support.h"
+
 #include "render/subsystems/object_support.h"
 #include "render/subsystems/light_sources_support.h"
 #include "render/subsystems/materials_support.h"
@@ -46,8 +48,8 @@
 #include "render/passes/hdr_copy_pass.h"
 #include "render/passes/tonemap_pass.h"
 
-#include "render/passes/imgui_pass.h"
 #endif
+#include "render/passes/imgui_pass.h"
 
 #include "physics/physics.h"
 

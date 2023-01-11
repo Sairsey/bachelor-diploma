@@ -7,6 +7,9 @@ namespace gdr
 {
   class engine;
   class base_pass;
+  class globals_subsystem;
+  class render_targets_subsystem;
+  class object_transforms_subsystem;
   struct render_runtime_params
   {
     bool IsIndirect = false;     // Enables indirect draw
@@ -25,12 +28,10 @@ namespace gdr
       bool IsInited;
       // Device
       device Device;
-      // All supported passes
-      std::vector<base_pass *> Passes;
-
       // Depth-Stencil buffer support
       ID3D12DescriptorHeap* DSVHeap;
     public:
+
       /* Default Contructor */
       render();
 
@@ -80,24 +81,28 @@ namespace gdr
       // Depth buffer resource
       GPUResource DepthBuffer;
 
+      // All supported passes
+      std::vector<base_pass*> Passes;
+
       // Subsystems
+      globals_subsystem* GlobalsSystem; // Store camera info and other important stuff, which is relevant per frame
+      render_targets_subsystem* RenderTargetsSystem; //System to change and use different render targets
+      object_transforms_subsystem* ObjectTransformsSystem; // System to store Root transforms of objects and AABB-s for culling
 #if 0
-      globals_support *GlobalsSystem; // Store camera info and other important stuff
       indirect_support* IndirectSystem; // support of SRVs and UAVs for indirect draw
       geometry_support *GeometrySystem; // support of geometry creation
-      transforms_support* TransformsSystem; // support of object Transforms
+      
       object_support *ObjectSystem; // Helper of every subsystem
       materials_support *MaterialsSystem; //System to store info about materials
       textures_support* TexturesSystem; //System to store info about textures
       cube_textures_support* CubeTexturesSystem; // System to store info about cube textures
-      light_sources_support* LightsSystem; //System to store info about lights
-      render_targets_support* RenderTargets; //System to store info about lights
+      light_sources_support* LightsSystem; //System to store info about lights      
       hier_depth_support* HierDepth; //System to store and generate Hierarhical Depth Texture
       screenshot_support* ScreenshotsSystem; //System to store and generate Hierarhical Depth Texture
 #endif
 
       long long UpdateBuffersTime;
-      long long DrawFrameTime;
+      long long CPUDrawFrameTime;
       device_time_query DeviceFrameCounter;
   };
 }

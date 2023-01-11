@@ -55,6 +55,24 @@
     <Filter Include="Source Files\Units\Shooter">
       <UniqueIdentifier>{6bf18f29-94f8-49c9-bce9-1e60dada9521}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\CpuGpuShared">
+      <UniqueIdentifier>{beb82972-d394-45a9-90bc-222e794d5b00}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Render\SubSystems\Globals">
+      <UniqueIdentifier>{ef86f8a2-7034-4abb-b608-236fef83332b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Render\SubSystems\Render Targets">
+      <UniqueIdentifier>{593e2866-331e-4802-b887-c58f4b17f45b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Render\Passes\imgui">
+      <UniqueIdentifier>{c0288b07-0c09-4c49-aa15-3c4ee13febf3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Units\Stats">
+      <UniqueIdentifier>{a9963c41-ef12-4674-84ac-d994e40b6909}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Render\SubSystems\Transforms">
+      <UniqueIdentifier>{cc8e6526-18b2-4f3e-bc10-e621e765ffb8}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\main.cpp">
@@ -143,6 +161,18 @@
     </ClCompile>
     <ClCompile Include="source\units\unit_physic_spheres.cpp">
       <Filter>Source Files\Units</Filter>
+    </ClCompile>
+    <ClCompile Include="source\render\subsystems\globals_subsystem.cpp">
+      <Filter>Source Files\Render\SubSystems\Globals</Filter>
+    </ClCompile>
+    <ClCompile Include="source\render\subsystems\render_target_subsystem.cpp">
+      <Filter>Source Files\Render\SubSystems\Render Targets</Filter>
+    </ClCompile>
+    <ClCompile Include="source\render\passes\imgui_pass.cpp">
+      <Filter>Source Files\Render\Passes\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="source\render\subsystems\object_transforms_subsystem.cpp">
+      <Filter>Source Files\Render\SubSystems\Transforms</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -277,6 +307,27 @@
     </ClInclude>
     <ClInclude Include="source\render\passes\base_pass.h">
       <Filter>Source Files\Render\Passes</Filter>
+    </ClInclude>
+    <ClInclude Include="bin\shaders\shared\cpu_gpu_shared.h">
+      <Filter>Source Files\CpuGpuShared</Filter>
+    </ClInclude>
+    <ClInclude Include="bin\shaders\shared\indirect_structures.h">
+      <Filter>Source Files\CpuGpuShared</Filter>
+    </ClInclude>
+    <ClInclude Include="source\render\subsystems\globals_subsystem.h">
+      <Filter>Source Files\Render\SubSystems\Globals</Filter>
+    </ClInclude>
+    <ClInclude Include="source\render\subsystems\render_target_subsystem.h">
+      <Filter>Source Files\Render\SubSystems\Render Targets</Filter>
+    </ClInclude>
+    <ClInclude Include="source\render\passes\imgui_pass.h">
+      <Filter>Source Files\Render\Passes\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="source\units\stats\unit_frame_times.h">
+      <Filter>Source Files\Units\Stats</Filter>
+    </ClInclude>
+    <ClInclude Include="source\render\subsystems\object_transforms_subsystem.h">
+      <Filter>Source Files\Render\SubSystems\Transforms</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

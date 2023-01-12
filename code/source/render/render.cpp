@@ -71,6 +71,7 @@ bool gdr::render::Init(engine* Eng)
       RenderTargetsSystem = new render_targets_subsystem(this);
       ObjectTransformsSystem = new object_transforms_subsystem(this);
       NodeTransformsSystem = new node_transforms_subsystem(this);
+      IndirectSystem = new indirect_subsystem(this);
   }
 
   // init passes
@@ -154,14 +155,19 @@ void gdr::render::DrawFrame(void)
     PROFILE_END(uploadCommandList);
   }
   {
-      PROFILE_BEGIN(uploadCommandList, "Update Node Transforms");
-      NodeTransformsSystem->UpdateGPUData(uploadCommandList);
-      PROFILE_END(uploadCommandList);
+    PROFILE_BEGIN(uploadCommandList, "Update Node Transforms");
+    NodeTransformsSystem->UpdateGPUData(uploadCommandList);
+    PROFILE_END(uploadCommandList);
   }
   {
-      PROFILE_BEGIN(uploadCommandList, "Update Object Transforms");
-      ObjectTransformsSystem->UpdateGPUData(uploadCommandList);
-      PROFILE_END(uploadCommandList);
+    PROFILE_BEGIN(uploadCommandList, "Update Object Transforms");
+    ObjectTransformsSystem->UpdateGPUData(uploadCommandList);
+    PROFILE_END(uploadCommandList);
+  }
+  {
+    PROFILE_BEGIN(uploadCommandList, "Update Indirect buffers");
+    IndirectSystem->UpdateGPUData(uploadCommandList);
+    PROFILE_END(uploadCommandList);
   }
   GetDevice().CloseUploadCommandListBeforeRenderCommandList();
   
@@ -248,6 +254,7 @@ void gdr::render::Term(void)
       delete RenderTargetsSystem;
       delete ObjectTransformsSystem;
       delete NodeTransformsSystem;
+      delete IndirectSystem;
   }
 
   for (auto& pass : Passes)

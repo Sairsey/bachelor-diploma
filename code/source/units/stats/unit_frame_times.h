@@ -20,7 +20,7 @@ public:
             {
                 ImGui::Begin("Frame Times", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
                 ImGui::SetNextItemOpen(true, ImGuiCond_Once);
-                if (ImGui::TreeNode("Root", "Device Frame Time %f ms", Engine->DeviceFrameCounter.GetMSec()))
+                if (ImGui::TreeNode("Root", "Device Frame Time %f ms(%f FPS)", Engine->DeviceFrameCounter.GetMSec(), 1000 / Engine->DeviceFrameCounter.GetMSec()))
                 {
                     for (int i = 0; i < Engine->Passes.size(); i++)
                     {

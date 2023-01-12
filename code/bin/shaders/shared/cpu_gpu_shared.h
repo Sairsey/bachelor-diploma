@@ -14,11 +14,19 @@ using float4 = mth::vec4f;
 
 #include "indirect_structures.h"
 
-// slots for all pools
+// slots for all constant buffers
 #define GDRGPUGlobalDataConstantBufferSlot 0
+#define GDRGPUObjectIndicesConstantBufferSlot 1
+// slots for all pools
 #define GDRGPUObjectTransformPoolSlot 0
 #define GDRGPUNodeTransformPoolSlot 1
 
+// Indexes of root params
+#define GDRGPUObjectIndicesRecordRootIndex 1 // index in Root Signature for Record in ObjectIndices
+
+/// <summary>
+///  Globals system
+/// </summary>
 struct GDRGPUGlobalData
 {
 	float4x4 VP; // camera view-proj
@@ -31,6 +39,9 @@ struct GDRGPUGlobalData
 	UINT pad[1];
 };
 
+/// <summary>
+/// Object Transform system
+/// </summary>
 struct GDRGPUObjectTransform
 {
 	float4x4 Transform; // Transform of Root of the object
@@ -41,8 +52,11 @@ struct GDRGPUObjectTransform
 	UINT pad2[1];
 };
 
-#define NONE_INDEX 0xFFFFFFFF
 
+/// <summary>
+/// Node Transform system
+/// </summary>
+#define NONE_INDEX 0xFFFFFFFF
 struct GDRGPUNodeTransform
 {
 	float4x4 LocalTransform;  // Transform from parent
@@ -52,6 +66,26 @@ struct GDRGPUNodeTransform
 	UINT ChildIndex;          // Index of first child in pool. NONE_INDEX if no child
 	UINT NextIndex;           // Index of "Next" sibling in pool. NONE_INDEX if no next
 	UINT IsNeedRecalc;        // Marks if we need this node to update
+};
+
+/// <summary>
+/// Object system
+/// </summary>
+struct GDRGPUObjectIndices
+{
+	UINT pad[4];
+};
+
+/// <summary>
+/// Indirect system
+/// </summary>
+struct GDRGPUIndirectCommand
+{
+	GDRGPUObjectIndices Indices;                // we want to set buffer with indices
+	D3D12_VERTEX_BUFFER_VIEW VertexBuffer;      // set correct vertex buffer
+	D3D12_INDEX_BUFFER_VIEW IndexBuffer;        // set correct index buffer
+	D3D12_DRAW_INDEXED_ARGUMENTS DrawArguments; // then draw indirect indexed primitive
+	byte _pad1[8];
 };
 
 #ifdef __cplusplus

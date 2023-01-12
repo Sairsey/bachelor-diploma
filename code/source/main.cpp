@@ -5,6 +5,7 @@
 // 1) Fix Resize
 // 2) Restore everything
 // 3) Object Transform and Node Transform needs good deletion mechanism
+// 4) Indirect need to be fixed after object Indices will be added
 
 
 #ifdef UNITS_ENABLED

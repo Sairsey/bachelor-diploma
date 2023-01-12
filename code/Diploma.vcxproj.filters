@@ -79,6 +79,9 @@
     <Filter Include="Source Files\Render\SubSystems\Indirect">
       <UniqueIdentifier>{0011cb31-4716-474d-848f-671e5967f663}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Render\SubSystems\Geometry">
+      <UniqueIdentifier>{7540b5cb-95a7-412e-9732-16c4621154ae}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\main.cpp">
@@ -185,6 +188,9 @@
     </ClCompile>
     <ClCompile Include="source\render\subsystems\indirect_subsystem.cpp">
       <Filter>Source Files\Render\SubSystems\Indirect</Filter>
+    </ClCompile>
+    <ClCompile Include="source\render\subsystems\geometry_subsystem.cpp">
+      <Filter>Source Files\Render\SubSystems\Geometry</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -346,6 +352,9 @@
     </ClInclude>
     <ClInclude Include="source\render\subsystems\indirect_subsystem.h">
       <Filter>Source Files\Render\SubSystems\Indirect</Filter>
+    </ClInclude>
+    <ClInclude Include="source\render\subsystems\geometry_subsystem.h">
+      <Filter>Source Files\Render\SubSystems\Geometry</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

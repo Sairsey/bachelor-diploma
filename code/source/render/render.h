@@ -12,6 +12,7 @@ namespace gdr
   class object_transforms_subsystem;
   class node_transforms_subsystem;
   class indirect_subsystem;
+  class geometry_subsystem;
   struct render_runtime_params
   {
     bool IsIndirect = false;     // Enables indirect draw
@@ -92,6 +93,7 @@ namespace gdr
       object_transforms_subsystem* ObjectTransformsSystem; // System to store Root transforms of objects and AABB-s for culling
       node_transforms_subsystem* NodeTransformsSystem; // System to store hierarchical transform data.
       indirect_subsystem* IndirectSystem; // support of SRVs and UAVs for indirect draw
+      geometry_subsystem* GeometrySystem; // support of geometry creation
 
 #if 0
       indirect_support* IndirectSystem; // support of SRVs and UAVs for indirect draw

@@ -5,6 +5,9 @@
 using float4x4 = mth::matr;
 using float3 = mth::vec3f;
 using float4 = mth::vec4f;
+using float2 = mth::vec2f;
+using int2 = mth::vec2<int>;
+using int4 = mth::vec4<int>;
 // C++ code
 #pragma pack(push, 1)
 #else
@@ -85,7 +88,20 @@ struct GDRGPUIndirectCommand
 	D3D12_VERTEX_BUFFER_VIEW VertexBuffer;      // set correct vertex buffer
 	D3D12_INDEX_BUFFER_VIEW IndexBuffer;        // set correct index buffer
 	D3D12_DRAW_INDEXED_ARGUMENTS DrawArguments; // then draw indirect indexed primitive
-	byte _pad1[8];
+	UINT _pad1[2];
+};
+
+/// <summary>
+/// Geometry system
+/// </summary>
+struct GDRVertex
+{
+	float3 Pos;
+	float3 Normal;
+	float2 UV;
+	float3 Tangent;
+	int4 BonesIndices;
+	float4 BonesWeights;
 };
 
 #ifdef __cplusplus

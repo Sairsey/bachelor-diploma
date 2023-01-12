@@ -13,12 +13,12 @@
 #include "render/render.h"
 
 #include "render/subsystems/globals_subsystem.h"
+#include "render/subsystems/geometry_subsystem.h"
 #include "render/subsystems/object_transforms_subsystem.h"
 #include "render/subsystems/node_transforms_subsystem.h"
 #include "render/subsystems/render_target_subsystem.h"
 #include "render/subsystems/indirect_subsystem.h"
 #if 0
-#include "render/subsystems/geometry_support.h"
 
 #include "render/subsystems/object_support.h"
 #include "render/subsystems/light_sources_support.h"

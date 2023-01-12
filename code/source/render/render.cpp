@@ -72,6 +72,7 @@ bool gdr::render::Init(engine* Eng)
       ObjectTransformsSystem = new object_transforms_subsystem(this);
       NodeTransformsSystem = new node_transforms_subsystem(this);
       IndirectSystem = new indirect_subsystem(this);
+      GeometrySystem = new geometry_subsystem(this);
   }
 
   // init passes
@@ -255,6 +256,7 @@ void gdr::render::Term(void)
       delete ObjectTransformsSystem;
       delete NodeTransformsSystem;
       delete IndirectSystem;
+      delete GeometrySystem;
   }
 
   for (auto& pass : Passes)

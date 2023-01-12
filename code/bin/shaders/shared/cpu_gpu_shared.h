@@ -8,6 +8,8 @@ using float4 = mth::vec4f;
 using float2 = mth::vec2f;
 using int2 = mth::vec2<int>;
 using int4 = mth::vec4<int>;
+using uint2 = mth::vec2<UINT>;
+using uint4 = mth::vec4<UINT>;
 // C++ code
 #pragma pack(push, 1)
 #else
@@ -15,14 +17,29 @@ using int4 = mth::vec4<int>;
 #define UINT uint
 #endif // __cplusplus
 
+#ifdef __cplusplus
 #include "indirect_structures.h"
+#else
+#include "shared/indirect_structures.h"
+#endif
+
+#ifdef __cplusplus
+#define ConstantBufferSlot(x) x
+#define ShaderResourceSlot(x) x
+#define UnorderedAccessSlot(x) x
+#else
+#define ConstantBufferSlot(x) b ## x
+#define ShaderResourceSlot(x) t ## x
+#define UnorderedAccessSlot(x) u ## x
+
+#endif // __cplusplus
 
 // slots for all constant buffers
-#define GDRGPUGlobalDataConstantBufferSlot 0
-#define GDRGPUObjectIndicesConstantBufferSlot 1
+#define GDRGPUGlobalDataConstantBufferSlot ConstantBufferSlot(0)
+#define GDRGPUObjectIndicesConstantBufferSlot ConstantBufferSlot(1)
 // slots for all pools
-#define GDRGPUObjectTransformPoolSlot 0
-#define GDRGPUNodeTransformPoolSlot 1
+#define GDRGPUObjectTransformPoolSlot ShaderResourceSlot(0)
+#define GDRGPUNodeTransformPoolSlot ShaderResourceSlot(1)
 
 // Indexes of root params
 #define GDRGPUObjectIndicesRecordRootIndex 1 // index in Root Signature for Record in ObjectIndices
@@ -76,7 +93,10 @@ struct GDRGPUNodeTransform
 /// </summary>
 struct GDRGPUObjectIndices
 {
-	UINT pad[4];
+	UINT ObjectIndex;          // Filled on GPU
+	UINT ObjectParamsMask;     // Flags of current object
+	UINT ObjectTransformIndex; // index in Object Transforms pool
+	UINT ObjectMaterialIndex;  // index in Object Materials pool
 };
 
 /// <summary>
@@ -100,7 +120,7 @@ struct GDRVertex
 	float3 Normal;
 	float2 UV;
 	float3 Tangent;
-	int4 BonesIndices;
+	uint4 BonesIndices;
 	float4 BonesWeights;
 };
 

@@ -1,5 +1,14 @@
 #include "p_header.h"
 
+D3D12_INPUT_ELEMENT_DESC gdr::defaultInputElementLayout[] =
+{
+    { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+    { "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+    { "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 24, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+    { "TANGENT", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 32, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+    { "BONES_ID", 0, DXGI_FORMAT_R32G32B32A32_UINT, 0, 44, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+    { "BONES_WEIGHT", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 60, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+};
 
 // default constructor
 gdr::geometry_subsystem::geometry_subsystem(render *Rnd)
@@ -37,17 +46,17 @@ bool gdr::geometry_subsystem::CreateGeometry(const GDRVertex* pVertex, size_t ve
     geom.IndexBufferView.SizeInBytes = (UINT)(indexCount * sizeof(UINT32));
   }
   geom.IndexCount = (UINT)indexCount;
-  CPUPool.push_back(geom);
+  CPUData.push_back(geom);
   return res;
 }
 
 // Destructor
 gdr::geometry_subsystem::~geometry_subsystem()
 {
-  for (auto& geom : CPUPool)
+  for (auto& geom : CPUData)
   {
     Render->GetDevice().ReleaseGPUResource(geom.IndexBuffer);
     Render->GetDevice().ReleaseGPUResource(geom.VertexBuffer);
   }
-  CPUPool.clear();
+  CPUData.clear();
 }

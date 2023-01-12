@@ -71,13 +71,14 @@ bool gdr::render::Init(engine* Eng)
       RenderTargetsSystem = new render_targets_subsystem(this);
       ObjectTransformsSystem = new object_transforms_subsystem(this);
       NodeTransformsSystem = new node_transforms_subsystem(this);
-      IndirectSystem = new indirect_subsystem(this);
+      DrawCommandsSystem = new draw_commands_subsystem(this);
       GeometrySystem = new geometry_subsystem(this);
   }
 
   // init passes
   if (localIsInited)
   {
+    Passes.push_back(new albedo_pass());
     Passes.push_back(new imgui_pass());
     for (auto& pass : Passes)
     {
@@ -165,11 +166,6 @@ void gdr::render::DrawFrame(void)
     ObjectTransformsSystem->UpdateGPUData(uploadCommandList);
     PROFILE_END(uploadCommandList);
   }
-  {
-    PROFILE_BEGIN(uploadCommandList, "Update Indirect buffers");
-    IndirectSystem->UpdateGPUData(uploadCommandList);
-    PROFILE_END(uploadCommandList);
-  }
   GetDevice().CloseUploadCommandListBeforeRenderCommandList();
   
   ID3D12GraphicsCommandList* pCommandList = nullptr;
@@ -177,6 +173,13 @@ void gdr::render::DrawFrame(void)
   D3D12_CPU_DESCRIPTOR_HANDLE rtvHandle;
   if (Device.BeginRenderCommandList(&pCommandList, &pBackBuffer, &rtvHandle))
   {
+    {
+        GetDevice().SetCommandListAsUpload(pCommandList);
+        PROFILE_BEGIN(pCommandList, "Update Indirect buffers");
+        DrawCommandsSystem->UpdateGPUData(pCommandList);
+        PROFILE_END(pCommandList);
+        GetDevice().ClearUploadListReference();
+    }
     auto renderStart = std::chrono::system_clock::now();
     PROFILE_BEGIN(pCommandList, "Frame");
     DeviceFrameCounter.Start(pCommandList);
@@ -255,7 +258,7 @@ void gdr::render::Term(void)
       delete RenderTargetsSystem;
       delete ObjectTransformsSystem;
       delete NodeTransformsSystem;
-      delete IndirectSystem;
+      delete DrawCommandsSystem;
       delete GeometrySystem;
   }
 

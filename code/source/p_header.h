@@ -17,10 +17,9 @@
 #include "render/subsystems/object_transforms_subsystem.h"
 #include "render/subsystems/node_transforms_subsystem.h"
 #include "render/subsystems/render_target_subsystem.h"
-#include "render/subsystems/indirect_subsystem.h"
+#include "render/subsystems/draw_commands_subsystem.h"
 #if 0
 
-#include "render/subsystems/object_support.h"
 #include "render/subsystems/light_sources_support.h"
 #include "render/subsystems/materials_support.h"
 #include "render/subsystems/indirect_support.h"
@@ -32,13 +31,13 @@
 #endif
 
 #include "render/passes/base_pass.h"
+#include "render/passes/albedo_pass.h"
 
 #if 0
 #include "render/passes/frustum_pass.h"
 #include "render/passes/hier_depth_pass.h"
 #include "render/passes/occlusion_pass.h"
 
-#include "render/passes/albedo_pass.h"
 
 #include "render/passes/order_transparent_pass.h"
 #include "render/passes/oit_transparent_pass.h"

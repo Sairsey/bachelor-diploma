@@ -21,6 +21,9 @@
   <ItemGroup>
     <ClInclude Include="bin\shaders\shared\cpu_gpu_shared.h" />
     <ClInclude Include="bin\shaders\shared\indirect_structures.h" />
+    <ClInclude Include="bin\shaders\shared\lighting_functions.h" />
+    <ClInclude Include="bin\shaders\shared\normal_matrix.h" />
+    <ClInclude Include="bin\shaders\shared\vertex_process.h" />
     <ClInclude Include="source\def.h" />
     <ClInclude Include="source\engine\eng.h" />
     <ClInclude Include="source\input\input.h" />
@@ -31,12 +34,13 @@
     <ClInclude Include="source\render\device\device.h" />
     <ClInclude Include="source\render\device\device_time_query.h" />
     <ClInclude Include="source\render\device\gpu_ring_buffer.h" />
+    <ClInclude Include="source\render\passes\albedo_pass.h" />
     <ClInclude Include="source\render\passes\base_pass.h" />
     <ClInclude Include="source\render\passes\imgui_pass.h" />
     <ClInclude Include="source\render\render.h" />
     <ClInclude Include="source\render\subsystems\geometry_subsystem.h" />
     <ClInclude Include="source\render\subsystems\globals_subsystem.h" />
-    <ClInclude Include="source\render\subsystems\indirect_subsystem.h" />
+    <ClInclude Include="source\render\subsystems\draw_commands_subsystem.h" />
     <ClInclude Include="source\render\subsystems\node_transforms_subsystem.h" />
     <ClInclude Include="source\render\subsystems\render_target_subsystem.h" />
     <ClInclude Include="source\render\subsystems\object_transforms_subsystem.h" />
@@ -87,11 +91,12 @@
     <ClCompile Include="source\render\device\d3dinclude.cpp" />
     <ClCompile Include="source\render\device\device.cpp" />
     <ClCompile Include="source\render\device\device_time_query.cpp" />
+    <ClCompile Include="source\render\passes\albedo_pass.cpp" />
     <ClCompile Include="source\render\passes\imgui_pass.cpp" />
     <ClCompile Include="source\render\render.cpp" />
     <ClCompile Include="source\render\subsystems\geometry_subsystem.cpp" />
     <ClCompile Include="source\render\subsystems\globals_subsystem.cpp" />
-    <ClCompile Include="source\render\subsystems\indirect_subsystem.cpp" />
+    <ClCompile Include="source\render\subsystems\draw_commands_subsystem.cpp" />
     <ClCompile Include="source\render\subsystems\node_transforms_subsystem.cpp" />
     <ClCompile Include="source\render\subsystems\render_target_subsystem.cpp" />
     <ClCompile Include="source\render\subsystems\object_transforms_subsystem.cpp" />

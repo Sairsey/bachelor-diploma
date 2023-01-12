@@ -5,6 +5,8 @@
 /* Project namespace */
 namespace gdr
 {
+  extern D3D12_INPUT_ELEMENT_DESC defaultInputElementLayout[6];
+
   // Geometry representation struct
   struct geometry
   {
@@ -28,7 +30,7 @@ namespace gdr
       render *Render;
     public:
       // vector which contains all geometries
-      std::vector<geometry> CPUPool;
+      std::vector<geometry> CPUData;
 
       // default constructor
       geometry_subsystem(render *Rnd);

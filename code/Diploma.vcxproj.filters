@@ -76,11 +76,11 @@
     <Filter Include="Source Files\Render\Passes\albedo">
       <UniqueIdentifier>{48803390-344d-4014-8e89-10785a0309b1}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\Render\SubSystems\Indirect">
-      <UniqueIdentifier>{0011cb31-4716-474d-848f-671e5967f663}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source Files\Render\SubSystems\Geometry">
       <UniqueIdentifier>{7540b5cb-95a7-412e-9732-16c4621154ae}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Render\SubSystems\Draw Commands">
+      <UniqueIdentifier>{0011cb31-4716-474d-848f-671e5967f663}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -186,11 +186,14 @@
     <ClCompile Include="source\render\subsystems\node_transforms_subsystem.cpp">
       <Filter>Source Files\Render\SubSystems\Transforms</Filter>
     </ClCompile>
-    <ClCompile Include="source\render\subsystems\indirect_subsystem.cpp">
-      <Filter>Source Files\Render\SubSystems\Indirect</Filter>
+    <ClCompile Include="source\render\subsystems\draw_commands_subsystem.cpp">
+      <Filter>Source Files\Render\SubSystems\Draw Commands</Filter>
     </ClCompile>
     <ClCompile Include="source\render\subsystems\geometry_subsystem.cpp">
       <Filter>Source Files\Render\SubSystems\Geometry</Filter>
+    </ClCompile>
+    <ClCompile Include="source\render\passes\albedo_pass.cpp">
+      <Filter>Source Files\Render\Passes\albedo</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -350,11 +353,23 @@
     <ClInclude Include="source\render\subsystems\node_transforms_subsystem.h">
       <Filter>Source Files\Render\SubSystems\Transforms</Filter>
     </ClInclude>
-    <ClInclude Include="source\render\subsystems\indirect_subsystem.h">
-      <Filter>Source Files\Render\SubSystems\Indirect</Filter>
+    <ClInclude Include="source\render\subsystems\draw_commands_subsystem.h">
+      <Filter>Source Files\Render\SubSystems\Draw Commands</Filter>
     </ClInclude>
     <ClInclude Include="source\render\subsystems\geometry_subsystem.h">
       <Filter>Source Files\Render\SubSystems\Geometry</Filter>
+    </ClInclude>
+    <ClInclude Include="bin\shaders\shared\vertex_process.h">
+      <Filter>Source Files\CpuGpuShared</Filter>
+    </ClInclude>
+    <ClInclude Include="bin\shaders\shared\lighting_functions.h">
+      <Filter>Source Files\CpuGpuShared</Filter>
+    </ClInclude>
+    <ClInclude Include="bin\shaders\shared\normal_matrix.h">
+      <Filter>Source Files\CpuGpuShared</Filter>
+    </ClInclude>
+    <ClInclude Include="source\render\passes\albedo_pass.h">
+      <Filter>Source Files\Render\Passes\albedo</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

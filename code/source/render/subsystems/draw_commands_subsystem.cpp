@@ -1,6 +1,6 @@
 #include "p_header.h"
 
-gdr::indirect_subsystem::indirect_subsystem(render* Rnd)
+gdr::draw_commands_subsystem::draw_commands_subsystem(render* Rnd)
 {
   Render = Rnd;
   CommandsUAVReset.Resource = nullptr;
@@ -36,7 +36,7 @@ static UINT AlignForUavCounter(UINT bufferSize)
   return (bufferSize + (alignment - 1)) & ~(alignment - 1);
 }
 
-void gdr::indirect_subsystem::UpdateGPUData(ID3D12GraphicsCommandList* pCommandList)
+void gdr::draw_commands_subsystem::UpdateGPUData(ID3D12GraphicsCommandList* pCommandList)
 {
   if (CommandsUAVReset.Resource == nullptr)
   {
@@ -54,10 +54,13 @@ void gdr::indirect_subsystem::UpdateGPUData(ID3D12GraphicsCommandList* pCommandL
     }
   }
 
-  #if 0
+  if (CPUData.size() == 0)
+    return;
+
   // if we added or removed objects
-  if (CPUData.size() != Render->ObjectSystem->CPUPool.size())
+  if (CPUData.size() != SavedSize)
   {
+    SavedSize = CPUData.size();
     // free data
     for (int i = 0; i < (int)indirect_command_pools_enum::TotalBuffers; i++)
       if (CommandsBuffer[i].Resource != nullptr)
@@ -65,49 +68,34 @@ void gdr::indirect_subsystem::UpdateGPUData(ID3D12GraphicsCommandList* pCommandL
         Render->GetDevice().ReleaseGPUResource(CommandsBuffer[i]);
       }
 
-    // fill CPUData
-    CPUData.resize(Render->ObjectSystem->CPUPool.size());
-    for (int i = 0; i < Render->ObjectSystem->CPUPool.size(); i++)
-    {
-      CPUData[i].Indices = Render->ObjectSystem->CPUPool[i];
-      CPUData[i].VertexBuffer = Render->GeometrySystem->CPUPool[i].VertexBufferView;
-      CPUData[i].IndexBuffer = Render->GeometrySystem->CPUPool[i].IndexBufferView;
-
-      CPUData[i].DrawArguments.IndexCountPerInstance = Render->GeometrySystem->CPUPool[i].IndexCount;
-      CPUData[i].DrawArguments.InstanceCount = 1;
-      CPUData[i].DrawArguments.BaseVertexLocation = 0;
-      CPUData[i].DrawArguments.StartIndexLocation = 0;
-      CPUData[i].DrawArguments.StartInstanceLocation = 0;
-    }
-
     // Create SRV
     {
       Render->GetDevice().CreateGPUResource(
-        CD3DX12_RESOURCE_DESC::Buffer({ CPUData.size() * sizeof(indirect_command) }),
+        CD3DX12_RESOURCE_DESC::Buffer({ CPUData.size() * sizeof(GDRGPUIndirectCommand) }),
         D3D12_RESOURCE_STATE_COMMON,
         nullptr,
-        CommandsBuffer[(int)indirect_command_enum::All],
+        CommandsBuffer[(int)indirect_command_pools_enum::All],
         &CPUData[0],
-        CPUData.size() * sizeof(indirect_command));
-      CommandsBuffer[(int)indirect_command_enum::All].Resource->SetName(L"All commands SRV");
+        CPUData.size() * sizeof(GDRGPUIndirectCommand));
+      CommandsBuffer[(int)indirect_command_pools_enum::All].Resource->SetName(L"All commands SRV");
 
       D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
       srvDesc.Format = DXGI_FORMAT_UNKNOWN;
       srvDesc.ViewDimension = D3D12_SRV_DIMENSION_BUFFER;
       srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
       srvDesc.Buffer.NumElements = (UINT)CPUData.size();
-      srvDesc.Buffer.StructureByteStride = sizeof(indirect_command);
+      srvDesc.Buffer.StructureByteStride = sizeof(GDRGPUIndirectCommand);
       srvDesc.Buffer.Flags = D3D12_BUFFER_SRV_FLAG_NONE;
 
-      Render->GetDevice().GetDXDevice()->CreateShaderResourceView(CommandsBuffer[(int)indirect_command_enum::All].Resource, &srvDesc, CommandsCPUDescriptor[(int)indirect_command_enum::All]);
+      Render->GetDevice().GetDXDevice()->CreateShaderResourceView(CommandsBuffer[(int)indirect_command_pools_enum::All].Resource, &srvDesc, CommandsCPUDescriptor[(int)indirect_command_pools_enum::All]);
     }
 
     // aligned UAV size
-    UINT UAVSize = AlignForUavCounter((UINT)CPUData.size() * sizeof(indirect_command));
+    UINT UAVSize = AlignForUavCounter((UINT)CPUData.size() * sizeof(GDRGPUIndirectCommand));
     CounterOffset = UAVSize;
 
     // CreateUAVs
-    for (int i = 1; i < (int)indirect_command_enum::TotalBuffers; i++)
+    for (int i = 1; i < (int)indirect_command_pools_enum::TotalBuffers; i++)
     {
       Render->GetDevice().CreateGPUResource(
         CD3DX12_RESOURCE_DESC::Buffer({ UAVSize + sizeof(UINT) }, D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS),
@@ -121,7 +109,7 @@ void gdr::indirect_subsystem::UpdateGPUData(ID3D12GraphicsCommandList* pCommandL
       uavDesc.ViewDimension = D3D12_UAV_DIMENSION_BUFFER;
       uavDesc.Buffer.FirstElement = 0;
       uavDesc.Buffer.NumElements = (UINT)CPUData.size();
-      uavDesc.Buffer.StructureByteStride = sizeof(indirect_command);
+      uavDesc.Buffer.StructureByteStride = sizeof(GDRGPUIndirectCommand);
       uavDesc.Buffer.CounterOffsetInBytes = UAVSize;
       uavDesc.Buffer.Flags = D3D12_BUFFER_UAV_FLAG_NONE;
 
@@ -156,11 +144,9 @@ void gdr::indirect_subsystem::UpdateGPUData(ID3D12GraphicsCommandList* pCommandL
       CommandsBuffer[i].Resource,
       D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
   }
-#endif
-
 }
 
-gdr::indirect_subsystem::~indirect_subsystem()
+gdr::draw_commands_subsystem::~draw_commands_subsystem()
 {
   for (int i = 0; i < (int)indirect_command_pools_enum::TotalBuffers; i++)
     if (CommandsBuffer[i].Resource != nullptr)

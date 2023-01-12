@@ -5,12 +5,14 @@
 // 1) Fix Resize
 // 2) Restore everything
 // 3) Object Transform and Node Transform needs good deletion mechanism
-// 4) Indirect need to be fixed after object Indices will be added
+// 4) DrawCommands is now used as ObjectIndices storage and Indirect.
+// 5) Indirect shouldnt recreate buffers if we can
+// 6) Transforms, Indirect should have same system of object creation and deletion
 
+#include "units/unit_triangle.h"
 
 #ifdef UNITS_ENABLED
 #include "units/unit_control.h"
-#include "units/unit_triangle.h"
 #include "units/unit_bread.h"
 #include "units/unit_frog.h"
 #include "units/unit_stats.h"
@@ -87,6 +89,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
   Engine.AddUnit(new unit_stats());
 #endif
 
+  Engine.AddUnit(new unit_triangle());
   Engine.AddUnit(new unit_frame_times());
 
   // math smoke test

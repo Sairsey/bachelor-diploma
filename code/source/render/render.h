@@ -11,7 +11,7 @@ namespace gdr
   class render_targets_subsystem;
   class object_transforms_subsystem;
   class node_transforms_subsystem;
-  class indirect_subsystem;
+  class draw_commands_subsystem;
   class geometry_subsystem;
   struct render_runtime_params
   {
@@ -92,14 +92,13 @@ namespace gdr
       render_targets_subsystem* RenderTargetsSystem; //System to change and use different render targets
       object_transforms_subsystem* ObjectTransformsSystem; // System to store Root transforms of objects and AABB-s for culling
       node_transforms_subsystem* NodeTransformsSystem; // System to store hierarchical transform data.
-      indirect_subsystem* IndirectSystem; // support of SRVs and UAVs for indirect draw
+      draw_commands_subsystem* DrawCommandsSystem; // support of SRVs and UAVs for indirect draw
       geometry_subsystem* GeometrySystem; // support of geometry creation
-
 #if 0
       indirect_support* IndirectSystem; // support of SRVs and UAVs for indirect draw
       geometry_support *GeometrySystem; // support of geometry creation
       
-      object_support *ObjectSystem; // Helper of every subsystem
+      
       materials_support *MaterialsSystem; //System to store info about materials
       textures_support* TexturesSystem; //System to store info about textures
       cube_textures_support* CubeTexturesSystem; // System to store info about cube textures

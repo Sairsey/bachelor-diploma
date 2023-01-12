@@ -66,7 +66,7 @@ void gdr::object_transforms_subsystem::UpdateGPUData(ID3D12GraphicsCommandList* 
 
 }
 
-void gdr::object_transforms_subsystem::MarkChunkByTransformIndex(size_t index)
+void gdr::object_transforms_subsystem::MarkChunkByTransformIndex(gdr_index index)
 {
   size_t chunk_index = floor(1.0 * ((byte*)&CPUData[index] - (byte*)&CPUData[0]) / CHUNK_SIZE);
   if (chunk_index < ChunkMarkings.size() && chunk_index >= 0)

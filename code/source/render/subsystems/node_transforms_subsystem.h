@@ -5,8 +5,8 @@
 /* Project namespace */
 namespace gdr
 {
-  // Transforms data representation class
-  class object_transforms_subsystem
+  // Hierarchical transforms data representation class
+  class node_transforms_subsystem
   {
   private:
     render* Render; // pointer on Render
@@ -15,21 +15,28 @@ namespace gdr
     D3D12_GPU_DESCRIPTOR_HANDLE GPUDescriptor;
 
     // transform chunk for update
-    const int CHUNK_SIZE = 128 * sizeof(GDRGPUObjectTransform); // 5Kb approx
+    const int CHUNK_SIZE = 128 * sizeof(GDRGPUNodeTransform); // 5Kb approx
 
     std::vector<bool> ChunkMarkings;
+
+    // update all nodes if needed
+    void UpdateHierarchy(gdr_index index);
   public:
     // Constructor
-    object_transforms_subsystem(render* Rnd);
+    node_transforms_subsystem(render* Rnd);
+
+    // functions to add and delete Node to hierarchy
+    gdr_index CreateNode(gdr_index parent = NONE_INDEX);
+    void DeleteNode(gdr_index node);
 
     void UpdateGPUData(ID3D12GraphicsCommandList* pCommandList);
 
-    std::vector<GDRGPUObjectTransform> CPUData;  // data stored in CPU
+    std::vector<GDRGPUNodeTransform> CPUData;  // data stored in CPU
     GPUResource GPUData; // data stored in GPU
 
     void MarkChunkByTransformIndex(gdr_index index);
 
     // Destructor 
-    ~object_transforms_subsystem(void);
+    ~node_transforms_subsystem(void);
   };
 }

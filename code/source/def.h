@@ -91,3 +91,5 @@ inline std::wstring charToWString(const char* text)
   std::wstring wstr(str.begin(), str.end());
   return wstr;
 }
+
+using gdr_index = uint32_t;

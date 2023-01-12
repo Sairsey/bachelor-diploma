@@ -14,6 +14,7 @@
 
 #include "render/subsystems/globals_subsystem.h"
 #include "render/subsystems/object_transforms_subsystem.h"
+#include "render/subsystems/node_transforms_subsystem.h"
 #include "render/subsystems/render_target_subsystem.h"
 #if 0
 #include "render/subsystems/geometry_support.h"

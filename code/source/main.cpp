@@ -4,6 +4,7 @@
 // TODO:
 // 1) Fix Resize
 // 2) Restore everything
+// 3) Object Transform and Node Transform needs good deletion mechanism
 
 
 #ifdef UNITS_ENABLED

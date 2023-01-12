@@ -10,6 +10,7 @@ namespace gdr
   class globals_subsystem;
   class render_targets_subsystem;
   class object_transforms_subsystem;
+  class node_transforms_subsystem;
   struct render_runtime_params
   {
     bool IsIndirect = false;     // Enables indirect draw
@@ -88,6 +89,7 @@ namespace gdr
       globals_subsystem* GlobalsSystem; // Store camera info and other important stuff, which is relevant per frame
       render_targets_subsystem* RenderTargetsSystem; //System to change and use different render targets
       object_transforms_subsystem* ObjectTransformsSystem; // System to store Root transforms of objects and AABB-s for culling
+      node_transforms_subsystem* NodeTransformsSystem; // System to store hierarchical transform data.
 #if 0
       indirect_support* IndirectSystem; // support of SRVs and UAVs for indirect draw
       geometry_support *GeometrySystem; // support of geometry creation

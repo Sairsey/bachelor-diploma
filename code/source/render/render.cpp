@@ -70,6 +70,7 @@ bool gdr::render::Init(engine* Eng)
       GlobalsSystem = new globals_subsystem(this);
       RenderTargetsSystem = new render_targets_subsystem(this);
       ObjectTransformsSystem = new object_transforms_subsystem(this);
+      NodeTransformsSystem = new node_transforms_subsystem(this);
   }
 
   // init passes
@@ -114,7 +115,7 @@ void gdr::render::AddLambdaForIMGUI(std::function<void(void)> func)
 void gdr::render::Resize(UINT w, UINT h)
 {
   Device.ResizeSwapchain(w, h);
-
+  
   PlayerCamera.Resize(w, h);
 
   RenderTargetsSystem->Resize(w, h);
@@ -153,7 +154,12 @@ void gdr::render::DrawFrame(void)
     PROFILE_END(uploadCommandList);
   }
   {
-      PROFILE_BEGIN(uploadCommandList, "Update Transforms");
+      PROFILE_BEGIN(uploadCommandList, "Update Node Transforms");
+      NodeTransformsSystem->UpdateGPUData(uploadCommandList);
+      PROFILE_END(uploadCommandList);
+  }
+  {
+      PROFILE_BEGIN(uploadCommandList, "Update Object Transforms");
       ObjectTransformsSystem->UpdateGPUData(uploadCommandList);
       PROFILE_END(uploadCommandList);
   }
@@ -241,6 +247,7 @@ void gdr::render::Term(void)
       delete GlobalsSystem;
       delete RenderTargetsSystem;
       delete ObjectTransformsSystem;
+      delete NodeTransformsSystem;
   }
 
   for (auto& pass : Passes)

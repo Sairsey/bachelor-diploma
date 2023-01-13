@@ -18,10 +18,10 @@
 #include "render/subsystems/node_transforms_subsystem.h"
 #include "render/subsystems/render_target_subsystem.h"
 #include "render/subsystems/draw_commands_subsystem.h"
+#include "render/subsystems/materials_subsystem.h"
 #if 0
 
 #include "render/subsystems/light_sources_support.h"
-#include "render/subsystems/materials_support.h"
 #include "render/subsystems/indirect_support.h"
 #include "render/subsystems/texture_support.h"
 #include "render/subsystems/cube_texture_support.h"

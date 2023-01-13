@@ -41,6 +41,7 @@
     <ClInclude Include="source\render\subsystems\geometry_subsystem.h" />
     <ClInclude Include="source\render\subsystems\globals_subsystem.h" />
     <ClInclude Include="source\render\subsystems\draw_commands_subsystem.h" />
+    <ClInclude Include="source\render\subsystems\materials_subsystem.h" />
     <ClInclude Include="source\render\subsystems\node_transforms_subsystem.h" />
     <ClInclude Include="source\render\subsystems\render_target_subsystem.h" />
     <ClInclude Include="source\render\subsystems\object_transforms_subsystem.h" />
@@ -97,6 +98,7 @@
     <ClCompile Include="source\render\subsystems\geometry_subsystem.cpp" />
     <ClCompile Include="source\render\subsystems\globals_subsystem.cpp" />
     <ClCompile Include="source\render\subsystems\draw_commands_subsystem.cpp" />
+    <ClCompile Include="source\render\subsystems\materials_subsystem.cpp" />
     <ClCompile Include="source\render\subsystems\node_transforms_subsystem.cpp" />
     <ClCompile Include="source\render\subsystems\render_target_subsystem.cpp" />
     <ClCompile Include="source\render\subsystems\object_transforms_subsystem.cpp" />

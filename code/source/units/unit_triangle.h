@@ -6,6 +6,7 @@ class unit_triangle : public gdr::unit_base
 private:
   gdr_index TriangleDrawCall;
   gdr_index TriangleTransform;
+  gdr_index TriangleMaterial;
   gdr_index TriangleGeometry;
 public:
   void Initialize(void);

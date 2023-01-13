@@ -73,6 +73,7 @@ bool gdr::render::Init(engine* Eng)
       NodeTransformsSystem = new node_transforms_subsystem(this);
       DrawCommandsSystem = new draw_commands_subsystem(this);
       GeometrySystem = new geometry_subsystem(this);
+      MaterialsSystem = new materials_subsystem(this);
   }
 
   // init passes
@@ -164,6 +165,11 @@ void gdr::render::DrawFrame(void)
   {
     PROFILE_BEGIN(uploadCommandList, "Update Object Transforms");
     ObjectTransformsSystem->UpdateGPUData(uploadCommandList);
+    PROFILE_END(uploadCommandList);
+  }
+  {
+    PROFILE_BEGIN(uploadCommandList, "Update Materials");
+    MaterialsSystem->UpdateGPUData(uploadCommandList);
     PROFILE_END(uploadCommandList);
   }
   GetDevice().CloseUploadCommandListBeforeRenderCommandList();
@@ -260,6 +266,7 @@ void gdr::render::Term(void)
       delete NodeTransformsSystem;
       delete DrawCommandsSystem;
       delete GeometrySystem;
+      delete MaterialsSystem;
   }
 
   for (auto& pass : Passes)

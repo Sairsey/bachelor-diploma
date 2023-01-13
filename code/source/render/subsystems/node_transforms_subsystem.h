@@ -15,7 +15,7 @@ namespace gdr
     D3D12_GPU_DESCRIPTOR_HANDLE GPUDescriptor;
 
     // transform chunk for update
-    const int CHUNK_SIZE = 128 * sizeof(GDRGPUNodeTransform); // 5Kb approx
+    const int CHUNK_SIZE = 128 * sizeof(GDRGPUNodeTransform);
 
     std::vector<bool> ChunkMarkings;
 
@@ -28,6 +28,11 @@ namespace gdr
     // functions to add and delete Node to hierarchy
     gdr_index CreateNode(gdr_index parent = NONE_INDEX);
     void DeleteNode(gdr_index node);
+
+    gdr_index AddElementInPool()
+    {
+        return CreateNode(NONE_INDEX);
+    }
 
     void UpdateGPUData(ID3D12GraphicsCommandList* pCommandList);
 

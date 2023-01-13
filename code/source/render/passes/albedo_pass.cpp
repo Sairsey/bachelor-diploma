@@ -16,6 +16,7 @@ void gdr::albedo_pass::Initialize(void)
         static_assert(GDRGPUObjectIndicesRecordRootIndex == (int)root_parameters_draw_indices::index_buffer_index, "Index buffer not in right root signature index");
         params[(int)root_parameters_draw_indices::object_transform_pool_index].InitAsShaderResourceView(GDRGPUObjectTransformPoolSlot);
         params[(int)root_parameters_draw_indices::node_transform_pool_index].InitAsShaderResourceView(GDRGPUNodeTransformPoolSlot);
+        params[(int)root_parameters_draw_indices::material_pool_index].InitAsShaderResourceView(GDRGPUMaterialPoolSlot);
 
         {
             CD3DX12_ROOT_SIGNATURE_DESC rootSignatureDesc;
@@ -80,6 +81,9 @@ void gdr::albedo_pass::CallDirectDraw(ID3D12GraphicsCommandList* currentCommandL
             currentCommandList->SetGraphicsRootShaderResourceView(
                 (int)root_parameters_draw_indices::node_transform_pool_index,
                 Render->NodeTransformsSystem->GPUData.Resource->GetGPUVirtualAddress());
+            currentCommandList->SetGraphicsRootShaderResourceView(
+                (int)root_parameters_draw_indices::material_pool_index,
+                Render->MaterialsSystem->GPUData.Resource->GetGPUVirtualAddress());
         }
 
         currentCommandList->DrawIndexedInstanced(i.DrawArguments.IndexCountPerInstance, 1, 0, 0, 0);

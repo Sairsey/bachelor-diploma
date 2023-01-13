@@ -15,7 +15,7 @@ namespace gdr
     D3D12_GPU_DESCRIPTOR_HANDLE GPUDescriptor;
 
     // transform chunk for update
-    const int CHUNK_SIZE = 128 * sizeof(GDRGPUObjectTransform); // 5Kb approx
+    const int CHUNK_SIZE = 128 * sizeof(GDRGPUObjectTransform); 
 
     std::vector<bool> ChunkMarkings;
   public:
@@ -23,6 +23,17 @@ namespace gdr
     object_transforms_subsystem(render* Rnd);
 
     void UpdateGPUData(ID3D12GraphicsCommandList* pCommandList);
+
+    gdr_index AddElementInPool()
+    {
+        GDRGPUObjectTransform transform;
+        transform.maxAABB = mth::vec3f(0, 0, 0);
+        transform.minAABB = mth::vec3f(0, 0, 0);
+        transform.Transform = mth::matr::Identity();
+        CPUData.push_back(transform);
+        MarkChunkByTransformIndex(CPUData.size() - 1);
+        return CPUData.size() - 1;
+    }
 
     std::vector<GDRGPUObjectTransform> CPUData;  // data stored in CPU
     GPUResource GPUData; // data stored in GPU

@@ -7,7 +7,8 @@
 // 3) Object Transform and Node Transform needs good deletion mechanism
 // 4) DrawCommands is now used as ObjectIndices storage and Indirect.
 // 5) Indirect shouldnt recreate buffers if we can
-// 6) Transforms, Indirect should have same system of object creation and deletion
+// 6) Transforms, Indirect should have same system of object creation and deletion (3 and 5 about same thing)
+// 7) Restore shaders lighting
 
 #include "units/unit_triangle.h"
 

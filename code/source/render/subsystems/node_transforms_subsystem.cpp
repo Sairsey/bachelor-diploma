@@ -59,7 +59,7 @@ void gdr::node_transforms_subsystem::UpdateGPUData(ID3D12GraphicsCommandList* pC
       {
         // probably chunks after this are needed in update as well
         int chunk_amount = 1;
-        while (ChunkMarkings[i + chunk_amount])
+        while (i + chunk_amount < ChunkMarkings.size() && ChunkMarkings[i + chunk_amount])
             chunk_amount++;
 
         int source_offset = i * CHUNK_SIZE;

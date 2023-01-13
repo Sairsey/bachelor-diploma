@@ -40,6 +40,7 @@ using uint4 = mth::vec4<UINT>;
 // slots for all pools
 #define GDRGPUObjectTransformPoolSlot ShaderResourceSlot(0)
 #define GDRGPUNodeTransformPoolSlot ShaderResourceSlot(1)
+#define GDRGPUMaterialPoolSlot ShaderResourceSlot(2)
 
 // Indexes of root params
 #define GDRGPUObjectIndicesRecordRootIndex 1 // index in Root Signature for Record in ObjectIndices
@@ -87,6 +88,56 @@ struct GDRGPUNodeTransform
 	UINT NextIndex;           // Index of "Next" sibling in pool. NONE_INDEX if no next
 	UINT IsNeedRecalc;        // Marks if we need this node to update
 };
+
+/// <summary>
+///  Materials system
+/// </summary>
+
+// improvised enum of types
+#define MATERIAL_SHADER_COLOR 0                  // Diffuse component only
+#define MATERIAL_SHADER_PHONG 1                  // Phong lighting model
+#define MATERIAL_SHADER_COOKTORRANCE_METALNESS 2 // CookTorrance PBR model Metalness based
+#define MATERIAL_SHADER_COOKTORRANCE_SPECULAR 3  // CookTorrance PBR model SPECULAR based
+#define MATERIAL_SHADER_AMOUNT 4
+
+struct GDRGPUMaterial
+{
+	UINT ShadeType;
+
+	UINT UintParam0;
+	UINT UintParam1;
+	UINT UintParam2;
+	UINT UintParam3;
+	
+	float3 VecParam0;
+	float3 VecParam1;
+	float3 VecParam2;
+
+	float FloatParam0;
+	float FloatParam1;
+	float FloatParam2;
+};
+// define getters for this weired material structure
+
+// SHADER_COLOR
+#define GDRGPUMaterialColorGetColor(Material) Material.VecParam0
+#define GDRGPUMaterialColorGetColorMapIndex(Material) Material.UintParam0
+// SHADER_PHONG
+#define GDRGPUMaterialPhongGetAmbient(Material) Material.VecParam0            // Ka
+#define GDRGPUMaterialPhongGetAmbientMapIndex(Material) Material.UintParam1   // Ka map
+#define GDRGPUMaterialPhongGetDiffuse(Material) Material.VecParam1            // Kd map
+#define GDRGPUMaterialPhongGetDiffuseMapIndex(Material) Material.UintParam2   // Kd map
+#define GDRGPUMaterialPhongGetSpecular(Material) Material.VecParam2           // Ks 
+#define GDRGPUMaterialPhongGetSpecularMapIndex(Material) Material.UintParam3  // Ks map
+#define GDRGPUMaterialPhongGetShiness(Material) Material.FloatParam0          // Ph
+#define GDRGPUMaterialPhongGetNormalMapIndex(Material) Material.UintParam0    // Normal map
+// SHADER_COOKTORRANCE_METALNESS
+#define GDRGPUMaterialCookTorranceGetAlbedo(Material) Material.VecParam0                             // Albedo
+#define GDRGPUMaterialCookTorranceGetAlbedoMapIndex(Material) Material.UintParam1                    // Albedo Map
+#define GDRGPUMaterialCookTorranceGetRoughness(Material) Material.FloatParam0                        // roughness 
+#define GDRGPUMaterialCookTorranceGetMetallic(Material) Material.FloatParam1                         // metallness
+#define GDRGPUMaterialCookTorranceGetRoughnessMetallnessMapIndex(Material) Material.UintParam2       // roughness + metallness
+#define GDRGPUMaterialCookTorranceGetNormalMapIndex(Material) Material.UintParam0                    // Normal map
 
 /// <summary>
 /// Object system

@@ -26,7 +26,8 @@ namespace gdr
 				globals_buffer_index = 0,           // root parameter for global buffer
 				index_buffer_index,                 // root parameter for buffer with indices in pools
 				object_transform_pool_index,        // root parameter for buffer with per object transforms
-				node_transform_pool_index,         // root parameter for buffer with nodes transforms
+				node_transform_pool_index,          // root parameter for buffer with nodes transforms
+				material_pool_index,                // root parameter for buffer with materials
 				total_root_parameters,
 			};
 		public:

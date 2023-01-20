@@ -107,6 +107,7 @@ gdr_index gdr::node_transforms_subsystem::CreateNode(gdr_index parent)
         newRecord.NextIndex = CPUData[parent].ChildIndex;
         CPUData[parent].ChildIndex = (gdr_index)(CPUData.size() - 1);
     }
+    MarkChunkByTransformIndex(CPUData.size() - 1);
     return (gdr_index)(CPUData.size() - 1);
 }
 

@@ -4,9 +4,9 @@
 void unit_triangle::Initialize(void)
 {
   static const GDRVertex vertices[3] = {
-  {{-0.5f, -0.5f, 0}, {0,0,1}, {0, 0}, {0, 0, 0}, {NONE_INDEX, NONE_INDEX, NONE_INDEX, NONE_INDEX}, {0, 0, 0, 0}},
-  {{ 0, 0.5f, 0}, {0,0,1} , {0, 0}, {0, 0, 0}, {NONE_INDEX, NONE_INDEX, NONE_INDEX, NONE_INDEX}, {0, 0, 0, 0}},
-  {{ 0.5f, -0.5f, 0}, {0,0,1} , {0, 0}, {0, 0, 0}, {NONE_INDEX, NONE_INDEX, NONE_INDEX, NONE_INDEX}, {0, 0, 0, 0}}
+  {{-0.5f, -0.5f, 0}, {0,0,1}, {0, 0}, {0, 0, 0}, {0, NONE_INDEX, NONE_INDEX, NONE_INDEX}, {1, 0, 0, 0}},
+  {{ 0, 0.5f, 0}, {0,0,1} , {0, 0}, {0, 0, 0}, {0, NONE_INDEX, NONE_INDEX, NONE_INDEX}, {1, 0, 0, 0}},
+  {{ 0.5f, -0.5f, 0}, {0,0,1} , {0, 0}, {0, 0, 0}, {0, NONE_INDEX, NONE_INDEX, NONE_INDEX}, {1, 0, 0, 0}}
   };
   static const UINT32 indices[3] = { 0, 1, 2 };
   ID3D12GraphicsCommandList* commandList;
@@ -37,6 +37,15 @@ void unit_triangle::Initialize(void)
   GDRGPUMaterial mat;
   mat.ShadeType = MATERIAL_SHADER_COLOR;
   
+  gdr::mesh_import_node bone_node;
+  bone_node.Name = "bone";
+  bone_node.Type = gdr_hier_node_type::node;
+  bone_node.ParentIndex = NONE_INDEX;
+  bone_node.ChildIndex = NONE_INDEX;
+  bone_node.NextIndex = NONE_INDEX;
+  bone_node.LocalTransform = mth::matr::Scale({ 10, 0.5, 0 });
+  bone_node.BoneOffset = mth::matr::Identity();
+
   gdr::mesh_import_node node;
   node.Name = "mesh";
   node.Type = gdr_hier_node_type::mesh;
@@ -57,6 +66,7 @@ void unit_triangle::Initialize(void)
   tmp_import_data.Materials.push_back(mat);
   tmp_import_data.RootTransform.Transform = mth::matr::Identity();
 
+  tmp_import_data.HierarchyNodes.push_back(bone_node);
   tmp_import_data.HierarchyNodes.push_back(node);
   TriangleModel = Engine->AddModel(tmp_import_data);
 #endif

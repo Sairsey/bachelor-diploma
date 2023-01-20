@@ -54,6 +54,10 @@
 
 #include "physics/physics.h"
 
+#include "models/mesh_import_data.h"
+#include "models/render_mesh.h"
+#include "models/models_manager.h"
+
 #include "timer/timer.h"
 #include "input/input.h"
 

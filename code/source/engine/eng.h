@@ -12,7 +12,8 @@ namespace gdr
     public win,
     public render,
     public timer_support,
-    public input_support
+    public input_support,
+    public models_manager
 #if PHYSICS_ENABLED
     public physics,
 #endif
@@ -21,7 +22,6 @@ namespace gdr
       /* Vector of all units we will draw */
       std::vector<unit_base*> Units;
     public:
-      
       // Default constructor
       engine();
 

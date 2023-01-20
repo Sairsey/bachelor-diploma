@@ -85,6 +85,9 @@
     <Filter Include="Source Files\Render\SubSystems\Materials">
       <UniqueIdentifier>{1ad761e6-379c-4501-b078-71d566dee7e9}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Models">
+      <UniqueIdentifier>{513683ad-a9d3-4b1f-a39d-8e5a24480926}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\main.cpp">
@@ -200,6 +203,9 @@
     </ClCompile>
     <ClCompile Include="source\render\subsystems\materials_subsystem.cpp">
       <Filter>Source Files\Render\SubSystems\Materials</Filter>
+    </ClCompile>
+    <ClCompile Include="source\models\models_manager.cpp">
+      <Filter>Source Files\Models</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -379,6 +385,15 @@
     </ClInclude>
     <ClInclude Include="source\render\subsystems\materials_subsystem.h">
       <Filter>Source Files\Render\SubSystems\Materials</Filter>
+    </ClInclude>
+    <ClInclude Include="source\models\mesh_import_data.h">
+      <Filter>Source Files\Models</Filter>
+    </ClInclude>
+    <ClInclude Include="source\models\models_manager.h">
+      <Filter>Source Files\Models</Filter>
+    </ClInclude>
+    <ClInclude Include="source\models\render_mesh.h">
+      <Filter>Source Files\Models</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

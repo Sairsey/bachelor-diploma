@@ -4,6 +4,7 @@
 gdr::engine::engine()
 {
   render::Init(this);
+  models_manager::Init(this);
 }
 
 /* Add new Unit function.

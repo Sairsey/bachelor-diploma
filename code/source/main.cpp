@@ -9,6 +9,8 @@
 // 5) Indirect shouldnt recreate buffers if we can
 // 6) Transforms, Indirect should have same system of object creation and deletion (3 and 5 about same thing)
 // 7) Restore shaders lighting
+// 8) Do something with Geometry system "CreateGeometry". It differs from other systems
+// 9) Add Animations
 
 #include "units/unit_triangle.h"
 

@@ -67,6 +67,12 @@ namespace gdr
       return (gdr_index)(CPUData.size() - 1);
     }
 
+    // Add one element to pool in correct way
+    gdr_index AddElementInPool(gdr_index geometryIndex)
+    {
+      return AddElementInPool(Render->GeometrySystem->CPUData[geometryIndex]);
+    }
+
     // Destructor 
     ~draw_commands_subsystem(void);
 

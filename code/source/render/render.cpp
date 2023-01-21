@@ -74,6 +74,7 @@ bool gdr::render::Init(engine* Eng)
       DrawCommandsSystem = new draw_commands_subsystem(this);
       GeometrySystem = new geometry_subsystem(this);
       MaterialsSystem = new materials_subsystem(this);
+      TexturesSystem = new textures_subsystem(this);
   }
 
   // init passes
@@ -172,6 +173,11 @@ void gdr::render::DrawFrame(void)
     MaterialsSystem->UpdateGPUData(uploadCommandList);
     PROFILE_END(uploadCommandList);
   }
+  {
+    PROFILE_BEGIN(uploadCommandList, "Update Textures");
+    TexturesSystem->UpdateGPUData(uploadCommandList);
+    PROFILE_END(uploadCommandList);
+  }
   GetDevice().CloseUploadCommandListBeforeRenderCommandList();
   
   ID3D12GraphicsCommandList* pCommandList = nullptr;
@@ -267,6 +273,7 @@ void gdr::render::Term(void)
       delete DrawCommandsSystem;
       delete GeometrySystem;
       delete MaterialsSystem;
+      delete TexturesSystem;
   }
 
   for (auto& pass : Passes)

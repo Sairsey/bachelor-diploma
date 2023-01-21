@@ -17,7 +17,7 @@ gdr::geometry_subsystem::geometry_subsystem(render *Rnd)
 }
 
 // Create Geometry using vertices and Indices
-bool gdr::geometry_subsystem::CreateGeometry(const GDRVertex* pVertex, size_t vertexCount, const UINT32* pIndices, size_t indexCount)
+gdr_index gdr::geometry_subsystem::AddElementInPool(const GDRVertex* pVertex, size_t vertexCount, const UINT32* pIndices, size_t indexCount)
 {
   geometry geom;
   bool res = true;
@@ -47,7 +47,7 @@ bool gdr::geometry_subsystem::CreateGeometry(const GDRVertex* pVertex, size_t ve
   }
   geom.IndexCount = (UINT)indexCount;
   CPUData.push_back(geom);
-  return res;
+  return CPUData.size() - 1;
 }
 
 // Destructor

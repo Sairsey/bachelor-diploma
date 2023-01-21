@@ -27,11 +27,14 @@ using uint4 = mth::vec4<UINT>;
 #define ConstantBufferSlot(x) x
 #define ShaderResourceSlot(x) x
 #define UnorderedAccessSlot(x) x
+#define Space(x) x
+#define SamplerSlot(x) x
 #else
 #define ConstantBufferSlot(x) b ## x
 #define ShaderResourceSlot(x) t ## x
 #define UnorderedAccessSlot(x) u ## x
-
+#define Space(x) space ## x
+#define SamplerSlot(x) s ## x
 #endif // __cplusplus
 
 // slots for all constant buffers
@@ -41,9 +44,17 @@ using uint4 = mth::vec4<UINT>;
 #define GDRGPUObjectTransformPoolSlot ShaderResourceSlot(0)
 #define GDRGPUNodeTransformPoolSlot ShaderResourceSlot(1)
 #define GDRGPUMaterialPoolSlot ShaderResourceSlot(2)
-
+#define GDRGPUTexturePoolSlot ShaderResourceSlot(3)
+#define GDRGPUCubeTexturePoolSlot ShaderResourceSlot(4)
 // Indexes of root params
 #define GDRGPUObjectIndicesRecordRootIndex 1 // index in Root Signature for Record in ObjectIndices
+// Spaces for bindless resources
+#define GDRGPUTexturePoolSpace Space(1)
+#define GDRGPUCubeTexturePoolSpace Space(2)
+// Samplers Registers
+#define GDRGPUNearestSamplerSlot SamplerSlot(0)
+#define GDRGPULinearSamplerSlot SamplerSlot(1)
+
 
 /// <summary>
 ///  Globals system
@@ -138,6 +149,8 @@ struct GDRGPUMaterial
 #define GDRGPUMaterialCookTorranceGetMetallic(Material) Material.FloatParam1                         // metallness
 #define GDRGPUMaterialCookTorranceGetRoughnessMetallnessMapIndex(Material) Material.UintParam2       // roughness + metallness
 #define GDRGPUMaterialCookTorranceGetNormalMapIndex(Material) Material.UintParam0                    // Normal map
+
+#define ERROR_COLOR float4(1, 0, 1, 1);
 
 /// <summary>
 /// Object system

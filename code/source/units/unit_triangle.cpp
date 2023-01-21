@@ -5,8 +5,8 @@ void unit_triangle::Initialize(void)
 {
   static const GDRVertex vertices[3] = {
   {{-0.5f, -0.5f, 0}, {0,0,1}, {0, 0}, {0, 0, 0}, {0, NONE_INDEX, NONE_INDEX, NONE_INDEX}, {1, 0, 0, 0}},
-  {{ 0, 0.5f, 0}, {0,0,1} , {0, 0}, {0, 0, 0}, {0, NONE_INDEX, NONE_INDEX, NONE_INDEX}, {1, 0, 0, 0}},
-  {{ 0.5f, -0.5f, 0}, {0,0,1} , {0, 0}, {0, 0, 0}, {0, NONE_INDEX, NONE_INDEX, NONE_INDEX}, {1, 0, 0, 0}}
+  {{ 0, 0.5f, 0}, {0,0,1} , {0.5, 1}, {0, 0, 0}, {0, NONE_INDEX, NONE_INDEX, NONE_INDEX}, {1, 0, 0, 0}},
+  {{ 0.5f, -0.5f, 0}, {0,0,1} , {1, 0}, {0, 0, 0}, {0, NONE_INDEX, NONE_INDEX, NONE_INDEX}, {1, 0, 0, 0}}
   };
   static const UINT32 indices[3] = { 0, 1, 2 };
   ID3D12GraphicsCommandList* commandList;
@@ -36,20 +36,22 @@ void unit_triangle::Initialize(void)
   
   GDRGPUMaterial mat;
   mat.ShadeType = MATERIAL_SHADER_COLOR;
+  GDRGPUMaterialColorGetColor(mat) = mth::vec3f(1, 1, 1);
+  GDRGPUMaterialColorGetColorMapIndex(mat) = Engine->TexturesSystem->AddElementInPool("bin\\models\\crazy_frog\\Poo_poo_pee_pee.png", true);
   
   gdr::mesh_import_node bone_node;
   bone_node.Name = "bone";
   bone_node.Type = gdr_hier_node_type::node;
   bone_node.ParentIndex = NONE_INDEX;
-  bone_node.ChildIndex = NONE_INDEX;
+  bone_node.ChildIndex = 1;
   bone_node.NextIndex = NONE_INDEX;
-  bone_node.LocalTransform = mth::matr::Scale({ 10, 0.5, 0 });
+  bone_node.LocalTransform = mth::matr::Scale({ 1, 1, 0 });
   bone_node.BoneOffset = mth::matr::Identity();
 
   gdr::mesh_import_node node;
   node.Name = "mesh";
   node.Type = gdr_hier_node_type::mesh;
-  node.ParentIndex = NONE_INDEX;
+  node.ParentIndex = 0;
   node.ChildIndex = NONE_INDEX;
   node.NextIndex = NONE_INDEX;
   node.vertices.push_back(vertices[0]);
@@ -61,7 +63,6 @@ void unit_triangle::Initialize(void)
   node.MaterialIndex = 0;
   node.Params = 0;
 
-  GDRGPUMaterialColorGetColor(mat) = mth::vec3f(0, 1, 0);
   tmp_import_data.FileName = "Triangle";
   tmp_import_data.Materials.push_back(mat);
   tmp_import_data.RootTransform.Transform = mth::matr::Identity();

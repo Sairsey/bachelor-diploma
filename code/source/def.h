@@ -99,3 +99,12 @@ enum gdr_hier_node_type
     node,
     mesh
 };
+
+static UINT NearestPowerOf2(UINT val)
+{
+  DWORD idx = 0;
+  _BitScanReverse(&idx, val);
+  UINT res = 1 << idx;
+
+  return (val & ~res) == 0 ? res : (res << 1);
+};

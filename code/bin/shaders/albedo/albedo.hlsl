@@ -11,7 +11,11 @@ cbuffer Indices : register(GDRGPUObjectIndicesConstantBufferSlot)
 }
 StructuredBuffer<GDRGPUObjectTransform> ObjectTransformPool : register(GDRGPUObjectTransformPoolSlot);  // SRV: Data with transforms which stored per object
 StructuredBuffer<GDRGPUNodeTransform> NodeTransformPool : register(GDRGPUNodeTransformPoolSlot);        // SRV: Data with transforms which stored for whole hierarchy
-StructuredBuffer<GDRGPUMaterial> MaterialPool : register(GDRGPUMaterialPoolSlot);        // SRV: Data with materials
+StructuredBuffer<GDRGPUMaterial> MaterialPool : register(GDRGPUMaterialPoolSlot);                       // SRV: Data with materials
+Texture2D TexturePool[] : register(GDRGPUTexturePoolSlot, GDRGPUTexturePoolSpace);                  // Bindless Pool with all textures
+
+SamplerState LinearSampler : register(GDRGPULinearSamplerSlot);  // Linear texture sampler
+SamplerState NearestSampler : register(GDRGPUNearestSamplerSlot); // Nearest texture sampler
 
 #include "shared/vertex_process.h"
 #include "shared/lighting_functions.h"
@@ -25,6 +29,6 @@ VSOut VS(VSIn input)
 [earlydepthstencil]
 float4 PS(VSOut input) : SV_TARGET
 {
-	float4 col = Shade(input.pos, input.normal, indices.ObjectMaterialIndex);
+	float4 col = Shade(input.worldPos, input.normal, input.uv, indices.ObjectMaterialIndex);
 	return col;
 }

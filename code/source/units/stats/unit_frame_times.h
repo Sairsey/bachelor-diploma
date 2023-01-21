@@ -7,10 +7,6 @@ class unit_frame_times : public gdr::unit_base
 public:
     void Initialize()
     {
-        gdr_index RootNode = Engine->NodeTransformsSystem->CreateNode();
-        gdr_index ChildNode = Engine->NodeTransformsSystem->CreateNode(RootNode);
-        Engine->NodeTransformsSystem->CPUData[RootNode].LocalTransform = mth::matr4f::Translate({0, 1, 0});
-        Engine->NodeTransformsSystem->MarkChunkByTransformIndex(RootNode);
     }
 
     void Response(void)

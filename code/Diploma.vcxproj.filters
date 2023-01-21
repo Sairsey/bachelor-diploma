@@ -88,6 +88,9 @@
     <Filter Include="Source Files\Models">
       <UniqueIdentifier>{513683ad-a9d3-4b1f-a39d-8e5a24480926}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Render\SubSystems\Textures">
+      <UniqueIdentifier>{37c021bf-5119-4e69-88ea-8fdb795fb7e0}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\main.cpp">
@@ -206,6 +209,9 @@
     </ClCompile>
     <ClCompile Include="source\models\models_manager.cpp">
       <Filter>Source Files\Models</Filter>
+    </ClCompile>
+    <ClCompile Include="source\render\subsystems\texture_subsystem.cpp">
+      <Filter>Source Files\Render\SubSystems\Textures</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -394,6 +400,12 @@
     </ClInclude>
     <ClInclude Include="source\models\render_mesh.h">
       <Filter>Source Files\Models</Filter>
+    </ClInclude>
+    <ClInclude Include="source\render\subsystems\texture_subsystem.h">
+      <Filter>Source Files\Render\SubSystems\Textures</Filter>
+    </ClInclude>
+    <ClInclude Include="source\units\stats\unit_resource_viewier.h">
+      <Filter>Source Files\Units\Stats</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

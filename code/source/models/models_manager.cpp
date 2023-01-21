@@ -51,19 +51,21 @@ gdr_index gdr::models_manager::AddModel(mesh_import_data ImportData)
 				{
 					Eng->NodeTransformsSystem->CPUData[NewModel.Rnd.Hierarchy[i].NodeTransform].LocalTransform = ImportData.HierarchyNodes[i].LocalTransform;
 					Eng->NodeTransformsSystem->CPUData[NewModel.Rnd.Hierarchy[i].NodeTransform].BoneOffset = ImportData.HierarchyNodes[i].BoneOffset;
-					Eng->NodeTransformsSystem->CPUData[NewModel.Rnd.Hierarchy[i].NodeTransform].ParentIndex = 
-						(NewModel.Rnd.Hierarchy[i].ParentIndex == NONE_INDEX) ?
-						NONE_INDEX :
-						NewModel.Rnd.Hierarchy[NewModel.Rnd.Hierarchy[i].ParentIndex].NodeTransform;
+					if (NewModel.Rnd.Hierarchy[i].ParentIndex != NONE_INDEX)
+						Eng->NodeTransformsSystem->CPUData[NewModel.Rnd.Hierarchy[i].NodeTransform].ParentIndex = NewModel.Rnd.Hierarchy[NewModel.Rnd.Hierarchy[i].ParentIndex].NodeTransform;
+					else
+						Eng->NodeTransformsSystem->CPUData[NewModel.Rnd.Hierarchy[i].NodeTransform].ParentIndex = NONE_INDEX;
 
-					Eng->NodeTransformsSystem->CPUData[NewModel.Rnd.Hierarchy[i].NodeTransform].NextIndex =
-						(NewModel.Rnd.Hierarchy[i].NextIndex == NONE_INDEX) ?
-						NONE_INDEX :
-						NewModel.Rnd.Hierarchy[NewModel.Rnd.Hierarchy[i].NextIndex].NodeTransform;
-					Eng->NodeTransformsSystem->CPUData[NewModel.Rnd.Hierarchy[i].NodeTransform].ChildIndex =
-						(NewModel.Rnd.Hierarchy[i].ChildIndex == NONE_INDEX) ?
-						NONE_INDEX :
-						NewModel.Rnd.Hierarchy[NewModel.Rnd.Hierarchy[i].NextIndex].ChildIndex;
+					if (NewModel.Rnd.Hierarchy[i].NextIndex != NONE_INDEX && NewModel.Rnd.Hierarchy[NewModel.Rnd.Hierarchy[i].NextIndex].Type == gdr_hier_node_type::node)
+						Eng->NodeTransformsSystem->CPUData[NewModel.Rnd.Hierarchy[i].NodeTransform].NextIndex = NewModel.Rnd.Hierarchy[NewModel.Rnd.Hierarchy[i].NextIndex].NodeTransform;
+					else
+						Eng->NodeTransformsSystem->CPUData[NewModel.Rnd.Hierarchy[i].NodeTransform].NextIndex = NONE_INDEX;
+
+					if (NewModel.Rnd.Hierarchy[i].ChildIndex != NONE_INDEX && NewModel.Rnd.Hierarchy[NewModel.Rnd.Hierarchy[i].ChildIndex].Type == gdr_hier_node_type::node)
+						Eng->NodeTransformsSystem->CPUData[NewModel.Rnd.Hierarchy[i].NodeTransform].ChildIndex = NewModel.Rnd.Hierarchy[NewModel.Rnd.Hierarchy[i].ChildIndex].NodeTransform;
+					else
+						Eng->NodeTransformsSystem->CPUData[NewModel.Rnd.Hierarchy[i].NodeTransform].ChildIndex = NONE_INDEX;
+
 				}
 				else if (NewModel.Rnd.Hierarchy[i].Type == gdr_hier_node_type::mesh)
 				{
@@ -79,12 +81,8 @@ gdr_index gdr::models_manager::AddModel(mesh_import_data ImportData)
 						vertices[i].BonesIndices.W = (vertices[i].BonesIndices.W == NONE_INDEX) ? NONE_INDEX : NewModel.Rnd.Hierarchy[vertices[i].BonesIndices.W].NodeTransform;
 					}
 
-					Eng->GeometrySystem->CreateGeometry(
-						vertices.data(),
-						vertices.size(),
-						indices.data(),
-						indices.size());
-					NewModel.Rnd.Hierarchy[i].DrawCommand = Eng->DrawCommandsSystem->AddElementInPool(Eng->GeometrySystem->CPUData[Eng->GeometrySystem->CPUData.size() - 1]);
+					gdr_index geometry = Eng->GeometrySystem->AddElementInPool(vertices.data(), vertices.size(), indices.data(), indices.size());
+					NewModel.Rnd.Hierarchy[i].DrawCommand = Eng->DrawCommandsSystem->AddElementInPool(geometry);
 					Eng->DrawCommandsSystem->CPUData[NewModel.Rnd.Hierarchy[i].DrawCommand].Indices.ObjectTransformIndex = NewModel.Rnd.RootTransform;
 					Eng->DrawCommandsSystem->CPUData[NewModel.Rnd.Hierarchy[i].DrawCommand].Indices.ObjectMaterialIndex = MaterialsIndices[ImportData.HierarchyNodes[i].MaterialIndex];
 					Eng->DrawCommandsSystem->CPUData[NewModel.Rnd.Hierarchy[i].DrawCommand].Indices.ObjectParamsMask = ImportData.HierarchyNodes[i].Params;

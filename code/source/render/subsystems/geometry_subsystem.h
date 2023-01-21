@@ -36,7 +36,7 @@ namespace gdr
       geometry_subsystem(render *Rnd);
 
       // Create Geometry using vertices and Indices
-      bool CreateGeometry(const GDRVertex* pVertex, size_t vertexCount, const UINT32* pIndices, size_t indexCount);
+      gdr_index AddElementInPool(const GDRVertex* pVertex, size_t vertexCount, const UINT32* pIndices, size_t indexCount);
 
       // Destructor
       ~geometry_subsystem();

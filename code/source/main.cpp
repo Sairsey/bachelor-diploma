@@ -1,16 +1,18 @@
 #include "p_header.h"
 #include "units/stats/unit_frame_times.h"
+#include "units/stats/unit_resource_viewier.h"
+
 
 // TODO:
 // 1) Fix Resize
 // 2) Restore everything
-// 3) Object Transform and Node Transform needs good deletion mechanism
+// 3) Object Transform, Node Transform, Draw Commands, Geometry, Textures (All subsystems really) needs good deletion mechanism and shared interface.
 // 4) DrawCommands is now used as ObjectIndices storage and Indirect.
 // 5) Indirect shouldnt recreate buffers if we can
-// 6) Transforms, Indirect should have same system of object creation and deletion (3 and 5 about same thing)
-// 7) Restore shaders lighting
-// 8) Do something with Geometry system "CreateGeometry". It differs from other systems
-// 9) Add Animations
+// 6) Restore shaders lighting
+// 7) Add Animations
+// 8) Error checking
+// 9) Materials GPU structure should be aligned.
 
 #include "units/unit_triangle.h"
 
@@ -94,6 +96,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
   Engine.AddUnit(new unit_triangle());
   Engine.AddUnit(new unit_frame_times());
+  Engine.AddUnit(new unit_resource_viewier());
 
   // math smoke test
   mth::vec3f V1(1, 0, 0);

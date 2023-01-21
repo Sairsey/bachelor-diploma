@@ -14,11 +14,15 @@ namespace gdr
   class draw_commands_subsystem;
   class geometry_subsystem;
   class materials_subsystem;
+  class textures_subsystem;
   struct render_runtime_params
   {
     bool IsIndirect = false;     // Enables indirect draw
   };
-
+  struct render_creation_params
+  {
+    size_t MaxTextureAmount = 256; // maximum amount of textures allocated
+  };
   /* Render representation class */
   class render
   {
@@ -80,6 +84,8 @@ namespace gdr
 
       // Current params
       render_runtime_params Params;
+      const render_creation_params CreationParams;
+
       // Current player camera
       mth::cam PlayerCamera;
       // Depth buffer resource
@@ -96,8 +102,8 @@ namespace gdr
       draw_commands_subsystem* DrawCommandsSystem; // support of SRVs and UAVs for indirect draw
       geometry_subsystem* GeometrySystem; // support of geometry creation
       materials_subsystem* MaterialsSystem; // system to store info about materials
+      textures_subsystem* TexturesSystem; //System to store info about textures
 #if 0
-      textures_support* TexturesSystem; //System to store info about textures
       cube_textures_support* CubeTexturesSystem; // System to store info about cube textures
       light_sources_support* LightsSystem; //System to store info about lights      
       hier_depth_support* HierDepth; //System to store and generate Hierarhical Depth Texture

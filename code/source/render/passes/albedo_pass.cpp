@@ -105,6 +105,42 @@ void gdr::albedo_pass::CallDirectDraw(ID3D12GraphicsCommandList* currentCommandL
     }
 }
 
+void gdr::albedo_pass::CallIndirectDraw(ID3D12GraphicsCommandList* currentCommandList)
+{
+  Render->RenderTargetsSystem->Set(currentCommandList, render_targets_enum::target_display);
+
+  // set common params
+  currentCommandList->SetPipelineState(PSO);
+  currentCommandList->SetGraphicsRootSignature(RootSignature);
+  currentCommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+  currentCommandList->SetGraphicsRootConstantBufferView(
+    (int)root_parameters_draw_indices::globals_buffer_index,
+    Render->GlobalsSystem->GPUData.Resource->GetGPUVirtualAddress());
+  // root_parameters_draw_indices::index_buffer_index will be set via indirect
+  currentCommandList->SetGraphicsRootShaderResourceView(
+    (int)root_parameters_draw_indices::object_transform_pool_index,
+    Render->ObjectTransformsSystem->GPUData.Resource->GetGPUVirtualAddress());
+  currentCommandList->SetGraphicsRootShaderResourceView(
+    (int)root_parameters_draw_indices::node_transform_pool_index,
+    Render->NodeTransformsSystem->GPUData.Resource->GetGPUVirtualAddress());
+  currentCommandList->SetGraphicsRootShaderResourceView(
+    (int)root_parameters_draw_indices::material_pool_index,
+    Render->MaterialsSystem->GPUData.Resource->GetGPUVirtualAddress());
+  currentCommandList->SetGraphicsRootDescriptorTable(
+    (int)root_parameters_draw_indices::texture_pool_index,
+    Render->TexturesSystem->TextureTableGPU);
+
+  currentCommandList->ExecuteIndirect(
+    CommandSignature,
+    (UINT)Render->DrawCommandsSystem->CPUData.size(),
+    Render->DrawCommandsSystem->CommandsBuffer[(int)indirect_command_pools_enum::OpaqueFrustrumCulled].Resource,
+    0,
+    Render->DrawCommandsSystem->CommandsBuffer[(int)indirect_command_pools_enum::OpaqueFrustrumCulled].Resource,
+    Render->DrawCommandsSystem->CounterOffset); // stride to counter
+}
+
+
 gdr::albedo_pass::~albedo_pass(void)
 {
     CommandSignature->Release();

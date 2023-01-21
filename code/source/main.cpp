@@ -14,6 +14,7 @@
 // 8) Error checking
 // 9) Materials GPU structure should be aligned.
 // 10) Calc AABB-s for culling
+// 11) times profiling on CPU too
 
 #include "units/unit_triangle.h"
 

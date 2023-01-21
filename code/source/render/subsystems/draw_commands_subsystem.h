@@ -18,7 +18,7 @@ namespace gdr
     All,                                  // SRV with all commands
     OpaqueAll,                            // UAV with all Opaque commands
     TransparentAll,                       // UAV with all Transparent commands
-    FrustrumCulled,                       // UAV with frustum culled commands
+    OpaqueFrustrumCulled,                 // UAV with frustum culled commands
     OpaqueCulled,                         // UAV with frustum and occusion culled Opaque commands
     TransparentsCulled,                   // UAV with frustum and occusion culled Transparents
     TotalBuffers,
@@ -68,10 +68,7 @@ namespace gdr
     }
 
     // Add one element to pool in correct way
-    gdr_index AddElementInPool(gdr_index geometryIndex)
-    {
-      return AddElementInPool(Render->GeometrySystem->CPUData[geometryIndex]);
-    }
+    gdr_index AddElementInPool(gdr_index geometryIndex) { return AddElementInPool(Render->GeometrySystem->CPUData[geometryIndex]); }
 
     // Destructor 
     ~draw_commands_subsystem(void);

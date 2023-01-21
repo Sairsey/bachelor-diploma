@@ -40,12 +40,21 @@ using uint4 = mth::vec4<UINT>;
 // slots for all constant buffers
 #define GDRGPUGlobalDataConstantBufferSlot ConstantBufferSlot(0)
 #define GDRGPUObjectIndicesConstantBufferSlot ConstantBufferSlot(1)
+#define GDRGPUComputeGlobalDataConstantBufferSlot ConstantBufferSlot(2)
 // slots for all pools
 #define GDRGPUObjectTransformPoolSlot ShaderResourceSlot(0)
 #define GDRGPUNodeTransformPoolSlot ShaderResourceSlot(1)
 #define GDRGPUMaterialPoolSlot ShaderResourceSlot(2)
 #define GDRGPUTexturePoolSlot ShaderResourceSlot(3)
 #define GDRGPUCubeTexturePoolSlot ShaderResourceSlot(4)
+#define GDRGPUAllCommandsPoolSlot ShaderResourceSlot(5)
+// slots for all uavs
+#define GDRGPUOpaqueAllCommandsPoolSlot UnorderedAccessSlot(0)
+#define GDRGPUTransparentAllCommandsPoolSlot UnorderedAccessSlot(1)
+#define GDRGPUOpaqueFrustumCommandsPoolSlot UnorderedAccessSlot(2)
+#define GDRGPUOpaqueCulledCommandsPoolSlot UnorderedAccessSlot(3)
+#define GDRGPUTransparentsCulledCommandsPoolSlot UnorderedAccessSlot(4)
+
 // Indexes of root params
 #define GDRGPUObjectIndicesRecordRootIndex 1 // index in Root Signature for Record in ObjectIndices
 // Spaces for bindless resources
@@ -55,6 +64,18 @@ using uint4 = mth::vec4<UINT>;
 #define GDRGPUNearestSamplerSlot SamplerSlot(0)
 #define GDRGPULinearSamplerSlot SamplerSlot(1)
 
+
+/// <summary>
+///  Globals system
+/// </summary>
+struct GDRGPUComputeGlobals
+{
+	float4x4 VP;
+	UINT enableCulling;
+	UINT commandCount;
+	UINT width;  // Screen size 
+	UINT height; // Screen size 
+};
 
 /// <summary>
 ///  Globals system
@@ -152,6 +173,9 @@ struct GDRGPUMaterial
 
 #define ERROR_COLOR float4(1, 0, 1, 1);
 
+// Some Object params
+#define OBJECT_PARAMETER_TRANSPARENT 0x1
+
 /// <summary>
 /// Object system
 /// </summary>
@@ -187,6 +211,8 @@ struct GDRVertex
 	uint4 BonesIndices;
 	float4 BonesWeights;
 };
+
+#define GDRGPUComputeThreadBlockSize 1024
 
 #ifdef __cplusplus
 // C++ code

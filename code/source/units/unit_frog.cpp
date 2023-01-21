@@ -4,6 +4,7 @@
 void unit_frog::Initialize(void)
 {
   auto import_data = gdr::ImportMeshAssimp("bin/models/crazy_frog/crazy_frog.obj");
+
   ID3D12GraphicsCommandList* commandList;
   Engine->GetDevice().BeginUploadCommandList(&commandList);
   PROFILE_BEGIN(commandList, "unit_frog Init");

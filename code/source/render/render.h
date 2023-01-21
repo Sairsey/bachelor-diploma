@@ -17,7 +17,7 @@ namespace gdr
   class textures_subsystem;
   struct render_runtime_params
   {
-    bool IsIndirect = false;     // Enables indirect draw
+    bool IsIndirect = true;     // Enables indirect draw
   };
   struct render_creation_params
   {

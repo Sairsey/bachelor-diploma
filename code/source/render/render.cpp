@@ -80,6 +80,7 @@ bool gdr::render::Init(engine* Eng)
   // init passes
   if (localIsInited)
   {
+    Passes.push_back(new visibility_frustum_pass());
     Passes.push_back(new albedo_pass());
     Passes.push_back(new imgui_pass());
     for (auto& pass : Passes)

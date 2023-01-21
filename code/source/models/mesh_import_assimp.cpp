@@ -335,7 +335,8 @@ void mesh_assimp_importer::Import()
     aiProcessPreset_TargetRealtime_Fast |
     aiProcess_SplitLargeMeshes |
     aiProcess_FlipUVs |
-    aiProcess_PopulateArmatureData);
+    aiProcess_PopulateArmatureData |
+    aiProcess_GenBoundingBoxes);
   
   if (!scene)
     return;
@@ -349,6 +350,15 @@ void mesh_assimp_importer::Import()
   ImportTreeSecondPass(scene->mRootNode);
 
   // calculate min-max AABB
+  for (int i = 0; i < scene->mNumMeshes; i++)
+  {
+    Result.RootTransform.minAABB.X = min(Result.RootTransform.minAABB.X, scene->mMeshes[i]->mAABB.mMin.x);
+    Result.RootTransform.minAABB.Y = min(Result.RootTransform.minAABB.Y, scene->mMeshes[i]->mAABB.mMin.y);
+    Result.RootTransform.minAABB.Z = min(Result.RootTransform.minAABB.Z, scene->mMeshes[i]->mAABB.mMin.z);
+    Result.RootTransform.maxAABB.X = max(Result.RootTransform.maxAABB.X, scene->mMeshes[i]->mAABB.mMax.x);
+    Result.RootTransform.maxAABB.Y = max(Result.RootTransform.maxAABB.Y, scene->mMeshes[i]->mAABB.mMax.y);
+    Result.RootTransform.maxAABB.Z = max(Result.RootTransform.maxAABB.Z, scene->mMeshes[i]->mAABB.mMax.z);
+  }
 
   importer.FreeScene();
 }

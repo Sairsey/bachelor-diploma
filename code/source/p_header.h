@@ -30,10 +30,24 @@
 #endif
 
 #include "render/passes/base_pass.h"
-#include "render/passes/albedo_pass.h"
+/// Preprocess
+  #include "render/passes/visibility_frustum_pass.h"
+  // hier depth
+  // visibility_occlusion_pass
+
+/// Main Pass
+  #include "render/passes/albedo_pass.h"
+  // transparent pass
+  // skybox
+  
+
+/// Postprocess
+  // HDR copy
+  // Tonemap pass
+  // ui
+  #include "render/passes/imgui_pass.h"
 
 #if 0
-#include "render/passes/frustum_pass.h"
 #include "render/passes/hier_depth_pass.h"
 #include "render/passes/occlusion_pass.h"
 
@@ -49,7 +63,6 @@
 #include "render/passes/tonemap_pass.h"
 
 #endif
-#include "render/passes/imgui_pass.h"
 
 #include "physics/physics.h"
 

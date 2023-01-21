@@ -40,6 +40,7 @@
     <ClInclude Include="source\render\passes\albedo_pass.h" />
     <ClInclude Include="source\render\passes\base_pass.h" />
     <ClInclude Include="source\render\passes\imgui_pass.h" />
+    <ClInclude Include="source\render\passes\visibility_frustum_pass.h" />
     <ClInclude Include="source\render\render.h" />
     <ClInclude Include="source\render\subsystems\geometry_subsystem.h" />
     <ClInclude Include="source\render\subsystems\globals_subsystem.h" />
@@ -101,6 +102,7 @@
     <ClCompile Include="source\render\device\device_time_query.cpp" />
     <ClCompile Include="source\render\passes\albedo_pass.cpp" />
     <ClCompile Include="source\render\passes\imgui_pass.cpp" />
+    <ClCompile Include="source\render\passes\visibility_frustum_pass.cpp" />
     <ClCompile Include="source\render\render.cpp" />
     <ClCompile Include="source\render\subsystems\geometry_subsystem.cpp" />
     <ClCompile Include="source\render\subsystems\globals_subsystem.cpp" />

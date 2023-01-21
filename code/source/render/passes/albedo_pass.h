@@ -44,6 +44,9 @@ namespace gdr
 			/* Function to call Direct draw shader */
 			void CallDirectDraw(ID3D12GraphicsCommandList* currentCommandList) override;
 
+			/* Function to call Indirect draw shader */
+			void CallIndirectDraw(ID3D12GraphicsCommandList* currentCommandList) override;
+
 			/* Virtual Destructor */
 			~albedo_pass() override;
 	};

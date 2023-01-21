@@ -94,6 +94,9 @@
     <Filter Include="Source Files\Models\Import">
       <UniqueIdentifier>{8ae1c9b3-d1ce-456d-926e-8f87de9078f9}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Render\Passes\visibility">
+      <UniqueIdentifier>{0ed38c94-1c60-4019-b016-616e79c7ae3d}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\main.cpp">
@@ -218,6 +221,9 @@
     </ClCompile>
     <ClCompile Include="source\models\mesh_import_assimp.cpp">
       <Filter>Source Files\Models\Import</Filter>
+    </ClCompile>
+    <ClCompile Include="source\render\passes\visibility_frustum_pass.cpp">
+      <Filter>Source Files\Render\Passes\visibility</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -412,6 +418,9 @@
     </ClInclude>
     <ClInclude Include="source\models\mesh_import_data.h">
       <Filter>Source Files\Models\Import</Filter>
+    </ClInclude>
+    <ClInclude Include="source\render\passes\visibility_frustum_pass.h">
+      <Filter>Source Files\Render\Passes\visibility</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

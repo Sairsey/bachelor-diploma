@@ -79,7 +79,7 @@ void gdr::node_transforms_subsystem::UpdateHierarchy(gdr_index index)
     if (CPUData[index].ParentIndex == NONE_INDEX)
         CPUData[index].GlobalTransform = CPUData[index].LocalTransform;
     else
-        CPUData[index].GlobalTransform = CPUData[index].LocalTransform * CPUData[CPUData[index].ParentIndex].LocalTransform;
+        CPUData[index].GlobalTransform = CPUData[index].LocalTransform * CPUData[CPUData[index].ParentIndex].GlobalTransform;
     MarkChunkByTransformIndex(index);
     CPUData[index].IsNeedRecalc = false;
     int updateIndex = CPUData[index].ChildIndex;

@@ -24,7 +24,6 @@
 #if 0
 #include "render/subsystems/light_sources_support.h"
 #include "render/subsystems/cube_texture_support.h"
-#include "render/subsystems/render_target_support.h"
 #include "render/subsystems/hier_depth_support.h"
 #include "render/subsystems/screenshot_subsystem.h"
 #endif

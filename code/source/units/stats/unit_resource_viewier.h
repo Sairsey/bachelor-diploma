@@ -252,7 +252,7 @@ public:
           D3D12_GPU_DESCRIPTOR_HANDLE true_texture_handle = Engine->RenderTargetsSystem->ShaderResourceViewsGPU;
           true_texture_handle.ptr += RenderTargetIndex * Engine->GetDevice().GetSRVDescSize();
           // width over height
-          float ratio = Engine->GlobalsSystem->CPUData.width / Engine->GlobalsSystem->CPUData.height;
+          float ratio = 1.0 * Engine->GlobalsSystem->CPUData.width / Engine->GlobalsSystem->CPUData.height;
           ImGui::Image((ImTextureID)true_texture_handle.ptr, ImVec2(ratio * 128.0f, 128.0f));
 
           ImGui::End();

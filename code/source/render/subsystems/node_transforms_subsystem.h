@@ -15,7 +15,7 @@ namespace gdr
     D3D12_GPU_DESCRIPTOR_HANDLE GPUDescriptor;
 
     // transform chunk for update
-    const int CHUNK_SIZE = 128 * sizeof(GDRGPUNodeTransform);
+    const int CHUNK_SIZE = 64 * sizeof(GDRGPUNodeTransform); // 12.75 Kb
 
     std::vector<bool> ChunkMarkings;
 

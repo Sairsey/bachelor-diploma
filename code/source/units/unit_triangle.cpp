@@ -37,7 +37,7 @@ void unit_triangle::Initialize(void)
   GDRGPUMaterial mat;
   mat.ShadeType = MATERIAL_SHADER_COLOR;
   GDRGPUMaterialColorGetColor(mat) = mth::vec3f(1, 1, 1);
-  GDRGPUMaterialColorGetColorMapIndex(mat) = Engine->TexturesSystem->AddElementInPool("bin\\models\\crazy_frog\\Poo_poo_pee_pee.png", true);
+  GDRGPUMaterialColorGetColorMapIndex(mat) = 0;
   
   gdr::mesh_import_node bone_node;
   bone_node.Name = "bone";
@@ -69,6 +69,7 @@ void unit_triangle::Initialize(void)
 
   tmp_import_data.HierarchyNodes.push_back(bone_node);
   tmp_import_data.HierarchyNodes.push_back(node);
+  tmp_import_data.TexturesPaths.push_back("bin\\models\\crazy_frog\\Poo_poo_pee_pee.png");
   TriangleModel = Engine->AddModel(tmp_import_data);
 #endif
   PROFILE_END(commandList);

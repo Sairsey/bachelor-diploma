@@ -94,7 +94,7 @@ inline std::wstring charToWString(const char* text)
 
 using gdr_index = uint32_t;
 
-enum gdr_hier_node_type
+enum struct gdr_hier_node_type
 {
     node,
     mesh

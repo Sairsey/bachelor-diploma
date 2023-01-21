@@ -1,7 +1,7 @@
 #include "p_header.h"
 #include "units/stats/unit_frame_times.h"
 #include "units/stats/unit_resource_viewier.h"
-
+#include "units/unit_frog.h"
 
 // TODO:
 // 1) Fix Resize
@@ -13,13 +13,13 @@
 // 7) Add Animations
 // 8) Error checking
 // 9) Materials GPU structure should be aligned.
+// 10) Calc AABB-s for culling
 
 #include "units/unit_triangle.h"
 
 #ifdef UNITS_ENABLED
 #include "units/unit_control.h"
 #include "units/unit_bread.h"
-#include "units/unit_frog.h"
 #include "units/unit_stats.h"
 #include "units/unit_city.h"
 #include "units/unit_pbr_spheres.h"
@@ -94,6 +94,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
   Engine.AddUnit(new unit_stats());
 #endif
 
+  Engine.AddUnit(new unit_frog());
   Engine.AddUnit(new unit_triangle());
   Engine.AddUnit(new unit_frame_times());
   Engine.AddUnit(new unit_resource_viewier());

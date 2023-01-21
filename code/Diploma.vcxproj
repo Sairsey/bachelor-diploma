@@ -87,6 +87,7 @@
     <ClCompile Include="source\engine\eng.cpp" />
     <ClCompile Include="source\input\input.cpp" />
     <ClCompile Include="source\main.cpp" />
+    <ClCompile Include="source\models\mesh_import_assimp.cpp" />
     <ClCompile Include="source\models\models_manager.cpp" />
     <ClCompile Include="source\physics\physics.cpp" />
     <ClCompile Include="source\physics\physics_object.cpp" />

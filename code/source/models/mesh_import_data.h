@@ -30,7 +30,15 @@ namespace gdr
 	{
 		std::string FileName;                         // File name
 		std::vector<GDRGPUMaterial> Materials;        // Materials
+		std::vector<std::string> TexturesPaths;       // Textures
 		std::vector<mesh_import_node> HierarchyNodes; // Hierarchy
 		GDRGPUObjectTransform RootTransform;          // Root transform
+
+		bool IsEmpty(void)
+		{
+			return FileName == "";
+		}
 	};
+
+	mesh_import_data ImportMeshAssimp(std::string filename);
 }

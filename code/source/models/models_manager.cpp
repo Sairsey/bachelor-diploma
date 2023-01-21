@@ -22,6 +22,60 @@ gdr_index gdr::models_manager::AddModel(mesh_import_data ImportData)
 			{
 				MaterialsIndices.push_back(Eng->MaterialsSystem->AddElementInPool());
 				Eng->MaterialsSystem->CPUData[MaterialsIndices[i]] = ImportData.Materials[i];
+				//check for textures
+				switch (ImportData.Materials[i].ShadeType)
+				{
+					case MATERIAL_SHADER_COLOR:
+						if (GDRGPUMaterialColorGetColorMapIndex(ImportData.Materials[i]) != NONE_INDEX)
+						{
+							std::string &textureName = ImportData.TexturesPaths[GDRGPUMaterialColorGetColorMapIndex(ImportData.Materials[i])];
+							GDRGPUMaterialColorGetColorMapIndex(Eng->MaterialsSystem->CPUData[MaterialsIndices[i]]) = Eng->TexturesSystem->AddElementInPool(textureName, true);
+						}
+						break;
+					case MATERIAL_SHADER_PHONG:
+						if (GDRGPUMaterialPhongGetAmbientMapIndex(ImportData.Materials[i]) != NONE_INDEX)
+						{
+							std::string& textureName = ImportData.TexturesPaths[GDRGPUMaterialPhongGetAmbientMapIndex(ImportData.Materials[i])];
+							GDRGPUMaterialPhongGetAmbientMapIndex(Eng->MaterialsSystem->CPUData[MaterialsIndices[i]]) = Eng->TexturesSystem->AddElementInPool(textureName, false);
+						}
+						if (GDRGPUMaterialPhongGetDiffuseMapIndex(ImportData.Materials[i]) != NONE_INDEX)
+						{
+							std::string& textureName = ImportData.TexturesPaths[GDRGPUMaterialPhongGetDiffuseMapIndex(ImportData.Materials[i])];
+							GDRGPUMaterialPhongGetDiffuseMapIndex(Eng->MaterialsSystem->CPUData[MaterialsIndices[i]]) = Eng->TexturesSystem->AddElementInPool(textureName, true);
+						}
+						if (GDRGPUMaterialPhongGetSpecularMapIndex(ImportData.Materials[i]) != NONE_INDEX)
+						{
+							std::string& textureName = ImportData.TexturesPaths[GDRGPUMaterialPhongGetSpecularMapIndex(ImportData.Materials[i])];
+							GDRGPUMaterialPhongGetSpecularMapIndex(Eng->MaterialsSystem->CPUData[MaterialsIndices[i]]) = Eng->TexturesSystem->AddElementInPool(textureName, false);
+						}
+						if (GDRGPUMaterialPhongGetNormalMapIndex(ImportData.Materials[i]) != NONE_INDEX)
+						{
+							std::string& textureName = ImportData.TexturesPaths[GDRGPUMaterialPhongGetNormalMapIndex(ImportData.Materials[i])];
+							GDRGPUMaterialPhongGetNormalMapIndex(Eng->MaterialsSystem->CPUData[MaterialsIndices[i]]) = Eng->TexturesSystem->AddElementInPool(textureName, false);
+						}
+						break;
+					case MATERIAL_SHADER_COOKTORRANCE_METALNESS:
+						if (GDRGPUMaterialCookTorranceGetAlbedoMapIndex(ImportData.Materials[i]) != NONE_INDEX)
+						{
+							std::string& textureName = ImportData.TexturesPaths[GDRGPUMaterialCookTorranceGetAlbedoMapIndex(ImportData.Materials[i])];
+							GDRGPUMaterialCookTorranceGetAlbedoMapIndex(Eng->MaterialsSystem->CPUData[MaterialsIndices[i]]) = Eng->TexturesSystem->AddElementInPool(textureName, true);
+						}
+						if (GDRGPUMaterialCookTorranceGetNormalMapIndex(ImportData.Materials[i]) != NONE_INDEX)
+						{
+							std::string& textureName = ImportData.TexturesPaths[GDRGPUMaterialCookTorranceGetNormalMapIndex(ImportData.Materials[i])];
+							GDRGPUMaterialCookTorranceGetNormalMapIndex(Eng->MaterialsSystem->CPUData[MaterialsIndices[i]]) = Eng->TexturesSystem->AddElementInPool(textureName, false);
+						}
+						if (GDRGPUMaterialCookTorranceGetRoughnessMetallnessMapIndex(ImportData.Materials[i]) != NONE_INDEX)
+						{
+							std::string& textureName = ImportData.TexturesPaths[GDRGPUMaterialCookTorranceGetRoughnessMetallnessMapIndex(ImportData.Materials[i])];
+							GDRGPUMaterialCookTorranceGetRoughnessMetallnessMapIndex(Eng->MaterialsSystem->CPUData[MaterialsIndices[i]]) = Eng->TexturesSystem->AddElementInPool(textureName, false);
+						}
+						break;
+					case MATERIAL_SHADER_COOKTORRANCE_SPECULAR:
+					default:
+						printf("ERROR");
+						break;
+				}
 			}
 		}
 

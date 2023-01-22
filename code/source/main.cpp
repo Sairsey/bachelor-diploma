@@ -22,7 +22,6 @@
 // 10) Calc AABB-s for culling
 // 11) times profiling on CPU too
 // 14) Fix pools States (Probably done, but I have sometimes strange bug, then albedo rise its draw time)
-// 15) Add debug Pass with AABB-s around objects
 
 
 #ifdef UNITS_ENABLED
@@ -103,7 +102,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
   Engine.AddUnit(new unit_model_loading());
   //Engine.AddUnit(new unit_frustum_cull());
   Engine.AddUnit(new unit_occlusion_cull());
-  //Engine.AddUnit(new unit_triangle());
+  Engine.AddUnit(new unit_triangle());
   
   Engine.AddUnit(new unit_control());
   

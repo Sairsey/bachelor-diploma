@@ -44,6 +44,7 @@
   // HDR copy
   // Tonemap pass
   // ui
+  #include "render/passes/debug_aabb_pass.h"
   #include "render/passes/imgui_pass.h"
 
 #if 0

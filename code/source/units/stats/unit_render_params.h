@@ -34,6 +34,7 @@ public:
           if (Engine->Params.IsIndirect)
             ImGui::Checkbox("Occlusion Culling", &Engine->Params.IsOccusionCulling);
           ImGui::Checkbox("Lock view", &Engine->Params.IsViewLocked);
+          ImGui::Checkbox("Show AABB", &Engine->Params.IsShowAABB);
           bool pause = Engine->GetPause();
           if (ImGui::Checkbox("Pause", &pause))
           {

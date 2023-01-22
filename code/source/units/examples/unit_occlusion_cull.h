@@ -7,7 +7,7 @@ private:
   std::vector<gdr_index> Models;
   std::vector<mth::matr4f> Translations;
   const int halfBoxSize = 10;
-  const float squareRootOfTotalCount = 100;
+  const float squareRootOfTotalCount = 100; // around 10000 objects
 public:
   void Initialize(void)
   {

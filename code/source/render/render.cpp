@@ -80,10 +80,18 @@ bool gdr::render::Init(engine* Eng)
   // init passes
   if (localIsInited)
   {
+    // Preprocess
     Passes.push_back(new visibility_frustum_pass());
     Passes.push_back(new visibility_hier_depth_pass());
     Passes.push_back(new visibility_occlusion_pass());
+    
+    // Main pass
     Passes.push_back(new albedo_pass());
+
+    // debug passes
+    Passes.push_back(new debug_aabb_pass());
+
+    // postprocess
     Passes.push_back(new imgui_pass());
     for (auto& pass : Passes)
     {

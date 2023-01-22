@@ -20,7 +20,8 @@ namespace gdr
     bool IsIndirect = true;        // Enables indirect draw
     bool IsFrustumCulling = true;  // Enables Frustum Culling
     bool IsOccusionCulling = true; // Enables Occlusion Culling (avalible only with Frustum Culling and only in Indirect mode)
-    bool IsViewLocked = false;      // Lock View for culling debugging (avalible only with Frustum Culling or Frustum + Occlusion)
+    bool IsViewLocked = false;     // Lock View for culling debugging (avalible only with Frustum Culling or Frustum + Occlusion)
+    bool IsShowAABB = false;       // Show AABBs of objects
   };
   struct render_creation_params
   {

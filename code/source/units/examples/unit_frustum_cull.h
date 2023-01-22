@@ -6,7 +6,7 @@ class unit_frustum_cull : public gdr::unit_base
 private:
   std::vector<gdr_index> Models;
   std::vector<mth::matr4f> Translations;
-  const int halfBoxSize = 10;
+  const int halfBoxSize = 10; // around 8000 objects
   const float step = 10;
 public:
   void Initialize(void)

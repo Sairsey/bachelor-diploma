@@ -66,7 +66,6 @@ void gdr::albedo_pass::Initialize(void)
 
 void gdr::albedo_pass::CallDirectDraw(ID3D12GraphicsCommandList* currentCommandList)
 {
-    static mth::matr4f VP = mth::matr::Identity();
     Render->RenderTargetsSystem->Set(currentCommandList, render_targets_enum::target_display);
 
     // set common params
@@ -75,10 +74,11 @@ void gdr::albedo_pass::CallDirectDraw(ID3D12GraphicsCommandList* currentCommandL
     currentCommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
     // just iterate for every draw call
-    for (auto& i : Render->DrawCommandsSystem->CPUData)
+    for (auto& i : Render->DrawCommandsSystem->DirectCommandPools[(int)indirect_command_pools_enum::OpaqueFrustrumCulled])
     {
-        currentCommandList->IASetVertexBuffers(0, 1, &i.VertexBuffer);
-        currentCommandList->IASetIndexBuffer(&i.IndexBuffer);
+        auto &command = Render->DrawCommandsSystem->CPUData[i];
+        currentCommandList->IASetVertexBuffers(0, 1, &command.VertexBuffer);
+        currentCommandList->IASetIndexBuffer(&command.IndexBuffer);
         {
             currentCommandList->SetGraphicsRootConstantBufferView(
                 (int)root_parameters_draw_indices::globals_buffer_index,
@@ -86,7 +86,7 @@ void gdr::albedo_pass::CallDirectDraw(ID3D12GraphicsCommandList* currentCommandL
             currentCommandList->SetGraphicsRoot32BitConstants(
                 (int)root_parameters_draw_indices::index_buffer_index,
                 sizeof(GDRGPUObjectIndices) / sizeof(int32_t),
-                &i.Indices, 0);
+                &command.Indices, 0);
             currentCommandList->SetGraphicsRootShaderResourceView(
                 (int)root_parameters_draw_indices::object_transform_pool_index,
                 Render->ObjectTransformsSystem->GPUData.Resource->GetGPUVirtualAddress());
@@ -101,7 +101,7 @@ void gdr::albedo_pass::CallDirectDraw(ID3D12GraphicsCommandList* currentCommandL
                 Render->TexturesSystem->TextureTableGPU);
         }
 
-        currentCommandList->DrawIndexedInstanced(i.DrawArguments.IndexCountPerInstance, 1, 0, 0, 0);
+        currentCommandList->DrawIndexedInstanced(command.DrawArguments.IndexCountPerInstance, 1, 0, 0, 0);
     }
 }
 

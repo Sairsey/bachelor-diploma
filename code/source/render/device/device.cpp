@@ -294,7 +294,7 @@ bool gdr::device::InitSwapchain(int Count, HWND hWnd)
   desc.OutputWindow = hWnd;
   desc.Windowed = TRUE;
   desc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
-  desc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING;
+  desc.Flags = 0;
   desc.SampleDesc.Count = 1;
   desc.SampleDesc.Quality = 0;
 
@@ -1064,7 +1064,7 @@ bool gdr::device::ResizeSwapchain(UINT width, UINT height)
 
     TermBackBuffers();
 
-    D3D_CHECK(Swapchain->ResizeBuffers(count, width, height, DXGI_FORMAT_R8G8B8A8_UNORM, DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING));
+    D3D_CHECK(Swapchain->ResizeBuffers(count, width, height, DXGI_FORMAT_R8G8B8A8_UNORM, 0));
     D3D_CHECK(CreateBackBuffers(count));
   }
 

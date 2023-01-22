@@ -75,6 +75,8 @@ namespace gdr
 
     std::vector<GDRGPUIndirectCommand> CPUData;      // data stored in CPU
 
+    std::vector<gdr_index> DirectCommandPools[(int)indirect_command_pools_enum::TotalBuffers];
+
     D3D12_COMMAND_SIGNATURE_DESC commandSignatureDesc = {};
     D3D12_INDIRECT_ARGUMENT_DESC argumentDescs[4] = {};
 

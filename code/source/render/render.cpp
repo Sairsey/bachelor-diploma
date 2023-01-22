@@ -81,6 +81,7 @@ bool gdr::render::Init(engine* Eng)
   if (localIsInited)
   {
     Passes.push_back(new visibility_frustum_pass());
+    Passes.push_back(new visibility_hier_depth_pass());
     Passes.push_back(new albedo_pass());
     Passes.push_back(new imgui_pass());
     for (auto& pass : Passes)
@@ -124,8 +125,6 @@ void gdr::render::Resize(UINT w, UINT h)
   
   PlayerCamera.Resize(w, h);
 
-  RenderTargetsSystem->Resize(w, h);
-
   if (DepthBuffer.Resource != nullptr)
   {
     D3D12_RESOURCE_DESC desc = DepthBuffer.Resource->GetDesc();
@@ -136,6 +135,9 @@ void gdr::render::Resize(UINT w, UINT h)
       CreateDepthStencil();
     }
   }
+
+  // Hier Depth texture needs update
+  RenderTargetsSystem->Resize(w, h);
 }
 
 /* Draw frame function */
@@ -180,7 +182,7 @@ void gdr::render::DrawFrame(void)
     PROFILE_END(uploadCommandList);
   }
   GetDevice().CloseUploadCommandListBeforeRenderCommandList();
-  
+
   ID3D12GraphicsCommandList* pCommandList = nullptr;
   ID3D12Resource* pBackBuffer = nullptr;
   D3D12_CPU_DESCRIPTOR_HANDLE rtvHandle;

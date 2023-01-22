@@ -225,6 +225,9 @@
     <ClCompile Include="source\render\passes\visibility_frustum_pass.cpp">
       <Filter>Source Files\Render\Passes\visibility</Filter>
     </ClCompile>
+    <ClCompile Include="source\render\passes\visibility_hier_depth_pass.cpp">
+      <Filter>Source Files\Render\Passes\visibility</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\p_header.h">
@@ -420,6 +423,9 @@
       <Filter>Source Files\Models\Import</Filter>
     </ClInclude>
     <ClInclude Include="source\render\passes\visibility_frustum_pass.h">
+      <Filter>Source Files\Render\Passes\visibility</Filter>
+    </ClInclude>
+    <ClInclude Include="source\render\passes\visibility_hier_depth_pass.h">
       <Filter>Source Files\Render\Passes\visibility</Filter>
     </ClInclude>
   </ItemGroup>

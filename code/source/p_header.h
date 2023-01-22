@@ -31,7 +31,7 @@
 #include "render/passes/base_pass.h"
 /// Preprocess
   #include "render/passes/visibility_frustum_pass.h"
-  // hier depth
+  #include "render/passes/visibility_hier_depth_pass.h"
   // visibility_occlusion_pass
 
 /// Main Pass

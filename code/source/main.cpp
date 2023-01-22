@@ -15,6 +15,8 @@
 // 9) Materials GPU structure should be aligned.
 // 10) Calc AABB-s for culling
 // 11) times profiling on CPU too
+// 12) make std::vectors with indices in DrawCommands for each pool (To implement culling on CPU)
+// 13) Culling params
 
 #include "units/unit_triangle.h"
 

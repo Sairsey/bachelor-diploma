@@ -20,6 +20,8 @@ gdr::render_targets_subsystem::render_targets_subsystem(render* Rnd)
     tmpHandle.ptr += Render->GetDevice().GetRTVDescSize();
   }
 
+  Render->GetDevice().AllocateStaticDescriptors(1, HierDepthCPUDescriptorHandle, HierDepthGPUDescriptorHandle);
+
   // create each texture for each render target
   CreateTextures();
 }
@@ -143,6 +145,7 @@ void gdr::render_targets_subsystem::CreateTextures()
     HRESULT hr = Render->GetDevice().CreateGPUResource(desc, D3D12_RESOURCE_STATE_COMMON, NULL, Textures[i]);
     Textures[i].Resource->SetName(L"RenderTarget");
   }
+
   // create rtv for each render target
   for (int i = 1; i < (int)render_targets_enum::target_count; i++)
   {
@@ -166,6 +169,34 @@ void gdr::render_targets_subsystem::CreateTextures()
 
     Render->GetDevice().GetDXDevice()->CreateShaderResourceView(Textures[i].Resource, &desc, ShaderResourceViewsCPU[i]);
   }
+
+  // create texture for Hier Depth
+  {
+    D3D12_RESOURCE_DESC textureResource = Render->DepthBuffer.Resource->GetDesc();
+    textureResource.Format = DXGI_FORMAT_R32_FLOAT;
+    textureResource.Flags = D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
+    textureResource.MipLevels = CalculateMipMapsAmount(Render->DepthBuffer.Resource->GetDesc().Width, Render->DepthBuffer.Resource->GetDesc().Height);;
+
+    Render->GetDevice().CreateGPUResource(
+      textureResource,
+      D3D12_RESOURCE_STATE_COMMON,
+      0,
+      HierDepthTexture
+    );
+    HierDepthTexture.Resource->SetName(L"Hierachical Depth texture");
+  }
+
+  // create SRV for Hier Depth texture
+  {
+    D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
+    srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+    srvDesc.Format = HierDepthTexture.Resource->GetDesc().Format;
+    srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+    srvDesc.Texture2D.MipLevels = HierDepthTexture.Resource->GetDesc().MipLevels;
+    srvDesc.Texture2D.MostDetailedMip = 0;
+
+    Render->GetDevice().GetDXDevice()->CreateShaderResourceView(HierDepthTexture.Resource, &srvDesc, HierDepthCPUDescriptorHandle);
+  }
 }
 
 void gdr::render_targets_subsystem::DeleteTextures()
@@ -174,4 +205,6 @@ void gdr::render_targets_subsystem::DeleteTextures()
   {
     Render->GetDevice().ReleaseGPUResource(Textures[i]);
   }
+
+  Render->GetDevice().ReleaseGPUResource(HierDepthTexture);
 }

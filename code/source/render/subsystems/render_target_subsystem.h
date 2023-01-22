@@ -60,6 +60,12 @@ namespace gdr
 
     // Textures
     GPUResource Textures[(long)render_targets_enum::target_count];
+    
+    // Texture used for Hier depth
+    GPUResource HierDepthTexture;
+    D3D12_CPU_DESCRIPTOR_HANDLE HierDepthCPUDescriptorHandle;
+    D3D12_GPU_DESCRIPTOR_HANDLE HierDepthGPUDescriptorHandle;
+
 
     // GPU Descriptors
     D3D12_GPU_DESCRIPTOR_HANDLE ShaderResourceViewsGPU;

@@ -88,8 +88,13 @@ void gdr::draw_commands_subsystem::UpdateGPUData(ID3D12GraphicsCommandList* pCom
       srvDesc.Buffer.Flags = D3D12_BUFFER_SRV_FLAG_NONE;
 
       Render->GetDevice().GetDXDevice()->CreateShaderResourceView(CommandsBuffer[(int)indirect_command_pools_enum::All].Resource, &srvDesc, CommandsCPUDescriptor[(int)indirect_command_pools_enum::All]);
-    }
 
+      DirectCommandPools[(int)indirect_command_pools_enum::All].clear();
+      DirectCommandPools[(int)indirect_command_pools_enum::All].reserve(CPUData.size());
+      for (int i = 0; i < CPUData.size(); i++)
+        DirectCommandPools[(int)indirect_command_pools_enum::All].push_back(i);
+    }
+  
     // aligned UAV size
     UINT UAVSize = AlignForUavCounter((UINT)CPUData.size() * sizeof(GDRGPUIndirectCommand));
     CounterOffset = UAVSize;
@@ -114,6 +119,8 @@ void gdr::draw_commands_subsystem::UpdateGPUData(ID3D12GraphicsCommandList* pCom
       uavDesc.Buffer.Flags = D3D12_BUFFER_UAV_FLAG_NONE;
 
       Render->GetDevice().GetDXDevice()->CreateUnorderedAccessView(CommandsBuffer[i].Resource, CommandsBuffer[i].Resource, &uavDesc, CommandsCPUDescriptor[i]);
+
+      DirectCommandPools[i].clear();
     }
   }
   else
@@ -133,6 +140,7 @@ void gdr::draw_commands_subsystem::UpdateGPUData(ID3D12GraphicsCommandList* pCom
         CommandsUAVReset.Resource,
         0,
         sizeof(UINT));
+      DirectCommandPools[i].clear();
     }
   }
   

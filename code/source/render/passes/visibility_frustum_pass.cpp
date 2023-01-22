@@ -47,9 +47,91 @@ void gdr::visibility_frustum_pass::Initialize(void)
   }
 }
 
+static bool CullAABBFrustum(
+  float4x4 VP,
+  float4x4 transform,
+  float3 minAABB,
+  float3 maxAABB)
+{
+  // Use our min max to define eight corners
+  float3 corners[8] = {
+      float3(minAABB.X, minAABB.Y, minAABB.Z), // x y z
+      float3(maxAABB.X, minAABB.Y, minAABB.Z), // X y z
+      float3(minAABB.X, maxAABB.Y, minAABB.Z), // x Y z
+      float3(maxAABB.X, maxAABB.Y, minAABB.Z), // X Y z
+
+      float3(minAABB.X, minAABB.Y, maxAABB.Z), // x y Z
+      float3(maxAABB.X, minAABB.Y, maxAABB.Z), // X y Z
+      float3(minAABB.X, maxAABB.Y, maxAABB.Z), // x Y Z
+      float3(maxAABB.X, maxAABB.Y, maxAABB.Z) // X Y Z
+  };
+
+  float4x4 matr = transform * VP;
+  for (int corner_idx = 0; corner_idx < 8; corner_idx++)
+  {
+    if (corners[corner_idx].X * matr[0][3] + corners[corner_idx].Y * matr[1][3] + corners[corner_idx].Z * matr[2][3] + matr[3][3] > 0)
+      corners[corner_idx] = corners[corner_idx] * matr;
+    else
+      corners[corner_idx] = corners[corner_idx] * matr * -1;
+  }
+
+  bool LeftPlaneResult = true;
+  bool RightPlaneResult = true;
+  bool TopPlaneResult = true;
+  bool BottomPlaneResult = true;
+  bool FarPlaneResult = true;
+  bool NearPlaneResult = true;
+
+  for (int corner_idx = 0; corner_idx < 8; corner_idx++)
+  {
+    LeftPlaneResult = LeftPlaneResult && (corners[corner_idx].X < -1);
+    RightPlaneResult = RightPlaneResult && (corners[corner_idx].X > 1);
+
+    BottomPlaneResult = BottomPlaneResult && (corners[corner_idx].Y <= -1);
+    TopPlaneResult = TopPlaneResult && (corners[corner_idx].Y >= 1);
+
+    FarPlaneResult = FarPlaneResult && (corners[corner_idx].Z >= 1);
+    NearPlaneResult = NearPlaneResult && (corners[corner_idx].Z <= 0);
+  }
+
+  bool inside = !(LeftPlaneResult || RightPlaneResult || TopPlaneResult || BottomPlaneResult || FarPlaneResult || NearPlaneResult);
+  return inside;
+}
+
 void gdr::visibility_frustum_pass::CallDirectDraw(ID3D12GraphicsCommandList* currentCommandList)
 {
- 
+  // update ComputeGlobals
+  {
+    if (!Render->Params.IsViewLocked)
+      ComputeGlobals.VP = Render->GlobalsSystem->CPUData.VP;
+    ComputeGlobals.width = Render->GlobalsSystem->CPUData.width;
+    ComputeGlobals.height = Render->GlobalsSystem->CPUData.height;
+    ComputeGlobals.enableCulling = Render->Params.IsFrustumCulling;
+    ComputeGlobals.commandCount = Render->DrawCommandsSystem->CPUData.size();
+  }
+
+  // fill Direct emulations of indirect pools
+  for (auto& i : Render->DrawCommandsSystem->DirectCommandPools[(int)indirect_command_pools_enum::All])
+  {
+    auto &command = Render->DrawCommandsSystem->CPUData[i];
+    
+    bool visible = !ComputeGlobals.enableCulling ||
+      CullAABBFrustum(
+        ComputeGlobals.VP,
+        Render->ObjectTransformsSystem->CPUData[command.Indices.ObjectTransformIndex].Transform,
+        Render->ObjectTransformsSystem->CPUData[command.Indices.ObjectTransformIndex].minAABB,
+        Render->ObjectTransformsSystem->CPUData[command.Indices.ObjectTransformIndex].maxAABB);;
+
+    bool transparent = command.Indices.ObjectParamsMask & OBJECT_PARAMETER_TRANSPARENT;
+
+    if (transparent)
+      Render->DrawCommandsSystem->DirectCommandPools[(int)indirect_command_pools_enum::TransparentAll].push_back(i);
+    else
+      Render->DrawCommandsSystem->DirectCommandPools[(int)indirect_command_pools_enum::OpaqueAll].push_back(i);
+
+    if (!transparent && visible)
+      Render->DrawCommandsSystem->DirectCommandPools[(int)indirect_command_pools_enum::OpaqueFrustrumCulled].push_back(i);
+  }
 }
 
 void gdr::visibility_frustum_pass::CallIndirectDraw(ID3D12GraphicsCommandList* currentCommandList)
@@ -62,10 +144,11 @@ void gdr::visibility_frustum_pass::CallIndirectDraw(ID3D12GraphicsCommandList* c
 
   // update ComputeGlobals
   {
-    ComputeGlobals.VP = Render->GlobalsSystem->CPUData.VP;
+    if (!Render->Params.IsViewLocked)
+      ComputeGlobals.VP = Render->GlobalsSystem->CPUData.VP;
     ComputeGlobals.width = Render->GlobalsSystem->CPUData.width;
     ComputeGlobals.height = Render->GlobalsSystem->CPUData.height;
-    ComputeGlobals.enableCulling = true;
+    ComputeGlobals.enableCulling = Render->Params.IsFrustumCulling;
     ComputeGlobals.commandCount = Render->DrawCommandsSystem->CPUData.size();
   }
 

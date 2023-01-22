@@ -100,7 +100,7 @@ enum struct gdr_hier_node_type
     mesh
 };
 
-static UINT NearestPowerOf2(UINT val)
+inline UINT NearestPowerOf2(UINT val)
 {
   DWORD idx = 0;
   _BitScanReverse(&idx, val);
@@ -108,3 +108,14 @@ static UINT NearestPowerOf2(UINT val)
 
   return (val & ~res) == 0 ? res : (res << 1);
 };
+
+inline UINT CalculateMipMapsAmount(UINT W, UINT H)
+{
+  int res = 0;
+  for (res = 0; W >= 1 && H >= 1; res++)
+  {
+    W /= 2;
+    H /= 2;
+  }
+  return res;
+}

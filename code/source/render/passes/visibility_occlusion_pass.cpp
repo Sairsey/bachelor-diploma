@@ -1,38 +1,41 @@
 #include "p_header.h"
 
-void gdr::visibility_frustum_pass::Initialize(void)
+void gdr::visibility_occlusion_pass::Initialize(void)
 {
   // 1) Compile our shader
-  Render->GetDevice().CompileShader(_T("bin/shaders/visibility/frustum.hlsl"), {}, shader_stage::Compute, &ComputeShader);
+  Render->GetDevice().CompileShader(_T("bin/shaders/visibility/occlusion.hlsl"), {}, shader_stage::Compute, &ComputeShader);
 
   // 2) Create root signature for frustum compute
   {
     std::vector<CD3DX12_ROOT_PARAMETER> params;
     CD3DX12_DESCRIPTOR_RANGE descr[3] = {};
 
-    params.resize((int)root_parameters_frustum_indices::total_root_parameters);
+    params.resize((int)root_parameters_occlusion_indices::total_root_parameters);
 
-    params[(int)root_parameters_frustum_indices::compute_globals_index].InitAsConstants(sizeof(GDRGPUComputeGlobals) / sizeof(int32_t), GDRGPUComputeGlobalDataConstantBufferSlot);
-    params[(int)root_parameters_frustum_indices::object_transform_pool_index].InitAsShaderResourceView(GDRGPUObjectTransformPoolSlot);
-    params[(int)root_parameters_frustum_indices::all_commands_pool_index].InitAsShaderResourceView(GDRGPUAllCommandsPoolSlot);
-    
+    params[(int)root_parameters_occlusion_indices::compute_globals_index].InitAsConstants(sizeof(GDRGPUComputeGlobals) / sizeof(int32_t), GDRGPUComputeGlobalDataConstantBufferSlot);
+    params[(int)root_parameters_occlusion_indices::object_transform_pool_index].InitAsShaderResourceView(GDRGPUObjectTransformPoolSlot);
+    params[(int)root_parameters_occlusion_indices::all_commands_pool_index].InitAsShaderResourceView(GDRGPUAllCommandsPoolSlot);
+
     {
-      descr[0].Init(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 1, GDRGPUOpaqueAllCommandsPoolSlot);
-      params[(int)root_parameters_frustum_indices::opaque_all_commands_pool_index].InitAsDescriptorTable(1, &descr[0]);
+      descr[0].Init(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 1, GDRGPUOpaqueCulledCommandsPoolSlot);
+      params[(int)root_parameters_occlusion_indices::opaque_culled_commands_pool_index].InitAsDescriptorTable(1, &descr[0]);
     }
 
     {
-      descr[1].Init(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 1, GDRGPUTransparentAllCommandsPoolSlot);
-      params[(int)root_parameters_frustum_indices::transparents_all_commands_pool_index].InitAsDescriptorTable(1, &descr[1]);
+      descr[1].Init(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 1, GDRGPUTransparentsCulledCommandsPoolSlot);
+      params[(int)root_parameters_occlusion_indices::transparent_culled_commands_pool_index].InitAsDescriptorTable(1, &descr[1]);
     }
 
     {
-      descr[2].Init(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 1, GDRGPUOpaqueFrustumCommandsPoolSlot);
-      params[(int)root_parameters_frustum_indices::opaque_frustum_commands_pool_index].InitAsDescriptorTable(1, &descr[2]);
+      descr[2].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, GDRGPUHierDepthSlot);
+      params[(int)root_parameters_occlusion_indices::hier_depth_index].InitAsDescriptorTable(1, &descr[2]);
     }
+
+    CD3DX12_STATIC_SAMPLER_DESC samplerDescs[1];
+    samplerDescs[0].Init(0, D3D12_FILTER_MIN_MAG_MIP_POINT);
 
     CD3DX12_ROOT_SIGNATURE_DESC rootSignatureDesc;
-    rootSignatureDesc.Init((UINT)params.size(), &params[0], 0, nullptr, D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
+    rootSignatureDesc.Init((UINT)params.size(), &params[0], 1, samplerDescs, D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
     Render->GetDevice().CreateRootSignature(rootSignatureDesc, &RootSignature);
   }
 
@@ -98,7 +101,7 @@ static bool CullAABBFrustum(
   return inside;
 }
 
-void gdr::visibility_frustum_pass::CallDirectDraw(ID3D12GraphicsCommandList* currentCommandList)
+void gdr::visibility_occlusion_pass::CallDirectDraw(ID3D12GraphicsCommandList* currentCommandList)
 {
   // update ComputeGlobals
   {
@@ -114,8 +117,8 @@ void gdr::visibility_frustum_pass::CallDirectDraw(ID3D12GraphicsCommandList* cur
   // fill Direct emulations of indirect pools
   for (auto& i : Render->DrawCommandsSystem->DirectCommandPools[(int)indirect_command_pools_enum::All])
   {
-    auto &command = Render->DrawCommandsSystem->CPUData[i];
-    
+    auto& command = Render->DrawCommandsSystem->CPUData[i];
+
     bool visible = !ComputeGlobals.frustumCulling ||
       CullAABBFrustum(
         ComputeGlobals.VP,
@@ -125,38 +128,28 @@ void gdr::visibility_frustum_pass::CallDirectDraw(ID3D12GraphicsCommandList* cur
 
     bool transparent = command.Indices.ObjectParamsMask & OBJECT_PARAMETER_TRANSPARENT;
 
-    if (transparent)
-      Render->DrawCommandsSystem->DirectCommandPools[(int)indirect_command_pools_enum::TransparentAll].push_back(i);
-    else
-      Render->DrawCommandsSystem->DirectCommandPools[(int)indirect_command_pools_enum::OpaqueAll].push_back(i);
-
-    if (!transparent && visible)
-      Render->DrawCommandsSystem->DirectCommandPools[(int)indirect_command_pools_enum::OpaqueFrustrumCulled].push_back(i);
+    if (visible)
+    {
+      if (transparent)
+        Render->DrawCommandsSystem->DirectCommandPools[(int)indirect_command_pools_enum::TransparentsCulled].push_back(i);
+      else
+        Render->DrawCommandsSystem->DirectCommandPools[(int)indirect_command_pools_enum::OpaqueCulled].push_back(i);
+    }
   }
 
   // Transit resource state of valid buffers to INDIRECT_ARGUMENT.
   Render->GetDevice().TransitResourceState(
     currentCommandList,
-    Render->DrawCommandsSystem->CommandsBuffer[(int)indirect_command_pools_enum::OpaqueAll].Resource,
+    Render->DrawCommandsSystem->CommandsBuffer[(int)indirect_command_pools_enum::OpaqueCulled].Resource,
     D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_INDIRECT_ARGUMENT);
   Render->GetDevice().TransitResourceState(
     currentCommandList,
-    Render->DrawCommandsSystem->CommandsBuffer[(int)indirect_command_pools_enum::TransparentAll].Resource,
-    D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_INDIRECT_ARGUMENT);
-  Render->GetDevice().TransitResourceState(
-    currentCommandList,
-    Render->DrawCommandsSystem->CommandsBuffer[(int)indirect_command_pools_enum::OpaqueFrustrumCulled].Resource,
+    Render->DrawCommandsSystem->CommandsBuffer[(int)indirect_command_pools_enum::TransparentsCulled].Resource,
     D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_INDIRECT_ARGUMENT);
 }
 
-void gdr::visibility_frustum_pass::CallIndirectDraw(ID3D12GraphicsCommandList* currentCommandList)
+void gdr::visibility_occlusion_pass::CallIndirectDraw(ID3D12GraphicsCommandList* currentCommandList)
 {
-  currentCommandList->SetPipelineState(ComputePSO);
-
-  ID3D12DescriptorHeap* pDescriptorHeaps = Render->GetDevice().GetDescriptorHeap();
-  currentCommandList->SetDescriptorHeaps(1, &pDescriptorHeaps);
-  currentCommandList->SetComputeRootSignature(RootSignature);
-
   // update ComputeGlobals
   {
     if (!Render->Params.IsViewLocked)
@@ -168,47 +161,49 @@ void gdr::visibility_frustum_pass::CallIndirectDraw(ID3D12GraphicsCommandList* c
     ComputeGlobals.commandsCount = Render->DrawCommandsSystem->CPUData.size();
   }
 
+  currentCommandList->SetPipelineState(ComputePSO);
+
+  ID3D12DescriptorHeap* pDescriptorHeaps = Render->GetDevice().GetDescriptorHeap();
+  currentCommandList->SetDescriptorHeaps(1, &pDescriptorHeaps);
+  currentCommandList->SetComputeRootSignature(RootSignature);
+
   currentCommandList->SetComputeRoot32BitConstants(
-    (int)root_parameters_frustum_indices::compute_globals_index, // root parameter index
+    (int)root_parameters_occlusion_indices::compute_globals_index, // root parameter index
     sizeof(GDRGPUComputeGlobals) / sizeof(int32_t),
     &ComputeGlobals,
     0);
   currentCommandList->SetComputeRootShaderResourceView(
-    (int)root_parameters_frustum_indices::object_transform_pool_index,
+    (int)root_parameters_occlusion_indices::object_transform_pool_index,
     Render->ObjectTransformsSystem->GPUData.Resource->GetGPUVirtualAddress());
   currentCommandList->SetComputeRootShaderResourceView(
-    (int)root_parameters_frustum_indices::all_commands_pool_index,
+    (int)root_parameters_occlusion_indices::all_commands_pool_index,
     Render->DrawCommandsSystem->CommandsBuffer[(int)indirect_command_pools_enum::All].Resource->GetGPUVirtualAddress());
   currentCommandList->SetComputeRootDescriptorTable(
-    (int)root_parameters_frustum_indices::opaque_all_commands_pool_index,
-    Render->DrawCommandsSystem->CommandsGPUDescriptor[(int)indirect_command_pools_enum::OpaqueAll]);
+    (int)root_parameters_occlusion_indices::hier_depth_index,
+    Render->RenderTargetsSystem->HierDepthGPUDescriptorHandle);
   currentCommandList->SetComputeRootDescriptorTable(
-    (int)root_parameters_frustum_indices::transparents_all_commands_pool_index,
-    Render->DrawCommandsSystem->CommandsGPUDescriptor[(int)indirect_command_pools_enum::TransparentAll]);
+    (int)root_parameters_occlusion_indices::opaque_culled_commands_pool_index,
+    Render->DrawCommandsSystem->CommandsGPUDescriptor[(int)indirect_command_pools_enum::OpaqueCulled]);
   currentCommandList->SetComputeRootDescriptorTable(
-    (int)root_parameters_frustum_indices::opaque_frustum_commands_pool_index,
-    Render->DrawCommandsSystem->CommandsGPUDescriptor[(int)indirect_command_pools_enum::OpaqueFrustrumCulled]);
+    (int)root_parameters_occlusion_indices::transparent_culled_commands_pool_index,
+    Render->DrawCommandsSystem->CommandsGPUDescriptor[(int)indirect_command_pools_enum::TransparentsCulled]);
 
   currentCommandList->Dispatch(static_cast<UINT>(ceil(ComputeGlobals.commandsCount / float(GDRGPUComputeThreadBlockSize))), 1, 1);
 
   // Transit resource state of valid buffers to INDIRECT_ARGUMENT.
   Render->GetDevice().TransitResourceState(
     currentCommandList,
-    Render->DrawCommandsSystem->CommandsBuffer[(int)indirect_command_pools_enum::OpaqueAll].Resource,
+    Render->DrawCommandsSystem->CommandsBuffer[(int)indirect_command_pools_enum::OpaqueCulled].Resource,
     D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_INDIRECT_ARGUMENT);
   Render->GetDevice().TransitResourceState(
     currentCommandList,
-    Render->DrawCommandsSystem->CommandsBuffer[(int)indirect_command_pools_enum::TransparentAll].Resource,
-    D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_INDIRECT_ARGUMENT);
-  Render->GetDevice().TransitResourceState(
-    currentCommandList,
-    Render->DrawCommandsSystem->CommandsBuffer[(int)indirect_command_pools_enum::OpaqueFrustrumCulled].Resource,
+    Render->DrawCommandsSystem->CommandsBuffer[(int)indirect_command_pools_enum::TransparentsCulled].Resource,
     D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_INDIRECT_ARGUMENT);
 }
 
-gdr::visibility_frustum_pass::~visibility_frustum_pass(void)
+gdr::visibility_occlusion_pass::~visibility_occlusion_pass(void)
 {
-  RootSignature->Release();
   ComputePSO->Release();
+  RootSignature->Release();
   ComputeShader->Release();
 }

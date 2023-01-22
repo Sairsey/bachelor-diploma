@@ -97,6 +97,9 @@
     <Filter Include="Source Files\Render\Passes\visibility">
       <UniqueIdentifier>{0ed38c94-1c60-4019-b016-616e79c7ae3d}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Units\Examples">
+      <UniqueIdentifier>{866e3e68-3e49-4228-b997-157d0c067788}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\main.cpp">
@@ -132,9 +135,6 @@
     <ClCompile Include="source\render\device\d3dinclude.cpp">
       <Filter>Source Files\Render\Device</Filter>
     </ClCompile>
-    <ClCompile Include="source\units\unit_triangle.cpp">
-      <Filter>Source Files\Units</Filter>
-    </ClCompile>
     <ClCompile Include="source\units\unit_control.cpp">
       <Filter>Source Files\Units</Filter>
     </ClCompile>
@@ -146,9 +146,6 @@
     </ClCompile>
     <ClCompile Include="source\utils\stb_image.cpp">
       <Filter>Source Files\Utils</Filter>
-    </ClCompile>
-    <ClCompile Include="source\units\unit_frog.cpp">
-      <Filter>Source Files\Units</Filter>
     </ClCompile>
     <ClCompile Include="source\units\unit_stats.cpp">
       <Filter>Source Files\Units</Filter>
@@ -228,6 +225,12 @@
     <ClCompile Include="source\render\passes\visibility_hier_depth_pass.cpp">
       <Filter>Source Files\Render\Passes\visibility</Filter>
     </ClCompile>
+    <ClCompile Include="source\render\passes\visibility_occlusion_pass.cpp">
+      <Filter>Source Files\Render\Passes\visibility</Filter>
+    </ClCompile>
+    <ClCompile Include="source\units\examples\unit_triangle.cpp">
+      <Filter>Source Files\Units\Examples</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\p_header.h">
@@ -284,9 +287,6 @@
     <ClInclude Include="source\render\device\d3dinclude.h">
       <Filter>Source Files\Render\Device</Filter>
     </ClInclude>
-    <ClInclude Include="source\units\unit_triangle.h">
-      <Filter>Source Files\Units</Filter>
-    </ClInclude>
     <ClInclude Include="source\utils\math\mth_cam.h">
       <Filter>Source Files\Utils\Math</Filter>
     </ClInclude>
@@ -307,9 +307,6 @@
     </ClInclude>
     <ClInclude Include="source\input\input.h">
       <Filter>Source Files\Input</Filter>
-    </ClInclude>
-    <ClInclude Include="source\units\unit_frog.h">
-      <Filter>Source Files\Units</Filter>
     </ClInclude>
     <ClInclude Include="source\units\unit_stats.h">
       <Filter>Source Files\Units</Filter>
@@ -427,6 +424,24 @@
     </ClInclude>
     <ClInclude Include="source\render\passes\visibility_hier_depth_pass.h">
       <Filter>Source Files\Render\Passes\visibility</Filter>
+    </ClInclude>
+    <ClInclude Include="source\render\passes\visibility_occlusion_pass.h">
+      <Filter>Source Files\Render\Passes\visibility</Filter>
+    </ClInclude>
+    <ClInclude Include="source\units\examples\unit_model_loading.h">
+      <Filter>Source Files\Units\Examples</Filter>
+    </ClInclude>
+    <ClInclude Include="source\units\examples\unit_triangle.h">
+      <Filter>Source Files\Units\Examples</Filter>
+    </ClInclude>
+    <ClInclude Include="source\units\stats\unit_render_params.h">
+      <Filter>Source Files\Units\Stats</Filter>
+    </ClInclude>
+    <ClInclude Include="source\units\examples\unit_frustum_cull.h">
+      <Filter>Source Files\Units\Examples</Filter>
+    </ClInclude>
+    <ClInclude Include="source\units\examples\unit_occlusion_cull.h">
+      <Filter>Source Files\Units\Examples</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -52,84 +52,107 @@ void gdr::node_transforms_subsystem::UpdateGPUData(ID3D12GraphicsCommandList* pC
   }
   else
   {
-    // Then update hierarchy
+    // check if we need to update anything
+    bool NeedUpdate = false;
     for (int i = 0; i < ChunkMarkings.size(); i++)
-    {
       if (ChunkMarkings[i]) // if some chunk changed
       {
-        // probably chunks after this are needed in update as well
-        int chunk_amount = 1;
-        while (i + chunk_amount < ChunkMarkings.size() && ChunkMarkings[i + chunk_amount])
+        NeedUpdate = true;
+        break;
+      }
+
+    if (NeedUpdate)
+    {
+      // Change state to COPY_DEST
+      Render->GetDevice().TransitResourceState(
+        pCommandList,
+        GPUData.Resource,
+        D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE | D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_COPY_DEST);
+
+      // Then update hierarchy
+      for (int i = 0; i < ChunkMarkings.size(); i++)
+      {
+        if (ChunkMarkings[i]) // if some chunk changed
+        {
+          // probably chunks after this are needed in update as well
+          int chunk_amount = 1;
+          while (i + chunk_amount < ChunkMarkings.size() && ChunkMarkings[i + chunk_amount])
             chunk_amount++;
 
-        int source_offset = i * CHUNK_SIZE;
-        gdr_index dataSize = (gdr_index)min(sizeof(GDRGPUNodeTransform) * CPUData.size() - source_offset, CHUNK_SIZE * chunk_amount); // Real size of chunk
+          int source_offset = i * CHUNK_SIZE;
+          gdr_index dataSize = (gdr_index)min(sizeof(GDRGPUNodeTransform) * CPUData.size() - source_offset, CHUNK_SIZE * chunk_amount); // Real size of chunk
 
-        Render->GetDevice().UpdateBufferOffset(pCommandList, GPUData.Resource, source_offset, (byte*)&CPUData[0] + source_offset, dataSize); // update only 1 chunk
-        for (int j = 0; j < chunk_amount; j++)
+          Render->GetDevice().UpdateBufferOffset(pCommandList, GPUData.Resource, source_offset, (byte*)&CPUData[0] + source_offset, dataSize); // update only 1 chunk
+          for (int j = 0; j < chunk_amount; j++)
             ChunkMarkings[i + j] = false;
+        }
       }
     }
   }
 
+  // Set state to right one
+  Render->GetDevice().TransitResourceState(
+    pCommandList,
+    GPUData.Resource,
+    D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE | D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
 }
 
 void gdr::node_transforms_subsystem::UpdateHierarchy(gdr_index index)
 {
-    if (CPUData[index].ParentIndex == NONE_INDEX)
-        CPUData[index].GlobalTransform = CPUData[index].LocalTransform;
-    else
-        CPUData[index].GlobalTransform = CPUData[index].LocalTransform * CPUData[CPUData[index].ParentIndex].GlobalTransform;
-    MarkChunkByTransformIndex(index);
-    CPUData[index].IsNeedRecalc = false;
-    int updateIndex = CPUData[index].ChildIndex;
-    while (updateIndex != NONE_INDEX)
-    {
-        UpdateHierarchy(updateIndex);
-        updateIndex = CPUData[updateIndex].NextIndex;
-    }
+  if (CPUData[index].ParentIndex == NONE_INDEX)
+    CPUData[index].GlobalTransform = CPUData[index].LocalTransform;
+  else
+    CPUData[index].GlobalTransform = CPUData[index].LocalTransform * CPUData[CPUData[index].ParentIndex].GlobalTransform;
+  MarkChunkByTransformIndex(index);
+  CPUData[index].IsNeedRecalc = false;
+  int updateIndex = CPUData[index].ChildIndex;
+  while (updateIndex != NONE_INDEX)
+  {
+    UpdateHierarchy(updateIndex);
+    updateIndex = CPUData[updateIndex].NextIndex;
+  }
 }
 
 gdr_index gdr::node_transforms_subsystem::CreateNode(gdr_index parent)
 {
-    CPUData.emplace_back();
-    GDRGPUNodeTransform &newRecord = CPUData[CPUData.size() - 1];
+  CPUData.emplace_back();
+  GDRGPUNodeTransform& newRecord = CPUData[CPUData.size() - 1];
 
-    newRecord.LocalTransform = mth::matr::Identity();
-    newRecord.GlobalTransform = mth::matr::Identity();
-    newRecord.BoneOffset = mth::matr::Identity();
-    newRecord.ChildIndex = NONE_INDEX;
-    newRecord.NextIndex = NONE_INDEX;
-    newRecord.ParentIndex = parent;
+  newRecord.LocalTransform = mth::matr::Identity();
+  newRecord.GlobalTransform = mth::matr::Identity();
+  newRecord.BoneOffset = mth::matr::Identity();
+  newRecord.ChildIndex = NONE_INDEX;
+  newRecord.NextIndex = NONE_INDEX;
+  newRecord.ParentIndex = parent;
 
-    if (parent != NONE_INDEX) // add to begin
-    {
-        newRecord.NextIndex = CPUData[parent].ChildIndex;
-        CPUData[parent].ChildIndex = (gdr_index)(CPUData.size() - 1);
-    }
-    MarkChunkByTransformIndex(CPUData.size() - 1);
-    return (gdr_index)(CPUData.size() - 1);
+  if (parent != NONE_INDEX) // add to begin
+  {
+    newRecord.NextIndex = CPUData[parent].ChildIndex;
+    CPUData[parent].ChildIndex = (gdr_index)(CPUData.size() - 1);
+  }
+  MarkChunkByTransformIndex(CPUData.size() - 1);
+  return (gdr_index)(CPUData.size() - 1);
 }
 
 void gdr::node_transforms_subsystem::DeleteNode(gdr_index node)
 {
-    int parentIndex = CPUData[node].ParentIndex;
-    if (parentIndex != NONE_INDEX)
+  int parentIndex = CPUData[node].ParentIndex;
+  if (parentIndex != NONE_INDEX)
+  {
+    int childIndex = CPUData[parentIndex].ChildIndex;
+    if (childIndex == node)
     {
-        int childIndex = CPUData[parentIndex].ChildIndex;
-        if (childIndex == node)
-        {
-            CPUData[parentIndex].ChildIndex = CPUData[node].NextIndex;
-        }
-        else
-        {
-            while (CPUData[childIndex].NextIndex != node || CPUData[childIndex].NextIndex != NONE_INDEX)
-                childIndex = CPUData[childIndex].NextIndex;
-
-            if (CPUData[childIndex].NextIndex != NONE_INDEX)
-                CPUData[childIndex].NextIndex = CPUData[node].NextIndex;
-        }
+      CPUData[parentIndex].ChildIndex = CPUData[node].NextIndex;
     }
+    else
+    {
+      while (CPUData[childIndex].NextIndex != node || CPUData[childIndex].NextIndex != NONE_INDEX)
+        childIndex = CPUData[childIndex].NextIndex;
+
+      if (CPUData[childIndex].NextIndex != NONE_INDEX)
+        CPUData[childIndex].NextIndex = CPUData[node].NextIndex;
+    }
+  }
 }
 
 void gdr::node_transforms_subsystem::MarkChunkByTransformIndex(gdr_index index)

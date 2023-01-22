@@ -32,7 +32,7 @@
 /// Preprocess
   #include "render/passes/visibility_frustum_pass.h"
   #include "render/passes/visibility_hier_depth_pass.h"
-  // visibility_occlusion_pass
+  #include "render/passes/visibility_occlusion_pass.h"
 
 /// Main Pass
   #include "render/passes/albedo_pass.h"

@@ -47,24 +47,49 @@ void gdr::materials_subsystem::UpdateGPUData(ID3D12GraphicsCommandList* pCommand
   }
   else
   {
+    // check if we need to update anything
+    bool NeedUpdate = false;
     for (int i = 0; i < ChunkMarkings.size(); i++)
-    {
       if (ChunkMarkings[i]) // if some chunk changed
       {
-        // probably chunks after this are needed in update as well
-        int chunk_amount = 1;
-        while (i + chunk_amount < ChunkMarkings.size() && ChunkMarkings[i + chunk_amount])
+        NeedUpdate = true;
+        break;
+      }
+
+    if (NeedUpdate)
+    {
+      // Change state to COPY_DEST
+      Render->GetDevice().TransitResourceState(
+        pCommandList,
+        GPUData.Resource,
+        D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_COPY_DEST);
+
+      // Then update hierarchy
+      for (int i = 0; i < ChunkMarkings.size(); i++)
+      {
+        if (ChunkMarkings[i]) // if some chunk changed
+        {
+          // probably chunks after this are needed in update as well
+          int chunk_amount = 1;
+          while (i + chunk_amount < ChunkMarkings.size() && ChunkMarkings[i + chunk_amount])
             chunk_amount++;
 
-        int source_offset = i * CHUNK_SIZE;
-        int dataSize = min(sizeof(GDRGPUMaterial) * CPUData.size() - source_offset, CHUNK_SIZE * chunk_amount); // Real size of chunk
+          int source_offset = i * CHUNK_SIZE;
+          gdr_index dataSize = (gdr_index)min(sizeof(GDRGPUMaterial) * CPUData.size() - source_offset, CHUNK_SIZE * chunk_amount); // Real size of chunk
 
-        Render->GetDevice().UpdateBufferOffset(pCommandList, GPUData.Resource, source_offset, (byte*)&CPUData[0] + source_offset, dataSize); // update only 1 chunk
-        for (int j = 0; j < chunk_amount; j++)
+          Render->GetDevice().UpdateBufferOffset(pCommandList, GPUData.Resource, source_offset, (byte*)&CPUData[0] + source_offset, dataSize); // update only 1 chunk
+          for (int j = 0; j < chunk_amount; j++)
             ChunkMarkings[i + j] = false;
+        }
       }
     }
   }
+
+  // Set state to right one
+  Render->GetDevice().TransitResourceState(
+    pCommandList,
+    GPUData.Resource,
+    D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
 }
 
 void gdr::materials_subsystem::MarkChunkByMaterialIndex(gdr_index index)

@@ -1,7 +1,14 @@
 #include "p_header.h"
 #include "units/stats/unit_frame_times.h"
 #include "units/stats/unit_resource_viewier.h"
-#include "units/unit_frog.h"
+#include "units/stats/unit_render_params.h"
+
+#include "units/examples/unit_triangle.h"
+#include "units/examples/unit_model_loading.h"
+#include "units/examples/unit_frustum_cull.h"
+#include "units/examples/unit_occlusion_cull.h"
+
+#include "units/unit_control.h"
 
 // TODO:
 // 1) Fix Resize
@@ -12,17 +19,13 @@
 // 6) Restore shaders lighting
 // 7) Add Animations
 // 8) Error checking
-// 9) Materials GPU structure should be aligned.
 // 10) Calc AABB-s for culling
 // 11) times profiling on CPU too
-// 12) make std::vectors with indices in DrawCommands for each pool (To implement culling on CPU)
-// 13) Culling params
+// 14) Fix pools States (Probably done, but I have sometimes strange bug, then albedo rise its draw time)
+// 15) Add debug Pass with AABB-s around objects
 
-#include "units/unit_triangle.h"
 
 #ifdef UNITS_ENABLED
-#include "units/unit_control.h"
-#include "units/unit_bread.h"
 #include "units/unit_stats.h"
 #include "units/unit_city.h"
 #include "units/unit_pbr_spheres.h"
@@ -97,10 +100,16 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
   Engine.AddUnit(new unit_stats());
 #endif
 
-  Engine.AddUnit(new unit_frog());
-  Engine.AddUnit(new unit_triangle());
+  Engine.AddUnit(new unit_model_loading());
+  //Engine.AddUnit(new unit_frustum_cull());
+  Engine.AddUnit(new unit_occlusion_cull());
+  //Engine.AddUnit(new unit_triangle());
+  
+  Engine.AddUnit(new unit_control());
+  
   Engine.AddUnit(new unit_frame_times());
   Engine.AddUnit(new unit_resource_viewier());
+  Engine.AddUnit(new unit_render_params());
 
   // math smoke test
   mth::vec3f V1(1, 0, 0);

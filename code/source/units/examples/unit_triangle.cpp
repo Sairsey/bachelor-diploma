@@ -66,6 +66,8 @@ void unit_triangle::Initialize(void)
   tmp_import_data.FileName = "Triangle";
   tmp_import_data.Materials.push_back(mat);
   tmp_import_data.RootTransform.Transform = mth::matr::Identity();
+  tmp_import_data.RootTransform.maxAABB = { 0.5, 0.5, 0 };
+  tmp_import_data.RootTransform.minAABB = {-0.5, -0.5, 0 };
 
   tmp_import_data.HierarchyNodes.push_back(bone_node);
   tmp_import_data.HierarchyNodes.push_back(node);

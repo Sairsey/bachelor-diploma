@@ -95,6 +95,7 @@ void gdr::visibility_hier_depth_pass::Generate(ID3D12GraphicsCommandList* curren
   int MipsAmount = CalculateMipMapsAmount(Render->DepthBuffer.Resource->GetDesc().Width, Render->DepthBuffer.Resource->GetDesc().Height);
   
   // copy depth to biggest mip of Hier Depth texture
+  PROFILE_BEGIN(currentCommandList, "Copy depth to texture");
   {
     Render->GetDevice().TransitResourceState(
       currentCommandList,
@@ -133,6 +134,7 @@ void gdr::visibility_hier_depth_pass::Generate(ID3D12GraphicsCommandList* curren
       D3D12_RESOURCE_STATE_COPY_SOURCE,
       D3D12_RESOURCE_STATE_DEPTH_WRITE);
   }
+  PROFILE_END(currentCommandList);
 
   currentCommandList->SetPipelineState(ComputePSO);
   currentCommandList->SetComputeRootSignature(ComputeRootSignature);
@@ -196,6 +198,9 @@ void gdr::visibility_hier_depth_pass::Generate(ID3D12GraphicsCommandList* curren
 
 void gdr::visibility_hier_depth_pass::CallDirectDraw(ID3D12GraphicsCommandList* currentCommandList)
 {
+  if (Render->Params.IsViewLocked)
+    return; // Keep previous HierDepth
+
   // set common params
   currentCommandList->SetPipelineState(PSO);
   currentCommandList->SetGraphicsRootSignature(RootSignature);
@@ -230,6 +235,9 @@ void gdr::visibility_hier_depth_pass::CallDirectDraw(ID3D12GraphicsCommandList* 
 
 void gdr::visibility_hier_depth_pass::CallIndirectDraw(ID3D12GraphicsCommandList* currentCommandList)
 {
+  if (Render->Params.IsViewLocked)
+    return; // Keep previous HierDepth
+
   // set common params
   currentCommandList->SetPipelineState(PSO);
   currentCommandList->SetGraphicsRootSignature(RootSignature);

@@ -74,14 +74,14 @@ void CS(uint3 groupId : SV_GroupID, uint groupIndex : SV_GroupIndex)
 
     // Don't attempt to access commands that don't exist if more threads are allocated
     // than commands.
-    if (index < globals.commandCount)
+    if (index < globals.commandsCount)
     {
         GDRGPUIndirectCommand command = AllCommands[index];
         
         // save index
         command.Indices.ObjectIndex = index;
 
-        bool visible = !globals.enableCulling ||
+        bool visible = !globals.frustumCulling ||
           CullAABBFrustum(
             globals.VP,
             ObjectTransformPool[command.Indices.ObjectTransformIndex].Transform,

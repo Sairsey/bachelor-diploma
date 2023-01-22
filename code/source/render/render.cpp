@@ -82,6 +82,7 @@ bool gdr::render::Init(engine* Eng)
   {
     Passes.push_back(new visibility_frustum_pass());
     Passes.push_back(new visibility_hier_depth_pass());
+    Passes.push_back(new visibility_occlusion_pass());
     Passes.push_back(new albedo_pass());
     Passes.push_back(new imgui_pass());
     for (auto& pass : Passes)
@@ -145,56 +146,56 @@ void gdr::render::DrawFrame(void)
 {
   if (!IsInited)
     return;
+
+  Device.WaitAllUploadLists();
+
   PROFILE_CPU_BEGIN("gdr::render::DrawFrame");
-
-  ID3D12GraphicsCommandList* uploadCommandList;
-  GetDevice().BeginUploadCommandList(&uploadCommandList);
-  {
-    PROFILE_BEGIN(uploadCommandList, "Update Globals");
-    GlobalsSystem->CPUData.VP = PlayerCamera.GetVP(); // camera view-proj
-    GlobalsSystem->CPUData.CameraPos = PlayerCamera.GetPos(); // Camera position
-    GlobalsSystem->CPUData.time = Engine->GetGlobalTime(); // Time in seconds
-
-    GlobalsSystem->CPUData.DeltaTime = Engine->GetDeltaTime(); // Delta time in seconds	
-    GlobalsSystem->CPUData.width = Engine->Width;  // Screen size 
-    GlobalsSystem->CPUData.height = Engine->Height; // Screen size 
-    GlobalsSystem->UpdateGPUData(uploadCommandList);
-    PROFILE_END(uploadCommandList);
-  }
-  {
-    PROFILE_BEGIN(uploadCommandList, "Update Node Transforms");
-    NodeTransformsSystem->UpdateGPUData(uploadCommandList);
-    PROFILE_END(uploadCommandList);
-  }
-  {
-    PROFILE_BEGIN(uploadCommandList, "Update Object Transforms");
-    ObjectTransformsSystem->UpdateGPUData(uploadCommandList);
-    PROFILE_END(uploadCommandList);
-  }
-  {
-    PROFILE_BEGIN(uploadCommandList, "Update Materials");
-    MaterialsSystem->UpdateGPUData(uploadCommandList);
-    PROFILE_END(uploadCommandList);
-  }
-  {
-    PROFILE_BEGIN(uploadCommandList, "Update Textures");
-    TexturesSystem->UpdateGPUData(uploadCommandList);
-    PROFILE_END(uploadCommandList);
-  }
-  GetDevice().CloseUploadCommandListBeforeRenderCommandList();
-
   ID3D12GraphicsCommandList* pCommandList = nullptr;
   ID3D12Resource* pBackBuffer = nullptr;
   D3D12_CPU_DESCRIPTOR_HANDLE rtvHandle;
   if (Device.BeginRenderCommandList(&pCommandList, &pBackBuffer, &rtvHandle))
   {
+    ID3D12GraphicsCommandList* uploadCommandList = pCommandList;
+    GetDevice().SetCommandListAsUpload(pCommandList);
     {
-        GetDevice().SetCommandListAsUpload(pCommandList);
-        PROFILE_BEGIN(pCommandList, "Update Indirect buffers");
-        DrawCommandsSystem->UpdateGPUData(pCommandList);
-        PROFILE_END(pCommandList);
-        GetDevice().ClearUploadListReference();
+      PROFILE_BEGIN(uploadCommandList, "Update Globals");
+      GlobalsSystem->CPUData.VP = PlayerCamera.GetVP(); // camera view-proj
+      GlobalsSystem->CPUData.CameraPos = PlayerCamera.GetPos(); // Camera position
+      GlobalsSystem->CPUData.time = Engine->GetGlobalTime(); // Time in seconds
+
+      GlobalsSystem->CPUData.DeltaTime = Engine->GetDeltaTime(); // Delta time in seconds	
+      GlobalsSystem->CPUData.width = Engine->Width;  // Screen size 
+      GlobalsSystem->CPUData.height = Engine->Height; // Screen size 
+      GlobalsSystem->UpdateGPUData(uploadCommandList);
+      PROFILE_END(uploadCommandList);
     }
+    {
+      PROFILE_BEGIN(uploadCommandList, "Update Node Transforms");
+      NodeTransformsSystem->UpdateGPUData(uploadCommandList);
+      PROFILE_END(uploadCommandList);
+    }
+    {
+      PROFILE_BEGIN(uploadCommandList, "Update Object Transforms");
+      ObjectTransformsSystem->UpdateGPUData(uploadCommandList);
+      PROFILE_END(uploadCommandList);
+    }
+    {
+      PROFILE_BEGIN(uploadCommandList, "Update Materials");
+      MaterialsSystem->UpdateGPUData(uploadCommandList);
+      PROFILE_END(uploadCommandList);
+    }
+    {
+      PROFILE_BEGIN(uploadCommandList, "Update Textures");
+      TexturesSystem->UpdateGPUData(uploadCommandList);
+      PROFILE_END(uploadCommandList);
+    }
+    {
+      PROFILE_BEGIN(uploadCommandList, "Update Indirect buffers");
+      DrawCommandsSystem->UpdateGPUData(uploadCommandList);
+      PROFILE_END(uploadCommandList);
+    }
+    GetDevice().ClearUploadListReference();
+
     auto renderStart = std::chrono::system_clock::now();
     PROFILE_BEGIN(pCommandList, "Frame");
     DeviceFrameCounter.Start(pCommandList);
@@ -244,7 +245,6 @@ void gdr::render::DrawFrame(void)
       Device.TransitResourceState(pCommandList, pBackBuffer, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
     }
     PROFILE_END(pCommandList);
-
     Device.CloseSubmitAndPresentRenderCommandList(false);
     auto renderEnd = std::chrono::system_clock::now();
     CPUDrawFrameTime = std::chrono::duration_cast<std::chrono::nanoseconds>(renderEnd - renderStart).count();

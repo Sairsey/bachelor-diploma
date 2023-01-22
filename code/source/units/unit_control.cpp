@@ -1,7 +1,5 @@
 #include "p_header.h"
 #include <time.h>
-#if 0
-
 #include "unit_control.h"
 
 
@@ -13,6 +11,7 @@ void unit_control::Initialize(void)
 
   CameraSpeed = MinCameraSpeed;
   
+  #if 0
   DefaultLight = Engine->LightsSystem->AddDirectionalLightSource();
   Engine->LightsSystem->GetTransform(DefaultLight).transform = mth::matr4f::RotateX(30);
   Engine->LightsSystem->GetLight(DefaultLight).Color = mth::vec3f(1, 1, 1);
@@ -43,6 +42,7 @@ void unit_control::Initialize(void)
 
   PROFILE_END(commandList);
   Engine->GetDevice().CloseUploadCommandList();
+  #endif
 }
 
 void unit_control::Response(void)
@@ -80,5 +80,3 @@ void unit_control::Response(void)
       CameraSpeed = MinCameraSpeed;
   }
 }
-
-#endif

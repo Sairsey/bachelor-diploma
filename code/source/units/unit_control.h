@@ -8,7 +8,6 @@ private:
   float MinCameraSpeed;
   float MaxCameraSpeed;
   float CameraSpeedStep;
-  gdr::gdr_light DefaultLight;
 public:
   void Initialize(void);
 

@@ -48,6 +48,7 @@ using uint4 = mth::vec4<UINT>;
 #define GDRGPUTexturePoolSlot ShaderResourceSlot(3)
 #define GDRGPUCubeTexturePoolSlot ShaderResourceSlot(4)
 #define GDRGPUAllCommandsPoolSlot ShaderResourceSlot(5)
+#define GDRGPUHierDepthSlot ShaderResourceSlot(6)
 // slots for all uavs
 #define GDRGPUOpaqueAllCommandsPoolSlot UnorderedAccessSlot(0)
 #define GDRGPUTransparentAllCommandsPoolSlot UnorderedAccessSlot(1)
@@ -71,8 +72,9 @@ using uint4 = mth::vec4<UINT>;
 struct GDRGPUComputeGlobals
 {
 	float4x4 VP;
-	UINT enableCulling;
-	UINT commandCount;
+	UINT frustumCulling;
+	UINT occlusionCulling;
+	UINT commandsCount;
 	UINT width;  // Screen size 
 	UINT height; // Screen size 
 };
@@ -135,19 +137,18 @@ struct GDRGPUNodeTransform
 struct GDRGPUMaterial
 {
 	UINT ShadeType;
+	float3 VecParam0;
 
 	UINT UintParam0;
-	UINT UintParam1;
-	UINT UintParam2;
-	UINT UintParam3;
-	
-	float3 VecParam0;
 	float3 VecParam1;
+
+	UINT UintParam1;
 	float3 VecParam2;
 
+	UINT UintParam2;
+	UINT UintParam3;
 	float FloatParam0;
 	float FloatParam1;
-	float FloatParam2;
 };
 // define getters for this weired material structure
 

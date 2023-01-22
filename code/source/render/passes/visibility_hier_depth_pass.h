@@ -45,8 +45,8 @@ namespace gdr
 
     static const unsigned MAX_AMOUNT_OF_MIPS = 20;
 
-    D3D12_CPU_DESCRIPTOR_HANDLE CPUDescriptorHandles[2 * MAX_AMOUNT_OF_MIPS];
-    D3D12_GPU_DESCRIPTOR_HANDLE GPUDescriptorHandles[2 * MAX_AMOUNT_OF_MIPS];
+    D3D12_CPU_DESCRIPTOR_HANDLE CPUDescriptorHandles[MAX_AMOUNT_OF_MIPS];
+    D3D12_GPU_DESCRIPTOR_HANDLE GPUDescriptorHandles[MAX_AMOUNT_OF_MIPS];
   public:
     /* Function to get name */
     std::string GetName(void) override

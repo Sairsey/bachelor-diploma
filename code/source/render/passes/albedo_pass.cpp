@@ -74,7 +74,7 @@ void gdr::albedo_pass::CallDirectDraw(ID3D12GraphicsCommandList* currentCommandL
     currentCommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
     // just iterate for every draw call
-    for (auto& i : Render->DrawCommandsSystem->DirectCommandPools[(int)indirect_command_pools_enum::OpaqueFrustrumCulled])
+    for (auto& i : Render->DrawCommandsSystem->DirectCommandPools[(int)indirect_command_pools_enum::OpaqueCulled])
     {
         auto &command = Render->DrawCommandsSystem->CPUData[i];
         currentCommandList->IASetVertexBuffers(0, 1, &command.VertexBuffer);
@@ -134,9 +134,9 @@ void gdr::albedo_pass::CallIndirectDraw(ID3D12GraphicsCommandList* currentComman
   currentCommandList->ExecuteIndirect(
     CommandSignature,
     (UINT)Render->DrawCommandsSystem->CPUData.size(),
-    Render->DrawCommandsSystem->CommandsBuffer[(int)indirect_command_pools_enum::OpaqueFrustrumCulled].Resource,
+    Render->DrawCommandsSystem->CommandsBuffer[(int)indirect_command_pools_enum::OpaqueCulled].Resource,
     0,
-    Render->DrawCommandsSystem->CommandsBuffer[(int)indirect_command_pools_enum::OpaqueFrustrumCulled].Resource,
+    Render->DrawCommandsSystem->CommandsBuffer[(int)indirect_command_pools_enum::OpaqueCulled].Resource,
     Render->DrawCommandsSystem->CounterOffset); // stride to counter
 }
 

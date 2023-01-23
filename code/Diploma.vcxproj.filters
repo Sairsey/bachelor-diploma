@@ -455,5 +455,8 @@
     <ClInclude Include="source\utils\resource_pool_subsystem_no_gpu.hpp">
       <Filter>Source Files\Utils</Filter>
     </ClInclude>
+    <ClInclude Include="source\units\examples\unit_runtime_add_remove.h">
+      <Filter>Source Files\Units\Examples</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

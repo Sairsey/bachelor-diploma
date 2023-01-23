@@ -48,22 +48,35 @@ gdr_index gdr::node_transforms_subsystem::Add(gdr_index parent)
 
 void gdr::node_transforms_subsystem::Remove(gdr_index node)
 {
-  int parentIndex = Get(node).ParentIndex;
+  gdr_index parentIndex = Get(node).ParentIndex;
+  // if we have parent
   if (parentIndex != NONE_INDEX)
   {
-    int childIndex = Get(parentIndex).ChildIndex;
-    if (childIndex == node)
+    gdr_index childIndex = Get(parentIndex).ChildIndex;
+    if (childIndex == node) // and we are the first child of that parent
     {
-      GetEditable(parentIndex).ChildIndex = Get(node).NextIndex;
+      GetEditable(parentIndex).ChildIndex = Get(node).NextIndex; // set next child as first
     }
-    else
+    else // if not first
     {
+      // walk to previous
       while (Get(childIndex).NextIndex != node || Get(childIndex).NextIndex != NONE_INDEX)
         childIndex = Get(childIndex).NextIndex;
 
+      // set next for previous as our next
       if (Get(childIndex).NextIndex != NONE_INDEX)
         GetEditable(childIndex).NextIndex = Get(node).NextIndex;
     }
+  }
+  
+  // for our childs
+  gdr_index childIndex = Get(node).ChildIndex;
+  while (childIndex != NONE_INDEX)
+  {
+    gdr_index nextChildIndex = Get(childIndex).NextIndex;
+    GetEditable(childIndex).ParentIndex = NONE_INDEX;
+    GetEditable(childIndex).NextIndex = NONE_INDEX;
+    childIndex = nextChildIndex;
   }
 
   // now we can delete it in normal way

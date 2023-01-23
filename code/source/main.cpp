@@ -7,6 +7,7 @@
 #include "units/examples/unit_model_loading.h"
 #include "units/examples/unit_frustum_cull.h"
 #include "units/examples/unit_occlusion_cull.h"
+#include "units/examples/unit_runtime_add_remove.h"
 
 #include "units/unit_control.h"
 
@@ -100,10 +101,11 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
   Engine.AddUnit(new unit_stats());
 #endif
 
-  Engine.AddUnit(new unit_model_loading());
-  Engine.AddUnit(new unit_frustum_cull());
-  Engine.AddUnit(new unit_occlusion_cull());
+  //Engine.AddUnit(new unit_model_loading());
+  //Engine.AddUnit(new unit_frustum_cull());
+  //Engine.AddUnit(new unit_occlusion_cull());
   Engine.AddUnit(new unit_triangle());
+  Engine.AddUnit(new unit_runtime_add_remove());
   
   Engine.AddUnit(new unit_control());
   

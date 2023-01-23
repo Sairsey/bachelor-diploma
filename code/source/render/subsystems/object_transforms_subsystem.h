@@ -13,6 +13,7 @@ namespace gdr
     object_transforms_subsystem(render* Rnd) : resource_pool_subsystem(Rnd) 
     {
       ResourceName = L"Object transforms pool";
+      Add(); // Add one debug
     };
 
     gdr_index Add()

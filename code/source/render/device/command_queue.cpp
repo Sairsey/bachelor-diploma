@@ -1,5 +1,7 @@
 #include "p_header.h"
 
+UINT64 gdr::command_queue::CurrentFenceValue = 0;
+
 bool gdr::command_list::Init(ID3D12Device* pDevice, const D3D12_COMMAND_LIST_TYPE& type)
 {
   HRESULT hr = S_OK;
@@ -286,7 +288,10 @@ void gdr::command_queue::WaitIdle(UINT64& finishedFenceValue)
       pCmdList->Wait(cmdListFinishedFenceValue);
       if (cmdListFinishedFenceValue != NoneValue)
       {
-        finishedFenceValue = cmdListFinishedFenceValue;
+        if (finishedFenceValue == NoneValue)
+          finishedFenceValue = cmdListFinishedFenceValue;
+        else
+          finishedFenceValue = max(finishedFenceValue, cmdListFinishedFenceValue);
       }
     }
   }

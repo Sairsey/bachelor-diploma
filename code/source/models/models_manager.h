@@ -12,7 +12,6 @@ namespace gdr
 		render_mesh Rnd;
 	};
 
-	// mesh import data representation class
 	class models_manager
 	{
 		private:

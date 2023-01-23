@@ -38,6 +38,8 @@ namespace gdr
     void BeforeUpdateJob(ID3D12GraphicsCommandList* pCommandList) override;
     // Job to do after update
     void AfterUpdateJob(ID3D12GraphicsCommandList* pCommandList) override;
+    // Job to do after update of resource state
+    void AfterResourceStateUpdateJob(ID3D12GraphicsCommandList* pCommandList, bool IsRender) override;
 
     size_t UAVStoredSize = 0; // Size on which UAV are allocated
   public:

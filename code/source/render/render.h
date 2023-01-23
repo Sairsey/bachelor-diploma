@@ -68,6 +68,8 @@ namespace gdr
        */
       void Resize(UINT w, UINT h);
 
+      void EnableFullscreen();
+
       /* Get Device function */
       device &GetDevice(void) {return Device;}
 

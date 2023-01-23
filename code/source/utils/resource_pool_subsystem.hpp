@@ -44,6 +44,8 @@ void gdr::resource_pool_subsystem<StoredType, ChunkSize>::CreateResource()
 
   // Allocate chunks flags
   ChunkMarkings.resize(ceil(1.0 * CPUData.size() * sizeof(StoredType) / CHUNK_SIZE), false);
+  for (int i = 0; i < ChunkMarkings.size(); i++)
+    ChunkMarkings[i] = false;
 
   // Save current size
   StoredSize = CPUData.size();
@@ -86,12 +88,6 @@ void gdr::resource_pool_subsystem<StoredType, ChunkSize>::UpdateGPUData(ID3D12Gr
   }
   else // otherwise we can just update right chunks
   {
-    // Transit state to CopyDest
-    Render->GetDevice().TransitResourceState(
-      pCommandList,
-      GPUData.Resource,
-      UsedResourceState, D3D12_RESOURCE_STATE_COPY_DEST);
-
     // update chunks
     for (int i = 0; i < ChunkMarkings.size(); i++)
     {
@@ -104,8 +100,9 @@ void gdr::resource_pool_subsystem<StoredType, ChunkSize>::UpdateGPUData(ID3D12Gr
 
         // update chunks in one call if they are stored one after another
         int source_offset = i * CHUNK_SIZE;
-        gdr_index dataSize = (gdr_index)min(sizeof(StoredType) * CPUData.size() - source_offset, CHUNK_SIZE * chunk_amount); // Real size of chunk
-        Render->GetDevice().UpdateBufferOffset(pCommandList, GPUData.Resource, source_offset, (byte*)&CPUData[0] + source_offset, dataSize);
+        int dataSize = min(sizeof(StoredType) * CPUData.size() - source_offset, CHUNK_SIZE * chunk_amount); // Real size of chunk
+        if (dataSize > 0)
+          Render->GetDevice().UpdateBufferOffset(pCommandList, GPUData.Resource, source_offset, (byte*)&CPUData[0] + source_offset, dataSize);
 
         // mark chunks as updated
         for (int j = 0; j < chunk_amount; j++)
@@ -114,14 +111,31 @@ void gdr::resource_pool_subsystem<StoredType, ChunkSize>::UpdateGPUData(ID3D12Gr
     }
   }
 
-  // Transit state to needed one
-  Render->GetDevice().TransitResourceState(
-    pCommandList,
-    GPUData.Resource,
-    D3D12_RESOURCE_STATE_COPY_DEST, UsedResourceState);
-
   // Do anything we need to do before update
   AfterUpdateJob(pCommandList);
+}
+
+template<typename StoredType, int ChunkSize>
+void gdr::resource_pool_subsystem<StoredType, ChunkSize>::UpdateResourceState(ID3D12GraphicsCommandList* pCommandList, bool IsRender)
+{
+  if (IsRender)
+  {
+    // Transit state to needed one
+    Render->GetDevice().TransitResourceState(
+      pCommandList,
+      GPUData.Resource,
+      D3D12_RESOURCE_STATE_COPY_DEST, UsedResourceState);
+  }
+  else
+  {
+    // Transit state to CopyDest
+    Render->GetDevice().TransitResourceState(
+      pCommandList,
+      GPUData.Resource,
+      UsedResourceState, D3D12_RESOURCE_STATE_COPY_DEST);
+  }
+
+  AfterResourceStateUpdateJob(pCommandList, IsRender);
 }
 
 template<typename StoredType, int ChunkSize>
@@ -130,7 +144,7 @@ gdr_index gdr::resource_pool_subsystem<StoredType, ChunkSize>::Add()
   gdr_index Result = NONE_INDEX;
 
   // Try to reuse old resources
-  for (gdr_index i = 0; i < CPUData.size(); i++)
+  for (gdr_index i = 0; i < CPUData.size() && Result == NONE_INDEX; i++)
     if (!PoolRecords[i].IsAlive)
       Result = i;
 
@@ -146,12 +160,11 @@ gdr_index gdr::resource_pool_subsystem<StoredType, ChunkSize>::Add()
   return Result;
 }
 
-
 template<typename StoredType, int ChunkSize>
 void gdr::resource_pool_subsystem<StoredType, ChunkSize>::Remove(gdr_index index)
 {
-  if (index > CPUData.size() || index < 0 || !PoolRecords[index].IsAlive)
-    printf("ERROR");
+  if (index >= CPUData.size() || index < 0 || !PoolRecords[index].IsAlive)
+    return;
   PoolRecords[index].IsAlive = false;
 
   // little defragmentation
@@ -165,9 +178,8 @@ void gdr::resource_pool_subsystem<StoredType, ChunkSize>::Remove(gdr_index index
 template<typename StoredType, int ChunkSize>
 StoredType& gdr::resource_pool_subsystem<StoredType, ChunkSize>::GetEditable(gdr_index index)
 {
-  assert(index < CPUData.size() && index >= 0 && PoolRecords[index].IsAlive);
-  if (index > CPUData.size() || index < 0 || !PoolRecords[index].IsAlive)
-    printf("ERROR");
+  if (index >= CPUData.size() || index < 0 || !PoolRecords[index].IsAlive)
+    assert(0);
 
   MarkChunkByElementIndex(index);
   return CPUData[index];

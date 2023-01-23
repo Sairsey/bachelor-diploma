@@ -234,16 +234,12 @@ namespace gdr
       // Close command list for uploading
       void CloseUploadCommandList();
 
-      // Close command list for uploading
-      void CloseUploadCommandListBeforeRenderCommandList();
-
       // Used for override CurrentUploadCmdList in some special cases
       void SetCommandListAsUpload(ID3D12GraphicsCommandList* pCommandList) { CurrentUploadCmdList = pCommandList;};
       void ClearUploadListReference(void) { CurrentUploadCmdList = nullptr; };
       
       // In case we need huge data to be copied
       void WaitAllUploadLists(void);
-
 
       // Change state of resource with resource barrier
       bool TransitResourceState(ID3D12GraphicsCommandList* pCommandList, ID3D12Resource* pResource, D3D12_RESOURCE_STATES before, D3D12_RESOURCE_STATES after, UINT subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES);
@@ -274,6 +270,7 @@ namespace gdr
       // Get D3D Device
       inline ID3D12Device* GetDXDevice() const { return D3DDevice; }
       inline IDXGIAdapter* GetAdapter() const { return DxgiAdapter; }
+      inline IDXGISwapChain3* GetSwapchain() const { return Swapchain; }
       inline ID3D12DescriptorHeap* GetDescriptorHeap() const { return D3DDescriptorHeap;}
       inline ID3D12CommandQueue* GetPresentQueue() const { return PresentQueue->GetQueue(); }
 

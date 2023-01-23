@@ -57,6 +57,7 @@
     <ClInclude Include="source\units\examples\unit_frustum_cull.h" />
     <ClInclude Include="source\units\examples\unit_model_loading.h" />
     <ClInclude Include="source\units\examples\unit_occlusion_cull.h" />
+    <ClInclude Include="source\units\examples\unit_runtime_add_remove.h" />
     <ClInclude Include="source\units\examples\unit_triangle.h" />
     <ClInclude Include="source\units\shooter\unit_shooter_enemy.h" />
     <ClInclude Include="source\units\shooter\unit_shooter_enemy_spawner.h" />

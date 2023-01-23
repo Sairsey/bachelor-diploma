@@ -38,7 +38,7 @@ gdr::draw_commands_subsystem::draw_commands_subsystem(render* Rnd) : resource_po
 
   // fill data specific to resource_pool_subsystem
   resource_pool_subsystem::ResourceName = L"All commands pool";
-  resource_pool_subsystem::UsedResourceState = D3D12_RESOURCE_STATE_COMMON;
+  //resource_pool_subsystem::UsedResourceState = D3D12_RESOURCE_STATE_COMMON;
 }
 
 void gdr::draw_commands_subsystem::BeforeUpdateJob(ID3D12GraphicsCommandList* pCommandList)
@@ -55,7 +55,12 @@ void gdr::draw_commands_subsystem::BeforeUpdateJob(ID3D12GraphicsCommandList* pC
         CommandsUAVReset,
         &data,
         sizeof(UINT));
+
       CommandsUAVReset.Resource->SetName(L"CommandsUAVReset");
+      Render->GetDevice().TransitResourceState(
+        pCommandList,
+        CommandsUAVReset.Resource,
+        D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_COPY_SOURCE);
     }
   }
 }
@@ -107,9 +112,39 @@ void gdr::draw_commands_subsystem::AfterUpdateJob(ID3D12GraphicsCommandList* pCo
       Render->GetDevice().GetDXDevice()->CreateUnorderedAccessView(CommandsBuffer[i].Resource, CommandsBuffer[i].Resource, &uavDesc, CommandsCPUDescriptor[i]);
 
       DirectCommandPools[i].clear();
+      // Also 
+
     }
   }
-  else // just flush all UAV-s. SRV already updated
+
+  for (int i = 1; i < (int)indirect_command_pools_enum::TotalBuffers; i++)
+  {
+    // Reset UAV count 
+    pCommandList->CopyBufferRegion(
+      CommandsBuffer[i].Resource,
+      CounterOffset,
+      CommandsUAVReset.Resource,
+      0,
+      sizeof(UINT));
+    DirectCommandPools[i].clear();
+  }
+
+}
+
+void gdr::draw_commands_subsystem::AfterResourceStateUpdateJob(ID3D12GraphicsCommandList* pCommandList, bool IsRender)
+{
+  if (IsRender)
+  {
+    // transit state from COPY_DEST to Unordered ACCESS
+    for (int i = 1; i < (int)indirect_command_pools_enum::TotalBuffers; i++)
+    {
+      Render->GetDevice().TransitResourceState(
+        pCommandList,
+        CommandsBuffer[i].Resource,
+        D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+    }
+  }
+  else
   {
     for (int i = 1; i < (int)indirect_command_pools_enum::TotalBuffers; i++)
     {
@@ -118,24 +153,7 @@ void gdr::draw_commands_subsystem::AfterUpdateJob(ID3D12GraphicsCommandList* pCo
         pCommandList,
         CommandsBuffer[i].Resource,
         D3D12_RESOURCE_STATE_INDIRECT_ARGUMENT, D3D12_RESOURCE_STATE_COPY_DEST);
-
-      // Reset UAV count 
-      pCommandList->CopyBufferRegion(
-        CommandsBuffer[i].Resource,
-        CounterOffset,
-        CommandsUAVReset.Resource,
-        0,
-        sizeof(UINT));
-      DirectCommandPools[i].clear();
     }
-  }
-  // transit state from COPY_DEST to Unordered ACCESS
-  for (int i = 1; i < (int)indirect_command_pools_enum::TotalBuffers; i++)
-  {
-    Render->GetDevice().TransitResourceState(
-      pCommandList,
-      CommandsBuffer[i].Resource,
-      D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
   }
 }
 

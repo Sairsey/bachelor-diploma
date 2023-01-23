@@ -243,7 +243,7 @@ void gdr::textures_subsystem::Remove(gdr_index index)
 }
 
 // Update data on GPU in case we need it 
-void gdr::textures_subsystem::UpdateGPUData(ID3D12GraphicsCommandList* pCommandList)
+void gdr::textures_subsystem::BeforeUpdateJob(ID3D12GraphicsCommandList* pCommandList)
 {
   for (int i = 0; i < AllocatedSize(); i++)
     if (IsExist(i) && !Get(i).IsSrvInited)

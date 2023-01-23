@@ -19,6 +19,8 @@ namespace gdr
   // Transforms data representation class
   class textures_subsystem : public resource_pool_subsystem<gdr_texture, 0>
   {
+  protected:
+    void BeforeUpdateJob(ID3D12GraphicsCommandList* pCommandList) override;
   public:
     // Constructor
     textures_subsystem(render* Rnd);
@@ -35,9 +37,6 @@ namespace gdr
 
     // Remove Texture
     void Remove(gdr_index index);
-
-    // Update data on GPU in case we need it 
-    void UpdateGPUData(ID3D12GraphicsCommandList* pCommandList);
 
     // Handles for CPU and GPU tables
     D3D12_GPU_DESCRIPTOR_HANDLE TextureTableGPU;

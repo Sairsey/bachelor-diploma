@@ -15,7 +15,7 @@ gdr_index gdr::resource_pool_subsystem<StoredType, 0>::Add()
   gdr_index Result = NONE_INDEX;
 
   // Try to reuse old resources
-  for (gdr_index i = 0; i < CPUData.size(); i++)
+  for (gdr_index i = 0; i < CPUData.size() && Result == NONE_INDEX; i++)
     if (!PoolRecords[i].IsAlive)
       Result = i;
 
@@ -44,8 +44,9 @@ void gdr::resource_pool_subsystem<StoredType, 0>::UpdateGPUData(ID3D12GraphicsCo
 template<typename StoredType>
 void gdr::resource_pool_subsystem<StoredType, 0>::Remove(gdr_index index)
 {
-  if (index > CPUData.size() || index < 0 || !PoolRecords[index].IsAlive)
-    printf("ERROR");
+  if (index >= CPUData.size() || index < 0 || !PoolRecords[index].IsAlive)
+    return;
+
   PoolRecords[index].IsAlive = false;
 
   // little defragmentation
@@ -59,9 +60,9 @@ void gdr::resource_pool_subsystem<StoredType, 0>::Remove(gdr_index index)
 template<typename StoredType>
 StoredType& gdr::resource_pool_subsystem<StoredType, 0>::GetEditable(gdr_index index)
 {
-  assert(index < CPUData.size() && index >= 0 && PoolRecords[index].IsAlive);
-  if (index > CPUData.size() || index < 0 || !PoolRecords[index].IsAlive)
-    printf("ERROR");
+  if (index >= CPUData.size() || index < 0 || !PoolRecords[index].IsAlive)
+    assert(0);
+
   return CPUData[index];
 }
 

@@ -146,3 +146,26 @@ gdr_index gdr::models_manager::AddModel(mesh_import_data ImportData)
 	}
 	return ModelsPool.size() - 1;
 }
+
+
+void gdr::models_manager::DeleteModel(gdr_index index)
+{
+	model& ModelToDelete = ModelsPool[index];
+
+	Eng->ObjectTransformsSystem->Remove(ModelToDelete.Rnd.RootTransform);
+	for (int i = 0; i < ModelToDelete.Rnd.Hierarchy.size(); i++)
+	{
+		gdr::render_mesh_node &node = ModelToDelete.Rnd.Hierarchy[i];
+		if (node.Type == gdr_hier_node_type::node)
+		{
+			Eng->NodeTransformsSystem->Remove(node.NodeTransform);
+		}
+		else if (node.Type == gdr_hier_node_type::mesh)
+		{
+			auto &command = Eng->DrawCommandsSystem->Get(node.DrawCommand);
+			Eng->MaterialsSystem->Remove(command.Indices.ObjectMaterialIndex);
+			// Do not delete textures. We might need them later
+			Eng->DrawCommandsSystem->Remove(node.DrawCommand);
+		}
+	}
+}

@@ -41,6 +41,8 @@ namespace gdr
     virtual void BeforeUpdateJob(ID3D12GraphicsCommandList* pCommandList) {};
     // Job to do after update
     virtual void AfterUpdateJob(ID3D12GraphicsCommandList* pCommandList) {};
+    // Job to do after update of resource state
+    virtual void AfterResourceStateUpdateJob(ID3D12GraphicsCommandList* pCommandList, bool IsRender) {};
 
     // Helper funtion to create GPUResource and init everything
     void CreateResource();
@@ -52,6 +54,9 @@ namespace gdr
 
     // Update GPU Data
     void UpdateGPUData(ID3D12GraphicsCommandList* pCommandList);
+
+    // Update state of resource. If "IsRender" is true, then update to UsedResourceState. Otherwise to D3D12_RESOURCE_STATE_COPY_DEST
+    void UpdateResourceState(ID3D12GraphicsCommandList* pCommandList, bool IsRender);
 
     // Add element in Pool
     gdr_index Add();

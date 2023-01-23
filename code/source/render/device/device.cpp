@@ -8,6 +8,8 @@ if ((a) != nullptr)\
     (a) = nullptr;\
 }
 
+//#define TOO_MANY_SYNCS
+
 // Default constructor
 gdr::device::device() : 
   IsInited(false),
@@ -560,6 +562,7 @@ bool gdr::device::BeginRenderCommandList(ID3D12GraphicsCommandList** ppCommandLi
 {
   CurrentBackBufferIdx = (CurrentBackBufferIdx + 1) % BackBufferCount;
 
+  // Open command list
   UINT64 finishedFenceValue = NoneValue;
 
   HRESULT hr = PresentQueue->OpenCommandList(ppCommandList, finishedFenceValue);
@@ -586,47 +589,26 @@ bool gdr::device::CloseSubmitAndPresentRenderCommandList(bool vsync)
   // Close command list
   HRESULT hr = S_OK;
 
-  // Submit update command list, if needed
+#ifdef TOO_MANY_SYNCS
+  // Wait for upload CL-s
   UINT64 uploadFenceValue = NoneValue;
-  D3D_CHECK(UploadQueue->SubmitCommandList(&uploadFenceValue));
-
-  // while upload buffer has fences to submit
+  UploadQueue->WaitIdle(uploadFenceValue);
   if (uploadFenceValue != NoneValue)
   {
-    // Add fence to pending
-    UploadBuffer->AddPendingFence(uploadFenceValue);
-    // if we have barrier
-    if (!UploadBarriers.empty())
-    {
-      // Sync fence
-      ID3D12GraphicsCommandList* pBarrierCmdList = nullptr;
-      D3D_CHECK(UploadStateTransitionQueue->GetQueue()->Wait(UploadQueue->GetCurrentCommandList()->GetFence(), uploadFenceValue));
+    UploadBuffer->FlashFenceValue(uploadFenceValue);
 
-      // Open command list
-      UINT64 finishedFenceValue = NoneValue;
-      D3D_CHECK(UploadStateTransitionQueue->OpenCommandList(&pBarrierCmdList, finishedFenceValue));
-
-      // change state of all objects to Common
-      for (auto barrier : UploadBarriers)
-      {
-        if (barrier.stateAfter != D3D12_RESOURCE_STATE_COMMON)
-        {
-          TransitResourceState(pBarrierCmdList, barrier.pResource, D3D12_RESOURCE_STATE_COMMON, barrier.stateAfter);
-        }
-      }
-      UploadBarriers.clear();
-
-      D3D_CHECK(UploadStateTransitionQueue->CloseAndSubmitCommandList(&uploadFenceValue));
-
-      // sync this state transition queue
-      D3D_CHECK(PresentQueue->GetQueue()->Wait(UploadStateTransitionQueue->GetCurrentCommandList()->GetFence(), uploadFenceValue));
-    }
-    else
-    {
-      // sync just command list
-      D3D_CHECK(PresentQueue->GetQueue()->Wait(UploadQueue->GetCurrentCommandList()->GetFence(), uploadFenceValue));
-    }
+    // sync present queue with our fence
+    D3D_CHECK(PresentQueue->GetQueue()->Wait(UploadQueue->GetCurrentCommandList()->GetFence(), uploadFenceValue));
   }
+#else
+  // instead of waiting present CL, lets just Sync it 
+  UINT64 uploadFenceValue = UploadQueue->GetCurrentCommandList()->GetSubmittedFenceValue();
+  if (uploadFenceValue != NoneValue)
+  {
+    // sync update queue with our fence
+    D3D_CHECK(PresentQueue->GetQueue()->Wait(UploadQueue->GetCurrentCommandList()->GetFence(), uploadFenceValue));
+  }
+#endif
 
   // Set Vsync
   PresentQueue->SetVSync(vsync);
@@ -648,14 +630,14 @@ bool gdr::device::CloseSubmitAndPresentRenderCommandList(bool vsync)
 
 bool gdr::device::BeginUploadCommandList(ID3D12GraphicsCommandList** ppCommandList)
 {
-  // Wait for previous commit completion
   HRESULT hr = S_OK;
 
   UINT64 finishedFenceValue = NoneValue;
+  // Open and wait for previous commit completion
   D3D_CHECK(UploadQueue->OpenCommandList(ppCommandList, finishedFenceValue));
   if (finishedFenceValue != NoneValue)
   {
-    UploadBuffer->FlashFenceValue(finishedFenceValue);
+    UploadBuffer->FlashFenceValue(finishedFenceValue); // mark in Upload buffer that we already waited for finishedFenceValue.
   }
 
   CurrentUploadCmdList = *ppCommandList;
@@ -747,15 +729,14 @@ HRESULT gdr::device::UpdateBufferOffset(ID3D12GraphicsCommandList* pCommandList,
   return E_FAIL;
 }
 
-
 // In case we need huge data to be copied
 void gdr::device::WaitAllUploadLists(void)
 {
-  for (int i = 0; i < UploadQueue->GetCommandListCount(); i++)
+  UINT64 finishedFenceValue = NoneValue;
+  UploadQueue->WaitIdle(finishedFenceValue);
+  if (finishedFenceValue != NoneValue)
   {
-    ID3D12GraphicsCommandList* pCommandList;
-    BeginUploadCommandList(&pCommandList);
-    CloseUploadCommandList();
+    UploadBuffer->FlashFenceValue(finishedFenceValue);
   }
 }
 
@@ -853,23 +834,39 @@ void gdr::device::CloseUploadCommandList()
   // Close command list
   HRESULT hr = S_OK;
 
+#ifdef TOO_MANY_SYNCS
+  // Wait for present CL-s
+  UINT64 presentFenceValue = NoneValue;
+  PresentQueue->WaitIdle(presentFenceValue);
+  if (presentFenceValue != NoneValue)
+  {
+    DynamicBuffer->FlashFenceValue(presentFenceValue);
+    DynamicDescBuffer->FlashFenceValue(presentFenceValue);
+    QueryBuffer->FlashFenceValue(presentFenceValue);
+
+    // sync update queue with our fence
+    D3D_CHECK(UploadQueue->GetQueue()->Wait(PresentQueue->GetCurrentCommandList()->GetFence(), presentFenceValue));
+  }
+#else
+  // instead of waiting present CL, lets just Sync it 
+  UINT64 presentFenceValue = PresentQueue->GetCurrentCommandList()->GetSubmittedFenceValue();
+  if (presentFenceValue != NoneValue)
+  {
+    // sync update queue with our fence
+    D3D_CHECK(UploadQueue->GetQueue()->Wait(PresentQueue->GetCurrentCommandList()->GetFence(), presentFenceValue));
+  }
+#endif
+
   // Submit updated command list, if needed
   UINT64 uploadFenceValue = NoneValue;
   D3D_CHECK(UploadQueue->CloseAndSubmitCommandList(&uploadFenceValue));
 
-  // while upload buffer has fences to submit
-  if (uploadFenceValue != NoneValue)
+  if (uploadFenceValue != NoneValue) // if we have some updates. 
   {
     // Add fence to pending
     UploadBuffer->AddPendingFence(uploadFenceValue);
   }
 
-  CurrentUploadCmdList = nullptr;
-}
-
-void gdr::device::CloseUploadCommandListBeforeRenderCommandList()
-{
-  UploadQueue->CloseCommandList();
   CurrentUploadCmdList = nullptr;
 }
 
@@ -1107,5 +1104,6 @@ void gdr::device::WaitGPUIdle()
   {
     DynamicBuffer->FlashFenceValue(finishedFenceValue);
     DynamicDescBuffer->FlashFenceValue(finishedFenceValue);
+    QueryBuffer->FlashFenceValue(finishedFenceValue);
   }
 }

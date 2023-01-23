@@ -124,23 +124,25 @@ void CS(uint3 groupId : SV_GroupID, uint groupIndex : SV_GroupIndex)
     if (index < globals.commandsCount)
     {
         GDRGPUIndirectCommand command = AllCommands[index];
-        
-        // save index
-        command.Indices.ObjectIndex = index;
-
-        bool visible = CullAABBFrustum(
-            globals.VP,
-            ObjectTransformPool[command.Indices.ObjectTransformIndex].Transform,
-            ObjectTransformPool[command.Indices.ObjectTransformIndex].minAABB,
-            ObjectTransformPool[command.Indices.ObjectTransformIndex].maxAABB);
-        bool opaque = !(command.Indices.ObjectParamsMask & OBJECT_PARAMETER_TRANSPARENT);
-
-        if (visible)
+        if (command.IsExist)
         {
-          if (opaque)
-            OpaqueCulledCommands.Append(command);
-          else
-            TransparentCulledCommands.Append(command);
+          // save index
+          command.Indices.ObjectIndex = index;
+
+          bool visible = CullAABBFrustum(
+              globals.VP,
+              ObjectTransformPool[command.Indices.ObjectTransformIndex].Transform,
+              ObjectTransformPool[command.Indices.ObjectTransformIndex].minAABB,
+              ObjectTransformPool[command.Indices.ObjectTransformIndex].maxAABB);
+          bool opaque = !(command.Indices.ObjectParamsMask & OBJECT_PARAMETER_TRANSPARENT);
+
+          if (visible)
+          {
+            if (opaque)
+              OpaqueCulledCommands.Append(command);
+            else
+              TransparentCulledCommands.Append(command);
+          }
         }
     }
 }

@@ -10,16 +10,12 @@ D3D12_INPUT_ELEMENT_DESC gdr::defaultInputElementLayout[] =
     { "BONES_WEIGHT", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 60, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
 };
 
-// default constructor
-gdr::geometry_subsystem::geometry_subsystem(render *Rnd)
-{
-  Render = Rnd;
-}
-
 // Create Geometry using vertices and Indices
-gdr_index gdr::geometry_subsystem::AddElementInPool(const GDRVertex* pVertex, size_t vertexCount, const UINT32* pIndices, size_t indexCount)
+gdr_index gdr::geometry_subsystem::Add(const GDRVertex* pVertex, size_t vertexCount, const UINT32* pIndices, size_t indexCount)
 {
-  geometry geom;
+  gdr_index Result = resource_pool_subsystem::Add();
+  geometry& geom = GetEditable(Result);
+
   bool res = true;
   // Ñreate vertex buffer
   if (res)
@@ -46,17 +42,27 @@ gdr_index gdr::geometry_subsystem::AddElementInPool(const GDRVertex* pVertex, si
     geom.IndexBufferView.SizeInBytes = (UINT)(indexCount * sizeof(UINT32));
   }
   geom.IndexCount = (UINT)indexCount;
-  CPUData.push_back(geom);
-  return CPUData.size() - 1;
+  return Result;
+}
+
+// Remove Geometry by index
+void gdr::geometry_subsystem::Remove(gdr_index index)
+{
+  if (IsExist(index))
+  {
+    Render->GetDevice().ReleaseGPUResource(GetEditable(index).IndexBuffer);
+    Render->GetDevice().ReleaseGPUResource(GetEditable(index).VertexBuffer);
+  }
+  resource_pool_subsystem::Remove(index);
 }
 
 // Destructor
 gdr::geometry_subsystem::~geometry_subsystem()
 {
-  for (auto& geom : CPUData)
-  {
-    Render->GetDevice().ReleaseGPUResource(geom.IndexBuffer);
-    Render->GetDevice().ReleaseGPUResource(geom.VertexBuffer);
-  }
-  CPUData.clear();
+  for (int i = 0; i < AllocatedSize(); i++)
+    if (IsExist(i))
+    {
+      Render->GetDevice().ReleaseGPUResource(GetEditable(i).IndexBuffer);
+      Render->GetDevice().ReleaseGPUResource(GetEditable(i).VertexBuffer);
+    }
 }

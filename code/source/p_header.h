@@ -12,6 +12,8 @@
 
 #include "render/render.h"
 
+#include "utils/resource_pool_subsystem.h"
+
 #include "render/subsystems/globals_subsystem.h"
 #include "render/subsystems/geometry_subsystem.h"
 #include "render/subsystems/object_transforms_subsystem.h"

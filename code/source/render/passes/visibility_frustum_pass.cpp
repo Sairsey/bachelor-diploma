@@ -108,20 +108,22 @@ void gdr::visibility_frustum_pass::CallDirectDraw(ID3D12GraphicsCommandList* cur
     ComputeGlobals.height = Render->GlobalsSystem->CPUData.height;
     ComputeGlobals.frustumCulling = Render->Params.IsFrustumCulling;
     ComputeGlobals.occlusionCulling = Render->Params.IsOccusionCulling;
-    ComputeGlobals.commandsCount = Render->DrawCommandsSystem->CPUData.size();
+    ComputeGlobals.commandsCount = Render->DrawCommandsSystem->AllocatedSize();
   }
 
   // fill Direct emulations of indirect pools
   for (auto& i : Render->DrawCommandsSystem->DirectCommandPools[(int)indirect_command_pools_enum::All])
   {
-    auto &command = Render->DrawCommandsSystem->CPUData[i];
+    if (!Render->DrawCommandsSystem->IsExist(i))
+      continue;
+    auto& command = Render->DrawCommandsSystem->Get(i);
     
     bool visible = !ComputeGlobals.frustumCulling ||
       CullAABBFrustum(
         ComputeGlobals.VP,
-        Render->ObjectTransformsSystem->CPUData[command.Indices.ObjectTransformIndex].Transform,
-        Render->ObjectTransformsSystem->CPUData[command.Indices.ObjectTransformIndex].minAABB,
-        Render->ObjectTransformsSystem->CPUData[command.Indices.ObjectTransformIndex].maxAABB);;
+        Render->ObjectTransformsSystem->Get(command.Indices.ObjectTransformIndex).Transform,
+        Render->ObjectTransformsSystem->Get(command.Indices.ObjectTransformIndex).minAABB,
+        Render->ObjectTransformsSystem->Get(command.Indices.ObjectTransformIndex).maxAABB);;
 
     bool transparent = command.Indices.ObjectParamsMask & OBJECT_PARAMETER_TRANSPARENT;
 
@@ -165,7 +167,7 @@ void gdr::visibility_frustum_pass::CallIndirectDraw(ID3D12GraphicsCommandList* c
     ComputeGlobals.height = Render->GlobalsSystem->CPUData.height;
     ComputeGlobals.frustumCulling = Render->Params.IsFrustumCulling;
     ComputeGlobals.occlusionCulling = Render->Params.IsOccusionCulling;
-    ComputeGlobals.commandsCount = Render->DrawCommandsSystem->CPUData.size();
+    ComputeGlobals.commandsCount = Render->DrawCommandsSystem->AllocatedSize();
   }
 
   currentCommandList->SetComputeRoot32BitConstants(
@@ -175,7 +177,7 @@ void gdr::visibility_frustum_pass::CallIndirectDraw(ID3D12GraphicsCommandList* c
     0);
   currentCommandList->SetComputeRootShaderResourceView(
     (int)root_parameters_frustum_indices::object_transform_pool_index,
-    Render->ObjectTransformsSystem->GPUData.Resource->GetGPUVirtualAddress());
+    Render->ObjectTransformsSystem->GetGPUResource().Resource->GetGPUVirtualAddress());
   currentCommandList->SetComputeRootShaderResourceView(
     (int)root_parameters_frustum_indices::all_commands_pool_index,
     Render->DrawCommandsSystem->CommandsBuffer[(int)indirect_command_pools_enum::All].Resource->GetGPUVirtualAddress());

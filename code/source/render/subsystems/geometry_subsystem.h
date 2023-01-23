@@ -23,20 +23,24 @@ namespace gdr
   };
 
   /* Geometry support subsystem class */
-  class geometry_subsystem
+  class geometry_subsystem : public resource_pool_subsystem<geometry, 0>
   {
-    private:
-      // pointer to Render
-      render *Render;
     public:
-      // vector which contains all geometries
-      std::vector<geometry> CPUData;
-
       // default constructor
-      geometry_subsystem(render *Rnd);
+      geometry_subsystem(render* Rnd) : resource_pool_subsystem(Rnd) {}
+
+      // If we try to create geometry without params -> we should error about it
+      gdr_index Add()
+      {
+        printf("ERROR");
+        return NONE_INDEX;
+      }
 
       // Create Geometry using vertices and Indices
-      gdr_index AddElementInPool(const GDRVertex* pVertex, size_t vertexCount, const UINT32* pIndices, size_t indexCount);
+      gdr_index Add(const GDRVertex* pVertex, size_t vertexCount, const UINT32* pIndices, size_t indexCount);
+
+      // Remove Geometry by index
+      void Remove(gdr_index index);
 
       // Destructor
       ~geometry_subsystem();

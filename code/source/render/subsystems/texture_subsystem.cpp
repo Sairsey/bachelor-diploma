@@ -2,7 +2,6 @@
 #include "stb_image.h"
 #include "stb_image_resize.h"
 
-
 static size_t CalculateSizeWithMips(UINT width, UINT height, UINT& mipCount)
 {
   DWORD mips = 0;
@@ -59,10 +58,9 @@ static void GenerateMips(void* pInitialData, UINT width, UINT height, UINT mipsT
   }
 }
 
-// Constructor
-gdr::textures_subsystem::textures_subsystem(render* Rnd)
+// Constructor 
+gdr::textures_subsystem::textures_subsystem(render* Rnd) : resource_pool_subsystem(Rnd)
 {
-  Render = Rnd;
   Render->GetDevice().AllocateStaticDescriptors(Render->CreationParams.MaxTextureAmount, TextureTableCPU, TextureTableGPU);
 
   SamplersDescs.push_back(CD3DX12_STATIC_SAMPLER_DESC(GDRGPUNearestSamplerSlot, D3D12_FILTER_MIN_MAG_MIP_POINT));
@@ -70,18 +68,21 @@ gdr::textures_subsystem::textures_subsystem(render* Rnd)
 }
 
 // Load Texture
-gdr_index gdr::textures_subsystem::AddElementInPool(std::string name, bool isSrgb)
+gdr_index gdr::textures_subsystem::Add(std::string name, bool isSrgb)
 {
   // check if we already have this texture
-  for (int i = 0; i < CPUData.size(); i++)
-    if (CPUData[i].Name == name)
+  for (int i = 0; i < AllocatedSize(); i++)
+    if (IsExist(i) && Get(i).Name == name)
       return i;
 
-  gdr_index NewTextureIndex = CPUData.size();
+  gdr_index NewTextureIndex = resource_pool_subsystem::Add();
 
   // if too much textures
-  if (CPUData.size() >= Render->CreationParams.MaxTextureAmount - 1)
+  if (AllocatedSize() > Render->CreationParams.MaxTextureAmount)
+  {
+    resource_pool_subsystem::Remove(NewTextureIndex);
     NewTextureIndex = NONE_INDEX;
+  }
 
   if (NewTextureIndex != NONE_INDEX)
   {
@@ -104,8 +105,6 @@ gdr_index gdr::textures_subsystem::AddElementInPool(std::string name, bool isSrg
 
     if (stb_bufferf || stb_bufferu)
     {
-      CPUData.emplace_back();
-
       // resize image to be power of 2 (needs for mips)
       {
         int new_width = NearestPowerOf2(width);
@@ -171,10 +170,10 @@ gdr_index gdr::textures_subsystem::AddElementInPool(std::string name, bool isSrg
       // if we have any semi-transparent pixel
       if (components == 4)
       {
-        for (int y = 0; y < height && !CPUData[NewTextureIndex].IsTransparent; y++)
-          for (int x = 0; x < width && !CPUData[NewTextureIndex].IsTransparent; x++)
+        for (int y = 0; y < height && !Get(NewTextureIndex).IsTransparent; y++)
+          for (int x = 0; x < width && !Get(NewTextureIndex).IsTransparent; x++)
             if ((pBufferf && pBufferf[y * width * 4 + x * 4 + 3] != 1.0) || (pBufferu && pBufferu[y * width * 4 + x * 4 + 3] != 255))
-              CPUData[NewTextureIndex].IsTransparent = true;
+              GetEditable(NewTextureIndex).IsTransparent = true;
       }
 
       DXGI_FORMAT format = DXGI_FORMAT_R32G32B32A32_FLOAT;
@@ -194,17 +193,17 @@ gdr_index gdr::textures_subsystem::AddElementInPool(std::string name, bool isSrg
           width, height, 1, mips),
         D3D12_RESOURCE_STATE_COMMON,
         nullptr,
-        CPUData[NewTextureIndex].TextureResource,
+        GetEditable(NewTextureIndex).TextureResource,
         (isHdr ? (void*)pBufferf : (void*)pBufferu),
         dataSize * (isHdr ? sizeof(float) : 1));
       if (SUCCEEDED(hr))
       {
-        CPUData[NewTextureIndex].Name = name;
-        CPUData[NewTextureIndex].W = width;
-        CPUData[NewTextureIndex].H = height;
-        CPUData[NewTextureIndex].NumOfMips = mips;
-        CPUData[NewTextureIndex].IsSrvInited = false;
-        CPUData[NewTextureIndex].TextureResource.Resource->SetName(charToWString(name.c_str()).c_str());
+        GetEditable(NewTextureIndex).Name = name;
+        GetEditable(NewTextureIndex).W = width;
+        GetEditable(NewTextureIndex).H = height;
+        GetEditable(NewTextureIndex).NumOfMips = mips;
+        GetEditable(NewTextureIndex).IsSrvInited = false;
+        GetEditable(NewTextureIndex).TextureResource.Resource->SetName(charToWString(name.c_str()).c_str());
       }
       else
       {
@@ -227,11 +226,27 @@ gdr_index gdr::textures_subsystem::AddElementInPool(std::string name, bool isSrg
   return NewTextureIndex;
 }
 
+// Delete Texture
+void gdr::textures_subsystem::Remove(gdr_index index)
+{
+  if (IsExist(index))
+  {
+    GetEditable(index).IsSrvInited = false;
+    GetEditable(index).Name = "GDR_EMPTY";
+    GetEditable(index).W = 0;
+    GetEditable(index).H = 0;
+    GetEditable(index).NumOfMips = 0;
+    GetEditable(index).IsTransparent = 0;
+    Render->GetDevice().ReleaseGPUResource(GetEditable(index).TextureResource);
+  }
+  resource_pool_subsystem::Remove(index);
+}
+
 // Update data on GPU in case we need it 
 void gdr::textures_subsystem::UpdateGPUData(ID3D12GraphicsCommandList* pCommandList)
 {
-  for (int i = 0; i < CPUData.size(); i++)
-    if (!CPUData[i].IsSrvInited)
+  for (int i = 0; i < AllocatedSize(); i++)
+    if (IsExist(i) && !Get(i).IsSrvInited)
     {
       D3D12_CPU_DESCRIPTOR_HANDLE TextureDescr = TextureTableCPU;
 
@@ -239,17 +254,18 @@ void gdr::textures_subsystem::UpdateGPUData(ID3D12GraphicsCommandList* pCommandL
       
       D3D12_SHADER_RESOURCE_VIEW_DESC texDesc = {};
       texDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-      texDesc.Format = CPUData[i].TextureResource.Resource->GetDesc().Format;
+      texDesc.Format = Get(i).TextureResource.Resource->GetDesc().Format;
       texDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
-      texDesc.Texture2D.MipLevels = (UINT)CPUData[i].NumOfMips;
-      Render->GetDevice().GetDXDevice()->CreateShaderResourceView(CPUData[i].TextureResource.Resource, &texDesc, TextureDescr);
-      CPUData[i].IsSrvInited = true;
+      texDesc.Texture2D.MipLevels = (UINT)Get(i).NumOfMips;
+      Render->GetDevice().GetDXDevice()->CreateShaderResourceView(Get(i).TextureResource.Resource, &texDesc, TextureDescr);
+      GetEditable(i).IsSrvInited = true;
     }
 }
 
 // Destructor 
 gdr::textures_subsystem::~textures_subsystem(void)
 {
-  for (int i = 0; i < CPUData.size(); i++)
-    Render->GetDevice().ReleaseGPUResource(CPUData[i].TextureResource);
+  for (int i = 0; i < AllocatedSize(); i++)
+    if (IsExist(i))
+      Render->GetDevice().ReleaseGPUResource(GetEditable(i).TextureResource);
 }

@@ -209,7 +209,9 @@ void gdr::visibility_hier_depth_pass::CallDirectDraw(ID3D12GraphicsCommandList* 
   // just iterate for every draw call
   for (auto& i : Render->DrawCommandsSystem->DirectCommandPools[(int)indirect_command_pools_enum::OpaqueFrustrumCulled])
   {
-    auto& command = Render->DrawCommandsSystem->CPUData[i];
+    if (!Render->DrawCommandsSystem->IsExist(i))
+      continue;
+    auto& command = Render->DrawCommandsSystem->Get(i);
     currentCommandList->IASetVertexBuffers(0, 1, &command.VertexBuffer);
     currentCommandList->IASetIndexBuffer(&command.IndexBuffer);
     {
@@ -222,10 +224,10 @@ void gdr::visibility_hier_depth_pass::CallDirectDraw(ID3D12GraphicsCommandList* 
         &command.Indices, 0);
       currentCommandList->SetGraphicsRootShaderResourceView(
         (int)root_parameters_draw_indices::object_transform_pool_index,
-        Render->ObjectTransformsSystem->GPUData.Resource->GetGPUVirtualAddress());
+        Render->ObjectTransformsSystem->GetGPUResource().Resource->GetGPUVirtualAddress());
       currentCommandList->SetGraphicsRootShaderResourceView(
         (int)root_parameters_draw_indices::node_transform_pool_index,
-        Render->NodeTransformsSystem->GPUData.Resource->GetGPUVirtualAddress());
+        Render->NodeTransformsSystem->GetGPUResource().Resource->GetGPUVirtualAddress());
     }
     currentCommandList->DrawIndexedInstanced(command.DrawArguments.IndexCountPerInstance, 1, 0, 0, 0);
   }
@@ -249,14 +251,14 @@ void gdr::visibility_hier_depth_pass::CallIndirectDraw(ID3D12GraphicsCommandList
   // root_parameters_draw_indices::index_buffer_index will be set via indirect
   currentCommandList->SetGraphicsRootShaderResourceView(
     (int)root_parameters_draw_indices::object_transform_pool_index,
-    Render->ObjectTransformsSystem->GPUData.Resource->GetGPUVirtualAddress());
+    Render->ObjectTransformsSystem->GetGPUResource().Resource->GetGPUVirtualAddress());
   currentCommandList->SetGraphicsRootShaderResourceView(
     (int)root_parameters_draw_indices::node_transform_pool_index,
-    Render->NodeTransformsSystem->GPUData.Resource->GetGPUVirtualAddress());
+    Render->NodeTransformsSystem->GetGPUResource().Resource->GetGPUVirtualAddress());
 
   currentCommandList->ExecuteIndirect(
     CommandSignature,
-    (UINT)Render->DrawCommandsSystem->CPUData.size(),
+    (UINT)Render->DrawCommandsSystem->AllocatedSize(),
     Render->DrawCommandsSystem->CommandsBuffer[(int)indirect_command_pools_enum::OpaqueFrustrumCulled].Resource,
     0,
     Render->DrawCommandsSystem->CommandsBuffer[(int)indirect_command_pools_enum::OpaqueFrustrumCulled].Resource,

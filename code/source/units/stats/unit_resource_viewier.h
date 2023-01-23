@@ -77,9 +77,11 @@ public:
           ImGui::SameLine();
           if (ImGui::Button(">>>"))
             DrawCommandsIndex += 100;
-          DrawCommandsIndex = min(max(0, DrawCommandsIndex), Engine->DrawCommandsSystem->CPUData.size() - 1);
+          DrawCommandsIndex = min(max(0, DrawCommandsIndex), Engine->DrawCommandsSystem->AllocatedSize() - 1);
 
-          auto &el = Engine->DrawCommandsSystem->CPUData[DrawCommandsIndex];
+          if (Engine->DrawCommandsSystem->IsExist(DrawCommandsIndex))
+          {
+          auto &el = Engine->DrawCommandsSystem->Get(DrawCommandsIndex);
 
           ImGui::Text("Triangles: %d", el.DrawArguments.IndexCountPerInstance / 3);
           if (el.Indices.ObjectMaterialIndex == NONE_INDEX)
@@ -110,6 +112,11 @@ public:
 
           if (el.Indices.ObjectParamsMask == NONE_INDEX)
             ImGui::Text("Object Params: NONE");
+          }
+          else
+          {
+            ImGui::Text("Not exist");
+          }
           ImGui::End();
         }
         );
@@ -153,29 +160,36 @@ public:
           ImGui::SameLine();
           if (ImGui::Button(">>>"))
             MaterialsIndex += 100;
-          MaterialsIndex = min(max(0, MaterialsIndex), Engine->MaterialsSystem->CPUData.size() - 1);
+          MaterialsIndex = min(max(0, MaterialsIndex), Engine->MaterialsSystem->AllocatedSize() - 1);
 
-          auto& el = Engine->MaterialsSystem->CPUData[MaterialsIndex];
-          if (el.ShadeType == MATERIAL_SHADER_COLOR)
+          if (Engine->MaterialsSystem->IsExist(MaterialsIndex))
           {
-            ImGui::Text("ShadeType: COLOR");
-            mth::vec3f color = GDRGPUMaterialColorGetColor(el);
-            ImGui::Text("Color: %f %f %f", color.X, color.Y, color.Z);
-            if (GDRGPUMaterialColorGetColorMapIndex(el) == NONE_INDEX)
-              ImGui::Text("Color Map Index : NONE");
-            else
+            auto& el = Engine->MaterialsSystem->Get(MaterialsIndex);
+            if (el.ShadeType == MATERIAL_SHADER_COLOR)
             {
-              ImGui::Text("Color Texture Index : %d", GDRGPUMaterialColorGetColorMapIndex(el));
-              ImGui::SameLine();
-              if (ImGui::Button("Go to color texture"))
+              ImGui::Text("ShadeType: COLOR");
+              mth::vec3f color = GDRGPUMaterialColorGetColor(el);
+              ImGui::Text("Color: %f %f %f", color.X, color.Y, color.Z);
+              if (GDRGPUMaterialColorGetColorMapIndex(el) == NONE_INDEX)
+                ImGui::Text("Color Map Index : NONE");
+              else
               {
-                TexturesWindow = true;
-                TexturesIndex = GDRGPUMaterialColorGetColorMapIndex(el);
+                ImGui::Text("Color Texture Index : %d", GDRGPUMaterialColorGetColorMapIndex(el));
+                ImGui::SameLine();
+                if (ImGui::Button("Go to color texture"))
+                {
+                  TexturesWindow = true;
+                  TexturesIndex = GDRGPUMaterialColorGetColorMapIndex(el);
+                }
               }
             }
+            else
+              ImGui::Text("ShadeType: Unknown");
           }
           else
-            ImGui::Text("ShadeType: Unknown");
+          {
+            ImGui::Text("Not exist");
+          }
           ImGui::End();
         }
         );
@@ -204,18 +218,26 @@ public:
           ImGui::SameLine();
           if (ImGui::Button(">>>"))
             TexturesIndex += 100;
-          TexturesIndex = min(max(0, TexturesIndex), Engine->TexturesSystem->CPUData.size() - 1);
+          TexturesIndex = min(max(0, TexturesIndex), Engine->TexturesSystem->AllocatedSize() - 1);
 
-          auto& el = Engine->TexturesSystem->CPUData[TexturesIndex];
-          ImGui::Text("Name  : %s", el.Name.c_str());
-          ImGui::Text("Width : %d", el.W);
-          ImGui::Text("Heigth: %d", el.H);
-          ImGui::Text("Mips  : %d", el.NumOfMips);
-          ImGui::Text("Transparency : %s", el.IsTransparent ? "TRUE" : "FALSE");
+          if (Engine->TexturesSystem->IsExist(TexturesIndex))
+          {
+            auto& el = Engine->TexturesSystem->Get(TexturesIndex);
+            ImGui::Text("Name  : %s", el.Name.c_str());
+            ImGui::Text("Width : %d", el.W);
+            ImGui::Text("Heigth: %d", el.H);
+            ImGui::Text("Mips  : %d", el.NumOfMips);
+            ImGui::Text("Transparency : %s", el.IsTransparent ? "TRUE" : "FALSE");
 
-          D3D12_GPU_DESCRIPTOR_HANDLE true_texture_handle = Engine->TexturesSystem->TextureTableGPU;
-          true_texture_handle.ptr += TexturesIndex * Engine->GetDevice().GetSRVDescSize();
-          ImGui::Image((ImTextureID)true_texture_handle.ptr, ImVec2((float)128, (float)128));
+            D3D12_GPU_DESCRIPTOR_HANDLE true_texture_handle = Engine->TexturesSystem->TextureTableGPU;
+            true_texture_handle.ptr += TexturesIndex * Engine->GetDevice().GetSRVDescSize();
+            ImGui::Image((ImTextureID)true_texture_handle.ptr, ImVec2((float)128, (float)128));
+
+          }
+          else
+          {
+            ImGui::Text("Not exist");
+          }
 
           ImGui::End();
         }
@@ -283,27 +305,34 @@ public:
           ImGui::SameLine();
           if (ImGui::Button(">>>"))
             ObjectTransformIndex += 100;
-          ObjectTransformIndex = min(max(0, ObjectTransformIndex), (int)Engine->ObjectTransformsSystem->CPUData.size() - 1);
+          ObjectTransformIndex = min(max(0, ObjectTransformIndex), (int)Engine->ObjectTransformsSystem->AllocatedSize() - 1);
 
-          auto& el = Engine->ObjectTransformsSystem->CPUData[ObjectTransformIndex];
-
-          ImGui::Text("Matrix:");
-          for (int i = 0; i < 4; i++)
+          if (Engine->ObjectTransformsSystem->IsExist(ObjectTransformIndex))
           {
-            ImGui::Text("\t");
-            ImGui::SameLine();
-            for (int j = 0; j < 4; j++)
-            {
-              ImGui::Text("%f ", el.Transform[i][j]);
-              ImGui::SameLine();
-            }
-            ImGui::Text("");
-          }
+            auto& el = Engine->ObjectTransformsSystem->Get(ObjectTransformIndex);
 
-          ImGui::Text("OBB:");
-          ImGui::Text("\tmin %f %f %f", el.minAABB.X, el.minAABB.Y, el.minAABB.Z);
-          ImGui::Text("\tmax %f %f %f", el.maxAABB.X, el.maxAABB.Y, el.maxAABB.Z);
-          ImGui::End();
+            ImGui::Text("Matrix:");
+            for (int i = 0; i < 4; i++)
+            {
+              ImGui::Text("\t");
+              ImGui::SameLine();
+              for (int j = 0; j < 4; j++)
+              {
+                ImGui::Text("%f ", el.Transform[i][j]);
+                ImGui::SameLine();
+              }
+              ImGui::Text("");
+            }
+
+            ImGui::Text("OBB:");
+            ImGui::Text("\tmin %f %f %f", el.minAABB.X, el.minAABB.Y, el.minAABB.Z);
+            ImGui::Text("\tmax %f %f %f", el.maxAABB.X, el.maxAABB.Y, el.maxAABB.Z);
+            ImGui::End();
+          }
+          else
+          {
+            ImGui::Text("Not exist");
+          }
         }
         );
 
@@ -331,9 +360,11 @@ public:
           ImGui::SameLine();
           if (ImGui::Button(">>>"))
             NodeTransformIndex += 100;
-          NodeTransformIndex = min(max(0, NodeTransformIndex), (int)Engine->NodeTransformsSystem->CPUData.size() - 1);
+          NodeTransformIndex = min(max(0, NodeTransformIndex), (int)Engine->NodeTransformsSystem->AllocatedSize() - 1);
 
-          auto& el = Engine->NodeTransformsSystem->CPUData[NodeTransformIndex];
+          if (Engine->NodeTransformsSystem->IsExist(NodeTransformIndex))
+          {
+          auto& el = Engine->NodeTransformsSystem->Get(NodeTransformIndex);
 
           ImGui::Text("Local Matrix:");
           for (int i = 0; i < 4; i++)
@@ -402,6 +433,11 @@ public:
             ImGui::SameLine();
             if (ImGui::Button("Go to first child transform"))
               NodeTransformIndex = el.ChildIndex;
+          }
+          }
+          else
+          {
+            ImGui::Text("Not exist");
           }
           ImGui::End();
         }

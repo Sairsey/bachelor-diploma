@@ -77,24 +77,26 @@ void CS(uint3 groupId : SV_GroupID, uint groupIndex : SV_GroupIndex)
     if (index < globals.commandsCount)
     {
         GDRGPUIndirectCommand command = AllCommands[index];
-        
-        // save index
-        command.Indices.ObjectIndex = index;
+        if (command.IsExist)
+        {
+          // save index
+          command.Indices.ObjectIndex = index;
 
-        bool visible = !globals.frustumCulling ||
-          CullAABBFrustum(
-            globals.VP,
-            ObjectTransformPool[command.Indices.ObjectTransformIndex].Transform,
-            ObjectTransformPool[command.Indices.ObjectTransformIndex].minAABB,
-            ObjectTransformPool[command.Indices.ObjectTransformIndex].maxAABB);
-        bool opaque = !(command.Indices.ObjectParamsMask & OBJECT_PARAMETER_TRANSPARENT);
+          bool visible = !globals.frustumCulling ||
+            CullAABBFrustum(
+              globals.VP,
+              ObjectTransformPool[command.Indices.ObjectTransformIndex].Transform,
+              ObjectTransformPool[command.Indices.ObjectTransformIndex].minAABB,
+              ObjectTransformPool[command.Indices.ObjectTransformIndex].maxAABB);
+          bool opaque = !(command.Indices.ObjectParamsMask & OBJECT_PARAMETER_TRANSPARENT);
 
-        if (opaque)
-          OpaqueAllCommands.Append(command);
-        else
-          TransparentAllCommands.Append(command);
+          if (opaque)
+            OpaqueAllCommands.Append(command);
+          else
+            TransparentAllCommands.Append(command);
         
-        if (opaque && visible)
-          OpaqueFrustumCulledCommands.Append(command);
+          if (opaque && visible)
+            OpaqueFrustumCulledCommands.Append(command);
+        }
     }
 }

@@ -17,22 +17,27 @@ namespace gdr
   };
 
   // Transforms data representation class
-  class textures_subsystem
+  class textures_subsystem : public resource_pool_subsystem<gdr_texture, 0>
   {
-  private:
-    render* Render; // pointer on Render
   public:
     // Constructor
     textures_subsystem(render* Rnd);
 
+    // If we try to create texture without params -> we should error about it
+    gdr_index Add()
+    {
+      printf("ERROR");
+      return NONE_INDEX;
+    }
+
     // Load Texture
-    gdr_index AddElementInPool(std::string name, bool isSrgb = false);
+    gdr_index Add(std::string name, bool isSrgb = false);
+
+    // Remove Texture
+    void Remove(gdr_index index);
 
     // Update data on GPU in case we need it 
     void UpdateGPUData(ID3D12GraphicsCommandList* pCommandList);
-
-    // Pool with data
-    std::vector<gdr_texture> CPUData;
 
     // Handles for CPU and GPU tables
     D3D12_GPU_DESCRIPTOR_HANDLE TextureTableGPU;

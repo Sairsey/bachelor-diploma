@@ -28,59 +28,39 @@ namespace gdr
   // 1) Store info about "draw calls" we need to execute
   // 2) Prepare indirect_command_pools_enum::All for indirect draw
   // 3) Store and clear for all other buffers used in indirect draw
-  class draw_commands_subsystem
+  class draw_commands_subsystem : public resource_pool_subsystem<GDRGPUIndirectCommand, sizeof(GDRGPUIndirectCommand)>
   {
-  public:
   private:
-    render* Render; // pointer on Render
-
+    //CPU Descriptors of all commands
     D3D12_CPU_DESCRIPTOR_HANDLE CommandsCPUDescriptor[(int)indirect_command_pools_enum::TotalBuffers];
+  protected:
+    // Job to do before update
+    void BeforeUpdateJob(ID3D12GraphicsCommandList* pCommandList) override;
+    // Job to do after update
+    void AfterUpdateJob(ID3D12GraphicsCommandList* pCommandList) override;
 
-    size_t SavedSize = -1;
+    size_t UAVStoredSize = 0; // Size on which UAV are allocated
   public:
     // Constructor
     draw_commands_subsystem(render* Rnd);
 
-    // Update data stored on GPU
-    void UpdateGPUData(ID3D12GraphicsCommandList* pCommandList);
-
     // Add one element to pool in correct way
-    gdr_index AddElementInPool(const geometry& Geom)
-    {
-      GDRGPUIndirectCommand DrawCommand;
-      
-      DrawCommand.Indices.ObjectIndex = NONE_INDEX;
-      DrawCommand.Indices.ObjectParamsMask = 0;
-      DrawCommand.Indices.ObjectTransformIndex = NONE_INDEX;
-      DrawCommand.Indices.ObjectMaterialIndex = NONE_INDEX;
+    gdr_index Add(gdr_index geometryIndex);
 
-      DrawCommand.VertexBuffer = Geom.VertexBufferView;
-      DrawCommand.IndexBuffer = Geom.IndexBufferView;
-
-      DrawCommand.DrawArguments.IndexCountPerInstance = Geom.IndexCount;
-      DrawCommand.DrawArguments.InstanceCount = 1;
-      DrawCommand.DrawArguments.BaseVertexLocation = 0;
-      DrawCommand.DrawArguments.StartIndexLocation = 0;
-      DrawCommand.DrawArguments.StartInstanceLocation = 0;
-
-      CPUData.push_back(DrawCommand);
-      return (gdr_index)(CPUData.size() - 1);
-    }
-
-    // Add one element to pool in correct way
-    gdr_index AddElementInPool(gdr_index geometryIndex) { return AddElementInPool(Render->GeometrySystem->CPUData[geometryIndex]); }
+    // Remove one element from pool in correct way
+    void Remove(gdr_index index);
 
     // Destructor 
     ~draw_commands_subsystem(void);
 
-    std::vector<GDRGPUIndirectCommand> CPUData;      // data stored in CPU
-
+    // Emulation of Indirect commands pools
     std::vector<gdr_index> DirectCommandPools[(int)indirect_command_pools_enum::TotalBuffers];
 
-    D3D12_COMMAND_SIGNATURE_DESC commandSignatureDesc = {};
+    // command signature for indirect
     D3D12_INDIRECT_ARGUMENT_DESC argumentDescs[4] = {};
+    D3D12_COMMAND_SIGNATURE_DESC commandSignatureDesc = {};
 
-    // GPU buffer which contains all commands
+    // GPU buffers with commands
     D3D12_GPU_DESCRIPTOR_HANDLE CommandsGPUDescriptor[(int)indirect_command_pools_enum::TotalBuffers]; // GPU Descriptors
     GPUResource CommandsBuffer[(int)indirect_command_pools_enum::TotalBuffers];                        // Buffers for commands
     GPUResource CommandsUAVReset;                                                                      // Buffer for Counter reset

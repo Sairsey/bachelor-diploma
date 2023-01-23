@@ -26,8 +26,8 @@ public:
 
           ImGui::Text("Current GPU Usage = %f MB", CurrentGPUMemory);
           ImGui::Text("Max GPU budget = %f MB", MaxGPUMemoryPlot);
-          ImGui::Text("Objects amount = %zd", Engine->DrawCommandsSystem->CPUData.size());
-          ImGui::Text("Materials amount = %zd", Engine->MaterialsSystem->CPUData.size());
+          ImGui::Text("Objects allocated = %zd", Engine->DrawCommandsSystem->AllocatedSize());
+          ImGui::Text("Materials allocated = %zd", Engine->MaterialsSystem->AllocatedSize());
           ImGui::Text("Max Textures amount = %zd", Engine->CreationParams.MaxTextureAmount);
           ImGui::Checkbox("Indirect Render", &Engine->Params.IsIndirect);
           ImGui::Checkbox("Frustum Culling", &Engine->Params.IsFrustumCulling);

@@ -154,10 +154,12 @@ void gdr::debug_aabb_pass::CallDirectDraw(ID3D12GraphicsCommandList* currentComm
     // just iterate for every draw call
     for (auto& i : Render->DrawCommandsSystem->DirectCommandPools[(int)indirect_command_pools_enum::All])
     {
-        auto &command = Render->DrawCommandsSystem->CPUData[i];
+        if (!Render->DrawCommandsSystem->IsExist(i))
+          continue;
+        auto& command = Render->DrawCommandsSystem->Get(i);
         if (command.Indices.ObjectTransformIndex == NONE_INDEX)
           continue;
-        auto &transform = Render->ObjectTransformsSystem->CPUData[command.Indices.ObjectTransformIndex];
+        auto &transform = Render->ObjectTransformsSystem->Get(command.Indices.ObjectTransformIndex);
 
         params.color = (command.Indices.ObjectParamsMask & OBJECT_PARAMETER_TRANSPARENT) ? TransparentBoxColor : OpaqueBoxColor;
         params.maxAABB = transform.maxAABB;

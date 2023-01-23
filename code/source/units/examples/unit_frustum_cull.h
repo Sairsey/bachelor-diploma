@@ -45,8 +45,7 @@ public:
     {
       gdr_index ModelIndex = Models[i];
       gdr_index ModelRootTransform = Engine->ModelsPool[ModelIndex].Rnd.RootTransform;
-      Engine->ObjectTransformsSystem->CPUData[ModelRootTransform].Transform = rotation * Translations[i];
-      Engine->ObjectTransformsSystem->MarkChunkByTransformIndex(ModelRootTransform);
+      Engine->ObjectTransformsSystem->GetEditable(ModelRootTransform).Transform = rotation * Translations[i];
       //Engine->ObjectSystem->NodesPool[Bread[i]].GetTransformEditable() = rotation * Translations[i];
     }
   }

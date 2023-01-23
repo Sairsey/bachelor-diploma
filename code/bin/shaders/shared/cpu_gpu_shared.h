@@ -197,7 +197,8 @@ struct GDRGPUIndirectCommand
 	D3D12_VERTEX_BUFFER_VIEW VertexBuffer;      // set correct vertex buffer
 	D3D12_INDEX_BUFFER_VIEW IndexBuffer;        // set correct index buffer
 	D3D12_DRAW_INDEXED_ARGUMENTS DrawArguments; // then draw indirect indexed primitive
-	UINT _pad1[2];
+	UINT IsExist;                               // true if command is valid. False otherwise
+	UINT _pad1[1];
 };
 
 /// <summary>

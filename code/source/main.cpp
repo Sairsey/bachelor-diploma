@@ -13,7 +13,6 @@
 // TODO:
 // 1) Fix Resize
 // 2) Restore everything
-// 3) Object Transform, Node Transform, Draw Commands, Geometry, Textures (All subsystems really) needs good deletion mechanism and shared interface.
 // 4) DrawCommands is now used as ObjectIndices storage and Indirect.
 // 5) Indirect shouldnt recreate buffers if we can
 // 6) Restore shaders lighting
@@ -22,6 +21,8 @@
 // 10) Calc AABB-s for culling
 // 11) times profiling on CPU too
 // 14) Fix pools States (Probably done, but I have sometimes strange bug, then albedo rise its draw time)
+// 15) Unit Triangle on 2 units
+// 16) Unit for nodes checking
 
 
 #ifdef UNITS_ENABLED
@@ -100,7 +101,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 #endif
 
   Engine.AddUnit(new unit_model_loading());
-  //Engine.AddUnit(new unit_frustum_cull());
+  Engine.AddUnit(new unit_frustum_cull());
   Engine.AddUnit(new unit_occlusion_cull());
   Engine.AddUnit(new unit_triangle());
   

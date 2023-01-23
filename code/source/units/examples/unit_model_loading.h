@@ -22,8 +22,7 @@ public:
   {
     float radius = 10;
     mth::matr translation = mth::matr::Translate(mth::vec3f(radius, 0, 0));
-    Engine->ObjectTransformsSystem->CPUData[Engine->ModelsPool[Frog].Rnd.RootTransform].Transform = translation * mth::matr::RotateY(Engine->GetTime() * 21 * 6);
-    Engine->ObjectTransformsSystem->MarkChunkByTransformIndex(Engine->ModelsPool[Frog].Rnd.RootTransform);
+    Engine->ObjectTransformsSystem->GetEditable(Engine->ModelsPool[Frog].Rnd.RootTransform).Transform = translation * mth::matr::RotateY(Engine->GetTime() * 21 * 6);
   }
 
   std::string GetName(void)

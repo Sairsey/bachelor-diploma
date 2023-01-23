@@ -1,15 +1,26 @@
 #include "p_header.h"
 
-gdr::draw_commands_subsystem::draw_commands_subsystem(render* Rnd)
+// We pack the UAV counter into the same buffer as the commands rather than create
+// a separate 64K resource/heap for it. The counter must be aligned on 4K boundaries,
+// so we pad the command buffer (if necessary) such that the counter will be placed
+// at a valid location in the buffer.
+static UINT AlignForUavCounter(UINT bufferSize)
 {
-  Render = Rnd;
+  const UINT alignment = D3D12_UAV_COUNTER_PLACEMENT_ALIGNMENT;
+  return (bufferSize + (alignment - 1)) & ~(alignment - 1);
+}
+
+gdr::draw_commands_subsystem::draw_commands_subsystem(render* Rnd) : resource_pool_subsystem(Rnd)
+{
+  // Additional buffer for Commands
   CommandsUAVReset.Resource = nullptr;
-  for (int i = 0; i < (int)indirect_command_pools_enum::TotalBuffers; i++)
+  for (int i = 1; i < (int)indirect_command_pools_enum::TotalBuffers; i++)
   {
     CommandsBuffer[i].Resource = nullptr;
     Render->GetDevice().AllocateStaticDescriptors(1, CommandsCPUDescriptor[i], CommandsGPUDescriptor[i]);
   }
 
+  // Fill command signature Desc
   argumentDescs[0].Type = D3D12_INDIRECT_ARGUMENT_TYPE_CONSTANT;
   argumentDescs[0].Constant.RootParameterIndex = GDRGPUObjectIndicesRecordRootIndex; // because Root parameter 0 is descriptor handle
   argumentDescs[0].Constant.Num32BitValuesToSet = sizeof(GDRGPUObjectIndices) / sizeof(int32_t);
@@ -24,19 +35,13 @@ gdr::draw_commands_subsystem::draw_commands_subsystem(render* Rnd)
   commandSignatureDesc.pArgumentDescs = argumentDescs;
   commandSignatureDesc.NumArgumentDescs = _countof(argumentDescs);
   commandSignatureDesc.ByteStride = sizeof(GDRGPUIndirectCommand);
+
+  // fill data specific to resource_pool_subsystem
+  resource_pool_subsystem::ResourceName = L"All commands pool";
+  resource_pool_subsystem::UsedResourceState = D3D12_RESOURCE_STATE_COMMON;
 }
 
-// We pack the UAV counter into the same buffer as the commands rather than create
-// a separate 64K resource/heap for it. The counter must be aligned on 4K boundaries,
-// so we pad the command buffer (if necessary) such that the counter will be placed
-// at a valid location in the buffer.
-static UINT AlignForUavCounter(UINT bufferSize)
-{
-  const UINT alignment = D3D12_UAV_COUNTER_PLACEMENT_ALIGNMENT;
-  return (bufferSize + (alignment - 1)) & ~(alignment - 1);
-}
-
-void gdr::draw_commands_subsystem::UpdateGPUData(ID3D12GraphicsCommandList* pCommandList)
+void gdr::draw_commands_subsystem::BeforeUpdateJob(ID3D12GraphicsCommandList* pCommandList)
 {
   if (CommandsUAVReset.Resource == nullptr)
   {
@@ -53,53 +58,34 @@ void gdr::draw_commands_subsystem::UpdateGPUData(ID3D12GraphicsCommandList* pCom
       CommandsUAVReset.Resource->SetName(L"CommandsUAVReset");
     }
   }
+}
 
-  if (CPUData.size() == 0)
-    return;
+void gdr::draw_commands_subsystem::AfterUpdateJob(ID3D12GraphicsCommandList* pCommandList)
+{
+  // copy SRV to our structure
+  CommandsBuffer[(int)indirect_command_pools_enum::All] = GetGPUResource();
+  CommandsCPUDescriptor[(int)indirect_command_pools_enum::All] = CPUDescriptor;
+  CommandsGPUDescriptor[(int)indirect_command_pools_enum::All] = GPUDescriptor;
 
-  // if we added or removed objects
-  if (CPUData.size() != SavedSize)
+  if (CPUData.size() > UAVStoredSize) // if we added some commands
   {
-    SavedSize = CPUData.size();
+    // SRV already reallocated.
+    UAVStoredSize = CPUData.size();
+    DirectCommandPools[(int)indirect_command_pools_enum::All].clear();
+    DirectCommandPools[(int)indirect_command_pools_enum::All].reserve(CPUData.size());
+    for (int i = 0; i < CPUData.size(); i++)
+      DirectCommandPools[(int)indirect_command_pools_enum::All].push_back(i);
+
     // free data
-    for (int i = 0; i < (int)indirect_command_pools_enum::TotalBuffers; i++)
+    for (int i = 1; i < (int)indirect_command_pools_enum::TotalBuffers; i++)
       if (CommandsBuffer[i].Resource != nullptr)
-      {
         Render->GetDevice().ReleaseGPUResource(CommandsBuffer[i]);
-      }
 
-    // Create SRV
-    {
-      Render->GetDevice().CreateGPUResource(
-        CD3DX12_RESOURCE_DESC::Buffer({ CPUData.size() * sizeof(GDRGPUIndirectCommand) }),
-        D3D12_RESOURCE_STATE_COMMON,
-        nullptr,
-        CommandsBuffer[(int)indirect_command_pools_enum::All],
-        &CPUData[0],
-        CPUData.size() * sizeof(GDRGPUIndirectCommand));
-      CommandsBuffer[(int)indirect_command_pools_enum::All].Resource->SetName(L"All commands SRV");
-
-      D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
-      srvDesc.Format = DXGI_FORMAT_UNKNOWN;
-      srvDesc.ViewDimension = D3D12_SRV_DIMENSION_BUFFER;
-      srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-      srvDesc.Buffer.NumElements = (UINT)CPUData.size();
-      srvDesc.Buffer.StructureByteStride = sizeof(GDRGPUIndirectCommand);
-      srvDesc.Buffer.Flags = D3D12_BUFFER_SRV_FLAG_NONE;
-
-      Render->GetDevice().GetDXDevice()->CreateShaderResourceView(CommandsBuffer[(int)indirect_command_pools_enum::All].Resource, &srvDesc, CommandsCPUDescriptor[(int)indirect_command_pools_enum::All]);
-
-      DirectCommandPools[(int)indirect_command_pools_enum::All].clear();
-      DirectCommandPools[(int)indirect_command_pools_enum::All].reserve(CPUData.size());
-      for (int i = 0; i < CPUData.size(); i++)
-        DirectCommandPools[(int)indirect_command_pools_enum::All].push_back(i);
-    }
-  
     // aligned UAV size
     UINT UAVSize = AlignForUavCounter((UINT)CPUData.size() * sizeof(GDRGPUIndirectCommand));
     CounterOffset = UAVSize;
 
-    // CreateUAVs
+    // Create UAVs
     for (int i = 1; i < (int)indirect_command_pools_enum::TotalBuffers; i++)
     {
       Render->GetDevice().CreateGPUResource(
@@ -123,7 +109,7 @@ void gdr::draw_commands_subsystem::UpdateGPUData(ID3D12GraphicsCommandList* pCom
       DirectCommandPools[i].clear();
     }
   }
-  else
+  else // just flush all UAV-s. SRV already updated
   {
     for (int i = 1; i < (int)indirect_command_pools_enum::TotalBuffers; i++)
     {
@@ -143,7 +129,6 @@ void gdr::draw_commands_subsystem::UpdateGPUData(ID3D12GraphicsCommandList* pCom
       DirectCommandPools[i].clear();
     }
   }
-  
   // transit state from COPY_DEST to Unordered ACCESS
   for (int i = 1; i < (int)indirect_command_pools_enum::TotalBuffers; i++)
   {
@@ -154,9 +139,41 @@ void gdr::draw_commands_subsystem::UpdateGPUData(ID3D12GraphicsCommandList* pCom
   }
 }
 
+// Add one element to pool in correct way
+gdr_index gdr::draw_commands_subsystem::Add(gdr_index geometryIndex)
+{
+  gdr_index Result = resource_pool_subsystem::Add();
+  GDRGPUIndirectCommand &DrawCommand = GetEditable(Result);
+
+  DrawCommand.Indices.ObjectIndex = NONE_INDEX;
+  DrawCommand.Indices.ObjectParamsMask = 0;
+  DrawCommand.Indices.ObjectTransformIndex = NONE_INDEX;
+  DrawCommand.Indices.ObjectMaterialIndex = NONE_INDEX;
+
+  DrawCommand.VertexBuffer = Render->GeometrySystem->Get(geometryIndex).VertexBufferView;
+  DrawCommand.IndexBuffer = Render->GeometrySystem->Get(geometryIndex).IndexBufferView;
+
+  DrawCommand.DrawArguments.IndexCountPerInstance = Render->GeometrySystem->Get(geometryIndex).IndexCount;
+  DrawCommand.DrawArguments.InstanceCount = 1;
+  DrawCommand.DrawArguments.BaseVertexLocation = 0;
+  DrawCommand.DrawArguments.StartIndexLocation = 0;
+  DrawCommand.DrawArguments.StartInstanceLocation = 0;
+  DrawCommand.IsExist = true;
+
+  return Result;
+}
+
+void gdr::draw_commands_subsystem::Remove(gdr_index index)
+{
+  if (IsExist(index))
+    GetEditable(index).IsExist = false;
+  resource_pool_subsystem::Remove(index);
+}
+
 gdr::draw_commands_subsystem::~draw_commands_subsystem()
 {
-  for (int i = 0; i < (int)indirect_command_pools_enum::TotalBuffers; i++)
+  // SRV already flushed
+  for (int i = 1; i < (int)indirect_command_pools_enum::TotalBuffers; i++)
     if (CommandsBuffer[i].Resource != nullptr)
       Render->GetDevice().ReleaseGPUResource(CommandsBuffer[i]);
 

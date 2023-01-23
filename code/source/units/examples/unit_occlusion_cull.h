@@ -33,7 +33,7 @@ public:
         Translations.push_back(Transform);
         
         gdr_index ModelRootTransform = Engine->ModelsPool[ModelIndex].Rnd.RootTransform;
-        Engine->ObjectTransformsSystem->CPUData[ModelRootTransform].Transform = Transform;
+        Engine->ObjectTransformsSystem->GetEditable(ModelRootTransform).Transform = Transform;
       }
       PROFILE_END(commandList);
       Engine->GetDevice().CloseUploadCommandList();

@@ -76,7 +76,9 @@ void gdr::albedo_pass::CallDirectDraw(ID3D12GraphicsCommandList* currentCommandL
     // just iterate for every draw call
     for (auto& i : Render->DrawCommandsSystem->DirectCommandPools[(int)indirect_command_pools_enum::OpaqueCulled])
     {
-        auto &command = Render->DrawCommandsSystem->CPUData[i];
+        if (!Render->DrawCommandsSystem->IsExist(i))
+          continue;
+        auto &command = Render->DrawCommandsSystem->Get(i);
         currentCommandList->IASetVertexBuffers(0, 1, &command.VertexBuffer);
         currentCommandList->IASetIndexBuffer(&command.IndexBuffer);
         {
@@ -89,13 +91,13 @@ void gdr::albedo_pass::CallDirectDraw(ID3D12GraphicsCommandList* currentCommandL
                 &command.Indices, 0);
             currentCommandList->SetGraphicsRootShaderResourceView(
                 (int)root_parameters_draw_indices::object_transform_pool_index,
-                Render->ObjectTransformsSystem->GPUData.Resource->GetGPUVirtualAddress());
+                Render->ObjectTransformsSystem->GetGPUResource().Resource->GetGPUVirtualAddress());
             currentCommandList->SetGraphicsRootShaderResourceView(
                 (int)root_parameters_draw_indices::node_transform_pool_index,
-                Render->NodeTransformsSystem->GPUData.Resource->GetGPUVirtualAddress());
+                Render->NodeTransformsSystem->GetGPUResource().Resource->GetGPUVirtualAddress());
             currentCommandList->SetGraphicsRootShaderResourceView(
                 (int)root_parameters_draw_indices::material_pool_index,
-                Render->MaterialsSystem->GPUData.Resource->GetGPUVirtualAddress());
+                Render->MaterialsSystem->GetGPUResource().Resource->GetGPUVirtualAddress());
             currentCommandList->SetGraphicsRootDescriptorTable(
                 (int)root_parameters_draw_indices::texture_pool_index,
                 Render->TexturesSystem->TextureTableGPU);
@@ -120,20 +122,20 @@ void gdr::albedo_pass::CallIndirectDraw(ID3D12GraphicsCommandList* currentComman
   // root_parameters_draw_indices::index_buffer_index will be set via indirect
   currentCommandList->SetGraphicsRootShaderResourceView(
     (int)root_parameters_draw_indices::object_transform_pool_index,
-    Render->ObjectTransformsSystem->GPUData.Resource->GetGPUVirtualAddress());
+    Render->ObjectTransformsSystem->GetGPUResource().Resource->GetGPUVirtualAddress());
   currentCommandList->SetGraphicsRootShaderResourceView(
     (int)root_parameters_draw_indices::node_transform_pool_index,
-    Render->NodeTransformsSystem->GPUData.Resource->GetGPUVirtualAddress());
+    Render->NodeTransformsSystem->GetGPUResource().Resource->GetGPUVirtualAddress());
   currentCommandList->SetGraphicsRootShaderResourceView(
     (int)root_parameters_draw_indices::material_pool_index,
-    Render->MaterialsSystem->GPUData.Resource->GetGPUVirtualAddress());
+    Render->MaterialsSystem->GetGPUResource().Resource->GetGPUVirtualAddress());
   currentCommandList->SetGraphicsRootDescriptorTable(
     (int)root_parameters_draw_indices::texture_pool_index,
     Render->TexturesSystem->TextureTableGPU);
 
   currentCommandList->ExecuteIndirect(
     CommandSignature,
-    (UINT)Render->DrawCommandsSystem->CPUData.size(),
+    (UINT)Render->DrawCommandsSystem->AllocatedSize(),
     Render->DrawCommandsSystem->CommandsBuffer[(int)indirect_command_pools_enum::OpaqueCulled].Resource,
     0,
     Render->DrawCommandsSystem->CommandsBuffer[(int)indirect_command_pools_enum::OpaqueCulled].Resource,

@@ -3,8 +3,8 @@
 gdr::globals_subsystem::globals_subsystem(render* Rnd)
 {
   Render = Rnd;
-  StoredCopy.time = 0;
-  CPUData.time = 1;
+  StoredCopy.Time = 0;
+  CPUData.Time = 1;
   GPUData.Resource = nullptr;
 }
 

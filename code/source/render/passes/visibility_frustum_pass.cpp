@@ -104,8 +104,8 @@ void gdr::visibility_frustum_pass::CallDirectDraw(ID3D12GraphicsCommandList* cur
   {
     if (!Render->Params.IsViewLocked)
       ComputeGlobals.VP = Render->GlobalsSystem->CPUData.VP;
-    ComputeGlobals.width = Render->GlobalsSystem->CPUData.width;
-    ComputeGlobals.height = Render->GlobalsSystem->CPUData.height;
+    ComputeGlobals.width = Render->GlobalsSystem->CPUData.Width;
+    ComputeGlobals.height = Render->GlobalsSystem->CPUData.Height;
     ComputeGlobals.frustumCulling = Render->Params.IsFrustumCulling;
     ComputeGlobals.occlusionCulling = Render->Params.IsOccusionCulling;
     ComputeGlobals.commandsCount = Render->DrawCommandsSystem->AllocatedSize();
@@ -163,8 +163,8 @@ void gdr::visibility_frustum_pass::CallIndirectDraw(ID3D12GraphicsCommandList* c
   {
     if (!Render->Params.IsViewLocked)
       ComputeGlobals.VP = Render->GlobalsSystem->CPUData.VP;
-    ComputeGlobals.width = Render->GlobalsSystem->CPUData.width;
-    ComputeGlobals.height = Render->GlobalsSystem->CPUData.height;
+    ComputeGlobals.width = Render->GlobalsSystem->CPUData.Width;
+    ComputeGlobals.height = Render->GlobalsSystem->CPUData.Height;
     ComputeGlobals.frustumCulling = Render->Params.IsFrustumCulling;
     ComputeGlobals.occlusionCulling = Render->Params.IsOccusionCulling;
     ComputeGlobals.commandsCount = Render->DrawCommandsSystem->AllocatedSize();

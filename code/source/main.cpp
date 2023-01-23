@@ -4,6 +4,7 @@
 #include "units/stats/unit_render_params.h"
 
 #include "units/examples/unit_triangle.h"
+#include "units/examples/unit_light_example.h"
 #include "units/examples/unit_model_loading.h"
 #include "units/examples/unit_frustum_cull.h"
 #include "units/examples/unit_occlusion_cull.h"
@@ -15,15 +16,13 @@
 // 1) Fix Resize
 // 2) Restore everything
 // 4) DrawCommands is now used as ObjectIndices storage and Indirect.
-// 5) Indirect shouldnt recreate buffers if we can
 // 6) Restore shaders lighting
 // 7) Add Animations
 // 8) Error checking
 // 10) Calc AABB-s for culling
 // 11) times profiling on CPU too
-// 14) Fix pools States (Probably done, but I have sometimes strange bug, then albedo rise its draw time)
-// 15) Unit Triangle on 2 units
-// 16) Unit for nodes checking
+// 14) Fix pools States (Probably done, but I have sometimes strange bug, when albedo rise its draw time)
+// 16) Pass for nodes checking
 
 
 #ifdef UNITS_ENABLED
@@ -102,10 +101,11 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 #endif
 
   //Engine.AddUnit(new unit_model_loading());
-  //Engine.AddUnit(new unit_frustum_cull());
+  Engine.AddUnit(new unit_frustum_cull());
+  Engine.AddUnit(new unit_light_example());
   //Engine.AddUnit(new unit_occlusion_cull());
-  Engine.AddUnit(new unit_triangle());
-  Engine.AddUnit(new unit_runtime_add_remove());
+  //Engine.AddUnit(new unit_triangle());
+  //Engine.AddUnit(new unit_runtime_add_remove());
   
   Engine.AddUnit(new unit_control());
   

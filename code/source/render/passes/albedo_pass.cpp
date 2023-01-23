@@ -19,6 +19,7 @@ void gdr::albedo_pass::Initialize(void)
         params[(int)root_parameters_draw_indices::object_transform_pool_index].InitAsShaderResourceView(GDRGPUObjectTransformPoolSlot);
         params[(int)root_parameters_draw_indices::node_transform_pool_index].InitAsShaderResourceView(GDRGPUNodeTransformPoolSlot);
         params[(int)root_parameters_draw_indices::material_pool_index].InitAsShaderResourceView(GDRGPUMaterialPoolSlot);
+        params[(int)root_parameters_draw_indices::lights_pool_index].InitAsShaderResourceView(GDRGPULightsPoolSlot);
         
         {
           bindlessTexturesDesc[0].BaseShaderRegister = GDRGPUTexturePoolSlot;
@@ -98,6 +99,9 @@ void gdr::albedo_pass::CallDirectDraw(ID3D12GraphicsCommandList* currentCommandL
             currentCommandList->SetGraphicsRootShaderResourceView(
                 (int)root_parameters_draw_indices::material_pool_index,
                 Render->MaterialsSystem->GetGPUResource().Resource->GetGPUVirtualAddress());
+            currentCommandList->SetGraphicsRootShaderResourceView(
+              (int)root_parameters_draw_indices::lights_pool_index,
+              Render->LightsSystem->GetGPUResource().Resource->GetGPUVirtualAddress());
             currentCommandList->SetGraphicsRootDescriptorTable(
                 (int)root_parameters_draw_indices::texture_pool_index,
                 Render->TexturesSystem->TextureTableGPU);
@@ -129,6 +133,9 @@ void gdr::albedo_pass::CallIndirectDraw(ID3D12GraphicsCommandList* currentComman
   currentCommandList->SetGraphicsRootShaderResourceView(
     (int)root_parameters_draw_indices::material_pool_index,
     Render->MaterialsSystem->GetGPUResource().Resource->GetGPUVirtualAddress());
+  currentCommandList->SetGraphicsRootShaderResourceView(
+    (int)root_parameters_draw_indices::lights_pool_index,
+    Render->LightsSystem->GetGPUResource().Resource->GetGPUVirtualAddress());
   currentCommandList->SetGraphicsRootDescriptorTable(
     (int)root_parameters_draw_indices::texture_pool_index,
     Render->TexturesSystem->TextureTableGPU);

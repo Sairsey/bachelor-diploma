@@ -129,9 +129,9 @@ public:
           
           auto &el = Engine->GlobalsSystem->CPUData;
           ImGui::Text("Camera position: (%f, %f, %f)", el.CameraPos.X, el.CameraPos.Y, el.CameraPos.Z);
-          ImGui::Text("Time: %f", el.time);
+          ImGui::Text("Time: %f", el.Time);
           ImGui::Text("Delta Time: %f", el.DeltaTime);
-          ImGui::Text("Screen size: %dx%d", el.width, el.height);
+          ImGui::Text("Screen size: %dx%d", el.Width, el.Height);
           ImGui::End();
         }
         );
@@ -274,7 +274,7 @@ public:
           D3D12_GPU_DESCRIPTOR_HANDLE true_texture_handle = Engine->RenderTargetsSystem->ShaderResourceViewsGPU;
           true_texture_handle.ptr += RenderTargetIndex * Engine->GetDevice().GetSRVDescSize();
           // width over height
-          float ratio = 1.0 * Engine->GlobalsSystem->CPUData.width / Engine->GlobalsSystem->CPUData.height;
+          float ratio = 1.0 * Engine->GlobalsSystem->CPUData.Width / Engine->GlobalsSystem->CPUData.Height;
           ImGui::Image((ImTextureID)true_texture_handle.ptr, ImVec2(ratio * 128.0f, 128.0f));
 
           ImGui::End();

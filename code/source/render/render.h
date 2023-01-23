@@ -15,6 +15,7 @@ namespace gdr
   class geometry_subsystem;
   class materials_subsystem;
   class textures_subsystem;
+  class lights_subsystem;
   struct render_runtime_params
   {
     bool IsIndirect = true;        // Enables indirect draw
@@ -101,18 +102,17 @@ namespace gdr
       std::vector<base_pass*> Passes;
 
       // Subsystems
-      globals_subsystem* GlobalsSystem; // Store camera info and other important stuff, which is relevant per frame
-      render_targets_subsystem* RenderTargetsSystem; //System to change and use different render targets
+      globals_subsystem* GlobalsSystem;                    // Store camera info and other important stuff, which is relevant per frame
+      render_targets_subsystem* RenderTargetsSystem;       //System to change and use different render targets
       object_transforms_subsystem* ObjectTransformsSystem; // System to store Root transforms of objects and AABB-s for culling
-      node_transforms_subsystem* NodeTransformsSystem; // System to store hierarchical transform data.
-      draw_commands_subsystem* DrawCommandsSystem; // support of SRVs and UAVs for indirect draw
-      geometry_subsystem* GeometrySystem; // support of geometry creation
-      materials_subsystem* MaterialsSystem; // system to store info about materials
-      textures_subsystem* TexturesSystem; //System to store info about textures
+      node_transforms_subsystem* NodeTransformsSystem;     // System to store hierarchical transform data.
+      draw_commands_subsystem* DrawCommandsSystem;         // support of SRVs and UAVs for indirect draw
+      geometry_subsystem* GeometrySystem;                  // support of geometry creation
+      materials_subsystem* MaterialsSystem;                // system to store info about materials
+      textures_subsystem* TexturesSystem;                  // System to store info about textures
+      lights_subsystem* LightsSystem;                      // System to store info about light sources
 #if 0
       cube_textures_support* CubeTexturesSystem; // System to store info about cube textures
-      light_sources_support* LightsSystem; //System to store info about lights      
-      hier_depth_support* HierDepth; //System to store and generate Hierarhical Depth Texture
       screenshot_support* ScreenshotsSystem; //System to store and generate Hierarhical Depth Texture
 #endif
       long long UpdateBuffersTime;

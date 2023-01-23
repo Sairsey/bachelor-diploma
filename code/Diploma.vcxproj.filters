@@ -103,6 +103,9 @@
     <Filter Include="Source Files\Render\Passes\debug">
       <UniqueIdentifier>{9a168c7e-1d31-445b-bc56-9e071a534bc4}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Render\SubSystems\Lights">
+      <UniqueIdentifier>{8c691fe3-1ed3-4d40-96ad-daa7a49f05d2}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\main.cpp">
@@ -456,6 +459,12 @@
       <Filter>Source Files\Utils</Filter>
     </ClInclude>
     <ClInclude Include="source\units\examples\unit_runtime_add_remove.h">
+      <Filter>Source Files\Units\Examples</Filter>
+    </ClInclude>
+    <ClInclude Include="source\render\subsystems\lights_subsystem.h">
+      <Filter>Source Files\Render\SubSystems\Lights</Filter>
+    </ClInclude>
+    <ClInclude Include="source\units\examples\unit_light_example.h">
       <Filter>Source Files\Units\Examples</Filter>
     </ClInclude>
   </ItemGroup>

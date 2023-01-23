@@ -75,6 +75,7 @@ bool gdr::render::Init(engine* Eng)
       GeometrySystem = new geometry_subsystem(this);
       MaterialsSystem = new materials_subsystem(this);
       TexturesSystem = new textures_subsystem(this);
+      LightsSystem = new lights_subsystem(this);
   }
 
   // init passes
@@ -176,11 +177,12 @@ void gdr::render::DrawFrame(void)
     PROFILE_BEGIN(uploadCommandList, "Update Globals");
     GlobalsSystem->CPUData.VP = PlayerCamera.GetVP(); // camera view-proj
     GlobalsSystem->CPUData.CameraPos = PlayerCamera.GetPos(); // Camera position
-    GlobalsSystem->CPUData.time = Engine->GetGlobalTime(); // Time in seconds
+    GlobalsSystem->CPUData.Time = Engine->GetGlobalTime(); // Time in seconds
 
     GlobalsSystem->CPUData.DeltaTime = Engine->GetDeltaTime(); // Delta time in seconds	
-    GlobalsSystem->CPUData.width = Engine->Width;  // Screen size 
-    GlobalsSystem->CPUData.height = Engine->Height; // Screen size 
+    GlobalsSystem->CPUData.Width = Engine->Width;  // Screen size 
+    GlobalsSystem->CPUData.Height = Engine->Height; // Screen size 
+    GlobalsSystem->CPUData.LightsAmount = Engine->LightsSystem->AllocatedSize();
     GlobalsSystem->UpdateGPUData(uploadCommandList);
     PROFILE_END(uploadCommandList);
   }
@@ -197,6 +199,11 @@ void gdr::render::DrawFrame(void)
   {
     PROFILE_BEGIN(uploadCommandList, "Update Materials");
     MaterialsSystem->UpdateGPUData(uploadCommandList);
+    PROFILE_END(uploadCommandList);
+  }
+  {
+    PROFILE_BEGIN(uploadCommandList, "Update Light sources");
+    LightsSystem->UpdateGPUData(uploadCommandList);
     PROFILE_END(uploadCommandList);
   }
   {
@@ -222,6 +229,7 @@ void gdr::render::DrawFrame(void)
     ObjectTransformsSystem->UpdateResourceState(pCommandList, true);
     MaterialsSystem->UpdateResourceState(pCommandList, true);
     DrawCommandsSystem->UpdateResourceState(pCommandList, true);
+    LightsSystem->UpdateResourceState(pCommandList, true);
     PROFILE_END(pCommandList);
 
     auto renderStart = std::chrono::system_clock::now();
@@ -279,7 +287,9 @@ void gdr::render::DrawFrame(void)
     ObjectTransformsSystem->UpdateResourceState(pCommandList,false);
     MaterialsSystem->UpdateResourceState(pCommandList, false);
     DrawCommandsSystem->UpdateResourceState(pCommandList, false);
+    LightsSystem->UpdateResourceState(pCommandList, false);
     PROFILE_END(pCommandList);
+
     Device.CloseSubmitAndPresentRenderCommandList(false);
     auto renderEnd = std::chrono::system_clock::now();
     CPUDrawFrameTime = std::chrono::duration_cast<std::chrono::nanoseconds>(renderEnd - renderStart).count();
@@ -312,6 +322,7 @@ void gdr::render::Term(void)
       delete GeometrySystem;
       delete MaterialsSystem;
       delete TexturesSystem;
+      delete LightsSystem;
   }
 
   for (auto& pass : Passes)

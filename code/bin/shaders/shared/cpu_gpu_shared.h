@@ -47,8 +47,9 @@ using uint4 = mth::vec4<UINT>;
 #define GDRGPUMaterialPoolSlot ShaderResourceSlot(2)
 #define GDRGPUTexturePoolSlot ShaderResourceSlot(3)
 #define GDRGPUCubeTexturePoolSlot ShaderResourceSlot(4)
-#define GDRGPUAllCommandsPoolSlot ShaderResourceSlot(5)
-#define GDRGPUHierDepthSlot ShaderResourceSlot(6)
+#define GDRGPULightsPoolSlot ShaderResourceSlot(5)
+#define GDRGPUAllCommandsPoolSlot ShaderResourceSlot(6)
+#define GDRGPUHierDepthSlot ShaderResourceSlot(7)
 // slots for all uavs
 #define GDRGPUOpaqueAllCommandsPoolSlot UnorderedAccessSlot(0)
 #define GDRGPUTransparentAllCommandsPoolSlot UnorderedAccessSlot(1)
@@ -86,12 +87,13 @@ struct GDRGPUGlobalData
 {
 	float4x4 VP; // camera view-proj
 	float3 CameraPos; // Camera position
-	float time; // Time in seconds
+	float Time; // Time in seconds
 	
 	float DeltaTime; // Delta time in seconds	
-	UINT width;  // Screen size 
-	UINT height; // Screen size 
-	UINT pad[1];
+	UINT Width;  // Screen size 
+	UINT Height; // Screen size 
+	UINT LightsAmount; // Amount of lights in scene
+	// UINT pad[0]
 };
 
 /// <summary>
@@ -121,6 +123,33 @@ struct GDRGPUNodeTransform
 	UINT ChildIndex;          // Index of first child in pool. NONE_INDEX if no child
 	UINT NextIndex;           // Index of "Next" sibling in pool. NONE_INDEX if no next
 	UINT IsNeedRecalc;        // Marks if we need this node to update
+};
+
+/// <summary>
+///  Lights system
+/// </summary>
+
+// improvised enum of types
+#define LIGHT_SOURCE_TYPE_DIRECTIONAL 0
+#define LIGHT_SOURCE_TYPE_POINT 1
+#define LIGHT_SOURCE_TYPE_SPOT 2
+#define LIGHT_SOURCE_TYPE_AMOUNT 3
+
+struct GDRGPULightSource
+{
+	UINT LightSourceType;      // type of lightsource to use
+	UINT ObjectTransformIndex; // index of ObjectTransform
+	float3 Color;              // Color of lightsource
+
+	// Attenuation params
+	float ConstantAttenuation;
+	float LinearAttenuation;
+	float QuadricAttenuation;
+
+	// Spot light params
+	float AngleInnerCone;              // for Spot - angle in radians
+	float AngleOuterCone;              // for Spot - angle in radians
+
 };
 
 /// <summary>

@@ -259,6 +259,9 @@ gdr_index mesh_assimp_importer::ImportTreeMesh(aiMesh* mesh, gdr_index ParentInd
 
     assimpMaterial->Get(AI_MATKEY_SHADING_MODEL, shadingModel);
 
+    if (shadingModel == 0)
+      shadingModel = aiShadingMode_Phong;
+
     if (shadingModel == aiShadingMode_PBR_BRDF && (assimpMaterial->Get(AI_MATKEY_METALLIC_FACTOR, metallicFactor) == aiReturn_SUCCESS))
     {
       newMaterial.ShadeType = MATERIAL_SHADER_COOKTORRANCE_METALNESS;
@@ -281,10 +284,10 @@ gdr_index mesh_assimp_importer::ImportTreeMesh(aiMesh* mesh, gdr_index ParentInd
 
       // Ka
       {
-        GDRGPUMaterialPhongGetDiffuseMapIndex(newMaterial) = GetTextureFromAssimp(assimpMaterial, aiTextureType_AMBIENT);
+        GDRGPUMaterialPhongGetAmbientMapIndex(newMaterial) = GetTextureFromAssimp(assimpMaterial, aiTextureType_AMBIENT);
         assimpMaterial->Get(AI_MATKEY_COLOR_AMBIENT, color);
         // HACK
-        if (GDRGPUMaterialColorGetColorMapIndex(newMaterial) != NONE_INDEX && color == aiColor3D(0.f))
+        if (GDRGPUMaterialPhongGetAmbientMapIndex(newMaterial) != NONE_INDEX && color == aiColor3D(0.f))
           color = aiColor3D(1.f);
         GDRGPUMaterialPhongGetAmbient(newMaterial) = mth::vec3f(color.r, color.g, color.b);
       }
@@ -301,7 +304,7 @@ gdr_index mesh_assimp_importer::ImportTreeMesh(aiMesh* mesh, gdr_index ParentInd
 
       // Ks
       {
-        GDRGPUMaterialPhongGetDiffuseMapIndex(newMaterial) = GetTextureFromAssimp(assimpMaterial, aiTextureType_SPECULAR);
+        GDRGPUMaterialPhongGetSpecularMapIndex(newMaterial) = GetTextureFromAssimp(assimpMaterial, aiTextureType_SPECULAR);
         assimpMaterial->Get(AI_MATKEY_COLOR_SPECULAR, color);
         // HACK
         if (GDRGPUMaterialPhongGetSpecularMapIndex(newMaterial) != NONE_INDEX && color == aiColor3D(0.f))

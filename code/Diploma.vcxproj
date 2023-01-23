@@ -48,6 +48,7 @@
     <ClInclude Include="source\render\subsystems\geometry_subsystem.h" />
     <ClInclude Include="source\render\subsystems\globals_subsystem.h" />
     <ClInclude Include="source\render\subsystems\draw_commands_subsystem.h" />
+    <ClInclude Include="source\render\subsystems\lights_subsystem.h" />
     <ClInclude Include="source\render\subsystems\materials_subsystem.h" />
     <ClInclude Include="source\render\subsystems\node_transforms_subsystem.h" />
     <ClInclude Include="source\render\subsystems\render_target_subsystem.h" />
@@ -55,6 +56,7 @@
     <ClInclude Include="source\render\subsystems\texture_subsystem.h" />
     <ClInclude Include="source\timer\timer.h" />
     <ClInclude Include="source\units\examples\unit_frustum_cull.h" />
+    <ClInclude Include="source\units\examples\unit_light_example.h" />
     <ClInclude Include="source\units\examples\unit_model_loading.h" />
     <ClInclude Include="source\units\examples\unit_occlusion_cull.h" />
     <ClInclude Include="source\units\examples\unit_runtime_add_remove.h" />

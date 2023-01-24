@@ -29,6 +29,7 @@ namespace gdr
 				node_transform_pool_index,          // root parameter for buffer with nodes transforms
 				material_pool_index,                // root parameter for buffer with materials
 				texture_pool_index,                 // root parameter for buffer with textures
+				cube_texture_pool_index,                 // root parameter for buffer with textures
 				lights_pool_index,                  // root parameter for buffer with light sources
 				total_root_parameters,
 			};

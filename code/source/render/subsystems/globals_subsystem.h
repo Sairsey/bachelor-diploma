@@ -15,7 +15,10 @@ namespace gdr
       D3D12_GPU_DESCRIPTOR_HANDLE GPUDescriptor;
     public:
       // Constructor
-        globals_subsystem(render *Rnd);
+      globals_subsystem(render *Rnd);
+
+      // Set globals to Default values
+      void SetDefault(void);
 
       // Update data stored on GPU
       void UpdateGPUData(ID3D12GraphicsCommandList *pCommandList);

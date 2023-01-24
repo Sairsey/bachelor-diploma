@@ -32,6 +32,16 @@ void gdr::albedo_pass::Initialize(void)
         }
 
         {
+          cubeBindlessTexturesDesc[0].BaseShaderRegister = GDRGPUCubeTexturePoolSlot;
+          cubeBindlessTexturesDesc[0].NumDescriptors = Render->CreationParams.MaxTextureAmount;
+          cubeBindlessTexturesDesc[0].OffsetInDescriptorsFromTableStart = 0;
+          cubeBindlessTexturesDesc[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+          cubeBindlessTexturesDesc[0].RegisterSpace = GDRGPUCubeTexturePoolSpace;
+
+          params[(int)root_parameters_draw_indices::cube_texture_pool_index].InitAsDescriptorTable(1, cubeBindlessTexturesDesc);
+        }
+
+        {
             CD3DX12_ROOT_SIGNATURE_DESC rootSignatureDesc;
             rootSignatureDesc.Init((UINT)params.size(), &params[0], Render->TexturesSystem->SamplersDescs.size(), Render->TexturesSystem->SamplersDescs.data(), D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
             Render->GetDevice().CreateRootSignature(rootSignatureDesc, &RootSignature);
@@ -105,6 +115,9 @@ void gdr::albedo_pass::CallDirectDraw(ID3D12GraphicsCommandList* currentCommandL
             currentCommandList->SetGraphicsRootDescriptorTable(
                 (int)root_parameters_draw_indices::texture_pool_index,
                 Render->TexturesSystem->TextureTableGPU);
+            currentCommandList->SetGraphicsRootDescriptorTable(
+              (int)root_parameters_draw_indices::cube_texture_pool_index,
+              Render->CubeTexturesSystem->CubeTextureTableGPU);
         }
 
         currentCommandList->DrawIndexedInstanced(command.DrawArguments.IndexCountPerInstance, 1, 0, 0, 0);
@@ -139,6 +152,9 @@ void gdr::albedo_pass::CallIndirectDraw(ID3D12GraphicsCommandList* currentComman
   currentCommandList->SetGraphicsRootDescriptorTable(
     (int)root_parameters_draw_indices::texture_pool_index,
     Render->TexturesSystem->TextureTableGPU);
+  currentCommandList->SetGraphicsRootDescriptorTable(
+    (int)root_parameters_draw_indices::cube_texture_pool_index,
+    Render->CubeTexturesSystem->CubeTextureTableGPU);
 
   currentCommandList->ExecuteIndirect(
     CommandSignature,

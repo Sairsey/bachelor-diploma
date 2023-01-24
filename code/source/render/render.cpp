@@ -75,6 +75,7 @@ bool gdr::render::Init(engine* Eng)
       GeometrySystem = new geometry_subsystem(this);
       MaterialsSystem = new materials_subsystem(this);
       TexturesSystem = new textures_subsystem(this);
+      CubeTexturesSystem = new cube_textures_subsystem(this);
       LightsSystem = new lights_subsystem(this);
   }
 
@@ -88,6 +89,7 @@ bool gdr::render::Init(engine* Eng)
     
     // Main pass
     Passes.push_back(new albedo_pass());
+    Passes.push_back(new skybox_pass());
 
     // debug passes
     Passes.push_back(new debug_aabb_pass());
@@ -168,7 +170,7 @@ void gdr::render::Resize(UINT w, UINT h)
 /* Draw frame function */
 void gdr::render::DrawFrame(void)
 {
-  if (!IsInited)
+  if (!IsInited || DrawCommandsSystem->AllocatedSize() == 0)
     return;
 
   ID3D12GraphicsCommandList* uploadCommandList = nullptr;
@@ -209,6 +211,11 @@ void gdr::render::DrawFrame(void)
   {
     PROFILE_BEGIN(uploadCommandList, "Update Textures");
     TexturesSystem->UpdateGPUData(uploadCommandList);
+    PROFILE_END(uploadCommandList);
+  }
+  {
+    PROFILE_BEGIN(uploadCommandList, "Update Cube textures");
+    CubeTexturesSystem->UpdateGPUData(uploadCommandList);
     PROFILE_END(uploadCommandList);
   }
   {
@@ -322,6 +329,7 @@ void gdr::render::Term(void)
       delete GeometrySystem;
       delete MaterialsSystem;
       delete TexturesSystem;
+      delete CubeTexturesSystem;
       delete LightsSystem;
   }
 

@@ -22,10 +22,10 @@
 #include "render/subsystems/draw_commands_subsystem.h"
 #include "render/subsystems/materials_subsystem.h"
 #include "render/subsystems/texture_subsystem.h"
+#include "render/subsystems/cube_texture_subsystem.h"
 #include "render/subsystems/lights_subsystem.h"
 
 #if 0
-#include "render/subsystems/cube_texture_support.h"
 #include "render/subsystems/hier_depth_support.h"
 #include "render/subsystems/screenshot_subsystem.h"
 #endif
@@ -39,8 +39,7 @@
 /// Main Pass
   #include "render/passes/albedo_pass.h"
   // transparent pass
-  // skybox
-  
+  #include "render/passes/skybox_pass.h"
 
 /// Postprocess
   // HDR copy

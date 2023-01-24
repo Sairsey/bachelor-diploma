@@ -21,17 +21,27 @@ namespace gdr
     private:
       /* Vector of all units we will draw */
       std::vector<unit_base*> Units;
+      std::vector<unit_base*> ToAdd;
+      std::vector<unit_base*> ToRemove;
     public:
       // Default constructor
       engine();
 
       /* Add new Unit function.
        * ARGUMENTS:
-       *   - pointer on Engine
-       *       engine* NewEngine
+       *   - pointer on Unit
+       *       unit_base *UnitToAdd
        * RETURNS: None.
        */
       void AddUnit(unit_base *UnitToAdd);
+
+      /* Remove Unit function.
+       * ARGUMENTS:
+       *   - pointer on Unit
+       *       unit_base* UnitToRemove
+       * RETURNS: None.
+       */
+      void RemoveUnit(unit_base* UnitToRemove);
 
       /* Destructor */
       ~engine();

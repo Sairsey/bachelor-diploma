@@ -15,8 +15,18 @@ gdr::engine::engine()
  */
 void gdr::engine::AddUnit(unit_base* UnitToAdd)
 {
-  UnitToAdd->SetEngine(this);
-  Units.push_back(UnitToAdd);
+  ToAdd.push_back(UnitToAdd);
+}
+
+/* Remove Unit function.
+ * ARGUMENTS:
+ *   - pointer on Unit
+ *       unit_base* UnitToRemove
+ * RETURNS: None.
+ */
+void gdr::engine::RemoveUnit(unit_base* UnitToRemove)
+{
+  ToRemove.push_back(UnitToRemove);
 }
 
 /* Destructor */
@@ -91,12 +101,59 @@ VOID gdr::engine::Timer(VOID)
 {
   PROFILE_CPU_BEGIN("ENGINE TICK");
   // update Time
+  timer_support::IncreaseFrameCounter();
   timer_support::Response();
+
+  // Update input
   input_support::Response(hWnd);
   input_support::UpdateWheel(win::MouseWheel);
 
   // update Physics
   //physics::Update(GetDeltaTime());
+
+  // update Units
+  if (ToAdd.size())
+  {
+    render::GetDevice().WaitAllUploadLists();
+    render::GetDevice().WaitGPUIdle();
+    render::GetDevice().ResizeUpdateBuffer(false);
+    PROFILE_CPU_BEGIN("Add new units");
+    for (int i = 0; i < ToAdd.size(); i++)
+    {
+      ToAdd[i]->SetEngine(this);
+      ToAdd[i]->Initialize();
+      Units.push_back(ToAdd[i]);
+    }
+    ToAdd.clear();
+    PROFILE_CPU_END();
+    render::GetDevice().WaitAllUploadLists();
+    render::GetDevice().WaitGPUIdle();
+    render::GetDevice().ResizeUpdateBuffer(true);
+  }
+  
+  if (ToRemove.size())
+  {
+    PROFILE_CPU_BEGIN("Remove old units");
+    for (int i = 0; i < ToRemove.size(); i++)
+    {
+      unit_base *unitToFind = ToRemove[i];
+      int unitIndex = NONE_INDEX;
+      
+      // find unit index
+      for (int j = 0; j < Units.size() && unitIndex == NONE_INDEX; j++)
+        if (unitToFind == Units[j])
+          unitIndex = j;
+
+      // if found successfully
+      if (unitIndex != NONE_INDEX)
+      {
+        delete unitToFind;
+        Units.erase(Units.begin() + unitIndex);
+      }
+    }
+    ToRemove.clear();
+    PROFILE_CPU_END();
+  }
 
   PROFILE_CPU_BEGIN("Units update");
   for (auto& unit : Units)
@@ -106,7 +163,8 @@ VOID gdr::engine::Timer(VOID)
     PROFILE_CPU_END();
   }
   PROFILE_CPU_END();
-  timer_support::IncreaseFrameCounter();
+
+  // Draw Frame
   render::DrawFrame();
   PROFILE_CPU_END();
 }

@@ -10,6 +10,8 @@
 #include "units/examples/unit_occlusion_cull.h"
 #include "units/examples/unit_runtime_add_remove.h"
 
+#include "units/enviroment/unit_yokohama.h"
+
 #include "units/unit_control.h"
 
 // TODO:
@@ -23,7 +25,7 @@
 // 11) times profiling on CPU too
 // 14) Fix pools States (Probably done, but I have sometimes strange bug, when albedo rise its draw time)
 // 16) Pass for nodes checking
-
+// 17) Fix cubemap_baker. He is incorrect.
 
 #ifdef UNITS_ENABLED
 #include "units/unit_stats.h"
@@ -107,6 +109,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
   //Engine.AddUnit(new unit_triangle());
   //Engine.AddUnit(new unit_runtime_add_remove());
   
+  Engine.AddUnit(new unit_yokohama());
+
   Engine.AddUnit(new unit_control());
   
   Engine.AddUnit(new unit_frame_times());

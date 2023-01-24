@@ -86,6 +86,7 @@ struct GDRGPUComputeGlobals
 struct GDRGPUGlobalData
 {
 	float4x4 VP; // camera view-proj
+
 	float3 CameraPos; // Camera position
 	float Time; // Time in seconds
 	
@@ -93,7 +94,9 @@ struct GDRGPUGlobalData
 	UINT Width;  // Screen size 
 	UINT Height; // Screen size 
 	UINT LightsAmount; // Amount of lights in scene
-	// UINT pad[0]
+
+	UINT SkyboxIndex;  // Index of skybox in cube textures pool
+	UINT pad[3];
 };
 
 /// <summary>
@@ -248,4 +251,16 @@ struct GDRVertex
 #ifdef __cplusplus
 // C++ code
 #pragma pack(pop)
+#endif // __cplusplus
+
+// add command to sample from cube texture on GPU
+#ifndef __cplusplus
+// in project I use right-handed CS. But HLSL uses left-handed CS.
+// So to fix it I need my special sampler function, which will reverse Z for me
+float4 GDRSampleCube(TextureCube cubeTexture, SamplerState mySampler, float3 dir)
+{
+	dir.z = -dir.z;
+	return cubeTexture.Sample(mySampler, dir);
+}
+
 #endif // __cplusplus

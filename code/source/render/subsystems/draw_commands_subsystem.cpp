@@ -72,6 +72,9 @@ void gdr::draw_commands_subsystem::AfterUpdateJob(ID3D12GraphicsCommandList* pCo
   CommandsCPUDescriptor[(int)indirect_command_pools_enum::All] = CPUDescriptor;
   CommandsGPUDescriptor[(int)indirect_command_pools_enum::All] = GPUDescriptor;
 
+  if (CPUData.size() == 0)
+    return;
+
   if (CPUData.size() > UAVStoredSize) // if we added some commands
   {
     // SRV already reallocated.

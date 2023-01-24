@@ -6,6 +6,19 @@ gdr::globals_subsystem::globals_subsystem(render* Rnd)
   StoredCopy.Time = 0;
   CPUData.Time = 1;
   GPUData.Resource = nullptr;
+  SetDefault();
+}
+
+void gdr::globals_subsystem::SetDefault(void)
+{
+  CPUData.VP = mth::matr4f::Identity();
+  CPUData.CameraPos = mth::vec3f(0);
+  CPUData.Time = 0;
+  CPUData.DeltaTime = 0;
+  CPUData.Width = 100;
+  CPUData.Height = 100;
+  CPUData.LightsAmount = 1;
+  CPUData.SkyboxIndex = NONE_INDEX;
 }
 
 void gdr::globals_subsystem::UpdateGPUData(ID3D12GraphicsCommandList* pCommandList)

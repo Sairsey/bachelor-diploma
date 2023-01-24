@@ -106,6 +106,12 @@
     <Filter Include="Source Files\Render\SubSystems\Lights">
       <UniqueIdentifier>{8c691fe3-1ed3-4d40-96ad-daa7a49f05d2}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Render\Passes\skybox">
+      <UniqueIdentifier>{5e16af33-a6df-4156-bab3-c99bb0b1f2f9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Units\Enviroments">
+      <UniqueIdentifier>{03c09817-0a39-424a-b768-4d2a7a66f3ae}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\main.cpp">
@@ -233,6 +239,12 @@
     </ClCompile>
     <ClCompile Include="source\render\passes\debug_aabb_pass.cpp">
       <Filter>Source Files\Render\Passes\debug</Filter>
+    </ClCompile>
+    <ClCompile Include="source\render\subsystems\cube_texture_subsystem.cpp">
+      <Filter>Source Files\Render\SubSystems\Textures</Filter>
+    </ClCompile>
+    <ClCompile Include="source\render\passes\skybox_pass.cpp">
+      <Filter>Source Files\Render\Passes\skybox</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -466,6 +478,15 @@
     </ClInclude>
     <ClInclude Include="source\units\examples\unit_light_example.h">
       <Filter>Source Files\Units\Examples</Filter>
+    </ClInclude>
+    <ClInclude Include="source\render\subsystems\cube_texture_subsystem.h">
+      <Filter>Source Files\Render\SubSystems\Textures</Filter>
+    </ClInclude>
+    <ClInclude Include="source\units\enviroment\unit_yokohama.h">
+      <Filter>Source Files\Units\Enviroments</Filter>
+    </ClInclude>
+    <ClInclude Include="source\render\passes\skybox_pass.h">
+      <Filter>Source Files\Render\Passes\skybox</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

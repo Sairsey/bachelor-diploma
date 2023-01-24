@@ -515,5 +515,8 @@
     <ClInclude Include="source\render\subsystems\luminance_subsystem.h">
       <Filter>Source Files\Render\SubSystems\Luminance</Filter>
     </ClInclude>
+    <ClInclude Include="source\units\enviroment\unit_alex_apt.h">
+      <Filter>Source Files\Units\Enviroments</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

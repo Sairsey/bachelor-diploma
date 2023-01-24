@@ -89,16 +89,14 @@ int main(void)
       {
         mth::vec3f Dir(0);
         mth::vec2f uv = {1.0f * j / hdr.W, 1.0f * i / hdr.H};
-        uv[1] = -uv[1];
         float theta = -MTH_PI / 2.0f + uv[1] * MTH_PI;
         float phi = uv[0] * MTH_PI * 2.0f;
 
-        Dir.X = cos(theta) * cos(phi);
+        Dir.X = -1.0 * cos(theta) * sin(phi);
         Dir.Y = sin(theta);
-        Dir.Z = cos(theta) * sin(phi);
+        Dir.Z = cos(theta) * cos(phi);
 
-        Dir.Z = -Dir.Z;
-        Dir.X = -Dir.X;
+        Dir.Normalize();
 
         mth::vec3f color = cubemap.SampleCube(Dir);
 
@@ -113,8 +111,8 @@ int main(void)
   std::string OutputDirectory = AskDir();
 
   cubemap_baker baker(HDRTexture, OutputDirectory);
+  baker.BakeCubemap();
   baker.BakePreintegratedBRDF();
   baker.BakePrefilteredColor();
-  baker.BakeCubemap();
   baker.BakeIrradience();
 }

@@ -1,6 +1,41 @@
 #pragma once
 #include "image.h"
 
+/* ATTENTION:
+ * This module uses cubemaps in right-handed mode (also called OpenGL style).
+ * This Decidion were made, because in my opinion right-handed CS is more convinient (law of right hand for "Cross product")
+ * Input texture is panorama which looks kinda like that
+ * 
+ * ------------------------------------
+ * |\ +y  /  \ +y  /  \ +y  /  \ +y  /|
+ * | \   /    \   /    \   /    \   / |
+ * |  \ /      \ /      \ /      \ /  |
+ * |+z |   -x   |   -z   |   +x   | +z|
+ * |  / \      / \      / \      / \  |
+ * | /   \    /   \    /   \    /   \ |
+ * |/ -y  \  / -y  \  / -y  \  / -y  \|
+ * |__________________________________|
+ * 
+ * And cubemap should be saved like this (OpenGL style)
+ *          ----------
+ *          |        |
+ *          |  (top) |
+ *          |   +y   |
+ *          |        |
+ * -------------------------------------
+ * |        |        |        |        |
+ * | (left) | (front)| (right)| (back) |
+ * |   -x   |   -z   |    x   |    +z  |
+ * |        |        |        |        |
+ * -------------------------------------
+ *          |        |
+ *          |(bottom)|
+ *          |   -y   |
+ *          |        |
+ *          ----------
+ * 
+ */
+
 namespace cubemap_baker_utils
 {
   float RadicalInverse_VdC(unsigned int bits)
@@ -115,12 +150,12 @@ class cubemap_baker
     };
 
     mth::vec3f rights[6] = {
-      {0, 0, -1},
-      {1, 0, 0},
-      {1, 0, 0},
       {0, 0, 1},
       {1, 0, 0},
-      {-1, 0, 0}
+      {-1, 0, 0},
+      {0, 0, -1},
+      {1, 0, 0},
+      {1, 0, 0}
     };
 
     float_image GetCubeSide(mth::vec3f dir, mth::vec3f right, int W, int H)

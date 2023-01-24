@@ -38,7 +38,7 @@ gdr_index gdr::cube_textures_subsystem::Add(
 
     bool isHdr;
 
-    isHdr = stbi_is_hdr(name.c_str());
+    isHdr = stbi_is_hdr(namePosX.c_str());
 
     // get width and height
     if (isHdr)
@@ -59,8 +59,8 @@ gdr_index gdr::cube_textures_subsystem::Add(
     names.push_back(nameNegX);
     names.push_back(namePosY);
     names.push_back(nameNegY);
+    names.push_back(nameNegZ); // we want to change order because we read OpenGL-style cubemaps
     names.push_back(namePosZ);
-    names.push_back(nameNegZ);
 
     UINT mips = 1;
     size_t dataSize = width * height * 4 * 6; // width * height * channels * side_amount
@@ -198,9 +198,9 @@ gdr_index gdr::cube_textures_subsystem::Add(std::string directory, int MipsAmoun
     for (int i = 0; i < MipsAmount; i++)
       names.push_back(directory + "\\" + std::to_string(i) + "\\" + "ny.hdr");
     for (int i = 0; i < MipsAmount; i++)
-      names.push_back(directory + "\\" + std::to_string(i) + "\\" + "pz.hdr");
-    for (int i = 0; i < MipsAmount; i++)
       names.push_back(directory + "\\" + std::to_string(i) + "\\" + "nz.hdr");
+    for (int i = 0; i < MipsAmount; i++)
+      names.push_back(directory + "\\" + std::to_string(i) + "\\" + "pz.hdr");
 
     float* dest_buffer = pBufferFloat;
 

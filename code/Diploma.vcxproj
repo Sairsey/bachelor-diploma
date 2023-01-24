@@ -60,6 +60,7 @@
     <ClInclude Include="source\render\subsystems\object_transforms_subsystem.h" />
     <ClInclude Include="source\render\subsystems\texture_subsystem.h" />
     <ClInclude Include="source\timer\timer.h" />
+    <ClInclude Include="source\units\enviroment\unit_alex_apt.h" />
     <ClInclude Include="source\units\enviroment\unit_yokohama.h" />
     <ClInclude Include="source\units\examples\unit_frustum_cull.h" />
     <ClInclude Include="source\units\examples\unit_light_example.h" />

@@ -12,7 +12,7 @@ namespace gdr
     GPUResource TextureResource;
   };
 
-  // Transforms data representation class
+  // Cube textures data representation class
   class cube_textures_subsystem : public resource_pool_subsystem<gdr_cube_texture, 0>
   {
   protected:
@@ -28,7 +28,7 @@ namespace gdr
       return NONE_INDEX;
     }
 
-    // Load Texture
+    // Load Texture (OpenGL-style !!!)
     gdr_index Add(
       std::string namePosX, 
       std::string nameNegX,
@@ -37,7 +37,7 @@ namespace gdr
       std::string namePosZ,
       std::string nameNegZ);
 
-    // Load Texture
+    // Load Texture (OpenGL-style !!!)
     gdr_index Add(std::string directory, int MipsAmount);
 
     // Remove Texture

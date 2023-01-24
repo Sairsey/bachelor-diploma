@@ -38,24 +38,43 @@ using uint4 = mth::vec4<UINT>;
 #endif // __cplusplus
 
 // slots for all constant buffers
-#define GDRGPUGlobalDataConstantBufferSlot ConstantBufferSlot(0)
-#define GDRGPUObjectIndicesConstantBufferSlot ConstantBufferSlot(1)
-#define GDRGPUComputeGlobalDataConstantBufferSlot ConstantBufferSlot(2)
+#define GDRGPUGlobalDataConstantBufferSlot ConstantBufferSlot(1)
+#define GDRGPUObjectIndicesConstantBufferSlot ConstantBufferSlot(2)
+#define GDRGPUComputeGlobalDataConstantBufferSlot ConstantBufferSlot(3)
+#define GDRGPULuminanceConstantBufferSlot ConstantBufferSlot(4)
 // slots for all pools
-#define GDRGPUObjectTransformPoolSlot ShaderResourceSlot(0)
-#define GDRGPUNodeTransformPoolSlot ShaderResourceSlot(1)
-#define GDRGPUMaterialPoolSlot ShaderResourceSlot(2)
-#define GDRGPUTexturePoolSlot ShaderResourceSlot(3)
-#define GDRGPUCubeTexturePoolSlot ShaderResourceSlot(4)
-#define GDRGPULightsPoolSlot ShaderResourceSlot(5)
-#define GDRGPUAllCommandsPoolSlot ShaderResourceSlot(6)
-#define GDRGPUHierDepthSlot ShaderResourceSlot(7)
+#define GDRGPUObjectTransformPoolSlot ShaderResourceSlot(1)
+#define GDRGPUNodeTransformPoolSlot ShaderResourceSlot(2)
+#define GDRGPUMaterialPoolSlot ShaderResourceSlot(3)
+#define GDRGPUTexturePoolSlot ShaderResourceSlot(4)
+#define GDRGPUCubeTexturePoolSlot ShaderResourceSlot(5)
+#define GDRGPULightsPoolSlot ShaderResourceSlot(6)
+#define GDRGPUAllCommandsPoolSlot ShaderResourceSlot(7)
+#define GDRGPUHierDepthSlot ShaderResourceSlot(8)
 // slots for all uavs
-#define GDRGPUOpaqueAllCommandsPoolSlot UnorderedAccessSlot(0)
-#define GDRGPUTransparentAllCommandsPoolSlot UnorderedAccessSlot(1)
-#define GDRGPUOpaqueFrustumCommandsPoolSlot UnorderedAccessSlot(2)
-#define GDRGPUOpaqueCulledCommandsPoolSlot UnorderedAccessSlot(3)
-#define GDRGPUTransparentsCulledCommandsPoolSlot UnorderedAccessSlot(4)
+#define GDRGPUOpaqueAllCommandsPoolSlot UnorderedAccessSlot(1)
+#define GDRGPUTransparentAllCommandsPoolSlot UnorderedAccessSlot(2)
+#define GDRGPUOpaqueFrustumCommandsPoolSlot UnorderedAccessSlot(3)
+#define GDRGPUOpaqueCulledCommandsPoolSlot UnorderedAccessSlot(4)
+#define GDRGPUTransparentsCulledCommandsPoolSlot UnorderedAccessSlot(5)
+#define GDRGPULuminanceUnorderedAccessBufferSlot UnorderedAccessSlot(6)
+
+// Parameters for any shit we might need, but do not want to map
+#define GDRGPUUserConstantBuffer1Slot ConstantBufferSlot(10)
+#define GDRGPUUserConstantBuffer2Slot ConstantBufferSlot(11)
+#define GDRGPUUserConstantBuffer3Slot ConstantBufferSlot(12)
+#define GDRGPUUserConstantBuffer4Slot ConstantBufferSlot(13)
+
+#define GDRGPUUserShaderResource1Slot ShaderResourceSlot(10)
+#define GDRGPUUserShaderResource2Slot ShaderResourceSlot(11)
+#define GDRGPUUserShaderResource3Slot ShaderResourceSlot(12)
+#define GDRGPUUserShaderResource4Slot ShaderResourceSlot(13)
+
+#define GDRGPUUserUnorderedAccess1Slot UnorderedAccessSlot(10)
+#define GDRGPUUserUnorderedAccess2Slot UnorderedAccessSlot(11)
+#define GDRGPUUserUnorderedAccess3Slot UnorderedAccessSlot(12)
+#define GDRGPUUserUnorderedAccess4Slot UnorderedAccessSlot(13)
+
 
 // Indexes of root params
 #define GDRGPUObjectIndicesRecordRootIndex 1 // index in Root Signature for Record in ObjectIndices
@@ -95,8 +114,10 @@ struct GDRGPUGlobalData
 	UINT Height; // Screen size 
 	UINT LightsAmount; // Amount of lights in scene
 
-	UINT SkyboxIndex;  // Index of skybox in cube textures pool
-	UINT pad[3];
+	UINT SkyboxIndex;    // Index of skybox in cube textures pool
+	UINT IsTonemap;      // Index of skybox in cube textures pool
+	float SceneExposure; // Additional exposure from scene
+	UINT pad[1];
 };
 
 /// <summary>
@@ -116,7 +137,9 @@ struct GDRGPUObjectTransform
 /// <summary>
 /// Node Transform system
 /// </summary>
+#ifndef NONE_INDEX
 #define NONE_INDEX 0xFFFFFFFF
+#endif // !NONE_INDEX
 struct GDRGPUNodeTransform
 {
 	float4x4 LocalTransform;  // Transform from parent
@@ -244,6 +267,17 @@ struct GDRVertex
 	float3 Tangent;
 	uint4 BonesIndices;
 	float4 BonesWeights;
+};
+
+/// <summary>
+/// Luminance system
+/// </summary>
+struct GDRGPULuminanceVariables
+{
+	float Luminance;
+	float LuminanceAdapted;
+	float Exposure;
+	float ExposureAdapted;
 };
 
 #define GDRGPUComputeThreadBlockSize 1024

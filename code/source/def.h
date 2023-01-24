@@ -115,6 +115,11 @@ inline std::wstring charToWString(const char* text)
 
 using gdr_index = uint32_t;
 
+#ifndef NONE_INDEX
+#define NONE_INDEX 0xFFFFFFFF
+#endif // !NONE_INDEX
+
+
 enum struct gdr_hier_node_type
 {
     node,

@@ -65,7 +65,7 @@ void gdr::albedo_pass::Initialize(void)
         psoDesc.SampleMask = UINT_MAX;
         psoDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
         psoDesc.NumRenderTargets = 1;
-        psoDesc.RTVFormats[0] = Render->RenderTargetsSystem->TargetParams[(int)render_targets_enum::target_display].Format;
+        psoDesc.RTVFormats[0] = Render->RenderTargetsSystem->TargetParams[(int)render_targets_enum::target_frame_hdr].Format;
         psoDesc.DSVFormat = Render->DepthBuffer.Resource->GetDesc().Format;
         psoDesc.SampleDesc.Count = 1;
 
@@ -77,7 +77,7 @@ void gdr::albedo_pass::Initialize(void)
 
 void gdr::albedo_pass::CallDirectDraw(ID3D12GraphicsCommandList* currentCommandList)
 {
-    Render->RenderTargetsSystem->Set(currentCommandList, render_targets_enum::target_display);
+    Render->RenderTargetsSystem->Set(currentCommandList, render_targets_enum::target_frame_hdr);
 
     // set common params
     currentCommandList->SetPipelineState(PSO);
@@ -126,7 +126,7 @@ void gdr::albedo_pass::CallDirectDraw(ID3D12GraphicsCommandList* currentCommandL
 
 void gdr::albedo_pass::CallIndirectDraw(ID3D12GraphicsCommandList* currentCommandList)
 {
-  Render->RenderTargetsSystem->Set(currentCommandList, render_targets_enum::target_display);
+  Render->RenderTargetsSystem->Set(currentCommandList, render_targets_enum::target_frame_hdr);
 
   // set common params
   currentCommandList->SetPipelineState(PSO);

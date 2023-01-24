@@ -19,6 +19,8 @@ void gdr::globals_subsystem::SetDefault(void)
   CPUData.Height = 100;
   CPUData.LightsAmount = 1;
   CPUData.SkyboxIndex = NONE_INDEX;
+  CPUData.IsTonemap = false;
+  CPUData.SceneExposure = 8.0;
 }
 
 void gdr::globals_subsystem::UpdateGPUData(ID3D12GraphicsCommandList* pCommandList)

@@ -56,15 +56,15 @@ void gdr::visibility_hier_depth_pass::Initialize(void)
 
     params.resize((int)root_parameters_compute_indices::total_root_parameters);
 
-    params[(int)root_parameters_compute_indices::mips_params_index].InitAsConstants(4, 0);
+    params[(int)root_parameters_compute_indices::mips_params_index].InitAsConstants(4, GDRGPUUserConstantBuffer1Slot);
 
     {
-      descr[0].Init(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 1, 0);
+      descr[0].Init(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 1, GDRGPUUserUnorderedAccess1Slot);
       params[(int)root_parameters_compute_indices::input_srv_index].InitAsDescriptorTable(1, &descr[0]);
     }
 
     {
-      descr[1].Init(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 1, 1);
+      descr[1].Init(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 1, GDRGPUUserUnorderedAccess2Slot);
       params[(int)root_parameters_compute_indices::output_uav_index].InitAsDescriptorTable(1, &descr[1]);
     }
 

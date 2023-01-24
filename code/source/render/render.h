@@ -17,13 +17,21 @@ namespace gdr
   class textures_subsystem;
   class cube_textures_subsystem;
   class lights_subsystem;
+  class luminance_subsystem;
   struct render_runtime_params
   {
     bool IsIndirect = true;        // Enables indirect draw
+    
     bool IsFrustumCulling = true;  // Enables Frustum Culling
     bool IsOccusionCulling = true; // Enables Occlusion Culling (avalible only with Frustum Culling and only in Indirect mode)
     bool IsViewLocked = false;     // Lock View for culling debugging (avalible only with Frustum Culling or Frustum + Occlusion)
+    
     bool IsShowAABB = false;       // Show AABBs of objects
+
+    gdr_index SkyboxIndex = NONE_INDEX;
+
+    bool IsTonemapping = false;    // Enable tonemapping or not
+    float SceneExposure = 8.0;     // Exposure of scene
   };
   struct render_creation_params
   {
@@ -114,6 +122,7 @@ namespace gdr
       textures_subsystem* TexturesSystem;                  // System to store info about textures
       lights_subsystem* LightsSystem;                      // System to store info about light sources
       cube_textures_subsystem* CubeTexturesSystem;         // System to store info about cube textures
+      luminance_subsystem* LuminanceSystem;                // System to store info about Luminance
 #if 0
       screenshot_support* ScreenshotsSystem; //System to store and generate Hierarhical Depth Texture
 #endif

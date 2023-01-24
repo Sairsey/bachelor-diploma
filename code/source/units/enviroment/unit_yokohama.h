@@ -24,7 +24,7 @@ public:
 
   void Response(void)
   {
-    Engine->GlobalsSystem->CPUData.SkyboxIndex = SkyboxIndex;
+    Engine->Params.SkyboxIndex = SkyboxIndex;
   }
 
   std::string GetName(void)

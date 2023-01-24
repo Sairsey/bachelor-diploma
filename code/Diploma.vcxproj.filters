@@ -112,6 +112,15 @@
     <Filter Include="Source Files\Units\Enviroments">
       <UniqueIdentifier>{03c09817-0a39-424a-b768-4d2a7a66f3ae}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Render\Passes\tonemap">
+      <UniqueIdentifier>{70fc2ed9-1a03-433a-aff1-d0ab7006f701}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Render\Passes\luminance">
+      <UniqueIdentifier>{175c999d-d5d6-4aee-a8b0-30e2e06298de}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Render\SubSystems\Luminance">
+      <UniqueIdentifier>{b55ccee2-752d-41c3-9d4d-81fe17be3457}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\main.cpp">
@@ -245,6 +254,15 @@
     </ClCompile>
     <ClCompile Include="source\render\passes\skybox_pass.cpp">
       <Filter>Source Files\Render\Passes\skybox</Filter>
+    </ClCompile>
+    <ClCompile Include="source\render\passes\tonemap_pass.cpp">
+      <Filter>Source Files\Render\Passes\tonemap</Filter>
+    </ClCompile>
+    <ClCompile Include="source\render\passes\luminance_pass.cpp">
+      <Filter>Source Files\Render\Passes\luminance</Filter>
+    </ClCompile>
+    <ClCompile Include="source\render\subsystems\luminance_subsystem.cpp">
+      <Filter>Source Files\Render\SubSystems\Luminance</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -487,6 +505,15 @@
     </ClInclude>
     <ClInclude Include="source\render\passes\skybox_pass.h">
       <Filter>Source Files\Render\Passes\skybox</Filter>
+    </ClInclude>
+    <ClInclude Include="source\render\passes\tonemap_pass.h">
+      <Filter>Source Files\Render\Passes\tonemap</Filter>
+    </ClInclude>
+    <ClInclude Include="source\render\passes\luminance_pass.h">
+      <Filter>Source Files\Render\Passes\luminance</Filter>
+    </ClInclude>
+    <ClInclude Include="source\render\subsystems\luminance_subsystem.h">
+      <Filter>Source Files\Render\SubSystems\Luminance</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

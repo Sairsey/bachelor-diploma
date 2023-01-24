@@ -1,7 +1,9 @@
-RWTexture2D<float> InputTexture : register(u0);
-RWTexture2D<float> OutputTexture : register(u1);
+#include "shared/cpu_gpu_shared.h"
 
-cbuffer CB : register(b0)
+RWTexture2D<float> InputTexture : register(GDRGPUUserUnorderedAccess1Slot);
+RWTexture2D<float> OutputTexture : register(GDRGPUUserUnorderedAccess2Slot);
+
+cbuffer CB : register(GDRGPUUserConstantBuffer1Slot)
 {
 	int2 PrevWH;
 	int2 WH;

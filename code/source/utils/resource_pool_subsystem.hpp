@@ -1,7 +1,6 @@
-#ifdef NONE_INDEX
-#undef NONE_INDEX
-#endif // NONE_INDEX
+#ifndef NONE_INDEX
 #define NONE_INDEX 0xFFFFFFFF
+#endif // !NONE_INDEX
 
 template<typename StoredType, int ChunkSize>
 gdr::resource_pool_subsystem<StoredType, ChunkSize>::resource_pool_subsystem(render* Rnd)

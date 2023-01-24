@@ -11,7 +11,7 @@ void gdr::debug_aabb_pass::Initialize(void)
         std::vector<CD3DX12_ROOT_PARAMETER> params;
         params.resize((int)root_parameters_draw_indices::total_root_parameters);
 
-        params[(int)root_parameters_draw_indices::params_buffer_index].InitAsConstants(sizeof(ShaderParams) / sizeof(int32_t), 0);
+        params[(int)root_parameters_draw_indices::params_buffer_index].InitAsConstants(sizeof(ShaderParams) / sizeof(int32_t), GDRGPUUserConstantBuffer1Slot);
 
         {
             CD3DX12_ROOT_SIGNATURE_DESC rootSignatureDesc;

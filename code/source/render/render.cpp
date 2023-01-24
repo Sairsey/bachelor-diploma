@@ -77,6 +77,7 @@ bool gdr::render::Init(engine* Eng)
       TexturesSystem = new textures_subsystem(this);
       CubeTexturesSystem = new cube_textures_subsystem(this);
       LightsSystem = new lights_subsystem(this);
+      LuminanceSystem = new luminance_subsystem(this);
   }
 
   // init passes
@@ -90,6 +91,10 @@ bool gdr::render::Init(engine* Eng)
     // Main pass
     Passes.push_back(new albedo_pass());
     Passes.push_back(new skybox_pass());
+
+    // Postprocess
+    Passes.push_back(new luminance_pass());
+    Passes.push_back(new tonemap_pass());
 
     // debug passes
     Passes.push_back(new debug_aabb_pass());
@@ -185,6 +190,9 @@ void gdr::render::DrawFrame(void)
     GlobalsSystem->CPUData.Width = Engine->Width;  // Screen size 
     GlobalsSystem->CPUData.Height = Engine->Height; // Screen size 
     GlobalsSystem->CPUData.LightsAmount = (UINT)Engine->LightsSystem->AllocatedSize();
+    GlobalsSystem->CPUData.IsTonemap = Params.IsTonemapping;
+    GlobalsSystem->CPUData.SceneExposure = Params.SceneExposure;
+    GlobalsSystem->CPUData.SkyboxIndex = Params.SkyboxIndex;
     GlobalsSystem->UpdateGPUData(uploadCommandList);
     PROFILE_END(uploadCommandList);
   }
@@ -223,6 +231,11 @@ void gdr::render::DrawFrame(void)
     DrawCommandsSystem->UpdateGPUData(uploadCommandList);
     PROFILE_END(uploadCommandList);
   }
+  {
+    PROFILE_BEGIN(uploadCommandList, "Update Luminance buffer");
+    LuminanceSystem->UpdateGPUData(uploadCommandList);
+    PROFILE_END(uploadCommandList);
+  }
   Device.CloseUploadCommandList();
 
   PROFILE_CPU_BEGIN("gdr::render::DrawFrame");
@@ -234,6 +247,7 @@ void gdr::render::DrawFrame(void)
     PROFILE_BEGIN(pCommandList, "Update resource states");
     NodeTransformsSystem->UpdateResourceState(pCommandList, true);
     ObjectTransformsSystem->UpdateResourceState(pCommandList, true);
+    LuminanceSystem->UpdateResourceState(pCommandList, true);
     MaterialsSystem->UpdateResourceState(pCommandList, true);
     DrawCommandsSystem->UpdateResourceState(pCommandList, true);
     LightsSystem->UpdateResourceState(pCommandList, true);
@@ -293,6 +307,7 @@ void gdr::render::DrawFrame(void)
     NodeTransformsSystem->UpdateResourceState(pCommandList, false);
     ObjectTransformsSystem->UpdateResourceState(pCommandList,false);
     MaterialsSystem->UpdateResourceState(pCommandList, false);
+    LuminanceSystem->UpdateResourceState(pCommandList, false);
     DrawCommandsSystem->UpdateResourceState(pCommandList, false);
     LightsSystem->UpdateResourceState(pCommandList, false);
     PROFILE_END(pCommandList);
@@ -331,6 +346,7 @@ void gdr::render::Term(void)
       delete TexturesSystem;
       delete CubeTexturesSystem;
       delete LightsSystem;
+      delete LuminanceSystem;
   }
 
   for (auto& pass : Passes)

@@ -24,6 +24,7 @@
 #include "render/subsystems/texture_subsystem.h"
 #include "render/subsystems/cube_texture_subsystem.h"
 #include "render/subsystems/lights_subsystem.h"
+#include "render/subsystems/luminance_subsystem.h"
 
 #if 0
 #include "render/subsystems/hier_depth_support.h"
@@ -42,7 +43,8 @@
   #include "render/passes/skybox_pass.h"
 
 /// Postprocess
-  // HDR copy
+  #include "render/passes/luminance_pass.h"
+  #include "render/passes/tonemap_pass.h"
   // Tonemap pass
   // ui
   #include "render/passes/debug_aabb_pass.h"

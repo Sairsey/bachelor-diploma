@@ -1,5 +1,6 @@
+#include "shared/cpu_gpu_shared.h"
 
-cbuffer GlobalParams : register(b0)
+cbuffer GlobalParams : register(GDRGPUUserConstantBuffer1Slot)
 {
 	float4x4 VP;
 	float4x4 transform;

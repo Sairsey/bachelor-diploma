@@ -111,7 +111,7 @@ void gdr::visibility_occlusion_pass::CallDirectDraw(ID3D12GraphicsCommandList* c
     ComputeGlobals.height = Render->GlobalsSystem->CPUData.Height;
     ComputeGlobals.frustumCulling = Render->Params.IsFrustumCulling;
     ComputeGlobals.occlusionCulling = Render->Params.IsOccusionCulling;
-    ComputeGlobals.commandsCount = Render->DrawCommandsSystem->AllocatedSize();
+    ComputeGlobals.commandsCount = (UINT)Render->DrawCommandsSystem->AllocatedSize();
   }
 
   // fill Direct emulations of indirect pools
@@ -160,7 +160,7 @@ void gdr::visibility_occlusion_pass::CallIndirectDraw(ID3D12GraphicsCommandList*
     ComputeGlobals.height = Render->GlobalsSystem->CPUData.Height;
     ComputeGlobals.frustumCulling = Render->Params.IsFrustumCulling;
     ComputeGlobals.occlusionCulling = Render->Params.IsOccusionCulling;
-    ComputeGlobals.commandsCount = Render->DrawCommandsSystem->AllocatedSize();
+    ComputeGlobals.commandsCount = (UINT)Render->DrawCommandsSystem->AllocatedSize();
   }
 
   currentCommandList->SetPipelineState(ComputePSO);

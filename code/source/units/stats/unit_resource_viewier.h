@@ -8,24 +8,24 @@ private:
   bool MainWindow;
   
   bool DrawCommandsWindow = false;
-  int DrawCommandsIndex = 0;
+  size_t DrawCommandsIndex = 0;
 
   bool GlobalsWindow = false;
 
   bool MaterialsWindow = false;
-  int MaterialsIndex = 0;
+  size_t MaterialsIndex = 0;
 
   bool TexturesWindow = false;
-  int TexturesIndex = 0;
+  size_t TexturesIndex = 0;
 
   bool RenderTargetWindow = false;
-  int RenderTargetIndex = 0;
+  size_t RenderTargetIndex = 0;
 
   bool ObjectTransformsWindow = false;
-  int ObjectTransformIndex = 0;
+  size_t ObjectTransformIndex = 0;
 
   bool NodeTransformsWindow = false;
-  int NodeTransformIndex = 0;
+  size_t NodeTransformIndex = 0;
 
 public:
   void Initialize()
@@ -274,7 +274,7 @@ public:
           D3D12_GPU_DESCRIPTOR_HANDLE true_texture_handle = Engine->RenderTargetsSystem->ShaderResourceViewsGPU;
           true_texture_handle.ptr += RenderTargetIndex * Engine->GetDevice().GetSRVDescSize();
           // width over height
-          float ratio = 1.0 * Engine->GlobalsSystem->CPUData.Width / Engine->GlobalsSystem->CPUData.Height;
+          float ratio = 1.0f * Engine->GlobalsSystem->CPUData.Width / Engine->GlobalsSystem->CPUData.Height;
           ImGui::Image((ImTextureID)true_texture_handle.ptr, ImVec2(ratio * 128.0f, 128.0f));
 
           ImGui::End();

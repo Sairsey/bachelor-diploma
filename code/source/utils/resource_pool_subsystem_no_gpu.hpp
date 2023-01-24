@@ -22,7 +22,7 @@ gdr_index gdr::resource_pool_subsystem<StoredType, 0>::Add()
   // Otherwise we need to create new
   if (Result == NONE_INDEX)
   {
-    Result = CPUData.size();
+    Result = (gdr_index)CPUData.size();
     CPUData.emplace_back();
     PoolRecords.emplace_back();
     PoolRecords[Result].IsAlive = true;
@@ -60,8 +60,7 @@ void gdr::resource_pool_subsystem<StoredType, 0>::Remove(gdr_index index)
 template<typename StoredType>
 StoredType& gdr::resource_pool_subsystem<StoredType, 0>::GetEditable(gdr_index index)
 {
-  if (index >= CPUData.size() || index < 0 || !PoolRecords[index].IsAlive)
-    assert(0);
+  GDR_ASSERT(index <= CPUData.size() && index >= 0 && PoolRecords[index].IsAlive);
 
   return CPUData[index];
 }
@@ -69,6 +68,8 @@ StoredType& gdr::resource_pool_subsystem<StoredType, 0>::GetEditable(gdr_index i
 template<typename StoredType>
 const StoredType& gdr::resource_pool_subsystem<StoredType, 0>::Get(gdr_index index) const
 {
+  GDR_ASSERT(index <= CPUData.size() && index >= 0 && PoolRecords[index].IsAlive); 
+  
   return CPUData[index];
 }
 

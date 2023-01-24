@@ -21,7 +21,7 @@ namespace gdr
 		// Mesh
 		std::vector<GDRVertex> vertices;
 		std::vector<UINT> indices;
-		UINT MaterialIndex;
+		gdr_index MaterialIndex;
 		UINT Params = 0;
 	};
 

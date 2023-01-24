@@ -10,8 +10,6 @@ void gdr::visibility_hier_depth_pass::Initialize(void)
   {
     std::vector<CD3DX12_ROOT_PARAMETER> params;
     params.resize((int)root_parameters_draw_indices::total_root_parameters);
-    CD3DX12_DESCRIPTOR_RANGE bindlessTexturesDesc[1];  // Textures Pool
-    CD3DX12_DESCRIPTOR_RANGE cubeBindlessTexturesDesc[1];  // Cube Textures Pool
 
     params[(int)root_parameters_draw_indices::globals_buffer_index].InitAsConstantBufferView(GDRGPUGlobalDataConstantBufferSlot);
     params[(int)root_parameters_draw_indices::index_buffer_index].InitAsConstants(sizeof(GDRGPUObjectIndices) / sizeof(int32_t), (int)GDRGPUObjectIndicesConstantBufferSlot);
@@ -92,7 +90,7 @@ void gdr::visibility_hier_depth_pass::Initialize(void)
 void gdr::visibility_hier_depth_pass::Generate(ID3D12GraphicsCommandList* currentCommandList)
 {
   PROFILE_BEGIN(currentCommandList, "Hier Depth Mips Gen");
-  int MipsAmount = CalculateMipMapsAmount(Render->DepthBuffer.Resource->GetDesc().Width, Render->DepthBuffer.Resource->GetDesc().Height);
+  int MipsAmount = CalculateMipMapsAmount((UINT)Render->DepthBuffer.Resource->GetDesc().Width, (UINT)Render->DepthBuffer.Resource->GetDesc().Height);
   
   // copy depth to biggest mip of Hier Depth texture
   PROFILE_BEGIN(currentCommandList, "Copy depth to texture");
@@ -140,11 +138,11 @@ void gdr::visibility_hier_depth_pass::Generate(ID3D12GraphicsCommandList* curren
   currentCommandList->SetComputeRootSignature(ComputeRootSignature);
 
   struct {
-    int PrevW;
-    int PrevH;
-    int W;
-    int H;
-  } MipsParams = { Render->DepthBuffer.Resource->GetDesc().Width, Render->DepthBuffer.Resource->GetDesc().Height };
+    UINT PrevW;
+    UINT PrevH;
+    UINT W;
+    UINT H;
+  } MipsParams = { (UINT)Render->DepthBuffer.Resource->GetDesc().Width, (UINT)Render->DepthBuffer.Resource->GetDesc().Height };
 
   MipsParams.W = MipsParams.PrevW / 2;
   MipsParams.H = MipsParams.PrevH / 2;
@@ -175,7 +173,7 @@ void gdr::visibility_hier_depth_pass::Generate(ID3D12GraphicsCommandList* curren
     currentCommandList->SetComputeRootDescriptorTable((int)root_parameters_compute_indices::input_srv_index, GPUDescriptorHandles[(i - 1)]);
     currentCommandList->SetComputeRootDescriptorTable((int)root_parameters_compute_indices::output_uav_index, GPUDescriptorHandles[i]);
 
-    currentCommandList->Dispatch(max(ceil(MipsParams.W / 32.0), 1u), max(ceil(MipsParams.H / 32.0), 1u), 1);
+    currentCommandList->Dispatch(max((UINT)ceil(MipsParams.W / 32.0), 1u), max((UINT)ceil(MipsParams.H / 32.0), 1u), 1);
 
     MipsParams.PrevW = MipsParams.W;
     MipsParams.PrevH = MipsParams.H;

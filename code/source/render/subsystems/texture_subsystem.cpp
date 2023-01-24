@@ -61,7 +61,7 @@ static void GenerateMips(void* pInitialData, UINT width, UINT height, UINT mipsT
 // Constructor 
 gdr::textures_subsystem::textures_subsystem(render* Rnd) : resource_pool_subsystem(Rnd)
 {
-  Render->GetDevice().AllocateStaticDescriptors(Render->CreationParams.MaxTextureAmount, TextureTableCPU, TextureTableGPU);
+  Render->GetDevice().AllocateStaticDescriptors((UINT)Render->CreationParams.MaxTextureAmount, TextureTableCPU, TextureTableGPU);
 
   SamplersDescs.push_back(CD3DX12_STATIC_SAMPLER_DESC(GDRGPUNearestSamplerSlot, D3D12_FILTER_MIN_MAG_MIP_POINT));
   SamplersDescs.push_back(CD3DX12_STATIC_SAMPLER_DESC(GDRGPULinearSamplerSlot, D3D12_FILTER_MIN_MAG_MIP_LINEAR));
@@ -207,7 +207,7 @@ gdr_index gdr::textures_subsystem::Add(std::string name, bool isSrgb)
       }
       else
       {
-        MessageBox(NULL, L"CANNOT allocate texture", L"CANNOT allocate texture", MB_OK);
+        GDR_FAILED("Failed to allocate DX12 memory for texture");
       }
       if (isHdr)
       {

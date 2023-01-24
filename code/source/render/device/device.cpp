@@ -100,13 +100,13 @@ bool gdr::device::InitD3D12Device(bool DebugDevice)
   bool strictDebug = false;
 
   HRESULT hr = CreateDXGIFactory(__uuidof(IDXGIFactory), (void**)&DxgiFactory);
-  assert(SUCCEEDED(hr));
+  GDR_ASSERT(SUCCEEDED(hr));
 
   if (IsDebugDevice)
   {
     ID3D12Debug1* pDebug = nullptr;
     HRESULT hr = D3D12GetDebugInterface(__uuidof(ID3D12Debug1), (void**)&pDebug);
-    assert(SUCCEEDED(hr));
+    GDR_ASSERT(SUCCEEDED(hr));
 
     pDebug->EnableDebugLayer();
     {
@@ -647,7 +647,7 @@ bool gdr::device::BeginUploadCommandList(ID3D12GraphicsCommandList** ppCommandLi
 
 bool gdr::device::AllocateRenderTargetView(D3D12_CPU_DESCRIPTOR_HANDLE& cpuHandle, UINT count)
 {
-  assert(CurrentRTView < MaxRTViews && RenderTargetViews != nullptr);
+  GDR_ASSERT(CurrentRTView < MaxRTViews && RenderTargetViews != nullptr);
 
   if (CurrentRTView < MaxRTViews)
   {
@@ -664,7 +664,7 @@ bool gdr::device::AllocateRenderTargetView(D3D12_CPU_DESCRIPTOR_HANDLE& cpuHandl
 
 bool gdr::device::AllocateStaticDescriptors(UINT count, D3D12_CPU_DESCRIPTOR_HANDLE& cpuStartHandle, D3D12_GPU_DESCRIPTOR_HANDLE& gpuStartHandle)
 {
-  assert(CurrentStaticDescIndex + count <= StaticDescCount);
+  GDR_ASSERT(CurrentStaticDescIndex + count <= StaticDescCount);
 
   cpuStartHandle = D3DDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
   cpuStartHandle.ptr += (CurrentStaticDescIndex + DynamicDescCount) * SrvDescSize;
@@ -681,16 +681,16 @@ HRESULT gdr::device::UpdateBuffer(ID3D12GraphicsCommandList* pCommandList, ID3D1
 {
 #ifdef _DEBUG
   D3D12_RESOURCE_DESC desc = pBuffer->GetDesc();
-  assert(desc.Dimension == D3D12_RESOURCE_DIMENSION_BUFFER);
-  assert(desc.Width >= dataSize);
+  GDR_ASSERT(desc.Dimension == D3D12_RESOURCE_DIMENSION_BUFFER);
+  GDR_ASSERT(desc.Width >= dataSize);
 #endif
 
-  assert(CurrentUploadCmdList == pCommandList);
+  GDR_ASSERT(CurrentUploadCmdList == pCommandList);
 
   UINT64 allocStartOffset = 0;
   UINT8* pAlloc = nullptr;
   auto allocRes = UploadBuffer->Alloc(dataSize, allocStartOffset, pAlloc, D3D12_CONSTANT_BUFFER_DATA_PLACEMENT_ALIGNMENT);
-  assert(allocRes == ring_buffer_result::Ok);
+  GDR_ASSERT(allocRes == ring_buffer_result::Ok);
   if (allocRes == ring_buffer_result::Ok)
   {
     memcpy(pAlloc, pData, dataSize);
@@ -707,16 +707,16 @@ HRESULT gdr::device::UpdateBufferOffset(ID3D12GraphicsCommandList* pCommandList,
 {
 #ifdef _DEBUG
   D3D12_RESOURCE_DESC desc = pBuffer->GetDesc();
-  assert(desc.Dimension == D3D12_RESOURCE_DIMENSION_BUFFER);
-  assert(desc.Width >= dataSize + bufferOffset);
+  GDR_ASSERT(desc.Dimension == D3D12_RESOURCE_DIMENSION_BUFFER);
+  GDR_ASSERT(desc.Width >= dataSize + bufferOffset);
 #endif
 
-  assert(CurrentUploadCmdList == pCommandList);
+  GDR_ASSERT(CurrentUploadCmdList == pCommandList);
 
   UINT64 allocStartOffset = 0;
   UINT8* pAlloc = nullptr;
   auto allocRes = UploadBuffer->Alloc(dataSize, allocStartOffset, pAlloc, D3D12_CONSTANT_BUFFER_DATA_PLACEMENT_ALIGNMENT);
-  assert(allocRes == ring_buffer_result::Ok);
+  GDR_ASSERT(allocRes == ring_buffer_result::Ok);
   if (allocRes == ring_buffer_result::Ok)
   {
     memcpy(pAlloc, pData, dataSize);
@@ -743,7 +743,7 @@ void gdr::device::WaitAllUploadLists(void)
 HRESULT gdr::device::UpdateTexture(ID3D12GraphicsCommandList* pCommandList, ID3D12Resource* pTexture, const void* pData, size_t dataSize)
 {
   D3D12_RESOURCE_DESC desc = pTexture->GetDesc();
-  assert(desc.Dimension == D3D12_RESOURCE_DIMENSION_TEXTURE2D);
+  GDR_ASSERT(desc.Dimension == D3D12_RESOURCE_DIMENSION_TEXTURE2D);
 
   UINT64 total = 0;
   std::vector<UINT> numRows(desc.MipLevels * desc.DepthOrArraySize);
@@ -752,7 +752,7 @@ HRESULT gdr::device::UpdateTexture(ID3D12GraphicsCommandList* pCommandList, ID3D
 
   D3DDevice->GetCopyableFootprints(&desc, 0, desc.MipLevels * desc.DepthOrArraySize, 0, placedFootprint.data(), numRows.data(), rowSize.data(), &total);
 
-  assert(CurrentUploadCmdList == pCommandList);
+  GDR_ASSERT(CurrentUploadCmdList == pCommandList);
 
   UINT64 width = desc.Width;
   UINT64 height = desc.Height;
@@ -762,7 +762,7 @@ HRESULT gdr::device::UpdateTexture(ID3D12GraphicsCommandList* pCommandList, ID3D
 
   UINT8* pAlloc = nullptr;
   auto allocRes = UploadBuffer->Alloc(total, allocStartOffset, pAlloc, D3D12_TEXTURE_DATA_PLACEMENT_ALIGNMENT);
-  assert(allocRes == ring_buffer_result::Ok);
+  GDR_ASSERT(allocRes == ring_buffer_result::Ok);
   if (allocRes != ring_buffer_result::Ok)
   {
     return E_FAIL;
@@ -789,7 +789,7 @@ HRESULT gdr::device::UpdateTexture(ID3D12GraphicsCommandList* pCommandList, ID3D
     break;
 
   default:
-    assert(0); // Unknown format
+    GDR_FAILED("Unknown format"); // Unknown format
     break;
   }
 
@@ -909,7 +909,7 @@ bool gdr::device::CreateGPUResource(const D3D12_RESOURCE_DESC& desc, D3D12_RESOU
   }
   else
   {
-    assert(CurrentUploadCmdList != nullptr);
+    GDR_ASSERT(CurrentUploadCmdList != nullptr);
 
     D3D_CHECK(D3DGPUMemAllocator->CreateResource(&allocDesc, &desc, D3D12_RESOURCE_STATE_COMMON, pOptimizedClearValue, &resource.Allocation, __uuidof(ID3D12Resource), (void**)&resource.Resource));
     switch (desc.Dimension)
@@ -989,7 +989,7 @@ bool gdr::device::CompileShader(LPCTSTR srcFilename, const std::vector<LPCSTR>& 
       }
       D3D_RELEASE(pErrMsg);
     }
-    assert(SUCCEEDED(hr));
+    GDR_ASSERT(SUCCEEDED(hr));
 
     res = SUCCEEDED(hr);
 
@@ -1074,7 +1074,7 @@ bool gdr::device::QueryTimestamp(ID3D12GraphicsCommandList* pCommandList, const 
   UINT query = -1;
   std::function<void(UINT64)> queryCB;
   ring_buffer_result allocRes = QueryBuffer->Alloc(1, id, queryCB, 1);
-  assert(allocRes == ring_buffer_result::Ok);
+  GDR_ASSERT(allocRes == ring_buffer_result::Ok);
   if (allocRes == ring_buffer_result::Ok)
   {
     QueryBuffer->At(id) = cb;

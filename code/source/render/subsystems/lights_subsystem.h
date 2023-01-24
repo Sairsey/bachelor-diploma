@@ -26,8 +26,8 @@ namespace gdr
       light.ConstantAttenuation = 1.0f;
       light.LinearAttenuation = 0.09f;
       light.QuadricAttenuation = 0.032f;
-      light.AngleInnerCone = MTH_D2R * 45.0 / 2.0;
-      light.AngleOuterCone = MTH_D2R * 60.0 / 2.0;
+      light.AngleInnerCone = MTH_D2R * 45.0f / 2.0f;
+      light.AngleOuterCone = MTH_D2R * 60.0f / 2.0f;
       light.ObjectTransformIndex = NONE_INDEX;
       return Result;
     }

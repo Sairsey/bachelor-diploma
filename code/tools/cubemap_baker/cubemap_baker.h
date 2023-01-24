@@ -10,7 +10,7 @@ namespace cubemap_baker_utils
     bits = ((bits & 0x33333333u) << 2u) | ((bits & 0xCCCCCCCCu) >> 2u);
     bits = ((bits & 0x0F0F0F0Fu) << 4u) | ((bits & 0xF0F0F0F0u) >> 4u);
     bits = ((bits & 0x00FF00FFu) << 8u) | ((bits & 0xFF00FF00u) >> 8u);
-    return float(bits) * 2.3283064365386963e-10; // / 0x100000000
+    return float(float(bits) * 2.3283064365386963e-10); // / 0x100000000
   }
 
   mth::vec2f Hammersley(unsigned int i, unsigned int N)
@@ -30,9 +30,9 @@ namespace cubemap_baker_utils
   {
     float a = roughness * roughness;
 
-    float phi = 2.0 * MTH_PI * Xi.X;
-    float cosTheta = sqrt((1.0 - Xi.Y) / (1.0 + (a * a - 1.0) * Xi.Y));
-    float sinTheta = sqrt(1.0 - cosTheta * cosTheta);
+    float phi = 2.0f * MTH_PI * Xi.X;
+    float cosTheta = sqrt((1.0f - Xi.Y) / (1.0f + (a * a - 1.0f) * Xi.Y));
+    float sinTheta = sqrt(1.0f - cosTheta * cosTheta);
 
     // from spherical coordinates to cartesian coordinates
     mth::vec3f H;
@@ -53,12 +53,12 @@ namespace cubemap_baker_utils
   {
     float a = roughness * roughness;
     float a2 = a * a;
-    float NdotH = max(N dot H, 0.0);
+    float NdotH = max(N dot H, 0.0f);
     float NdotH2 = NdotH * NdotH;
 
     float nom = a2;
-    float denom = (NdotH2 * (a2 - 1.0) + 1.0);
-    denom = MTH_PI * denom * denom, 0.0001;
+    float denom = (NdotH2 * (a2 - 1.0f) + 1.0f);
+    denom = max(MTH_PI * denom * denom, 0.0001f);
 
     if (nom == 0 && denom == 0)
       return 1.0;
@@ -69,18 +69,18 @@ namespace cubemap_baker_utils
   float GeometrySchlickGGX(float NdotV, float roughness)
   {
     float a = roughness;
-    float k = (a * a) / 2.0;
+    float k = (a * a) / 2.0f;
 
     float nom = NdotV;
-    float denom = NdotV * (1.0 - k) + k;
+    float denom = NdotV * (1.0f - k) + k;
 
     return nom / denom;
   }
 
   float GeometrySmith(mth::vec3f N, mth::vec3f V, mth::vec3f L, float roughness)
   {
-    float NdotV = max((N dot V), 0.0);
-    float NdotL = max((N dot L), 0.0);
+    float NdotV = max((N dot V), 0.0f);
+    float NdotL = max((N dot L), 0.0f);
     float ggx2 = GeometrySchlickGGX(NdotV, roughness);
     float ggx1 = GeometrySchlickGGX(NdotL, roughness);
 
@@ -132,7 +132,7 @@ class cubemap_baker
         {
           mth::vec3f pos;
 
-          pos = right * (1.0 * (j + 0.5) / W - 0.5) + up * (1.0 * (i + 0.5) / H - 0.5) + dir * 0.5;
+          pos = right * (1.0f * (j + 0.5f) / W - 0.5f) + up * (1.0f * (i + 0.5f) / H - 0.5f) + dir * 0.5f;
           cube_side.PutPixel(HDR.SampleHDR(pos), j, i);
         }
       return cube_side;
@@ -146,7 +146,7 @@ class cubemap_baker
         for (int j = 0; j < W; j++)
         {
           mth::vec3f norm;
-          norm = right * (1.0 * (j + 0.5) / W - 0.5) + up * (1.0 * (i + 0.5) / H - 0.5) + dir * 0.5;
+          norm = right * (1.0f * (j + 0.5f) / W - 0.5f) + up * (1.0f * (i + 0.5f) / H - 0.5f) + dir * 0.5f;
           norm.Normalize();
           mth::vec3f view = norm;
 
@@ -159,21 +159,21 @@ class cubemap_baker
             mth::vec3f H = cubemap_baker_utils::ImportanceSampleGGX(Xi, norm, Roughness);
             mth::vec3f L = (H * 2.0 * (view dot H) - view).Normalized();
 
-            float ndotl = max((norm dot L), 0.0);
-            float ndoth = max((norm dot H), 0.0);
-            float hdotv = max((H dot view), 0.0);
+            float ndotl = max((norm dot L), 0.0f);
+            float ndoth = max((norm dot H), 0.0f);
+            float hdotv = max((H dot view), 0.0f);
 
             float D = cubemap_baker_utils::DistributionGGX(norm, H, Roughness);
-            float pdf = (D * ndoth / (4.0 * hdotv)) + 0.0001;
+            float pdf = (D * ndoth / (4.0f * hdotv)) + 0.0001f;
 
-            float resolution = 512.0; // resolution of source cubemap (per face)
-            float saTexel = 4.0 * MTH_PI / (6.0 * resolution * resolution);
-            float saSample = 1.0 / (float(SampleCount) * pdf + 0.0001);
+            float resolution = 512.0f; // resolution of source cubemap (per face)
+            float saTexel = 4.0f * MTH_PI / (6.0f * resolution * resolution);
+            float saSample = 1.0f / (float(SampleCount) * pdf + 0.0001f);
 
-            float mipLevel = Roughness == 0.0 ? 0.0 : 0.5 * log2(saSample / saTexel);
+            float mipLevel = Roughness == 0.0f ? 0.0f : 0.5f * log2(saSample / saTexel);
 
-            int down_mip = floor(mipLevel);
-            int up_mip = ceil(mipLevel);
+            int down_mip = (int)floor(mipLevel);
+            int up_mip = (int)ceil(mipLevel);
             float a = mipLevel - down_mip;
 
             if (ndotl > 0.0)
@@ -197,15 +197,15 @@ class cubemap_baker
         for (int j = 0; j < W; j++)
         {
           mth::vec2f value;
-          float NdotV = 1.0 * (j + 0.5) / W;
-          float roughness = 1.0 * (i + 0.5) / H;
+          float NdotV = 1.0f * (j + 0.5f) / W;
+          float roughness = 1.0f * (i + 0.5f) / H;
 
           mth::vec3f prefilteredColor;
           float totalWeight = 0;
 
           mth::vec3f V;
-          V.X = sqrt(1.0 - NdotV * NdotV);
-          V.Y = 0.0;
+          V.X = sqrt(1.0f - NdotV * NdotV);
+          V.Y = 0.0f;
           V.Z = NdotV;
 
           float A = 0.0;
@@ -219,17 +219,17 @@ class cubemap_baker
             mth::vec3f H = cubemap_baker_utils::ImportanceSampleGGX(Xi, N, roughness);
             mth::vec3f L = (H * 2.0 * (V dot H) - V).Normalized();
 
-            float NdotL = max(L.Z, 0.0);
-            float NdotH = max(H.Z, 0.0);
-            float VdotH = max((H dot V), 0.0);
+            float NdotL = max(L.Z, 0.0f);
+            float NdotH = max(H.Z, 0.0f);
+            float VdotH = max((H dot V), 0.0f);
 
-            if (NdotL > 0.0)
+            if (NdotL > 0.0f)
             {
               float G = cubemap_baker_utils::GeometrySmith(N, V, L, roughness);
               float G_Vis = (G * VdotH) / (NdotH * NdotV);
-              float Fc = pow(1.0 - VdotH, 5.0);
+              float Fc = pow(1.0f - VdotH, 5.0f);
 
-              A += (1.0 - Fc) * G_Vis;
+              A += (1.0f - Fc) * G_Vis;
               B += Fc * G_Vis;
             }
           }
@@ -250,7 +250,7 @@ class cubemap_baker
         for (int j = 0; j < W; j++)
         {
           mth::vec3f normal;
-          normal = right * (1.0 * (j + 0.5) / W - 0.5) + up * (1.0 * (i + 0.5) / H - 0.5) + dir * 0.5;
+          normal = right * (1.0f * (j + 0.5f) / W - 0.5f) + up * (1.0f * (i + 0.5f) / H - 0.5f) + dir * 0.5f;
           normal.Normalize();
           mth::vec3f normal_up = {0, 1, 0};
           mth::vec3f normal_right = normal cross normal_up;
@@ -264,8 +264,8 @@ class cubemap_baker
           for (int k = 0; k < N1; k++)
             for (int l = 0; l < N2; l++)
             {
-              float phi = k * (2.0 * MTH_PI / N1);
-              float theta = l * (MTH_PI / 2.0 / N2);
+              float phi = k * (2.0f * MTH_PI / N1);
+              float theta = l * (MTH_PI / 2.0f / N2);
               float sint = sin(theta);
               float cost = cos(theta);
               float sinp = sin(phi);
@@ -277,7 +277,7 @@ class cubemap_baker
               irradience += HDR.SampleHDR(sampleVec) * cost * sint;
             }
 
-          cube_side.PutPixel(irradience * MTH_PI / (N1 * N2), j, i);
+          cube_side.PutPixel(irradience * MTH_PI / (1.0f * N1 * N2), j, i);
         }
       return cube_side;
     }
@@ -322,7 +322,7 @@ class cubemap_baker
         for (int i = 0; i < MipsAmount; i++)
         {
           HDR_mips.push_back(HDR);
-          HDR_mips[HDR_mips.size() - 1].Resize(HDR.W / pow(2, i), HDR.H / pow(2, i));
+          HDR_mips[HDR_mips.size() - 1].Resize(HDR.W / (int)pow(2, i), HDR.H / (int)pow(2, i));
         }
       }
 
@@ -340,7 +340,7 @@ class cubemap_baker
         for (int i = 0; i < 6; i++)
         {
           printf("Side %i\n", i);
-          float_image side = GetPrefilteredSide(dirs[i], rights[i], 128 / pow(2, probe), 128 / pow(2, probe), 1.0 * probe / RoughnessProbes, 1024);
+          float_image side = GetPrefilteredSide(dirs[i], rights[i], 128 / (int)pow(2, probe), 128 / (int)pow(2, probe), 1.0f * probe / RoughnessProbes, 1024);
           side.Save(OutputPath + "\\prefiltered\\" + std::to_string(probe) + names[i]);
         }
       }
@@ -355,7 +355,7 @@ class cubemap_baker
         for (int i = 0; i < MipsAmount; i++)
         {
           HDR_mips.push_back(HDR);
-          HDR_mips[HDR_mips.size() - 1].Resize(HDR.W / pow(2, i), HDR.H / pow(2, i));
+          HDR_mips[HDR_mips.size() - 1].Resize(HDR.W / (int)pow(2, i), HDR.H / (int)pow(2, i));
         }
       }
 

@@ -122,7 +122,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
   mth::vec3f V2(0, 1, 0);
   auto res = V1 cross V2;
   auto res2 = V1 * mth::matr4f::Translate(1);
-  assert(res == mth::vec3f(0, 0, 1));
+  GDR_ASSERT(res == mth::vec3f(0, 0, 1));
 
   return (int)Engine.Run();
 }

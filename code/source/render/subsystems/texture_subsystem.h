@@ -28,7 +28,7 @@ namespace gdr
     // If we try to create texture without params -> we should error about it
     gdr_index Add()
     {
-      printf("ERROR");
+      GDR_FAILED("You cannot create a texture without parameters");
       return NONE_INDEX;
     }
 

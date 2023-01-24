@@ -184,7 +184,7 @@ void gdr::render::DrawFrame(void)
     GlobalsSystem->CPUData.DeltaTime = Engine->GetDeltaTime(); // Delta time in seconds	
     GlobalsSystem->CPUData.Width = Engine->Width;  // Screen size 
     GlobalsSystem->CPUData.Height = Engine->Height; // Screen size 
-    GlobalsSystem->CPUData.LightsAmount = Engine->LightsSystem->AllocatedSize();
+    GlobalsSystem->CPUData.LightsAmount = (UINT)Engine->LightsSystem->AllocatedSize();
     GlobalsSystem->UpdateGPUData(uploadCommandList);
     PROFILE_END(uploadCommandList);
   }

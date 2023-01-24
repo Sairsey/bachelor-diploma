@@ -22,7 +22,7 @@ void gdr::skybox_pass::Initialize(void)
 
         {
           cubeBindlessTexturesDesc[0].BaseShaderRegister = GDRGPUCubeTexturePoolSlot;
-          cubeBindlessTexturesDesc[0].NumDescriptors = Render->CreationParams.MaxTextureAmount;
+          cubeBindlessTexturesDesc[0].NumDescriptors = (UINT)Render->CreationParams.MaxTextureAmount;
           cubeBindlessTexturesDesc[0].OffsetInDescriptorsFromTableStart = 0;
           cubeBindlessTexturesDesc[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
           cubeBindlessTexturesDesc[0].RegisterSpace = GDRGPUCubeTexturePoolSpace;
@@ -32,7 +32,7 @@ void gdr::skybox_pass::Initialize(void)
 
         {
             CD3DX12_ROOT_SIGNATURE_DESC rootSignatureDesc;
-            rootSignatureDesc.Init((UINT)params.size(), &params[0], Render->TexturesSystem->SamplersDescs.size(), Render->TexturesSystem->SamplersDescs.data(), D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
+            rootSignatureDesc.Init((UINT)params.size(), &params[0], (UINT)Render->TexturesSystem->SamplersDescs.size(), Render->TexturesSystem->SamplersDescs.data(), D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
             Render->GetDevice().CreateRootSignature(rootSignatureDesc, &RootSignature);
         }
     }

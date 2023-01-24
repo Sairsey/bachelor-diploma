@@ -9,7 +9,6 @@
 
 #include <tchar.h>
 #include <set>
-#include <assert.h>
 #include <comdef.h>
 
 #include <dxgi.h>
@@ -46,6 +45,28 @@
 #define PROFILE_CPU_END()
 #endif
 
+inline void AssertMessage(const char *file, int line, const char* msg)
+{
+  char buf[300] = {};
+  sprintf_s(buf, "Assert Failed!\n File %s\n Line %i\n %s\n", file, line, msg);
+  OutputDebugStringA(buf);
+  DebugBreak();
+  if (MessageBoxA(GetActiveWindow(), buf, "GDR Error Report", MB_OK | MB_ICONERROR))
+  {
+    abort();
+  }
+}
+
+#ifdef _DEBUG
+#define GDR_ASSERT(expr) \
+    if (!(expr)) \
+        AssertMessage(__FILE__, __LINE__, #expr)
+#define GDR_FAILED(msg) \
+        AssertMessage(__FILE__, __LINE__, msg)
+#else
+#define GDR_ASSERT(expr)
+#define GDR_FAILED(msg)
+#endif
 
 #define D3D_RELEASE(a) if ((a) != nullptr) {\
     (a)->Release();\
@@ -63,7 +84,7 @@ if (SUCCEEDED(hr))\
         OutputDebugString(err.ErrorMessage());\
         OutputDebugString(_T("\n"));\
     }\
-    assert(SUCCEEDED(hr));\
+    GDR_ASSERT(SUCCEEDED(hr));\
 }
 #else
 #define D3D_CHECK(a) \

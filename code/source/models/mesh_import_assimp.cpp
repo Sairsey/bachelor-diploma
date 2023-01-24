@@ -36,7 +36,7 @@ gdr_index mesh_assimp_importer::ImportTreeFirstPass(aiNode* node, gdr_index Pare
 {
   // first -> add new node in Result;
   Result.HierarchyNodes.emplace_back();
-  gdr_index Current = Result.HierarchyNodes.size() - 1;
+  gdr_index Current = (gdr_index)(Result.HierarchyNodes.size() - 1);
 
   // second -> fill all its fields;
   Result.HierarchyNodes[Current].Name = node->mName.C_Str();
@@ -65,7 +65,7 @@ gdr_index mesh_assimp_importer::ImportTreeFirstPass(aiNode* node, gdr_index Pare
 void mesh_assimp_importer::ImportTreeSecondPass(aiNode* node, gdr_index CurrentIndex)
 {
   // import meshes
-  for (int i = 0; i < node->mNumMeshes; i++)
+  for (unsigned i = 0; i < node->mNumMeshes; i++)
   {
     gdr_index Mesh = ImportTreeMesh(scene->mMeshes[node->mMeshes[i]], CurrentIndex);
     if (Mesh != NONE_INDEX)
@@ -123,7 +123,7 @@ gdr_index mesh_assimp_importer::GetTextureFromAssimp(aiMaterial* assimpMaterial,
     fclose(F);
   }
   
-  gdr_index TextureIndex = Result.TexturesPaths.size();
+  gdr_index TextureIndex = (gdr_index)(Result.TexturesPaths.size());
   for (gdr_index i = 0; i < Result.TexturesPaths.size() && TextureIndex == Result.TexturesPaths.size(); i++)
     if (Result.TexturesPaths[i] == fullpath)
       TextureIndex = i;
@@ -138,7 +138,7 @@ gdr_index mesh_assimp_importer::ImportTreeMesh(aiMesh* mesh, gdr_index ParentInd
 {
   // first -> add new node in Result;
   Result.HierarchyNodes.emplace_back();
-  gdr_index Current = Result.HierarchyNodes.size() - 1;
+  gdr_index Current = (gdr_index)(Result.HierarchyNodes.size() - 1);
 
   // second -> fill all its fields;
   Result.HierarchyNodes[Current].Name = mesh->mName.C_Str();
@@ -246,7 +246,7 @@ gdr_index mesh_assimp_importer::ImportTreeMesh(aiMesh* mesh, gdr_index ParentInd
   else
   {
     Result.Materials.emplace_back();
-    Result.HierarchyNodes[Current].MaterialIndex = Result.Materials.size() - 1;
+    Result.HierarchyNodes[Current].MaterialIndex = (gdr_index)(Result.Materials.size() - 1);
     GDRGPUMaterial &newMaterial = Result.Materials[Result.HierarchyNodes[Current].MaterialIndex];
     aiMaterial *assimpMaterial = scene->mMaterials[mesh->mMaterialIndex];
     
@@ -265,12 +265,12 @@ gdr_index mesh_assimp_importer::ImportTreeMesh(aiMesh* mesh, gdr_index ParentInd
     if (shadingModel == aiShadingMode_PBR_BRDF && (assimpMaterial->Get(AI_MATKEY_METALLIC_FACTOR, metallicFactor) == aiReturn_SUCCESS))
     {
       newMaterial.ShadeType = MATERIAL_SHADER_COOKTORRANCE_METALNESS;
-      printf("ERROR");
+      GDR_FAILED("Shader Type MATERIAL_SHADER_COOKTORRANCE_METALNESS are not supported by now");
     }
     else if (shadingModel == aiShadingMode_PBR_BRDF && (assimpMaterial->Get(AI_MATKEY_GLOSSINESS_FACTOR, glossFactor) == aiReturn_SUCCESS))
     {
       newMaterial.ShadeType = MATERIAL_SHADER_COOKTORRANCE_SPECULAR;
-      printf("ERROR");
+      GDR_FAILED("Shader Type MATERIAL_SHADER_COOKTORRANCE_SPECULAR are not supported by now");
     }
     else if (shadingModel == aiShadingMode_Phong || shadingModel == aiShadingMode_Blinn)
     {
@@ -278,7 +278,7 @@ gdr_index mesh_assimp_importer::ImportTreeMesh(aiMesh* mesh, gdr_index ParentInd
       
       // Shiness 
       assimpMaterial->Get(AI_MATKEY_SHININESS, shiness);
-      GDRGPUMaterialPhongGetShiness(newMaterial) = shiness / 4.0;
+      GDRGPUMaterialPhongGetShiness(newMaterial) = shiness / 4.0f;
       assimpMaterial->Get(AI_MATKEY_SHININESS_STRENGTH, shiness);
       GDRGPUMaterialPhongGetShiness(newMaterial) *= shiness;
 
@@ -353,7 +353,7 @@ void mesh_assimp_importer::Import()
   ImportTreeSecondPass(scene->mRootNode);
 
   // calculate min-max AABB
-  for (int i = 0; i < scene->mNumMeshes; i++)
+  for (unsigned i = 0; i < scene->mNumMeshes; i++)
   {
     Result.RootTransform.minAABB.X = min(Result.RootTransform.minAABB.X, scene->mMeshes[i]->mAABB.mMin.x);
     Result.RootTransform.minAABB.Y = min(Result.RootTransform.minAABB.Y, scene->mMeshes[i]->mAABB.mMin.y);

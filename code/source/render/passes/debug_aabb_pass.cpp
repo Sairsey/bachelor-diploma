@@ -15,7 +15,7 @@ void gdr::debug_aabb_pass::Initialize(void)
 
         {
             CD3DX12_ROOT_SIGNATURE_DESC rootSignatureDesc;
-            rootSignatureDesc.Init((UINT)params.size(), &params[0], Render->TexturesSystem->SamplersDescs.size(), Render->TexturesSystem->SamplersDescs.data(), D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
+            rootSignatureDesc.Init((UINT)params.size(), &params[0], (UINT)Render->TexturesSystem->SamplersDescs.size(), Render->TexturesSystem->SamplersDescs.data(), D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
             Render->GetDevice().CreateRootSignature(rootSignatureDesc, &RootSignature);
         }
     }
@@ -93,7 +93,7 @@ void gdr::debug_aabb_pass::Initialize(void)
     // Indices.push_back(7); Indices.push_back(2); 
     // Indices.push_back(7); Indices.push_back(5);
     // Indices.push_back(7); Indices.push_back(3);
-    IndexCount = Indices.size();
+    IndexCount = (UINT)Indices.size();
 
     ID3D12GraphicsCommandList* commandList;
     Render->GetDevice().BeginUploadCommandList(&commandList);

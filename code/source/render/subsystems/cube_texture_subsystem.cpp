@@ -4,7 +4,7 @@
 // Constructor 
 gdr::cube_textures_subsystem::cube_textures_subsystem(render* Rnd) : resource_pool_subsystem(Rnd)
 {
-  Render->GetDevice().AllocateStaticDescriptors(Render->CreationParams.MaxCubeTextureAmount, CubeTextureTableCPU, CubeTextureTableGPU);
+  Render->GetDevice().AllocateStaticDescriptors((UINT)Render->CreationParams.MaxCubeTextureAmount, CubeTextureTableCPU, CubeTextureTableGPU);
 }
 
 // Load Texture
@@ -75,7 +75,7 @@ gdr_index gdr::cube_textures_subsystem::Add(
       for (size_t i = 0; i < names.size(); i++)
       {
         stb_buffer = stbi_loadf(names[i].c_str(), &width, &height, &components, 0);
-        assert(stb_buffer != NULL);
+        GDR_ASSERT(stb_buffer != NULL);
 
         if (components == 4)
           memcpy(pBufferFloat + i * height * width * 4, stb_buffer, width * height * 4 * sizeof(float));
@@ -98,7 +98,7 @@ gdr_index gdr::cube_textures_subsystem::Add(
       for (size_t i = 0; i < names.size(); i++)
       {
         stb_buffer = stbi_load(names[i].c_str(), &width, &height, &components, 0);
-        assert(stb_buffer != NULL);
+        GDR_ASSERT(stb_buffer != NULL);
 
         if (components == 4)
           memcpy(pBuffer + i * height * width * 4, stb_buffer, width * height * 4 * sizeof(UINT8));
@@ -132,7 +132,7 @@ gdr_index gdr::cube_textures_subsystem::Add(
     }
     else
     {
-      MessageBox(NULL, L"CANNOT allocate texture", L"CANNOT allocate texture", MB_OK);
+      GDR_FAILED("Failed to allocate DX12 memory for texture");
     }
     if (isHdr)
       delete[] pBufferFloat;
@@ -208,7 +208,7 @@ gdr_index gdr::cube_textures_subsystem::Add(std::string directory, int MipsAmoun
     {
       int width, height;
       stb_buffer = stbi_loadf(names[i].c_str(), &width, &height, &components, 0);
-      assert(stb_buffer != NULL);
+      GDR_ASSERT(stb_buffer != NULL);
 
       if (components == 4)
         memcpy(dest_buffer, stb_buffer, width * height * 4 * sizeof(float));
@@ -242,7 +242,7 @@ gdr_index gdr::cube_textures_subsystem::Add(std::string directory, int MipsAmoun
     }
     else
     {
-      MessageBox(NULL, L"CANNOT allocate texture", L"CANNOT allocate texture", MB_OK);
+      GDR_FAILED("Failed to allocate DX12 memory for texture");
     }
 
     delete[] pBufferFloat;

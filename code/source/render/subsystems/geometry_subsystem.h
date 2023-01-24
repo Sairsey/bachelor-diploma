@@ -32,7 +32,7 @@ namespace gdr
       // If we try to create geometry without params -> we should error about it
       gdr_index Add()
       {
-        printf("ERROR");
+        GDR_FAILED("You cannot create a geometry without parameters");
         return NONE_INDEX;
       }
 

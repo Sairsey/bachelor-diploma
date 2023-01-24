@@ -43,7 +43,7 @@ void gdr::resource_pool_subsystem<StoredType, ChunkSize>::CreateResource()
   Render->GetDevice().GetDXDevice()->CreateShaderResourceView(GPUData.Resource, &srvDesc, CPUDescriptor);
 
   // Allocate chunks flags
-  ChunkMarkings.resize(ceil(1.0 * CPUData.size() * sizeof(StoredType) / CHUNK_SIZE), false);
+  ChunkMarkings.resize((size_t)ceil(1.0 * CPUData.size() * sizeof(StoredType) / CHUNK_SIZE), false);
   for (int i = 0; i < ChunkMarkings.size(); i++)
     ChunkMarkings[i] = false;
 
@@ -100,7 +100,7 @@ void gdr::resource_pool_subsystem<StoredType, ChunkSize>::UpdateGPUData(ID3D12Gr
 
         // update chunks in one call if they are stored one after another
         int source_offset = i * CHUNK_SIZE;
-        int dataSize = min(sizeof(StoredType) * CPUData.size() - source_offset, CHUNK_SIZE * chunk_amount); // Real size of chunk
+        int dataSize = min(sizeof(StoredType) * (int)CPUData.size() - source_offset, CHUNK_SIZE * chunk_amount); // Real size of chunk
         if (dataSize > 0)
           Render->GetDevice().UpdateBufferOffset(pCommandList, GPUData.Resource, source_offset, (byte*)&CPUData[0] + source_offset, dataSize);
 
@@ -151,7 +151,7 @@ gdr_index gdr::resource_pool_subsystem<StoredType, ChunkSize>::Add()
   // Otherwise we need to create new
   if (Result == NONE_INDEX)
   {
-    Result = CPUData.size();
+    Result = (gdr_index)CPUData.size();
     CPUData.emplace_back();
     PoolRecords.emplace_back();
     PoolRecords[Result].IsAlive = true;
@@ -178,8 +178,7 @@ void gdr::resource_pool_subsystem<StoredType, ChunkSize>::Remove(gdr_index index
 template<typename StoredType, int ChunkSize>
 StoredType& gdr::resource_pool_subsystem<StoredType, ChunkSize>::GetEditable(gdr_index index)
 {
-  if (index >= CPUData.size() || index < 0 || !PoolRecords[index].IsAlive)
-    assert(0);
+  GDR_ASSERT(index <= CPUData.size() && index >= 0 && PoolRecords[index].IsAlive);
 
   MarkChunkByElementIndex(index);
   return CPUData[index];
@@ -188,6 +187,8 @@ StoredType& gdr::resource_pool_subsystem<StoredType, ChunkSize>::GetEditable(gdr
 template<typename StoredType, int ChunkSize>
 const StoredType& gdr::resource_pool_subsystem<StoredType, ChunkSize>::Get(gdr_index index) const
 {
+  GDR_ASSERT(index <= CPUData.size() && index >= 0 && PoolRecords[index].IsAlive);
+
   return CPUData[index];
 }
 
@@ -200,7 +201,7 @@ bool gdr::resource_pool_subsystem<StoredType, ChunkSize>::IsExist(gdr_index inde
 template<typename StoredType, int ChunkSize>
 void gdr::resource_pool_subsystem<StoredType, ChunkSize>::MarkChunkByElementIndex(gdr_index index)
 {
-  size_t chunk_index = floor(1.0 * ((byte*)&CPUData[index] - (byte*)&CPUData[0]) / CHUNK_SIZE);
+  size_t chunk_index = (size_t)floor(1.0 * ((byte*)&CPUData[index] - (byte*)&CPUData[0]) / CHUNK_SIZE);
   if (chunk_index < ChunkMarkings.size() && chunk_index >= 0 && PoolRecords[index].IsAlive)
     ChunkMarkings[chunk_index] = true;
 }

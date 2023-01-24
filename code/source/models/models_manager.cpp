@@ -73,7 +73,7 @@ gdr_index gdr::models_manager::AddModel(mesh_import_data ImportData)
 						break;
 					case MATERIAL_SHADER_COOKTORRANCE_SPECULAR:
 					default:
-						printf("ERROR");
+						GDR_FAILED("Shader Type MATERIAL_SHADER_COOKTORRANCE_SPECULAR are not supported by now");
 						break;
 				}
 			}
@@ -144,7 +144,7 @@ gdr_index gdr::models_manager::AddModel(mesh_import_data ImportData)
 			}
 		}
 	}
-	return ModelsPool.size() - 1;
+	return (gdr_index)(ModelsPool.size() - 1);
 }
 
 

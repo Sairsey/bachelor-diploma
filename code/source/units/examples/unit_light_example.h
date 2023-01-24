@@ -52,11 +52,11 @@ public:
   void Response(void)
   {
     float radius = 1;
-    float alpha_step = 360.0 / (Lights.size());
-    mth::matr translation = mth::matr::Scale({0.1}) * mth::matr::Translate(mth::vec3f(radius, 0, 0));
+    float alpha_step = 360.0f / (Lights.size());
+    mth::matr translation = mth::matr::Scale({0.1f}) * mth::matr::Translate(mth::vec3f(radius, 0, 0));
     for (int i = 0; i < Lights.size(); i++)
       Engine->ObjectTransformsSystem->GetEditable(Engine->LightsSystem->Get(Lights[i]).ObjectTransformIndex).Transform 
-        = translation * mth::matr::RotateY(alpha_step * i + Engine->GetTime() * 360.0 / 10.0);
+        = translation * mth::matr::RotateY(alpha_step * i + Engine->GetTime() * 360.0f / 10.0f);
   }
 
   std::string GetName(void)

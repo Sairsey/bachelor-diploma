@@ -65,10 +65,10 @@ class float_image
     uv[0] *= (W - 1);
     uv[1] *= (H - 1);
 
-    int up_u = ceil(uv[0]);
-    int down_u = floor(uv[0]);
-    int up_v = ceil(uv[1]);
-    int down_v = floor(uv[1]);
+    int up_u = (int)ceil(uv[0]);
+    int down_u = (int)floor(uv[0]);
+    int up_v = (int)ceil(uv[1]);
+    int down_v = (int)floor(uv[1]);
     float a1 = uv[1] - down_v;
     float a2 = uv[0] - down_u;
 
@@ -204,10 +204,10 @@ public:
     uv[0] *= (data[index].W - 1);
     uv[1] *= (data[index].H - 1);
 
-    int up_u = ceil(uv[0]);
-    int down_u = floor(uv[0]);
-    int up_v = ceil(uv[1]);
-    int down_v = floor(uv[1]);
+    int up_u = (int)ceil(uv[0]);
+    int down_u = (int)floor(uv[0]);
+    int up_v = (int)ceil(uv[1]);
+    int down_v = (int)floor(uv[1]);
     float a1 = uv[1] - down_v;
     float a2 = uv[0] - down_u;
 

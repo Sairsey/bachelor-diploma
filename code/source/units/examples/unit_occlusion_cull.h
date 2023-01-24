@@ -26,7 +26,7 @@ public:
       {
         mth::vec3f pos = { 1.0f * rand() / RAND_MAX, 1.0f * rand() / RAND_MAX, 1.0f * rand() / RAND_MAX };
         pos = pos * 2 - mth::vec3f(1, 1, 1);
-        pos *= halfBoxSize;
+        pos *= (float)halfBoxSize;
         gdr_index ModelIndex = Engine->AddModel(import_data);
         mth::matr4f Transform = mth::matr::Translate(pos);
         Models.push_back(ModelIndex);

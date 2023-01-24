@@ -135,8 +135,8 @@ void gdr::render_targets_subsystem::CreateTextures()
     D3D12_RESOURCE_DESC desc = 
       CD3DX12_RESOURCE_DESC::Tex2D(
       TargetParams[i].Format,
-      TargetParams[i].IsFullscreen ? max(Render->GetEngine()->Width * TargetParams[i].scale.X, 1) : TargetParams[i].size.X,
-      TargetParams[i].IsFullscreen ? max(Render->GetEngine()->Height * TargetParams[i].scale.Y, 1) : TargetParams[i].size.Y,
+      TargetParams[i].IsFullscreen ? (UINT)max(Render->GetEngine()->Width * TargetParams[i].scale.X, 1) : TargetParams[i].size.X,
+      TargetParams[i].IsFullscreen ? (UINT)max(Render->GetEngine()->Height * TargetParams[i].scale.Y, 1) : TargetParams[i].size.Y,
       1,
       1,
       1,
@@ -175,7 +175,7 @@ void gdr::render_targets_subsystem::CreateTextures()
     D3D12_RESOURCE_DESC textureResource = Render->DepthBuffer.Resource->GetDesc();
     textureResource.Format = DXGI_FORMAT_R32_FLOAT;
     textureResource.Flags = D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
-    textureResource.MipLevels = CalculateMipMapsAmount(Render->DepthBuffer.Resource->GetDesc().Width, Render->DepthBuffer.Resource->GetDesc().Height);;
+    textureResource.MipLevels = CalculateMipMapsAmount((UINT)Render->DepthBuffer.Resource->GetDesc().Width, (UINT)Render->DepthBuffer.Resource->GetDesc().Height);;
 
     Render->GetDevice().CreateGPUResource(
       textureResource,

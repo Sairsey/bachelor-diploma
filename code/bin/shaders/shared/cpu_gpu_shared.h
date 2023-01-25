@@ -220,12 +220,30 @@ struct GDRGPUMaterial
 #define GDRGPUMaterialPhongGetShiness(Material) Material.FloatParam0          // Ph
 #define GDRGPUMaterialPhongGetNormalMapIndex(Material) Material.UintParam0    // Normal map
 // SHADER_COOKTORRANCE_METALNESS
+// contain 5 variables
+// 1) Ambient Occlusion
+// 2) Albedo
+// 3) Metallness
+// 4) Roughness
+// 5) Normal Map
+#define GDRGPUMaterialCookTorranceGetAmbientOcclusionMapIndex(Material) Material.UintParam1          // Ambient Occlusion Map
 #define GDRGPUMaterialCookTorranceGetAlbedo(Material) Material.VecParam0                             // Albedo
-#define GDRGPUMaterialCookTorranceGetAlbedoMapIndex(Material) Material.UintParam1                    // Albedo Map
-#define GDRGPUMaterialCookTorranceGetRoughness(Material) Material.FloatParam0                        // roughness 
+#define GDRGPUMaterialCookTorranceGetAlbedoMapIndex(Material) Material.UintParam2                    // Albedo Map
+#define GDRGPUMaterialCookTorranceGetRoughness(Material) Material.FloatParam0                        // Roughness 
 #define GDRGPUMaterialCookTorranceGetMetallic(Material) Material.FloatParam1                         // metallness
-#define GDRGPUMaterialCookTorranceGetRoughnessMetallnessMapIndex(Material) Material.UintParam2       // roughness + metallness
+#define GDRGPUMaterialCookTorranceGetRoughnessMetallnessMapIndex(Material) Material.UintParam3       // roughness(g) + metallness(b)
 #define GDRGPUMaterialCookTorranceGetNormalMapIndex(Material) Material.UintParam0                    // Normal map
+// MATERIAL_SHADER_COOKTORRANCE_SPECULAR
+// contain 5 variables
+// 1) Ambient Occlusion (Same)
+// 2) Albedo            (Same)
+// 3) Specular          
+// 4) Glossiness        (1.0 - Roughness)
+// 5) Normal Map        (Same)
+#define GDRGPUMaterialCookTorranceGetSpecular(Material) Material.VecParam1                            // Specular
+#define GDRGPUMaterialCookTorranceGetGlossiness(Material) Material.FloatParam0                        // Glossiness
+#define GDRGPUMaterialCookTorranceGetSpecularGlossinessMapIndex(Material) Material.UintParam3         // Specular(rgb) + Glossiness(a)
+
 
 #define ERROR_COLOR float4(1, 0, 1, 1);
 

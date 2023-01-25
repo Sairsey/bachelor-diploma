@@ -26,6 +26,8 @@
 // 11) times profiling on CPU too
 // 14) Fix pools States (Probably done, but I have sometimes strange bug, when albedo rise its draw time)
 // 16) Pass for nodes checking
+// 17) Fix material viewer
+// 18) Check (and probably fix) PBR
 
 
 #ifdef UNITS_ENABLED

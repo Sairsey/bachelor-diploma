@@ -80,6 +80,9 @@ bool CalcLight(in uint LightIndex, in float3 Position, out float3 DirectionToLig
   return true;
 }
 
+/// <summary>
+/// SHADER_COLOR
+/// </summary>
 float4 ShadeColor(float2 uv, GDRGPUMaterial material)
 {
   float4 baseColor = float4(GDRGPUMaterialColorGetColor(material), 1);
@@ -88,6 +91,9 @@ float4 ShadeColor(float2 uv, GDRGPUMaterial material)
   return baseColor;
 }
 
+/// <summary>
+/// SHADER_PHONG
+/// </summary>
 float4 ShadePhong(float3 Normal, float3 Position, float2 uv, GDRGPUMaterial material)
 {
   float4 Ka = float4(GDRGPUMaterialPhongGetAmbient(material), 1);
@@ -125,11 +131,161 @@ float4 ShadePhong(float3 Normal, float3 Position, float2 uv, GDRGPUMaterial mate
       resultColor.xyz += LColor * Kd.xyz * NdotL;
 
       float RdotV = dot(R, V);
-      resultColor.xyz += LColor * Ks.xyz * pow(max(0.0f, RdotV), Ph);
+      resultColor.xyz += LColor * Ks.xyz * (pow(max(0.0f, RdotV), Ph)).xxx;
     }
   }
 
   return resultColor;
+}
+
+struct PBRParams
+{
+    float AmbientOcclusion;
+    float Transparency;
+    // Taken from https://github.com/KhronosGroup/glTF/issues/810
+    float3 Diffuse;
+    float3 Specular;
+    float Roughness;
+};
+
+#define PI 3.14159265358979323846
+
+float GGX_PartialGeometry(float cosThetaN, float alpha) {
+    float K = (alpha + 1) * (alpha + 1) / 8.0;
+    return cosThetaN / (cosThetaN * (1 - K) + K);
+}
+
+float GGX_Distribution(float cosThetaNH, float alpha) {
+    float alpha2 = alpha * alpha;
+    float NH2 = cosThetaNH * cosThetaNH;
+    float den = NH2 * (alpha2 - 1.0) + 1.0;
+    return alpha2 / (PI * den * den);
+}
+
+float3 FresnelSchlick(float3 F0, float cosTheta) {
+    return F0 + (1.0 - F0) * pow(1.0 - cosTheta, 5.0);
+}
+
+float3 FresnelSchlickEnv(float3 F0, float cosTheta, float alpha) {
+    return F0 + (max((1.0 - alpha).xxx, F0) - F0) * pow(1.0 - cosTheta, 5.0);
+}
+
+float4 ShadeCookTorrance(float3 Normal, float3 Position, float2 uv, GDRGPUMaterial material, PBRParams Params)
+{
+    float3 resultColor = float3(0, 0, 0);
+
+    float3 V = globals.CameraPos - Position;
+    V = normalize(V);
+
+    float3 F0 = Params.Specular;
+    float NV = max(dot(Normal, V), 0.0);
+    for (uint i = 0; i < globals.LightsAmount; i++)
+    {
+        float3 L;
+        float3 LColor;
+
+        if (!CalcLight(i, Position, L, LColor))
+            continue;
+
+        float3 H = normalize(V + L);
+        //precompute dots
+        float NL = max(dot(Normal, L), 0.0);
+        float NH = max(dot(Normal, H), 0.0);
+        float HV = max(dot(H, V), 0.0);
+
+        //precompute roughness square
+        float G = GGX_PartialGeometry(NV, Params.Roughness) * GGX_PartialGeometry(NL, Params.Roughness);
+        float D = GGX_Distribution(NH, Params.Roughness);
+        
+        float3 F = FresnelSchlick(F0, HV);
+        float3 KSpecular = F;
+        float3 Specular = KSpecular * G * D / max(4.0 * (NV) * (NL), 0.001);
+        float3 KDiffuse = float3(1.0, 1.0, 1.0) - KSpecular;
+        float3 Diffuse = Params.Diffuse / PI * KDiffuse;
+
+        resultColor += LColor * (Diffuse + Specular) * NL;
+    }
+
+    return float4(resultColor * Params.AmbientOcclusion, Params.Transparency);
+}
+
+
+/// <summary>
+/// SHADER_COOKTORRANCE_METALNESS
+/// </summary>
+float4 ShadeCookTorranceMetal(float3 Normal, float3 Position, float2 uv, GDRGPUMaterial material)
+{
+    PBRParams Params;
+
+    // Ambient occlusion
+    Params.AmbientOcclusion = 1.0;
+    if (GDRGPUMaterialCookTorranceGetAmbientOcclusionMapIndex(material) != NONE_INDEX)
+        Params.AmbientOcclusion = TexturePool[GDRGPUMaterialCookTorranceGetAmbientOcclusionMapIndex(material)].Sample(LinearSampler, uv).xyz;
+
+    // Roughness + Metallness
+    Params.Roughness = GDRGPUMaterialCookTorranceGetRoughness(material);
+    float Metalness = GDRGPUMaterialCookTorranceGetMetallic(material);
+    if (GDRGPUMaterialCookTorranceGetRoughnessMetallnessMapIndex(material) != NONE_INDEX)
+    {
+        float4 tmp = TexturePool[GDRGPUMaterialCookTorranceGetRoughnessMetallnessMapIndex(material)].Sample(LinearSampler, uv);
+        Params.Roughness *= tmp.g;
+        Metalness *= tmp.b;
+    }
+
+    // Diffuse + Transparency
+    Params.Diffuse = GDRGPUMaterialCookTorranceGetAlbedo(material);
+    Params.Transparency = 1.0;
+    if (GDRGPUMaterialCookTorranceGetAlbedoMapIndex(material) != NONE_INDEX)
+    {
+        float4 tmp = TexturePool[GDRGPUMaterialCookTorranceGetAlbedoMapIndex(material)].Sample(LinearSampler, uv);
+        Params.Diffuse = tmp.rgb;
+        Params.Transparency = tmp.a;
+    }
+
+    // Specular
+    Params.Specular = 0.04;
+    Params.Specular = lerp(Params.Specular, Params.Diffuse, Metalness);
+
+    Params.Diffuse *= (1 - Metalness);
+
+    return ShadeCookTorrance(Normal, Position, uv, material, Params);
+}
+
+/// <summary>
+/// SHADER_COOKTORRANCE_SPECULAR
+/// </summary>
+float4 ShadeCookTorranceSpecular(float3 Normal, float3 Position, float2 uv, GDRGPUMaterial material)
+{
+    PBRParams Params;
+
+    // Ambient occlusion
+    Params.AmbientOcclusion = 1.0;
+    if (GDRGPUMaterialCookTorranceGetAmbientOcclusionMapIndex(material) != NONE_INDEX)
+        Params.AmbientOcclusion = TexturePool[GDRGPUMaterialCookTorranceGetAmbientOcclusionMapIndex(material)].Sample(LinearSampler, uv).xyz;
+
+    // Glossiness + Specular (and Roughness too)
+    Params.Roughness = 1.0 - GDRGPUMaterialCookTorranceGetGlossiness(material);
+    Params.Specular = GDRGPUMaterialCookTorranceGetSpecular(material);
+    if (GDRGPUMaterialCookTorranceGetSpecularGlossinessMapIndex(material) != NONE_INDEX)
+    {
+        float4 tmp = TexturePool[GDRGPUMaterialCookTorranceGetSpecularGlossinessMapIndex(material)].Sample(LinearSampler, uv);
+        Params.Roughness = 1 - tmp.a;
+        Params.Specular = tmp.rgb;
+    }
+
+    // Diffuse + Transparency
+    Params.Diffuse = GDRGPUMaterialCookTorranceGetAlbedo(material);
+    Params.Transparency = 1.0;
+    if (GDRGPUMaterialCookTorranceGetAlbedoMapIndex(material) != NONE_INDEX)
+    {
+        float4 tmp = TexturePool[GDRGPUMaterialCookTorranceGetAlbedoMapIndex(material)].Sample(LinearSampler, uv);
+        Params.Diffuse = tmp.rgb;
+        Params.Transparency = tmp.a;
+    }
+
+    Params.Diffuse *= (1 - max(Params.Specular.r, max(Params.Specular.g, Params.Specular.b)));
+
+    return ShadeCookTorrance(Normal, Position, uv, material, Params);
 }
 
 float4 Shade(float3 pos, float3 norm, float2 uv, uint materialIndex)
@@ -144,6 +300,10 @@ float4 Shade(float3 pos, float3 norm, float2 uv, uint materialIndex)
       return ShadeColor(uv, material);
     case MATERIAL_SHADER_PHONG:
       return ShadePhong(norm, pos, uv, material);
+    case MATERIAL_SHADER_COOKTORRANCE_METALNESS:
+        return ShadeCookTorranceMetal(norm, pos, uv, material);
+    case MATERIAL_SHADER_COOKTORRANCE_SPECULAR:
+        return ShadeCookTorranceSpecular(norm, pos, uv, material);
     default:
       return ERROR_COLOR;
   }
@@ -164,6 +324,19 @@ float3 CalculateNormal(float3 norm, float3 tangent, float2 uv, uint materialInde
       Normal = TexturePool[GDRGPUMaterialPhongGetNormalMapIndex(material)].Sample(LinearSampler, uv).xyz;
       Normal = (Normal * 2.0 - 1.0);
       Normal = normalize(mul(TBN, Normal));
+    }
+  }
+  else if (material.ShadeType == MATERIAL_SHADER_COOKTORRANCE_METALNESS || material.ShadeType == MATERIAL_SHADER_COOKTORRANCE_SPECULAR)
+  {
+    float3 Tangent = normalize(tangent);
+    float3 Bitangent = cross(Normal, Tangent);
+    float3x3 TBN = transpose(float3x3(Tangent, Bitangent, Normal));
+
+    if (GDRGPUMaterialCookTorranceGetNormalMapIndex(material) != NONE_INDEX)
+    {
+        Normal = TexturePool[GDRGPUMaterialCookTorranceGetNormalMapIndex(material)].Sample(LinearSampler, uv).xyz;
+        Normal = (Normal * 2.0 - 1.0);
+        Normal = normalize(mul(TBN, Normal));
     }
   }
   return Normal;

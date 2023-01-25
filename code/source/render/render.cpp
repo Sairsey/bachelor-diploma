@@ -178,72 +178,86 @@ void gdr::render::DrawFrame(void)
   if (!IsInited || DrawCommandsSystem->AllocatedSize() == 0)
     return;
 
-  ID3D12GraphicsCommandList* uploadCommandList = nullptr;
-  Device.BeginUploadCommandList(&uploadCommandList);
-  {
-    PROFILE_BEGIN(uploadCommandList, "Update Globals");
-    GlobalsSystem->CPUData.VP = PlayerCamera.GetVP(); // camera view-proj
-    GlobalsSystem->CPUData.CameraPos = PlayerCamera.GetPos(); // Camera position
-    GlobalsSystem->CPUData.Time = Engine->GetGlobalTime(); // Time in seconds
+  auto updateAllSystems = [&](ID3D12GraphicsCommandList* uploadCommandList) {
+      {
+          PROFILE_BEGIN(uploadCommandList, "Update Globals");
+          GlobalsSystem->CPUData.VP = PlayerCamera.GetVP(); // camera view-proj
+          GlobalsSystem->CPUData.CameraPos = PlayerCamera.GetPos(); // Camera position
+          GlobalsSystem->CPUData.Time = Engine->GetGlobalTime(); // Time in seconds
 
-    GlobalsSystem->CPUData.DeltaTime = Engine->GetDeltaTime(); // Delta time in seconds	
-    GlobalsSystem->CPUData.Width = Engine->Width;  // Screen size 
-    GlobalsSystem->CPUData.Height = Engine->Height; // Screen size 
-    GlobalsSystem->CPUData.LightsAmount = (UINT)Engine->LightsSystem->AllocatedSize();
-    GlobalsSystem->CPUData.IsTonemap = Params.IsTonemapping;
-    GlobalsSystem->CPUData.SceneExposure = Params.SceneExposure;
-    GlobalsSystem->CPUData.SkyboxIndex = Params.SkyboxIndex;
-    GlobalsSystem->UpdateGPUData(uploadCommandList);
-    PROFILE_END(uploadCommandList);
-  }
-  {
-    PROFILE_BEGIN(uploadCommandList, "Update Node Transforms");
-    NodeTransformsSystem->UpdateGPUData(uploadCommandList);
-    PROFILE_END(uploadCommandList);
-  }
-  {
-    PROFILE_BEGIN(uploadCommandList, "Update Object Transforms");
-    ObjectTransformsSystem->UpdateGPUData(uploadCommandList);
-    PROFILE_END(uploadCommandList);
-  }
-  {
-    PROFILE_BEGIN(uploadCommandList, "Update Materials");
-    MaterialsSystem->UpdateGPUData(uploadCommandList);
-    PROFILE_END(uploadCommandList);
-  }
-  {
-    PROFILE_BEGIN(uploadCommandList, "Update Light sources");
-    LightsSystem->UpdateGPUData(uploadCommandList);
-    PROFILE_END(uploadCommandList);
-  }
-  {
-    PROFILE_BEGIN(uploadCommandList, "Update Textures");
-    TexturesSystem->UpdateGPUData(uploadCommandList);
-    PROFILE_END(uploadCommandList);
-  }
-  {
-    PROFILE_BEGIN(uploadCommandList, "Update Cube textures");
-    CubeTexturesSystem->UpdateGPUData(uploadCommandList);
-    PROFILE_END(uploadCommandList);
-  }
-  {
-    PROFILE_BEGIN(uploadCommandList, "Update Indirect buffers");
-    DrawCommandsSystem->UpdateGPUData(uploadCommandList);
-    PROFILE_END(uploadCommandList);
-  }
-  {
-    PROFILE_BEGIN(uploadCommandList, "Update Luminance buffer");
-    LuminanceSystem->UpdateGPUData(uploadCommandList);
-    PROFILE_END(uploadCommandList);
-  }
-  Device.CloseUploadCommandList();
+          GlobalsSystem->CPUData.DeltaTime = Engine->GetDeltaTime(); // Delta time in seconds	
+          GlobalsSystem->CPUData.Width = Engine->Width;  // Screen size 
+          GlobalsSystem->CPUData.Height = Engine->Height; // Screen size 
+          GlobalsSystem->CPUData.LightsAmount = (UINT)Engine->LightsSystem->AllocatedSize();
+          GlobalsSystem->CPUData.IsTonemap = Params.IsTonemapping;
+          GlobalsSystem->CPUData.SceneExposure = Params.SceneExposure;
+          GlobalsSystem->CPUData.SkyboxIndex = Params.SkyboxIndex;
+          GlobalsSystem->UpdateGPUData(uploadCommandList);
+          PROFILE_END(uploadCommandList);
+      }
+      {
+          PROFILE_BEGIN(uploadCommandList, "Update Node Transforms");
+          NodeTransformsSystem->UpdateGPUData(uploadCommandList);
+          PROFILE_END(uploadCommandList);
+      }
+      {
+          PROFILE_BEGIN(uploadCommandList, "Update Object Transforms");
+          ObjectTransformsSystem->UpdateGPUData(uploadCommandList);
+          PROFILE_END(uploadCommandList);
+      }
+      {
+          PROFILE_BEGIN(uploadCommandList, "Update Materials");
+          MaterialsSystem->UpdateGPUData(uploadCommandList);
+          PROFILE_END(uploadCommandList);
+      }
+      {
+          PROFILE_BEGIN(uploadCommandList, "Update Light sources");
+          LightsSystem->UpdateGPUData(uploadCommandList);
+          PROFILE_END(uploadCommandList);
+      }
+      {
+          PROFILE_BEGIN(uploadCommandList, "Update Textures");
+          TexturesSystem->UpdateGPUData(uploadCommandList);
+          PROFILE_END(uploadCommandList);
+      }
+      {
+          PROFILE_BEGIN(uploadCommandList, "Update Cube textures");
+          CubeTexturesSystem->UpdateGPUData(uploadCommandList);
+          PROFILE_END(uploadCommandList);
+      }
+      {
+          PROFILE_BEGIN(uploadCommandList, "Update Indirect buffers");
+          DrawCommandsSystem->UpdateGPUData(uploadCommandList);
+          PROFILE_END(uploadCommandList);
+      }
+      {
+          PROFILE_BEGIN(uploadCommandList, "Update Luminance buffer");
+          LuminanceSystem->UpdateGPUData(uploadCommandList);
+          PROFILE_END(uploadCommandList);
+      }
+  };
 
+
+  if (Params.IsUploadEveryFrame)
+  {
+      ID3D12GraphicsCommandList* uploadCommandList = nullptr;
+      Device.BeginUploadCommandList(&uploadCommandList);
+      updateAllSystems(uploadCommandList);
+      Device.CloseUploadCommandList();
+  }
   PROFILE_CPU_BEGIN("gdr::render::DrawFrame");
   ID3D12GraphicsCommandList* pCommandList = nullptr;
   ID3D12Resource* pBackBuffer = nullptr;
   D3D12_CPU_DESCRIPTOR_HANDLE rtvHandle;
   if (Device.BeginRenderCommandList(&pCommandList, &pBackBuffer, &rtvHandle))
   {
+    if (!Params.IsUploadEveryFrame)
+    {
+        Device.SetCommandListAsUpload(pCommandList);
+        updateAllSystems(pCommandList);
+        Device.ClearUploadListReference();
+    }
+
     PROFILE_BEGIN(pCommandList, "Update resource states");
     NodeTransformsSystem->UpdateResourceState(pCommandList, true);
     ObjectTransformsSystem->UpdateResourceState(pCommandList, true);

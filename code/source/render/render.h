@@ -21,6 +21,8 @@ namespace gdr
   struct render_runtime_params
   {
     bool IsIndirect = true;        // Enables indirect draw
+
+    bool IsUploadEveryFrame = true; // If true, each frame contains 2 cmd lists, 1-upload and 1-draw. They are trying to sync one to another.
     
     bool IsFrustumCulling = true;  // Enables Frustum Culling
     bool IsOccusionCulling = true; // Enables Occlusion Culling (avalible only with Frustum Culling and only in Indirect mode)

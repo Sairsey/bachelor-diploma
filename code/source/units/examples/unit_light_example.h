@@ -11,7 +11,7 @@ private:
 public:
   void Initialize(void)
   {
-    auto import_data = gdr::ImportMeshAssimp("bin/models/crazy_frog/crazy_frog.obj");
+    auto import_data = gdr::ImportMeshAssimp("bin/models/sketchbook/sketchbook.glb");
     auto light_import_data = gdr::ImportMeshAssimp("bin/models/light_meshes/sphere.obj");
     
     // load Frog
@@ -57,6 +57,7 @@ public:
     for (int i = 0; i < Lights.size(); i++)
       Engine->ObjectTransformsSystem->GetEditable(Engine->LightsSystem->Get(Lights[i]).ObjectTransformIndex).Transform 
         = translation * mth::matr::RotateY(alpha_step * i + Engine->GetTime() * 360.0f / 10.0f);
+    Engine->ObjectTransformsSystem->GetEditable(Engine->ModelsPool[Frog].Rnd.RootTransform).Transform = mth::matr::Translate({ 0, -5, 0 });
   }
 
   std::string GetName(void)

@@ -3,6 +3,7 @@
 #undef min
 #endif
 #include "assimp/Importer.hpp"
+#include "assimp/pbrmaterial.h"
 #include "assimp/scene.h"
 #include "assimp/postprocess.h"
 #ifndef min
@@ -262,15 +263,70 @@ gdr_index mesh_assimp_importer::ImportTreeMesh(aiMesh* mesh, gdr_index ParentInd
     if (shadingModel == 0)
       shadingModel = aiShadingMode_Phong;
 
-    if (shadingModel == aiShadingMode_PBR_BRDF && (assimpMaterial->Get(AI_MATKEY_METALLIC_FACTOR, metallicFactor) == aiReturn_SUCCESS))
+    if (shadingModel == aiShadingMode_PBR_BRDF && (assimpMaterial->Get(AI_MATKEY_GLTF_PBRMETALLICROUGHNESS_METALLIC_FACTOR, metallicFactor) == aiReturn_SUCCESS))
     {
       newMaterial.ShadeType = MATERIAL_SHADER_COOKTORRANCE_METALNESS;
-      GDR_FAILED("Shader Type MATERIAL_SHADER_COOKTORRANCE_METALNESS are not supported by now");
+
+      // Ambient Occlusion
+      GDRGPUMaterialCookTorranceGetAmbientOcclusionMapIndex(newMaterial) = GetTextureFromAssimp(assimpMaterial, aiTextureType_AMBIENT_OCCLUSION);
+
+      // Albedo
+      GDRGPUMaterialCookTorranceGetAlbedoMapIndex(newMaterial) = GetTextureFromAssimp(assimpMaterial, aiTextureType_BASE_COLOR);
+      assimpMaterial->Get(AI_MATKEY_GLTF_PBRMETALLICROUGHNESS_BASE_COLOR_FACTOR, color);
+      // HACK
+      if (GDRGPUMaterialCookTorranceGetAlbedoMapIndex(newMaterial) != NONE_INDEX && color == aiColor3D(0.f))
+          color = aiColor3D(1.f);
+      GDRGPUMaterialCookTorranceGetAlbedo(newMaterial) = mth::vec3f(color.r, color.g, color.b);
+
+      // Roughness
+      if (assimpMaterial->Get(AI_MATKEY_GLTF_PBRMETALLICROUGHNESS_ROUGHNESS_FACTOR, metallicFactor) == aiReturn_SUCCESS)
+          GDRGPUMaterialCookTorranceGetRoughness(newMaterial) = metallicFactor;
+      else
+          GDRGPUMaterialCookTorranceGetRoughness(newMaterial) = 0.3;
+
+      // Metallic
+      if (assimpMaterial->Get(AI_MATKEY_GLTF_PBRMETALLICROUGHNESS_METALLIC_FACTOR, metallicFactor) == aiReturn_SUCCESS)
+          GDRGPUMaterialCookTorranceGetMetallic(newMaterial) = metallicFactor;
+      else
+          GDRGPUMaterialCookTorranceGetMetallic(newMaterial) = 0.5;
+
+      // Metallic + Roughness map
+      GDRGPUMaterialCookTorranceGetRoughnessMetallnessMapIndex(newMaterial) = GetTextureFromAssimp(assimpMaterial, aiTextureType_METALNESS);
+
+      // Normal map
+      GDRGPUMaterialCookTorranceGetNormalMapIndex(newMaterial) = GetTextureFromAssimp(assimpMaterial, aiTextureType_NORMALS);
     }
-    else if (shadingModel == aiShadingMode_PBR_BRDF && (assimpMaterial->Get(AI_MATKEY_GLOSSINESS_FACTOR, glossFactor) == aiReturn_SUCCESS))
+    else if (shadingModel == aiShadingMode_PBR_BRDF && (assimpMaterial->Get(AI_MATKEY_GLTF_PBRSPECULARGLOSSINESS, glossFactor) == aiReturn_SUCCESS))
     {
       newMaterial.ShadeType = MATERIAL_SHADER_COOKTORRANCE_SPECULAR;
-      GDR_FAILED("Shader Type MATERIAL_SHADER_COOKTORRANCE_SPECULAR are not supported by now");
+      // Ambient Occlusion
+      GDRGPUMaterialCookTorranceGetAmbientOcclusionMapIndex(newMaterial) = GetTextureFromAssimp(assimpMaterial, aiTextureType_AMBIENT_OCCLUSION);
+
+      // Albedo
+      GDRGPUMaterialCookTorranceGetAlbedoMapIndex(newMaterial) = GetTextureFromAssimp(assimpMaterial, aiTextureType_BASE_COLOR);
+      assimpMaterial->Get(AI_MATKEY_GLTF_PBRMETALLICROUGHNESS_BASE_COLOR_FACTOR, color);
+      // HACK
+      if (GDRGPUMaterialCookTorranceGetAlbedoMapIndex(newMaterial) != NONE_INDEX && color == aiColor3D(0.f))
+          color = aiColor3D(1.f);
+      GDRGPUMaterialCookTorranceGetAlbedo(newMaterial) = mth::vec3f(color.r, color.g, color.b);
+
+      // Glossiness
+      if (assimpMaterial->Get(AI_MATKEY_GLOSSINESS_FACTOR, glossFactor) == aiReturn_SUCCESS)
+          GDRGPUMaterialCookTorranceGetGlossiness(newMaterial) = glossFactor;
+      else
+          GDRGPUMaterialCookTorranceGetGlossiness(newMaterial) = 0.1;
+
+      // Specular
+      if (assimpMaterial->Get(AI_MATKEY_SPECULAR_FACTOR, color) == aiReturn_SUCCESS)
+          GDRGPUMaterialCookTorranceGetSpecular(newMaterial) = mth::vec3f(color.r, color.g, color.b);
+      else
+          GDRGPUMaterialCookTorranceGetSpecular(newMaterial) = mth::vec3f(0.04, 0.04, 0.04);
+
+      // Specular + Glossiness map
+      GDRGPUMaterialCookTorranceGetSpecularGlossinessMapIndex(newMaterial) = GetTextureFromAssimp(assimpMaterial, aiTextureType_SPECULAR);
+
+      // Normal map
+      GDRGPUMaterialCookTorranceGetNormalMapIndex(newMaterial) = GetTextureFromAssimp(assimpMaterial, aiTextureType_NORMALS);
     }
     else if (shadingModel == aiShadingMode_Phong || shadingModel == aiShadingMode_Blinn)
     {

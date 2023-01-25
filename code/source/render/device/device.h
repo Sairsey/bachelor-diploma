@@ -10,10 +10,10 @@ namespace gdr
   // Device creation parameters
   struct device_create_params
   {
-    bool DebugLayer = true;
-    bool DebugShaders = true;
-    int  CmdListCount = 2;
-    int  UploadListCount = 2;
+    bool DebugLayer = false;
+    bool DebugShaders = false;
+    int  CmdListCount = 3;
+    int  UploadListCount = 3;
     HWND hWnd = nullptr;
     int  LoadtimeUploadHeapSizeMb = 1024;
     int  RuntimeUploadHeapSizeMb = 128;

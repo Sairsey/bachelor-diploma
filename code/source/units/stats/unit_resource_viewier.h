@@ -183,6 +183,9 @@ public:
                 }
               }
             }
+            //else if (el.ShadeType == MATERIAL_SHADER_PHONG)
+            //else if (el.ShadeType == MATERIAL_SHADER_COOKTORRANCE_METALNESS)
+            //else if (el.ShadeType == MATERIAL_SHADER_COOKTORRANCE_SPECULAR)
             else
               ImGui::Text("ShadeType: Unknown");
           }

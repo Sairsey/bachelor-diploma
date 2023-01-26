@@ -183,9 +183,152 @@ public:
                 }
               }
             }
-            //else if (el.ShadeType == MATERIAL_SHADER_PHONG)
-            //else if (el.ShadeType == MATERIAL_SHADER_COOKTORRANCE_METALNESS)
-            //else if (el.ShadeType == MATERIAL_SHADER_COOKTORRANCE_SPECULAR)
+            else if (el.ShadeType == MATERIAL_SHADER_PHONG)
+            {
+                ImGui::Text("ShadeType: PHONG");
+                
+                mth::vec3f color = GDRGPUMaterialPhongGetAmbient(el);
+                ImGui::Text("Ambient: %f %f %f", color.X, color.Y, color.Z);
+                if (GDRGPUMaterialPhongGetAmbientMapIndex(el) == NONE_INDEX)
+                    ImGui::Text("Ambient Map Index : NONE");
+                else
+                {
+                    ImGui::Text("Ambient Texture Index : %d", GDRGPUMaterialPhongGetAmbientMapIndex(el));
+                    ImGui::SameLine();
+                    if (ImGui::Button("Go to ambient texture"))
+                    {
+                        TexturesWindow = true;
+                        TexturesIndex = GDRGPUMaterialPhongGetAmbientMapIndex(el);
+                    }
+                }
+
+                color = GDRGPUMaterialPhongGetDiffuse(el);
+                ImGui::Text("Diffuse: %f %f %f", color.X, color.Y, color.Z);
+                if (GDRGPUMaterialPhongGetDiffuseMapIndex(el) == NONE_INDEX)
+                    ImGui::Text("Diffuse Map Index : NONE");
+                else
+                {
+                    ImGui::Text("Diffuse Texture Index : %d", GDRGPUMaterialPhongGetDiffuseMapIndex(el));
+                    ImGui::SameLine();
+                    if (ImGui::Button("Go to diffuse texture"))
+                    {
+                        TexturesWindow = true;
+                        TexturesIndex = GDRGPUMaterialPhongGetDiffuseMapIndex(el);
+                    }
+                }
+
+                color = GDRGPUMaterialPhongGetSpecular(el);
+                ImGui::Text("Specular: %f %f %f", color.X, color.Y, color.Z);
+                if (GDRGPUMaterialPhongGetSpecularMapIndex(el) == NONE_INDEX)
+                    ImGui::Text("Specular Map Index : NONE");
+                else
+                {
+                    ImGui::Text("Specular Texture Index : %d", GDRGPUMaterialPhongGetSpecularMapIndex(el));
+                    ImGui::SameLine();
+                    if (ImGui::Button("Go to specular texture"))
+                    {
+                        TexturesWindow = true;
+                        TexturesIndex = GDRGPUMaterialPhongGetSpecularMapIndex(el);
+                    }
+                }
+
+                float Ph = GDRGPUMaterialPhongGetShiness(el);
+                ImGui::Text("Shiness: %f", Ph);
+                if (GDRGPUMaterialPhongGetNormalMapIndex(el) == NONE_INDEX)
+                    ImGui::Text("Normal Map Index : NONE");
+                else
+                {
+                    ImGui::Text("Normal map Texture Index : %d", GDRGPUMaterialPhongGetNormalMapIndex(el));
+                    ImGui::SameLine();
+                    if (ImGui::Button("Go to Normal map texture"))
+                    {
+                        TexturesWindow = true;
+                        TexturesIndex = GDRGPUMaterialPhongGetNormalMapIndex(el);
+                    }
+                }
+            }
+            else if (el.ShadeType == MATERIAL_SHADER_COOKTORRANCE_METALNESS || el.ShadeType == MATERIAL_SHADER_COOKTORRANCE_SPECULAR)
+            {
+                ImGui::Text(el.ShadeType == MATERIAL_SHADER_COOKTORRANCE_METALNESS ? "ShadeType: CookTorrance Metalness/Roughness" : "ShadeType: CookTorrance Specular/Glossines");
+
+                mth::vec3f color = GDRGPUMaterialCookTorranceGetAlbedo(el);
+                ImGui::Text("Albedo: %f %f %f", color.X, color.Y, color.Z);
+                if (GDRGPUMaterialCookTorranceGetAlbedoMapIndex(el) == NONE_INDEX)
+                    ImGui::Text("Albedo Map Index : NONE");
+                else
+                {
+                    ImGui::Text("Albedo Texture Index : %d", GDRGPUMaterialCookTorranceGetAlbedoMapIndex(el));
+                    ImGui::SameLine();
+                    if (ImGui::Button("Go to albedo texture"))
+                    {
+                        TexturesWindow = true;
+                        TexturesIndex = GDRGPUMaterialCookTorranceGetAlbedoMapIndex(el);
+                    }
+                }
+                if (el.ShadeType == MATERIAL_SHADER_COOKTORRANCE_METALNESS)
+                {
+                    float metalness = GDRGPUMaterialCookTorranceGetMetalness(el);
+                    ImGui::Text("Metalness: %f", metalness);
+                    float roughness = GDRGPUMaterialCookTorranceGetRoughness(el);
+                    ImGui::Text("Roughness: %f", roughness);
+                    if (GDRGPUMaterialCookTorranceGetRoughnessMetalnessMapIndex(el) == NONE_INDEX)
+                        ImGui::Text("Metalness Map Index : NONE");
+                    else
+                    {
+                        ImGui::Text("Metalness Texture Index : %d", GDRGPUMaterialCookTorranceGetRoughnessMetalnessMapIndex(el));
+                        ImGui::SameLine();
+                        if (ImGui::Button("Go to metalness texture"))
+                        {
+                            TexturesWindow = true;
+                            TexturesIndex = GDRGPUMaterialCookTorranceGetRoughnessMetalnessMapIndex(el);
+                        }
+                    }
+                }
+                else
+                {
+                    float3 specular = GDRGPUMaterialCookTorranceGetSpecular(el);
+                    ImGui::Text("Specular: %f %f %f", specular.X, specular.Y, specular.Z);
+                    float glossiness = GDRGPUMaterialCookTorranceGetGlossiness(el);
+                    ImGui::Text("Glossines: %f", glossiness);
+                    if (GDRGPUMaterialCookTorranceGetSpecularGlossinessMapIndex(el) == NONE_INDEX)
+                        ImGui::Text("Specular/Glossiness Map Index : NONE");
+                    else
+                    {
+                        ImGui::Text("Specular/Glossiness Texture Index : %d", GDRGPUMaterialCookTorranceGetSpecularGlossinessMapIndex(el));
+                        ImGui::SameLine();
+                        if (ImGui::Button("Go to Specular/Glossiness texture"))
+                        {
+                            TexturesWindow = true;
+                            TexturesIndex = GDRGPUMaterialCookTorranceGetSpecularGlossinessMapIndex(el);
+                        }
+                    }
+                }
+                if (GDRGPUMaterialCookTorranceGetAmbientOcclusionMapIndex(el) == NONE_INDEX)
+                    ImGui::Text("Ambient occlusion Map Index : NONE");
+                else
+                {
+                    ImGui::Text("Ambient occlusion Texture Index : %d", GDRGPUMaterialCookTorranceGetAmbientOcclusionMapIndex(el));
+                    ImGui::SameLine();
+                    if (ImGui::Button("Go to Ambient occlusion texture"))
+                    {
+                        TexturesWindow = true;
+                        TexturesIndex = GDRGPUMaterialCookTorranceGetAmbientOcclusionMapIndex(el);
+                    }
+                }
+
+                if (GDRGPUMaterialCookTorranceGetNormalMapIndex(el) == NONE_INDEX)
+                    ImGui::Text("Normal Map Index : NONE");
+                else
+                {
+                    ImGui::Text("Normal map Texture Index : %d", GDRGPUMaterialCookTorranceGetNormalMapIndex(el));
+                    ImGui::SameLine();
+                    if (ImGui::Button("Go to Normal map texture"))
+                    {
+                        TexturesWindow = true;
+                        TexturesIndex = GDRGPUMaterialCookTorranceGetNormalMapIndex(el);
+                    }
+                }
+            }
             else
               ImGui::Text("ShadeType: Unknown");
           }

@@ -86,7 +86,7 @@ gdr_index gdr::cube_textures_subsystem::Add(
                 if (c < components)
                   pBufferFloat[i * height * width * 4 + y * width * 4 + x * 4 + c] = stb_buffer[y * width * components + x * components + c];
                 else
-                  pBufferFloat[i * height * width * 4 + y * width * 4 + x * 4 + c] = 1.0;
+                  pBufferFloat[i * height * width * 4 + y * width * 4 + x * 4 + c] = (c == 3) ? 1.0 : pBufferFloat[i * height * width * 4 + y * width * 4 + x * 4 + c - 1];
 
         stbi_image_free(stb_buffer);
       }
@@ -109,7 +109,7 @@ gdr_index gdr::cube_textures_subsystem::Add(
                 if (c < components)
                   pBuffer[i * height * width * 4 + y * width * 4 + x * 4 + c] = stb_buffer[y * width * components + x * components + c];
                 else
-                  pBuffer[i * height * width * 4 + y * width * 4 + x * 4 + c] = 255;
+                  pBuffer[i * height * width * 4 + y * width * 4 + x * 4 + c] = (c == 3) ? 255 : pBuffer[i * height * width * 4 + y * width * 4 + x * 4 + c - 1];
 
         stbi_image_free(stb_buffer);
       }
@@ -219,7 +219,7 @@ gdr_index gdr::cube_textures_subsystem::Add(std::string directory, int MipsAmoun
               if (c < components)
                 dest_buffer[y * width * 4 + x * 4 + c] = stb_buffer[y * width * components + x * components + c];
               else
-                dest_buffer[y * width * 4 + x * 4 + c] = 1.0;
+                dest_buffer[y * width * 4 + x * 4 + c] = (c == 3) ? 1.0 : dest_buffer[y * width * 4 + x * 4 + c - 1];
 
       stbi_image_free(stb_buffer);
       dest_buffer += width * height * 4;

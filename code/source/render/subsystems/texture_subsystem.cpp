@@ -146,7 +146,7 @@ gdr_index gdr::textures_subsystem::Add(std::string name, bool isSrgb)
         else
           memcpy(pBufferu, stb_bufferu, width * height * 4);
       }
-      else
+      else if (components == 3) // for monochrome with alpha
       {
         for (int y = 0; y < height; y++)
           for (int x = 0; x < width; x++)
@@ -166,9 +166,39 @@ gdr_index gdr::textures_subsystem::Add(std::string name, bool isSrgb)
                   pBufferu[y * width * 4 + x * 4 + c] = 255;
               }
       }
+      else if (components == 2) // for monochrome with alpha
+      {
+        for (int y = 0; y < height; y++)
+          for (int x = 0; x < width; x++)
+            for (int c = 0; c < 4; c++)
+              if (isHdr)
+              {
+                if (c < 3)
+                  pBufferf[y * width * 4 + x * 4 + c] = stb_bufferf[y * width * components + x * components + 0];
+                else
+                  pBufferf[y * width * 4 + x * 4 + c] = stb_bufferf[y * width * components + x * components + 1];
+              }
+              else
+              {
+                if (c < 3)
+                  pBufferu[y * width * 4 + x * 4 + c] = stb_bufferu[y * width * components + x * components + 0];
+                else
+                  pBufferu[y * width * 4 + x * 4 + c] = stb_bufferu[y * width * components + x * components + 1];
+              }
+      }
+      else if (components == 1) // for monochrome
+      {
+        for (int y = 0; y < height; y++)
+          for (int x = 0; x < width; x++)
+            for (int c = 0; c < 4; c++)
+              if (isHdr)
+                pBufferf[y * width * 4 + x * 4 + c] = stb_bufferf[y * width * components + x * components + 0];
+              else
+                pBufferu[y * width * 4 + x * 4 + c] = stb_bufferu[y * width * components + x * components + 0];
+      }
 
       // if we have any semi-transparent pixel
-      if (components == 4)
+      if (components == 4 || components == 2)
       {
         for (int y = 0; y < height && !Get(NewTextureIndex).IsTransparent; y++)
           for (int x = 0; x < width && !Get(NewTextureIndex).IsTransparent; x++)

@@ -243,14 +243,14 @@ float4 ShadeCookTorranceMetal(float3 Normal, float3 Position, float2 uv, GDRGPUM
     // Ambient occlusion
     Params.AmbientOcclusion = 1.0;
     if (GDRGPUMaterialCookTorranceGetAmbientOcclusionMapIndex(material) != NONE_INDEX)
-        Params.AmbientOcclusion = TexturePool[GDRGPUMaterialCookTorranceGetAmbientOcclusionMapIndex(material)].Sample(LinearSampler, uv).xyz;
-
-    // Roughness + Metallness
+        Params.AmbientOcclusion = TexturePool[GDRGPUMaterialCookTorranceGetAmbientOcclusionMapIndex(material)].Sample(LinearSampler, uv).x;
+    
+    // Roughness + Metalness
     Params.Roughness = GDRGPUMaterialCookTorranceGetRoughness(material);
-    float Metalness = GDRGPUMaterialCookTorranceGetMetallic(material);
-    if (GDRGPUMaterialCookTorranceGetRoughnessMetallnessMapIndex(material) != NONE_INDEX)
+    float Metalness = GDRGPUMaterialCookTorranceGetMetalness(material);
+    if (GDRGPUMaterialCookTorranceGetRoughnessMetalnessMapIndex(material) != NONE_INDEX)
     {
-        float4 tmp = TexturePool[GDRGPUMaterialCookTorranceGetRoughnessMetallnessMapIndex(material)].Sample(LinearSampler, uv);
+        float4 tmp = TexturePool[GDRGPUMaterialCookTorranceGetRoughnessMetalnessMapIndex(material)].Sample(LinearSampler, uv);
         Params.Roughness *= tmp.g;
         Metalness *= tmp.b;
     }
@@ -288,14 +288,15 @@ float4 ShadeCookTorranceSpecular(float3 Normal, float3 Position, float2 uv, GDRG
         Params.AmbientOcclusion = TexturePool[GDRGPUMaterialCookTorranceGetAmbientOcclusionMapIndex(material)].Sample(LinearSampler, uv).xyz;
 
     // Glossiness + Specular (and Roughness too)
-    Params.Roughness = 1.0 - GDRGPUMaterialCookTorranceGetGlossiness(material);
+    Params.Roughness = GDRGPUMaterialCookTorranceGetGlossiness(material);
     Params.Specular = GDRGPUMaterialCookTorranceGetSpecular(material);
     if (GDRGPUMaterialCookTorranceGetSpecularGlossinessMapIndex(material) != NONE_INDEX)
     {
         float4 tmp = TexturePool[GDRGPUMaterialCookTorranceGetSpecularGlossinessMapIndex(material)].Sample(LinearSampler, uv);
-        Params.Roughness = 1 - tmp.a;
-        Params.Specular = tmp.rgb;
+        Params.Roughness *= tmp.a;
+        Params.Specular *= tmp.rgb;
     }
+    Params.Roughness = 1 - Params.Roughness;
 
     // Diffuse + Transparency
     Params.Diffuse = GDRGPUMaterialCookTorranceGetAlbedo(material);
@@ -303,7 +304,7 @@ float4 ShadeCookTorranceSpecular(float3 Normal, float3 Position, float2 uv, GDRG
     if (GDRGPUMaterialCookTorranceGetAlbedoMapIndex(material) != NONE_INDEX)
     {
         float4 tmp = TexturePool[GDRGPUMaterialCookTorranceGetAlbedoMapIndex(material)].Sample(LinearSampler, uv);
-        Params.Diffuse = tmp.rgb;
+        Params.Diffuse *= tmp.rgb;
         Params.Transparency = tmp.a;
     }
     Params.Roughness = max(Params.Roughness, 0.001);

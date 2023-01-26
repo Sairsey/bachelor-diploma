@@ -37,5 +37,6 @@ float4 PS(VSOut input) : SV_TARGET
 	float3 normal = CalculateNormal(input.normal.xyz, input.tangent.xyz, input.uv, indices.ObjectMaterialIndex);
 
 	float4 col = Shade(input.worldPos, normal, input.uv, indices.ObjectMaterialIndex);
+
 	return col;
 }

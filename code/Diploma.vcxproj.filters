@@ -524,11 +524,14 @@
     <ClInclude Include="source\units\enviroment\unit_alex_apt.h">
       <Filter>Source Files\Units\Enviroments</Filter>
     </ClInclude>
-    <ClInclude Include="source\units\examples\unit_pbr_metallness.h">
+    <ClInclude Include="source\units\examples\unit_pbr_metalness.h">
       <Filter>Source Files\Units\Examples</Filter>
     </ClInclude>
     <ClInclude Include="source\render\subsystems\enviroment_subsystem.h">
       <Filter>Source Files\Render\SubSystems\Enviroment</Filter>
+    </ClInclude>
+    <ClInclude Include="source\units\examples\unit_pbr_specular.h">
+      <Filter>Source Files\Units\Examples</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

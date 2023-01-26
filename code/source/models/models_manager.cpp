@@ -58,7 +58,7 @@ gdr_index gdr::models_manager::AddModel(mesh_import_data ImportData)
 						if (GDRGPUMaterialCookTorranceGetAmbientOcclusionMapIndex(ImportData.Materials[i]) != NONE_INDEX)
 						{
 							std::string& textureName = ImportData.TexturesPaths[GDRGPUMaterialCookTorranceGetAmbientOcclusionMapIndex(ImportData.Materials[i])];
-							GDRGPUMaterialCookTorranceGetAmbientOcclusionMapIndex(Eng->MaterialsSystem->GetEditable(MaterialsIndices[i])) = Eng->TexturesSystem->Add(textureName, true);
+							GDRGPUMaterialCookTorranceGetAmbientOcclusionMapIndex(Eng->MaterialsSystem->GetEditable(MaterialsIndices[i])) = Eng->TexturesSystem->Add(textureName, false);
 						}
 						if (GDRGPUMaterialCookTorranceGetAlbedoMapIndex(ImportData.Materials[i]) != NONE_INDEX)
 						{
@@ -70,17 +70,17 @@ gdr_index gdr::models_manager::AddModel(mesh_import_data ImportData)
 							std::string& textureName = ImportData.TexturesPaths[GDRGPUMaterialCookTorranceGetNormalMapIndex(ImportData.Materials[i])];
 							GDRGPUMaterialCookTorranceGetNormalMapIndex(Eng->MaterialsSystem->GetEditable(MaterialsIndices[i])) = Eng->TexturesSystem->Add(textureName, false);
 						}
-						if (GDRGPUMaterialCookTorranceGetRoughnessMetallnessMapIndex(ImportData.Materials[i]) != NONE_INDEX)
+						if (GDRGPUMaterialCookTorranceGetRoughnessMetalnessMapIndex(ImportData.Materials[i]) != NONE_INDEX)
 						{
-							std::string& textureName = ImportData.TexturesPaths[GDRGPUMaterialCookTorranceGetRoughnessMetallnessMapIndex(ImportData.Materials[i])];
-							GDRGPUMaterialCookTorranceGetRoughnessMetallnessMapIndex(Eng->MaterialsSystem->GetEditable(MaterialsIndices[i])) = Eng->TexturesSystem->Add(textureName, false);
+							std::string& textureName = ImportData.TexturesPaths[GDRGPUMaterialCookTorranceGetRoughnessMetalnessMapIndex(ImportData.Materials[i])];
+							GDRGPUMaterialCookTorranceGetRoughnessMetalnessMapIndex(Eng->MaterialsSystem->GetEditable(MaterialsIndices[i])) = Eng->TexturesSystem->Add(textureName, false);
 						}
 						break;
 					case MATERIAL_SHADER_COOKTORRANCE_SPECULAR:
 						if (GDRGPUMaterialCookTorranceGetAmbientOcclusionMapIndex(ImportData.Materials[i]) != NONE_INDEX)
 						{
 							std::string& textureName = ImportData.TexturesPaths[GDRGPUMaterialCookTorranceGetAmbientOcclusionMapIndex(ImportData.Materials[i])];
-							GDRGPUMaterialCookTorranceGetAmbientOcclusionMapIndex(Eng->MaterialsSystem->GetEditable(MaterialsIndices[i])) = Eng->TexturesSystem->Add(textureName, true);
+							GDRGPUMaterialCookTorranceGetAmbientOcclusionMapIndex(Eng->MaterialsSystem->GetEditable(MaterialsIndices[i])) = Eng->TexturesSystem->Add(textureName, false);
 						}
 						if (GDRGPUMaterialCookTorranceGetAlbedoMapIndex(ImportData.Materials[i]) != NONE_INDEX)
 						{
@@ -95,8 +95,9 @@ gdr_index gdr::models_manager::AddModel(mesh_import_data ImportData)
 						if (GDRGPUMaterialCookTorranceGetSpecularGlossinessMapIndex(ImportData.Materials[i]) != NONE_INDEX)
 						{
 							std::string& textureName = ImportData.TexturesPaths[GDRGPUMaterialCookTorranceGetSpecularGlossinessMapIndex(ImportData.Materials[i])];
-							GDRGPUMaterialCookTorranceGetSpecularGlossinessMapIndex(Eng->MaterialsSystem->GetEditable(MaterialsIndices[i])) = Eng->TexturesSystem->Add(textureName, false);
+							GDRGPUMaterialCookTorranceGetSpecularGlossinessMapIndex(Eng->MaterialsSystem->GetEditable(MaterialsIndices[i])) = Eng->TexturesSystem->Add(textureName, true);
 						}
+						break;
 					default:
 						GDR_FAILED("Unsupported shader type.");
 						break;

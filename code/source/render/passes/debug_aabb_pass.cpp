@@ -149,7 +149,7 @@ void gdr::debug_aabb_pass::CallDirectDraw(ID3D12GraphicsCommandList* currentComm
     
 
     ShaderParams params;
-    params.VP = Render->GlobalsSystem->CPUData.VP;
+    params.VP = Render->GlobalsSystem->Get().VP;
 
     // just iterate for every draw call
     for (auto& i : Render->DrawCommandsSystem->DirectCommandPools[(int)indirect_command_pools_enum::All])

@@ -25,6 +25,7 @@
 #include "render/subsystems/cube_texture_subsystem.h"
 #include "render/subsystems/lights_subsystem.h"
 #include "render/subsystems/luminance_subsystem.h"
+#include "render/subsystems/enviroment_subsystem.h"
 
 #if 0
 #include "render/subsystems/hier_depth_support.h"

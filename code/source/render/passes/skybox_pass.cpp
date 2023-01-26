@@ -19,6 +19,7 @@ void gdr::skybox_pass::Initialize(void)
         CD3DX12_DESCRIPTOR_RANGE cubeBindlessTexturesDesc[1];  // Cube Textures Pool
 
         params[(int)root_parameters_draw_indices::globals_buffer_index].InitAsConstantBufferView(GDRGPUGlobalDataConstantBufferSlot);
+        params[(int)root_parameters_draw_indices::enviroment_buffer_index].InitAsConstantBufferView(GDRGPUEnviromentConstantBufferSlot);
 
         {
           cubeBindlessTexturesDesc[0].BaseShaderRegister = GDRGPUCubeTexturePoolSlot;
@@ -147,7 +148,10 @@ void gdr::skybox_pass::CallDirectDraw(ID3D12GraphicsCommandList* currentCommandL
     {
         currentCommandList->SetGraphicsRootConstantBufferView(
             (int)root_parameters_draw_indices::globals_buffer_index,
-            Render->GlobalsSystem->GPUData.Resource->GetGPUVirtualAddress());
+            Render->GlobalsSystem->GetGPUResource().Resource->GetGPUVirtualAddress());
+        currentCommandList->SetGraphicsRootConstantBufferView(
+            (int)root_parameters_draw_indices::enviroment_buffer_index,
+            Render->EnviromentSystem->GetGPUResource().Resource->GetGPUVirtualAddress());
         currentCommandList->SetGraphicsRootDescriptorTable(
             (int)root_parameters_draw_indices::cube_texture_pool_index,
             Render->CubeTexturesSystem->CubeTextureTableGPU);

@@ -1,7 +1,6 @@
 #pragma once
 #include "def.h"
 
-
 /* Project namespace */
 namespace gdr
 {
@@ -18,6 +17,7 @@ namespace gdr
   class cube_textures_subsystem;
   class lights_subsystem;
   class luminance_subsystem;
+  class enviroment_subsystem;
   struct render_runtime_params
   {
     bool IsIndirect = true;        // Enables indirect draw
@@ -30,10 +30,10 @@ namespace gdr
     
     bool IsShowAABB = false;       // Show AABBs of objects
 
-    gdr_index SkyboxIndex = NONE_INDEX;
-
     bool IsTonemapping = false;    // Enable tonemapping or not
     float SceneExposure = 8.0;     // Exposure of scene
+
+    bool IsIBL = false;            // Enable image based lighting
   };
   struct render_creation_params
   {
@@ -125,6 +125,7 @@ namespace gdr
       lights_subsystem* LightsSystem;                      // System to store info about light sources
       cube_textures_subsystem* CubeTexturesSystem;         // System to store info about cube textures
       luminance_subsystem* LuminanceSystem;                // System to store info about Luminance
+      enviroment_subsystem* EnviromentSystem;              // System to store info about Enviroment textures (Skybox for example)
 #if 0
       screenshot_support* ScreenshotsSystem; //System to store and generate Hierarhical Depth Texture
 #endif

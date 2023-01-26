@@ -24,7 +24,7 @@ public:
 
   void Response(void)
   {
-    Engine->Params.SkyboxIndex = SkyboxIndex;
+    Engine->EnviromentSystem->GetEditable().SkyboxIndex = SkyboxIndex;
   }
 
   std::string GetName(void)

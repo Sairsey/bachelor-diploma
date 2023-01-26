@@ -64,8 +64,8 @@ inline void AssertMessage(const char *file, int line, const char* msg)
 #define GDR_FAILED(msg) \
         AssertMessage(__FILE__, __LINE__, msg)
 #else
-#define GDR_ASSERT(expr)
-#define GDR_FAILED(msg)
+#define GDR_ASSERT(expr) ((void)0)
+#define GDR_FAILED(msg) ((void)0)
 #endif
 
 #define D3D_RELEASE(a) if ((a) != nullptr) {\
@@ -118,7 +118,6 @@ using gdr_index = uint32_t;
 #ifndef NONE_INDEX
 #define NONE_INDEX 0xFFFFFFFF
 #endif // !NONE_INDEX
-
 
 enum struct gdr_hier_node_type
 {

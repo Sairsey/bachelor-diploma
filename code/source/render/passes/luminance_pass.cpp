@@ -216,7 +216,7 @@ void gdr::luminance_pass::CallDirectDraw(ID3D12GraphicsCommandList* currentComma
     tmp_descr.ptr += (int)(render_targets_enum::target_frame_lum_final) * Render->GetDevice().GetSRVDescSize();
 
     currentCommandList->SetComputeRootConstantBufferView(
-      (int)root_parameters_final_indices::globals_buffer_index, Render->GlobalsSystem->GPUData.Resource->GetGPUVirtualAddress());
+      (int)root_parameters_final_indices::globals_buffer_index, Render->GlobalsSystem->GetGPUResource().Resource->GetGPUVirtualAddress());
 
     currentCommandList->SetComputeRootDescriptorTable(
       (int)root_parameters_final_indices::input_texture_index, tmp_descr);

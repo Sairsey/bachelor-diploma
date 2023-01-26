@@ -142,10 +142,10 @@ class cubemap_baker
 
     mth::vec3f dirs[6] = {
       {1, 0, 0},
-      {0, 1, 0},
+      {0, 1, 0},  // I do now know why
       {0, 0, 1},
       {-1, 0, 0},
-      {0, -1, 0},
+      {0, -1, 0},  // I do now know why
       {0, 0, -1}
     };
 
@@ -162,12 +162,11 @@ class cubemap_baker
     {
       float_image cube_side = float_image(W, H);
       mth::vec3f up = right cross dir;
-      for (int i = 0; i < H; i++)
+      for (int i = 0; i < H; i++) 
         for (int j = 0; j < W; j++)
         {
-          mth::vec3f pos;
+          mth::vec3f pos = right * (1.0f * (j + 0.5f) / W - 0.5f) + up * (1.0f * ((H - i - 1) + 0.5f) / H - 0.5f) + dir * 0.5f;
 
-          pos = right * (1.0f * (j + 0.5f) / W - 0.5f) + up * (1.0f * (i + 0.5f) / H - 0.5f) + dir * 0.5f;
           cube_side.PutPixel(HDR.SampleHDR(pos), j, i);
         }
       return cube_side;
@@ -181,7 +180,7 @@ class cubemap_baker
         for (int j = 0; j < W; j++)
         {
           mth::vec3f norm;
-          norm = right * (1.0f * (j + 0.5f) / W - 0.5f) + up * (1.0f * (i + 0.5f) / H - 0.5f) + dir * 0.5f;
+          norm = right * (1.0f * (j + 0.5f) / W - 0.5f) + up * (1.0f * ((H - i - 1) + 0.5f) / H - 0.5f) + dir * 0.5f;
           norm.Normalize();
           mth::vec3f view = norm;
 
@@ -285,7 +284,7 @@ class cubemap_baker
         for (int j = 0; j < W; j++)
         {
           mth::vec3f normal;
-          normal = right * (1.0f * (j + 0.5f) / W - 0.5f) + up * (1.0f * (i + 0.5f) / H - 0.5f) + dir * 0.5f;
+          normal = right * (1.0f * (j + 0.5f) / W - 0.5f) + up * (1.0f * ((H - i - 1) + 0.5f) / H - 0.5f) + dir * 0.5f;
           normal.Normalize();
           mth::vec3f normal_up = {0, 1, 0};
           mth::vec3f normal_right = normal cross normal_up;

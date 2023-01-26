@@ -53,7 +53,7 @@ class float_image
 
   mth::vec3f SampleHDR(mth::vec3f Direction)
   {
-    Direction.Normalize();
+    Direction = Direction.Normalize();
     mth::vec2f uv;
     // vector (0, 0, -1) should hit right in center
     // uv[0] = 0.5 <=> atan2f()/2pi = 0.5 <=> atan2f = pi
@@ -61,18 +61,19 @@ class float_image
     // vector (-1, 0, 0) should be less then 0.5
     // uv[0] < 0.5 <=? atan2f()/2pi < 0.5 <=> atan2f() < pi <=> atan() < pi
 
-    uv[0] = 1.0f - atan2f(Direction.X, Direction.Z) * 0.1591f;
-    uv[1] = asinf(Direction.Y) * 0.3183f;
-    uv[1] = 0.5f + uv[1];
+    // (0, 1, 0) -> uv[1] = 0
+    // (0, -1, 0) -> uv[1] = 1
+    // (*, 0, *) -> uv[1] = 0.5
 
-    while (uv[1] < 0)
-      uv[1] += 1;
-    while (uv[0] < 0)
-      uv[0] += 1;
-    while (uv[1] > 1)
-      uv[1] -= 1;
-    while (uv[0] > 1)
-      uv[0] -= 1;
+    uv[0] = atan2f(-Direction.X, Direction.Z) / (2 * MTH_PI);
+    uv[1] = asinf(Direction.Y) / (MTH_PI / 2); // from -1 to 1
+    uv[1] = 1.0 - (uv[1] + 1) / 2.0;
+
+    if (uv[0] < 0)
+        uv[0] += 1;
+
+    uv[0] = max(0, min(1, uv[0]));
+    uv[1] = max(0, min(1, uv[1]));
 
     uv[0] *= (W - 1);
     uv[1] *= (H - 1);

@@ -25,6 +25,7 @@ namespace gdr
 			enum struct root_parameters_draw_indices
 			{
 				globals_buffer_index = 0,           // root parameter for global buffer
+				enviroment_buffer_index,            // root parameter for enviroment buffer
 				cube_texture_pool_index,            // root parameter for buffer with indices in pools
 				total_root_parameters,
 			};

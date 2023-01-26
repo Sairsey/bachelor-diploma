@@ -78,6 +78,7 @@ bool gdr::render::Init(engine* Eng)
       CubeTexturesSystem = new cube_textures_subsystem(this);
       LightsSystem = new lights_subsystem(this);
       LuminanceSystem = new luminance_subsystem(this);
+      EnviromentSystem = new enviroment_subsystem(this);
   }
 
   // init passes
@@ -181,18 +182,23 @@ void gdr::render::DrawFrame(void)
   auto updateAllSystems = [&](ID3D12GraphicsCommandList* uploadCommandList) {
       {
           PROFILE_BEGIN(uploadCommandList, "Update Globals");
-          GlobalsSystem->CPUData.VP = PlayerCamera.GetVP(); // camera view-proj
-          GlobalsSystem->CPUData.CameraPos = PlayerCamera.GetPos(); // Camera position
-          GlobalsSystem->CPUData.Time = Engine->GetGlobalTime(); // Time in seconds
+          GlobalsSystem->GetEditable().VP = PlayerCamera.GetVP(); // camera view-proj
+          GlobalsSystem->GetEditable().CameraPos = PlayerCamera.GetPos(); // Camera position
+          GlobalsSystem->GetEditable().Time = Engine->GetGlobalTime(); // Time in seconds
 
-          GlobalsSystem->CPUData.DeltaTime = Engine->GetDeltaTime(); // Delta time in seconds	
-          GlobalsSystem->CPUData.Width = Engine->Width;  // Screen size 
-          GlobalsSystem->CPUData.Height = Engine->Height; // Screen size 
-          GlobalsSystem->CPUData.LightsAmount = (UINT)Engine->LightsSystem->AllocatedSize();
-          GlobalsSystem->CPUData.IsTonemap = Params.IsTonemapping;
-          GlobalsSystem->CPUData.SceneExposure = Params.SceneExposure;
-          GlobalsSystem->CPUData.SkyboxIndex = Params.SkyboxIndex;
+          GlobalsSystem->GetEditable().DeltaTime = Engine->GetDeltaTime(); // Delta time in seconds	
+          GlobalsSystem->GetEditable().Width = Engine->Width;  // Screen size 
+          GlobalsSystem->GetEditable().Height = Engine->Height; // Screen size 
+          GlobalsSystem->GetEditable().LightsAmount = (UINT)Engine->LightsSystem->AllocatedSize();
+          GlobalsSystem->GetEditable().IsTonemap = Params.IsTonemapping;
+          GlobalsSystem->GetEditable().SceneExposure = Params.SceneExposure;
+          GlobalsSystem->GetEditable().IsIBL = Params.IsIBL;
           GlobalsSystem->UpdateGPUData(uploadCommandList);
+          PROFILE_END(uploadCommandList);
+      }
+      {
+          PROFILE_BEGIN(uploadCommandList, "Update Enviroment");
+          EnviromentSystem->UpdateGPUData(uploadCommandList);
           PROFILE_END(uploadCommandList);
       }
       {
@@ -361,6 +367,7 @@ void gdr::render::Term(void)
       delete CubeTexturesSystem;
       delete LightsSystem;
       delete LuminanceSystem;
+      delete EnviromentSystem;
   }
 
   for (auto& pass : Passes)

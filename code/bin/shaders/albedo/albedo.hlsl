@@ -4,7 +4,10 @@ cbuffer GlobalValues : register (GDRGPUGlobalDataConstantBufferSlot)
 {
 	GDRGPUGlobalData globals;
 }
-
+cbuffer EnviromentValues : register (GDRGPUEnviromentConstantBufferSlot)
+{
+	GDRGPUEnviromentData env;
+}
 cbuffer Indices : register(GDRGPUObjectIndicesConstantBufferSlot)
 {
 	GDRGPUObjectIndices indices;

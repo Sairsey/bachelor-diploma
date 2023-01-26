@@ -4,7 +4,10 @@ cbuffer GlobalValues : register (GDRGPUGlobalDataConstantBufferSlot)
 {
 	GDRGPUGlobalData globals;
 }
-
+cbuffer EnviromentValues : register (GDRGPUEnviromentConstantBufferSlot)
+{
+	GDRGPUEnviromentData env;
+}
 TextureCube CubeTexturePool[] : register(GDRGPUCubeTexturePoolSlot, GDRGPUCubeTexturePoolSpace); // Bindless Pool with all textures
 
 SamplerState LinearSampler : register(GDRGPULinearSamplerSlot);  // Linear texture sampler
@@ -33,8 +36,8 @@ VSOut VS(VSIn input)
 [earlydepthstencil]
 float4 PS(VSOut input) : SV_TARGET
 {
-	if (globals.SkyboxIndex == NONE_INDEX)
+	if (env.SkyboxIndex == NONE_INDEX)
 		return float4(0., 0., 0.0, 1);
 	else
-		return GDRSampleCube(CubeTexturePool[globals.SkyboxIndex], LinearSampler, input.TexCoords).rgba;
+		return GDRSampleCube(CubeTexturePool[env.SkyboxIndex], LinearSampler, input.TexCoords).rgba;
 }

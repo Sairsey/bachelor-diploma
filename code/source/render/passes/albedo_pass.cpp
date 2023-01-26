@@ -14,6 +14,7 @@ void gdr::albedo_pass::Initialize(void)
         CD3DX12_DESCRIPTOR_RANGE cubeBindlessTexturesDesc[1];  // Cube Textures Pool
 
         params[(int)root_parameters_draw_indices::globals_buffer_index].InitAsConstantBufferView(GDRGPUGlobalDataConstantBufferSlot);
+        params[(int)root_parameters_draw_indices::enviroment_buffer_index].InitAsConstantBufferView(GDRGPUEnviromentConstantBufferSlot);
         params[(int)root_parameters_draw_indices::index_buffer_index].InitAsConstants(sizeof(GDRGPUObjectIndices) / sizeof(int32_t), (int)GDRGPUObjectIndicesConstantBufferSlot);
         static_assert(GDRGPUObjectIndicesRecordRootIndex == (int)root_parameters_draw_indices::index_buffer_index, "Index buffer not in right root signature index");
         params[(int)root_parameters_draw_indices::object_transform_pool_index].InitAsShaderResourceView(GDRGPUObjectTransformPoolSlot);
@@ -95,7 +96,10 @@ void gdr::albedo_pass::CallDirectDraw(ID3D12GraphicsCommandList* currentCommandL
         {
             currentCommandList->SetGraphicsRootConstantBufferView(
                 (int)root_parameters_draw_indices::globals_buffer_index,
-                Render->GlobalsSystem->GPUData.Resource->GetGPUVirtualAddress());
+                Render->GlobalsSystem->GetGPUResource().Resource->GetGPUVirtualAddress());
+            currentCommandList->SetGraphicsRootConstantBufferView(
+                (int)root_parameters_draw_indices::enviroment_buffer_index,
+                Render->EnviromentSystem->GetGPUResource().Resource->GetGPUVirtualAddress());
             currentCommandList->SetGraphicsRoot32BitConstants(
                 (int)root_parameters_draw_indices::index_buffer_index,
                 sizeof(GDRGPUObjectIndices) / sizeof(int32_t),
@@ -135,7 +139,10 @@ void gdr::albedo_pass::CallIndirectDraw(ID3D12GraphicsCommandList* currentComman
 
   currentCommandList->SetGraphicsRootConstantBufferView(
     (int)root_parameters_draw_indices::globals_buffer_index,
-    Render->GlobalsSystem->GPUData.Resource->GetGPUVirtualAddress());
+    Render->GlobalsSystem->GetGPUResource().Resource->GetGPUVirtualAddress());
+  currentCommandList->SetGraphicsRootConstantBufferView(
+      (int)root_parameters_draw_indices::enviroment_buffer_index,
+      Render->EnviromentSystem->GetGPUResource().Resource->GetGPUVirtualAddress());
   // root_parameters_draw_indices::index_buffer_index will be set via indirect
   currentCommandList->SetGraphicsRootShaderResourceView(
     (int)root_parameters_draw_indices::object_transform_pool_index,

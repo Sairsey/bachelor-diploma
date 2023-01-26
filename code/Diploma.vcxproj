@@ -49,6 +49,7 @@
     <ClInclude Include="source\render\passes\visibility_occlusion_pass.h" />
     <ClInclude Include="source\render\render.h" />
     <ClInclude Include="source\render\subsystems\cube_texture_subsystem.h" />
+    <ClInclude Include="source\render\subsystems\enviroment_subsystem.h" />
     <ClInclude Include="source\render\subsystems\geometry_subsystem.h" />
     <ClInclude Include="source\render\subsystems\globals_subsystem.h" />
     <ClInclude Include="source\render\subsystems\draw_commands_subsystem.h" />
@@ -66,6 +67,7 @@
     <ClInclude Include="source\units\examples\unit_light_example.h" />
     <ClInclude Include="source\units\examples\unit_model_loading.h" />
     <ClInclude Include="source\units\examples\unit_occlusion_cull.h" />
+    <ClInclude Include="source\units\examples\unit_pbr_metallness.h" />
     <ClInclude Include="source\units\examples\unit_runtime_add_remove.h" />
     <ClInclude Include="source\units\examples\unit_triangle.h" />
     <ClInclude Include="source\units\shooter\unit_shooter_enemy.h" />
@@ -129,6 +131,7 @@
     <ClCompile Include="source\render\passes\visibility_occlusion_pass.cpp" />
     <ClCompile Include="source\render\render.cpp" />
     <ClCompile Include="source\render\subsystems\cube_texture_subsystem.cpp" />
+    <ClCompile Include="source\render\subsystems\enviroment_subsystem.cpp" />
     <ClCompile Include="source\render\subsystems\geometry_subsystem.cpp" />
     <ClCompile Include="source\render\subsystems\globals_subsystem.cpp" />
     <ClCompile Include="source\render\subsystems\draw_commands_subsystem.cpp" />

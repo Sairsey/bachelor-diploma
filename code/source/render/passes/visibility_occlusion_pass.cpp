@@ -106,9 +106,9 @@ void gdr::visibility_occlusion_pass::CallDirectDraw(ID3D12GraphicsCommandList* c
   // update ComputeGlobals
   {
     if (!Render->Params.IsViewLocked)
-      ComputeGlobals.VP = Render->GlobalsSystem->CPUData.VP;
-    ComputeGlobals.width = Render->GlobalsSystem->CPUData.Width;
-    ComputeGlobals.height = Render->GlobalsSystem->CPUData.Height;
+      ComputeGlobals.VP = Render->GlobalsSystem->Get().VP;
+    ComputeGlobals.width = Render->GlobalsSystem->Get().Width;
+    ComputeGlobals.height = Render->GlobalsSystem->Get().Height;
     ComputeGlobals.frustumCulling = Render->Params.IsFrustumCulling;
     ComputeGlobals.occlusionCulling = Render->Params.IsOccusionCulling;
     ComputeGlobals.commandsCount = (UINT)Render->DrawCommandsSystem->AllocatedSize();
@@ -155,9 +155,9 @@ void gdr::visibility_occlusion_pass::CallIndirectDraw(ID3D12GraphicsCommandList*
   // update ComputeGlobals
   {
     if (!Render->Params.IsViewLocked)
-      ComputeGlobals.VP = Render->GlobalsSystem->CPUData.VP;
-    ComputeGlobals.width = Render->GlobalsSystem->CPUData.Width;
-    ComputeGlobals.height = Render->GlobalsSystem->CPUData.Height;
+      ComputeGlobals.VP = Render->GlobalsSystem->Get().VP;
+    ComputeGlobals.width = Render->GlobalsSystem->Get().Width;
+    ComputeGlobals.height = Render->GlobalsSystem->Get().Height;
     ComputeGlobals.frustumCulling = Render->Params.IsFrustumCulling;
     ComputeGlobals.occlusionCulling = Render->Params.IsOccusionCulling;
     ComputeGlobals.commandsCount = (UINT)Render->DrawCommandsSystem->AllocatedSize();

@@ -42,6 +42,7 @@ using uint4 = mth::vec4<UINT>;
 #define GDRGPUObjectIndicesConstantBufferSlot ConstantBufferSlot(2)
 #define GDRGPUComputeGlobalDataConstantBufferSlot ConstantBufferSlot(3)
 #define GDRGPULuminanceConstantBufferSlot ConstantBufferSlot(4)
+#define GDRGPUEnviromentConstantBufferSlot ConstantBufferSlot(5)
 // slots for all pools
 #define GDRGPUObjectTransformPoolSlot ShaderResourceSlot(1)
 #define GDRGPUNodeTransformPoolSlot ShaderResourceSlot(2)
@@ -99,6 +100,15 @@ struct GDRGPUComputeGlobals
 	UINT height; // Screen size 
 };
 
+/// Enviroment system
+struct GDRGPUEnviromentData
+{
+	UINT SkyboxIndex;             // Index of skybox in cube textures pool
+	UINT PrefilteredCubemapIndex; // Index of prefiltered color texture in cube textures pool
+	UINT BRDFLUTIndex;            // Index of brdf look-up table
+	UINT IrradianceCubemapIndex;  // Index of irradiance texture in cube textures pool
+};
+
 /// <summary>
 ///  Globals system
 /// </summary>
@@ -114,9 +124,9 @@ struct GDRGPUGlobalData
 	UINT Height; // Screen size 
 	UINT LightsAmount; // Amount of lights in scene
 
-	UINT SkyboxIndex;    // Index of skybox in cube textures pool
 	UINT IsTonemap;      // Index of skybox in cube textures pool
 	float SceneExposure; // Additional exposure from scene
+	UINT IsIBL;          // Enable IBL
 	UINT pad[1];
 };
 

@@ -215,7 +215,7 @@ void gdr::visibility_hier_depth_pass::CallDirectDraw(ID3D12GraphicsCommandList* 
     {
       currentCommandList->SetGraphicsRootConstantBufferView(
         (int)root_parameters_draw_indices::globals_buffer_index,
-        Render->GlobalsSystem->GPUData.Resource->GetGPUVirtualAddress());
+        Render->GlobalsSystem->GetGPUResource().Resource->GetGPUVirtualAddress());
       currentCommandList->SetGraphicsRoot32BitConstants(
         (int)root_parameters_draw_indices::index_buffer_index,
         sizeof(GDRGPUObjectIndices) / sizeof(int32_t),
@@ -245,7 +245,7 @@ void gdr::visibility_hier_depth_pass::CallIndirectDraw(ID3D12GraphicsCommandList
 
   currentCommandList->SetGraphicsRootConstantBufferView(
     (int)root_parameters_draw_indices::globals_buffer_index,
-    Render->GlobalsSystem->GPUData.Resource->GetGPUVirtualAddress());
+    Render->GlobalsSystem->GetGPUResource().Resource->GetGPUVirtualAddress());
   // root_parameters_draw_indices::index_buffer_index will be set via indirect
   currentCommandList->SetGraphicsRootShaderResourceView(
     (int)root_parameters_draw_indices::object_transform_pool_index,

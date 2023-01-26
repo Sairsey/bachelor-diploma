@@ -16,6 +16,7 @@ public:
       Engine->AddLambdaForIMGUI(
         [&]()
         {
+
           ImGui::Begin("Render params", &MainWindow, ImGuiWindowFlags_AlwaysAutoResize);
           ImGui::Text("Average FPS = %.4g", Engine->GetFPS());
 
@@ -29,15 +30,20 @@ public:
           ImGui::Text("Objects allocated = %zd", Engine->DrawCommandsSystem->AllocatedSize());
           ImGui::Text("Materials allocated = %zd", Engine->MaterialsSystem->AllocatedSize());
           ImGui::Text("Max Textures amount = %zd", Engine->CreationParams.MaxTextureAmount);
-          ImGui::Checkbox("Move updates in separate cmdList", &Engine->Params.IsUploadEveryFrame);
-          ImGui::Checkbox("Indirect Render", &Engine->Params.IsIndirect);
-          ImGui::Checkbox("Frustum Culling", &Engine->Params.IsFrustumCulling);
-          if (Engine->Params.IsIndirect)
-            ImGui::Checkbox("Occlusion Culling", &Engine->Params.IsOccusionCulling);
-          ImGui::Checkbox("Lock view", &Engine->Params.IsViewLocked);
-          ImGui::Checkbox("Show AABB", &Engine->Params.IsShowAABB);
-          ImGui::Checkbox("Tonemapping", &Engine->Params.IsTonemapping);
-          ImGui::DragFloat("Scene Exposure", &Engine->Params.SceneExposure, 0.1);
+          if (ImGui::TreeNode("Runtime render params"))
+          {
+              ImGui::Checkbox("Move updates in separate cmdList", &Engine->Params.IsUploadEveryFrame);
+              ImGui::Checkbox("Indirect Render", &Engine->Params.IsIndirect);
+              ImGui::Checkbox("Frustum Culling", &Engine->Params.IsFrustumCulling);
+              if (Engine->Params.IsIndirect)
+                  ImGui::Checkbox("Occlusion Culling", &Engine->Params.IsOccusionCulling);
+              ImGui::Checkbox("Lock view", &Engine->Params.IsViewLocked);
+              ImGui::Checkbox("Show AABB", &Engine->Params.IsShowAABB);
+              ImGui::Checkbox("Tonemapping", &Engine->Params.IsTonemapping);
+              ImGui::DragFloat("Scene Exposure", &Engine->Params.SceneExposure, 0.1f);
+              ImGui::Checkbox("IBL", &Engine->Params.IsIBL);
+              ImGui::TreePop();
+          }
           bool pause = Engine->GetPause();
           if (ImGui::Checkbox("Pause", &pause))
           {

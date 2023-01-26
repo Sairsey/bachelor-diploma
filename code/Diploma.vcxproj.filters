@@ -121,6 +121,9 @@
     <Filter Include="Source Files\Render\SubSystems\Luminance">
       <UniqueIdentifier>{b55ccee2-752d-41c3-9d4d-81fe17be3457}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Render\SubSystems\Enviroment">
+      <UniqueIdentifier>{73066285-5020-4e44-849d-0e593812237c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\main.cpp">
@@ -263,6 +266,9 @@
     </ClCompile>
     <ClCompile Include="source\render\subsystems\luminance_subsystem.cpp">
       <Filter>Source Files\Render\SubSystems\Luminance</Filter>
+    </ClCompile>
+    <ClCompile Include="source\render\subsystems\enviroment_subsystem.cpp">
+      <Filter>Source Files\Render\SubSystems\Enviroment</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -517,6 +523,12 @@
     </ClInclude>
     <ClInclude Include="source\units\enviroment\unit_alex_apt.h">
       <Filter>Source Files\Units\Enviroments</Filter>
+    </ClInclude>
+    <ClInclude Include="source\units\examples\unit_pbr_metallness.h">
+      <Filter>Source Files\Units\Examples</Filter>
+    </ClInclude>
+    <ClInclude Include="source\render\subsystems\enviroment_subsystem.h">
+      <Filter>Source Files\Render\SubSystems\Enviroment</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

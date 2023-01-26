@@ -113,7 +113,7 @@ void gdr::tonemap_pass::CallDirectDraw(ID3D12GraphicsCommandList* currentCommand
   {
     currentCommandList->SetGraphicsRootConstantBufferView(
       (int)root_parameters_draw_indices::globals_buffer_index,
-      Render->GlobalsSystem->GPUData.Resource->GetGPUVirtualAddress());
+      Render->GlobalsSystem->GetGPUResource().Resource->GetGPUVirtualAddress());
 
     D3D12_GPU_DESCRIPTOR_HANDLE tmp_descr = Render->RenderTargetsSystem->ShaderResourceViewsGPU;
     tmp_descr.ptr += (int)render_targets_enum::target_frame_hdr * Render->GetDevice().GetSRVDescSize();

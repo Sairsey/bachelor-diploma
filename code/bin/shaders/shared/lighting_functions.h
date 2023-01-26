@@ -5,7 +5,9 @@
 // MaterialPool - which is a pool of GDRGPUMaterial
 // LightsPool - which is a pool of GDRGPULightSource
 // GlobalValues - which is a constant buffer of GDRGPUGlobalData
+// EnviromentValues - which is a constant buffer of GDRGPUEnviromentData
 // TexturePool - which is a bindless pool of 2d textures
+// CubeTexturePool - which is a bindless pool of cube textures
 // LinearSampler - which is a sampler with linear filtering
 // NearestSampler - which is a sampler with linear filtering
 #ifndef __cplusplus
@@ -163,7 +165,7 @@ float GGX_Distribution(float cosThetaNH, float alpha) {
 }
 
 float3 FresnelSchlick(float3 F0, float cosTheta) {
-    return F0 + (1.0 - F0) * pow(1.0 - cosTheta, 5.0);
+    return F0 + ((1.0).xxx - F0) * pow(1.0 - cosTheta, 5.0);
 }
 
 float3 FresnelSchlickEnv(float3 F0, float cosTheta, float alpha) {
@@ -196,7 +198,7 @@ float4 ShadeCookTorrance(float3 Normal, float3 Position, float2 uv, GDRGPUMateri
         //precompute roughness square
         float G = GGX_PartialGeometry(NV, Params.Roughness) * GGX_PartialGeometry(NL, Params.Roughness);
         float D = GGX_Distribution(NH, Params.Roughness);
-        
+
         float3 F = FresnelSchlick(F0, HV);
         float3 KSpecular = F;
         float3 Specular = KSpecular * G * D / max(4.0 * (NV) * (NL), 0.001);
@@ -204,6 +206,27 @@ float4 ShadeCookTorrance(float3 Normal, float3 Position, float2 uv, GDRGPUMateri
         float3 Diffuse = Params.Diffuse / PI * KDiffuse;
 
         resultColor += LColor * (Diffuse + Specular) * NL;
+    }
+
+    if (globals.IsIBL && env.PrefilteredCubemapIndex != NONE_INDEX)
+    {
+        float3 r = reflect(-V, Normal);
+
+        float3 F = FresnelSchlickEnv(F0, NV, Params.Roughness);
+        float3 KSpecular = F;
+        float3 KDiffuse = float3(1.0, 1.0, 1.0) - F;
+
+        static const float MAX_REFLECTION_LOD = 4.0;
+        float3 prefilteredColor = CubeTexturePool[env.PrefilteredCubemapIndex].SampleLevel(LinearSampler, float3(r.xy, -r.z), Params.Roughness * MAX_REFLECTION_LOD).rgb;
+        float2 envBRDF = TexturePool[env.BRDFLUTIndex].Sample(LinearSampler, float2(NV, Params.Roughness)).rg;
+        float3 Specular = prefilteredColor * (F0 * envBRDF.x + envBRDF.y);
+
+        float3 Irradience = CubeTexturePool[env.IrradianceCubemapIndex].Sample(LinearSampler, float3(Normal.xy, -Normal.z)).rgb;
+        float3 Diffuse = Irradience * Params.Diffuse;
+
+        float3 Ambient = KDiffuse * Diffuse + Specular;
+        resultColor += Ambient;
+
     }
 
     return float4(resultColor * Params.AmbientOcclusion, Params.Transparency);
@@ -247,6 +270,7 @@ float4 ShadeCookTorranceMetal(float3 Normal, float3 Position, float2 uv, GDRGPUM
     Params.Specular = lerp(Params.Specular, Params.Diffuse, Metalness);
 
     Params.Diffuse *= (1 - Metalness);
+    Params.Roughness = max(Params.Roughness, 0.001);
 
     return ShadeCookTorrance(Normal, Position, uv, material, Params);
 }
@@ -282,9 +306,7 @@ float4 ShadeCookTorranceSpecular(float3 Normal, float3 Position, float2 uv, GDRG
         Params.Diffuse = tmp.rgb;
         Params.Transparency = tmp.a;
     }
-
-    Params.Diffuse *= (1 - max(Params.Specular.r, max(Params.Specular.g, Params.Specular.b)));
-
+    Params.Roughness = max(Params.Roughness, 0.001);
     return ShadeCookTorrance(Normal, Position, uv, material, Params);
 }
 

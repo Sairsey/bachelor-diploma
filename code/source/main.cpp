@@ -9,6 +9,7 @@
 #include "units/examples/unit_frustum_cull.h"
 #include "units/examples/unit_occlusion_cull.h"
 #include "units/examples/unit_runtime_add_remove.h"
+#include "units/examples/unit_pbr_metallness.h"
 
 #include "units/enviroment/unit_yokohama.h"
 #include "units/enviroment/unit_alex_apt.h"
@@ -28,6 +29,7 @@
 // 16) Pass for nodes checking
 // 17) Fix material viewer
 // 18) Check (and probably fix) PBR
+// 19) Fix render params
 
 
 #ifdef UNITS_ENABLED
@@ -106,11 +108,12 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 #endif
 
   //Engine.AddUnit(new unit_model_loading());
-  Engine.AddUnit(new unit_frustum_cull());
-  Engine.AddUnit(new unit_light_example());
+  //Engine.AddUnit(new unit_frustum_cull());
+  //Engine.AddUnit(new unit_light_example());
   //Engine.AddUnit(new unit_occlusion_cull());
   //Engine.AddUnit(new unit_triangle());
   //Engine.AddUnit(new unit_runtime_add_remove());
+  Engine.AddUnit(new unit_pbr_metallness());
   
   //Engine.AddUnit(new unit_yokohama());
   Engine.AddUnit(new unit_alex_apt());

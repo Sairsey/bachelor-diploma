@@ -3,7 +3,7 @@
 gdr::globals_subsystem::globals_subsystem(render* Rnd)
 {
   Render = Rnd;
-  StoredCopy.Time = 0;
+  NeedUpdate = true;
   CPUData.Time = 1;
   GPUData.Resource = nullptr;
   SetDefault();
@@ -18,15 +18,16 @@ void gdr::globals_subsystem::SetDefault(void)
   CPUData.Width = 100;
   CPUData.Height = 100;
   CPUData.LightsAmount = 1;
-  CPUData.SkyboxIndex = NONE_INDEX;
   CPUData.IsTonemap = false;
   CPUData.SceneExposure = 8.0;
+  CPUData.IsIBL = false;
+  NeedUpdate = true;
 }
 
 void gdr::globals_subsystem::UpdateGPUData(ID3D12GraphicsCommandList* pCommandList)
 {
   // if buffers are not the same
-  if (memcmp(&CPUData, &StoredCopy, sizeof(GDRGPUGlobalData)) != 0)
+  if (NeedUpdate)
   {
     if (GPUData.Resource == nullptr)
     {
@@ -63,9 +64,21 @@ void gdr::globals_subsystem::UpdateGPUData(ID3D12GraphicsCommandList* pCommandLi
         GPUData.Resource,
         D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_COMMON);
     }
-
-    StoredCopy = CPUData;
+    NeedUpdate = false;
   }
+}
+
+// Get element the way it can be edited
+GDRGPUGlobalData& gdr::globals_subsystem::GetEditable()
+{
+    NeedUpdate = true;
+    return CPUData;
+}
+
+// Get element the way it cannot be edited
+const GDRGPUGlobalData& gdr::globals_subsystem::Get() const
+{
+    return CPUData;
 }
 
 gdr::globals_subsystem::~globals_subsystem()

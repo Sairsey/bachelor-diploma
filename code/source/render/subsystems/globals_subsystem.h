@@ -10,10 +10,12 @@ namespace gdr
   {
     private:
       render *Render; // pointer on Render
-      GDRGPUGlobalData StoredCopy; // stored copy to check if data has changed
       D3D12_CPU_DESCRIPTOR_HANDLE CPUDescriptor;
       D3D12_GPU_DESCRIPTOR_HANDLE GPUDescriptor;
-    public:
+      GDRGPUGlobalData CPUData;  // data stored in CPU
+      GPUResource GPUData;  // data stored in GPU
+      bool NeedUpdate = false;
+  public:
       // Constructor
       globals_subsystem(render *Rnd);
 
@@ -23,10 +25,16 @@ namespace gdr
       // Update data stored on GPU
       void UpdateGPUData(ID3D12GraphicsCommandList *pCommandList);
 
+      // Get element the way it can be edited
+      GDRGPUGlobalData& GetEditable();
+
+      // Get element the way it cannot be edited
+      const GDRGPUGlobalData& Get() const;
+
+      // Get GPU resource
+      GPUResource& GetGPUResource() { return GPUData; };
+
       // Destructor 
       ~globals_subsystem(void);
-
-      GDRGPUGlobalData CPUData;      // data stored in CPU
-      GPUResource GPUData;     // data stored in GPU
   };
 }

@@ -193,8 +193,8 @@ gdr_index mesh_assimp_importer::ImportTreeMesh(aiMesh* mesh, gdr_index ParentInd
     V.Tangent = mth::vec3f{ mesh->mTangents[j].x, mesh->mTangents[j].y, mesh->mTangents[j].z };
     V.Tangent.Normalize();
 
-    V.BonesIndices = mth::vec4<UINT>(NONE_INDEX, NONE_INDEX, NONE_INDEX, NONE_INDEX);
-    V.BonesWeights = mth::vec4f(0);
+    V.BonesIndices = mth::vec4<UINT>(ParentIndex, NONE_INDEX, NONE_INDEX, NONE_INDEX);
+    V.BonesWeights = mth::vec4f(1,0,0,0);
 
     Result.HierarchyNodes[Current].vertices.push_back(V);
   }
@@ -308,7 +308,7 @@ gdr_index mesh_assimp_importer::ImportTreeMesh(aiMesh* mesh, gdr_index ParentInd
       GDRGPUMaterialCookTorranceGetAlbedo(newMaterial) = mth::vec3f(color.r, color.g, color.b);
 
       // Roughness
-      if (assimpMaterial->Get(AI_MATKEY_METALLIC_FACTOR, metallicFactor) == aiReturn_SUCCESS)
+      if (assimpMaterial->Get(AI_MATKEY_ROUGHNESS_FACTOR, metallicFactor) == aiReturn_SUCCESS)
           GDRGPUMaterialCookTorranceGetRoughness(newMaterial) = metallicFactor;
       else
           GDRGPUMaterialCookTorranceGetRoughness(newMaterial) = 0.3;

@@ -24,6 +24,16 @@ namespace gdr
     // Custom Add mechanism
     gdr_index Add(gdr_index parent = NONE_INDEX);
 
+    // Get element the way it can be edited
+    GDRGPUNodeTransform& GetEditable(gdr_index index)
+    {
+        if (IsExist(index))
+        {
+            CPUData[index].IsNeedRecalc = true;
+        }
+        return resource_pool_subsystem::GetEditable(index);
+    }
+
     // Custom Remove mechanism
     void Remove(gdr_index node);
   };

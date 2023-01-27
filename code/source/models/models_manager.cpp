@@ -145,7 +145,6 @@ gdr_index gdr::models_manager::AddModel(mesh_import_data ImportData)
 						Eng->NodeTransformsSystem->GetEditable(NewModel.Rnd.Hierarchy[i].NodeTransform).ChildIndex = NewModel.Rnd.Hierarchy[NewModel.Rnd.Hierarchy[i].ChildIndex].NodeTransform;
 					else
 						Eng->NodeTransformsSystem->GetEditable(NewModel.Rnd.Hierarchy[i].NodeTransform).ChildIndex = NONE_INDEX;
-
 				}
 				else if (NewModel.Rnd.Hierarchy[i].Type == gdr_hier_node_type::mesh)
 				{

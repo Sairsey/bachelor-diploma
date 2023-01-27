@@ -216,12 +216,11 @@ float4 ShadeCookTorrance(float3 Normal, float3 Position, float2 uv, GDRGPUMateri
         float3 KSpecular = F;
         float3 KDiffuse = float3(1.0, 1.0, 1.0) - F;
 
-        static const float MAX_REFLECTION_LOD = 4.0;
-        float3 prefilteredColor = CubeTexturePool[env.PrefilteredCubemapIndex].SampleLevel(LinearSampler, float3(r.xy, -r.z), Params.Roughness * MAX_REFLECTION_LOD).rgb;
+        float3 prefilteredColor = GDRSampleCubeLevel(CubeTexturePool[env.PrefilteredCubemapIndex], LinearSampler, r, Params.Roughness * env.MaxReflectionLod).rgb;
         float2 envBRDF = TexturePool[env.BRDFLUTIndex].Sample(LinearSampler, float2(NV, Params.Roughness)).rg;
         float3 Specular = prefilteredColor * (F0 * envBRDF.x + envBRDF.y);
 
-        float3 Irradience = CubeTexturePool[env.IrradianceCubemapIndex].Sample(LinearSampler, float3(Normal.xy, -Normal.z)).rgb;
+        float3 Irradience = GDRSampleCube(CubeTexturePool[env.IrradianceCubemapIndex], LinearSampler, Normal).rgb;
         float3 Diffuse = Irradience * Params.Diffuse;
 
         float3 Ambient = KDiffuse * Diffuse + Specular;
@@ -286,7 +285,7 @@ float4 ShadeCookTorranceSpecular(float3 Normal, float3 Position, float2 uv, GDRG
     Params.AmbientOcclusion = 1.0;
     if (GDRGPUMaterialCookTorranceGetAmbientOcclusionMapIndex(material) != NONE_INDEX)
         Params.AmbientOcclusion = TexturePool[GDRGPUMaterialCookTorranceGetAmbientOcclusionMapIndex(material)].Sample(LinearSampler, uv).xyz;
-
+    
     // Glossiness + Specular (and Roughness too)
     Params.Roughness = GDRGPUMaterialCookTorranceGetGlossiness(material);
     Params.Specular = GDRGPUMaterialCookTorranceGetSpecular(material);
@@ -336,31 +335,21 @@ float3 CalculateNormal(float3 norm, float3 tangent, float2 uv, uint materialInde
 {
   GDRGPUMaterial material = MaterialPool[materialIndex];
   float3 Normal = normalize(norm);
-  if (material.ShadeType == MATERIAL_SHADER_PHONG)
+  float3 Tangent = normalize(tangent);
+  float3 Bitangent = normalize(cross(Normal, Tangent));
+  float3x3 TBN = float3x3(Tangent, Bitangent, Normal);
+  
+  if (material.ShadeType == MATERIAL_SHADER_PHONG && GDRGPUMaterialPhongGetNormalMapIndex(material) != NONE_INDEX)
   {
-    float3 Tangent = normalize(tangent);
-    float3 Bitangent = cross(Normal, Tangent);
-    float3x3 TBN = transpose(float3x3(Tangent, Bitangent, Normal));
-
-    if (GDRGPUMaterialPhongGetNormalMapIndex(material) != NONE_INDEX)
-    {
-      Normal = TexturePool[GDRGPUMaterialPhongGetNormalMapIndex(material)].Sample(LinearSampler, uv).xyz;
-      Normal = (Normal * 2.0 - 1.0);
-      Normal = normalize(mul(TBN, Normal));
-    }
+      float3 tmp = TexturePool[GDRGPUMaterialCookTorranceGetNormalMapIndex(material)].Sample(LinearSampler, uv).xyz;
+      tmp = (tmp * 2.0 - 1.0);
+      Normal = normalize(mul(tmp, TBN));
   }
-  else if (material.ShadeType == MATERIAL_SHADER_COOKTORRANCE_METALNESS || material.ShadeType == MATERIAL_SHADER_COOKTORRANCE_SPECULAR)
+  else if ((material.ShadeType == MATERIAL_SHADER_COOKTORRANCE_METALNESS || material.ShadeType == MATERIAL_SHADER_COOKTORRANCE_SPECULAR) && GDRGPUMaterialCookTorranceGetNormalMapIndex(material) != NONE_INDEX)
   {
-    float3 Tangent = normalize(tangent);
-    float3 Bitangent = cross(Normal, Tangent);
-    float3x3 TBN = transpose(float3x3(Tangent, Bitangent, Normal));
-
-    if (GDRGPUMaterialCookTorranceGetNormalMapIndex(material) != NONE_INDEX)
-    {
-        Normal = TexturePool[GDRGPUMaterialCookTorranceGetNormalMapIndex(material)].Sample(LinearSampler, uv).xyz;
-        Normal = (Normal * 2.0 - 1.0);
-        Normal = normalize(mul(TBN, Normal));
-    }
+      float3 tmp = TexturePool[GDRGPUMaterialCookTorranceGetNormalMapIndex(material)].Sample(LinearSampler, uv).xyz;
+      tmp = (tmp * 2.0 - 1.0);
+      Normal = normalize(mul(tmp, TBN));
   }
   return Normal;
 }

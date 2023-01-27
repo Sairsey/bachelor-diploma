@@ -66,6 +66,7 @@
     <ClInclude Include="source\units\examples\unit_frustum_cull.h" />
     <ClInclude Include="source\units\examples\unit_light_example.h" />
     <ClInclude Include="source\units\examples\unit_model_loading.h" />
+    <ClInclude Include="source\units\examples\unit_normal_map.h" />
     <ClInclude Include="source\units\examples\unit_occlusion_cull.h" />
     <ClInclude Include="source\units\examples\unit_pbr_metalness.h" />
     <ClInclude Include="source\units\examples\unit_pbr_specular.h" />

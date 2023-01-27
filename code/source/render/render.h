@@ -30,10 +30,10 @@ namespace gdr
     
     bool IsShowAABB = false;       // Show AABBs of objects
 
-    bool IsTonemapping = false;    // Enable tonemapping or not
+    bool IsTonemapping = true;    // Enable tonemapping or not
     float SceneExposure = 8.0;     // Exposure of scene
 
-    bool IsIBL = false;            // Enable image based lighting
+    bool IsIBL = true;            // Enable image based lighting
   };
   struct render_creation_params
   {

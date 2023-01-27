@@ -14,6 +14,7 @@ void gdr::enviroment_subsystem::SetDefault(void)
     CPUData.IrradianceCubemapIndex = NONE_INDEX;
     CPUData.PrefilteredCubemapIndex = NONE_INDEX;
     CPUData.SkyboxIndex = NONE_INDEX;
+    CPUData.MaxReflectionLod = 0;
     NeedUpdate = true;
 }
 

@@ -260,9 +260,6 @@ gdr_index mesh_assimp_importer::ImportTreeMesh(aiMesh* mesh, gdr_index ParentInd
 
     assimpMaterial->Get(AI_MATKEY_SHADING_MODEL, shadingModel);
 
-    if (shadingModel == 0)
-      shadingModel = aiShadingMode_Phong;
-
     if (shadingModel == aiShadingMode_PBR_BRDF && (assimpMaterial->Get(AI_MATKEY_GLOSSINESS_FACTOR, glossFactor) == aiReturn_SUCCESS))
     {
         newMaterial.ShadeType = MATERIAL_SHADER_COOKTORRANCE_SPECULAR;

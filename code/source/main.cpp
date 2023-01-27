@@ -11,6 +11,7 @@
 #include "units/examples/unit_runtime_add_remove.h"
 #include "units/examples/unit_pbr_metalness.h"
 #include "units/examples/unit_pbr_specular.h"
+#include "units/examples/unit_normal_map.h"
 
 #include "units/enviroment/unit_yokohama.h"
 #include "units/enviroment/unit_alex_apt.h"
@@ -112,7 +113,9 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
   //Engine.AddUnit(new unit_occlusion_cull());
   //Engine.AddUnit(new unit_triangle());
   //Engine.AddUnit(new unit_runtime_add_remove());
-  Engine.AddUnit(new unit_pbr_specular());
+  //Engine.AddUnit(new unit_pbr_metalness());
+  //Engine.AddUnit(new unit_pbr_specular());
+  Engine.AddUnit(new unit_normal_map());
   
   //Engine.AddUnit(new unit_yokohama());
   Engine.AddUnit(new unit_alex_apt());

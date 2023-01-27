@@ -107,6 +107,8 @@ struct GDRGPUEnviromentData
 	UINT PrefilteredCubemapIndex; // Index of prefiltered color texture in cube textures pool
 	UINT BRDFLUTIndex;            // Index of brdf look-up table
 	UINT IrradianceCubemapIndex;  // Index of irradiance texture in cube textures pool
+	UINT MaxReflectionLod;        // Max reflection LOD
+	UINT pad[3];
 };
 
 /// <summary>
@@ -323,6 +325,14 @@ float4 GDRSampleCube(TextureCube cubeTexture, SamplerState mySampler, float3 dir
 {
 	dir.z = -dir.z;
 	return cubeTexture.Sample(mySampler, dir);
+}
+
+// in project I use right-handed CS. But HLSL uses left-handed CS.
+// So to fix it I need my special sampler function, which will reverse Z for me
+float4 GDRSampleCubeLevel(TextureCube cubeTexture, SamplerState mySampler, float3 dir, float level)
+{
+	dir.z = -dir.z;
+	return cubeTexture.SampleLevel(mySampler, dir, level);
 }
 
 #endif // __cplusplus

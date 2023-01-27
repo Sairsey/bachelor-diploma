@@ -38,6 +38,7 @@ public:
 
   void Response(void)
   {
+      Engine->EnviromentSystem->GetEditable().MaxReflectionLod = 5 - 1; // number of mips in PrefilteredColorIndex - 1
       Engine->EnviromentSystem->GetEditable().SkyboxIndex = SkyboxIndex;
       Engine->EnviromentSystem->GetEditable().BRDFLUTIndex = BRDFLuTIndex;
       Engine->EnviromentSystem->GetEditable().IrradianceCubemapIndex = IrradianceIndex;

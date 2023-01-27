@@ -533,5 +533,8 @@
     <ClInclude Include="source\units\examples\unit_pbr_specular.h">
       <Filter>Source Files\Units\Examples</Filter>
     </ClInclude>
+    <ClInclude Include="source\units\examples\unit_normal_map.h">
+      <Filter>Source Files\Units\Examples</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

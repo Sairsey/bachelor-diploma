@@ -29,6 +29,7 @@ namespace gdr
     bool IsViewLocked = false;     // Lock View for culling debugging (avalible only with Frustum Culling or Frustum + Occlusion)
     
     bool IsShowAABB = false;       // Show AABBs of objects
+    bool IsShowHier = false;       // Show Hierarchy of objects
 
     bool IsTonemapping = true;    // Enable tonemapping or not
     float SceneExposure = 8.0;     // Exposure of scene

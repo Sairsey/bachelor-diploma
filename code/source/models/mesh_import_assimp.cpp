@@ -25,8 +25,8 @@ struct mesh_assimp_importer
   const aiScene* scene;
 
   gdr_index ImportTreeFirstPass(aiNode *node, gdr_index ParentIndex = NONE_INDEX);
-  void ImportTreeSecondPass(aiNode* node, gdr_index CurrentIndex = 0);
-  gdr_index ImportTreeMesh(aiMesh* mesh, gdr_index ParentIndex);
+  void ImportTreeSecondPass(aiNode* node, gdr_index CurrentIndex = 0, mth::matr4f Offset = mth::matr4f::Identity());
+  gdr_index ImportTreeMesh(aiMesh* mesh, gdr_index ParentIndex, mth::matr4f Offset = mth::matr4f::Identity());
   gdr_index GetTextureFromAssimp(aiMaterial* assimpMaterial, aiTextureType textureType);
 
 
@@ -63,12 +63,12 @@ gdr_index mesh_assimp_importer::ImportTreeFirstPass(aiNode* node, gdr_index Pare
   return Current;
 }
 
-void mesh_assimp_importer::ImportTreeSecondPass(aiNode* node, gdr_index CurrentIndex)
+void mesh_assimp_importer::ImportTreeSecondPass(aiNode* node, gdr_index CurrentIndex, mth::matr4f Offset)
 {
   // import meshes
   for (unsigned i = 0; i < node->mNumMeshes; i++)
   {
-    gdr_index Mesh = ImportTreeMesh(scene->mMeshes[node->mMeshes[i]], CurrentIndex);
+    gdr_index Mesh = ImportTreeMesh(scene->mMeshes[node->mMeshes[i]], CurrentIndex, Result.HierarchyNodes[CurrentIndex].LocalTransform * Offset);
     if (Mesh != NONE_INDEX)
     {
       if (Result.HierarchyNodes[CurrentIndex].ChildIndex == NONE_INDEX)
@@ -87,7 +87,7 @@ void mesh_assimp_importer::ImportTreeSecondPass(aiNode* node, gdr_index CurrentI
   gdr_index ChildIndex = Result.HierarchyNodes[CurrentIndex].ChildIndex;
   for (int i = node->mNumChildren - 1; i >=0  ; i--)
   {
-    ImportTreeSecondPass(node->mChildren[i], ChildIndex);
+    ImportTreeSecondPass(node->mChildren[i], ChildIndex, Result.HierarchyNodes[CurrentIndex].LocalTransform * Offset);
     ChildIndex = Result.HierarchyNodes[ChildIndex].NextIndex;
   }
 }
@@ -135,7 +135,7 @@ gdr_index mesh_assimp_importer::GetTextureFromAssimp(aiMaterial* assimpMaterial,
   return TextureIndex;
 }
 
-gdr_index mesh_assimp_importer::ImportTreeMesh(aiMesh* mesh, gdr_index ParentIndex)
+gdr_index mesh_assimp_importer::ImportTreeMesh(aiMesh* mesh, gdr_index ParentIndex, mth::matr4f Offset)
 {
   // first -> add new node in Result;
   Result.HierarchyNodes.emplace_back();
@@ -147,7 +147,7 @@ gdr_index mesh_assimp_importer::ImportTreeMesh(aiMesh* mesh, gdr_index ParentInd
   Result.HierarchyNodes[Current].ParentIndex = ParentIndex;
   Result.HierarchyNodes[Current].NextIndex = NONE_INDEX;
   Result.HierarchyNodes[Current].ChildIndex = NONE_INDEX;
-  
+
   Result.HierarchyNodes[Current].vertices.reserve(mesh->mNumVertices);
   Result.HierarchyNodes[Current].indices.reserve(mesh->mNumFaces * 3);
   bool isHasBones = mesh->HasBones();
@@ -176,6 +176,8 @@ gdr_index mesh_assimp_importer::ImportTreeMesh(aiMesh* mesh, gdr_index ParentInd
     return NONE_INDEX;
   }
 
+  mth::vec3f minAABB = mth::vec3f(INFINITY);
+  mth::vec3f maxAABB = mth::vec3f(-INFINITY);
   // load vertices
   for (int j = 0; j < (int)mesh->mNumVertices; j++)
   {
@@ -197,6 +199,26 @@ gdr_index mesh_assimp_importer::ImportTreeMesh(aiMesh* mesh, gdr_index ParentInd
     V.BonesWeights = mth::vec4f(1,0,0,0);
 
     Result.HierarchyNodes[Current].vertices.push_back(V);
+
+    minAABB.X = min(V.Pos.X, minAABB.X);
+    minAABB.Y = min(V.Pos.Y, minAABB.Y);
+    minAABB.Z = min(V.Pos.Z, minAABB.Z);
+    maxAABB.X = max(V.Pos.X, maxAABB.X);
+    maxAABB.Y = max(V.Pos.Y, maxAABB.Y);
+    maxAABB.Z = max(V.Pos.Z, maxAABB.Z);
+  }
+
+  // calculate AABB
+  minAABB = Offset * minAABB;
+  maxAABB = Offset * maxAABB;
+
+  {
+      Result.RootTransform.minAABB.X = min(Result.RootTransform.minAABB.X, minAABB.X);
+      Result.RootTransform.minAABB.Y = min(Result.RootTransform.minAABB.Y, minAABB.Y);
+      Result.RootTransform.minAABB.Z = min(Result.RootTransform.minAABB.Z, minAABB.Z);
+      Result.RootTransform.maxAABB.X = max(Result.RootTransform.maxAABB.X, maxAABB.X);
+      Result.RootTransform.maxAABB.Y = max(Result.RootTransform.maxAABB.Y, maxAABB.Y);
+      Result.RootTransform.maxAABB.Z = max(Result.RootTransform.maxAABB.Z, maxAABB.Z);
   }
 
   // fix bones in verices

@@ -25,11 +25,11 @@
 // 6) Restore shaders lighting
 // 7) Add Animations
 // 8) Error checking
-// 10) Calc AABB-s for culling
 // 11) times profiling on CPU too
 // 14) Fix pools States (Probably done, but I have sometimes strange bug, when albedo rise its draw time)
 // 16) Pass for nodes checking
 // 18) Check (and probably fix) PBR
+// 19) Need a link between Object transform and Node Transform
 
 
 #ifdef UNITS_ENABLED

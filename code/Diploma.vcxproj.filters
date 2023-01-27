@@ -270,6 +270,9 @@
     <ClCompile Include="source\render\subsystems\enviroment_subsystem.cpp">
       <Filter>Source Files\Render\SubSystems\Enviroment</Filter>
     </ClCompile>
+    <ClCompile Include="source\render\passes\debug_hier_pass.cpp">
+      <Filter>Source Files\Render\Passes\debug</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\p_header.h">
@@ -535,6 +538,9 @@
     </ClInclude>
     <ClInclude Include="source\units\examples\unit_normal_map.h">
       <Filter>Source Files\Units\Examples</Filter>
+    </ClInclude>
+    <ClInclude Include="source\render\passes\debug_hier_pass.h">
+      <Filter>Source Files\Render\Passes\debug</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

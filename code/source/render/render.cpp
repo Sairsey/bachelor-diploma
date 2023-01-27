@@ -99,6 +99,7 @@ bool gdr::render::Init(engine* Eng)
 
     // debug passes
     Passes.push_back(new debug_aabb_pass());
+    Passes.push_back(new debug_hier_pass());
 
     // postprocess
     Passes.push_back(new imgui_pass());

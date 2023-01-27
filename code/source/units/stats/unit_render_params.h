@@ -39,6 +39,7 @@ public:
                   ImGui::Checkbox("Occlusion Culling", &Engine->Params.IsOccusionCulling);
               ImGui::Checkbox("Lock view", &Engine->Params.IsViewLocked);
               ImGui::Checkbox("Show AABB", &Engine->Params.IsShowAABB);
+              ImGui::Checkbox("Show Hierarcy", &Engine->Params.IsShowHier);
               ImGui::Checkbox("Tonemapping", &Engine->Params.IsTonemapping);
               ImGui::DragFloat("Scene Exposure", &Engine->Params.SceneExposure, 0.1f);
               ImGui::Checkbox("IBL", &Engine->Params.IsIBL);

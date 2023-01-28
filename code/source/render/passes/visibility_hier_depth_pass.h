@@ -31,6 +31,7 @@ namespace gdr
       index_buffer_index,                 // root parameter for buffer with indices in pools
       object_transform_pool_index,        // root parameter for buffer with per object transforms
       node_transform_pool_index,          // root parameter for buffer with nodes transforms
+      bone_mapping_pool_index,            // root parameter for buffer with bone mappings
       total_root_parameters,
     };
 

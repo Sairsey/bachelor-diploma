@@ -18,6 +18,7 @@ namespace gdr
   class lights_subsystem;
   class luminance_subsystem;
   class enviroment_subsystem;
+  class bone_mapping_subsystem;
   struct render_runtime_params
   {
     bool IsIndirect = true;        // Enables indirect draw
@@ -127,6 +128,7 @@ namespace gdr
       cube_textures_subsystem* CubeTexturesSystem;         // System to store info about cube textures
       luminance_subsystem* LuminanceSystem;                // System to store info about Luminance
       enviroment_subsystem* EnviromentSystem;              // System to store info about Enviroment textures (Skybox for example)
+      bone_mapping_subsystem* BoneMappingSystem;           // System to store mapping between GDRVertex-s BoneIndex field and NoteTransformsSystem
 #if 0
       screenshot_support* ScreenshotsSystem; //System to store and generate Hierarhical Depth Texture
 #endif

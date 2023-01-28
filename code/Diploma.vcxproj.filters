@@ -124,6 +124,9 @@
     <Filter Include="Source Files\Render\SubSystems\Enviroment">
       <UniqueIdentifier>{73066285-5020-4e44-849d-0e593812237c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Render\SubSystems\BoneMapping">
+      <UniqueIdentifier>{20f5044d-1356-4312-b592-b74f6bb75252}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\main.cpp">
@@ -541,6 +544,9 @@
     </ClInclude>
     <ClInclude Include="source\render\passes\debug_hier_pass.h">
       <Filter>Source Files\Render\Passes\debug</Filter>
+    </ClInclude>
+    <ClInclude Include="source\render\subsystems\bone_mapping_subsystem.h">
+      <Filter>Source Files\Render\SubSystems\BoneMapping</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

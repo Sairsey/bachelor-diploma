@@ -170,6 +170,7 @@ gdr_index gdr::draw_commands_subsystem::Add(gdr_index geometryIndex)
   DrawCommand.Indices.ObjectParamsMask = 0;
   DrawCommand.Indices.ObjectTransformIndex = NONE_INDEX;
   DrawCommand.Indices.ObjectMaterialIndex = NONE_INDEX;
+  DrawCommand.Indices.BoneMappingIndex = NONE_INDEX;
 
   DrawCommand.VertexBuffer = Render->GeometrySystem->Get(geometryIndex).VertexBufferView;
   DrawCommand.IndexBuffer = Render->GeometrySystem->Get(geometryIndex).IndexBufferView;

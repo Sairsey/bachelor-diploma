@@ -11,7 +11,7 @@ namespace gdr
   struct device_create_params
   {
     bool DebugLayer = false;
-    bool DebugShaders = true;
+    bool DebugShaders = false;
     int  CmdListCount = 3;
     int  UploadListCount = 3;
     HWND hWnd = nullptr;

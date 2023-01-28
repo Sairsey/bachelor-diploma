@@ -151,13 +151,31 @@ gdr_index gdr::models_manager::AddModel(mesh_import_data ImportData)
 					std::vector<GDRVertex> vertices = ImportData.HierarchyNodes[i].vertices;
 					std::vector<UINT> indices = ImportData.HierarchyNodes[i].indices;
 
+					// create BoneMapping!!!
+					gdr_index BoneMapping = Eng->BoneMappingSystem->Add();
+
 					// fix bone indices for skinning
-					for (int i = 0; i < vertices.size(); i++)
+					for (int vertex_index = 0; vertex_index < vertices.size(); vertex_index++)
 					{
-						vertices[i].BonesIndices.X = (vertices[i].BonesIndices.X == NONE_INDEX) ? NONE_INDEX : NewModel.Rnd.Hierarchy[vertices[i].BonesIndices.X].NodeTransform;
-						vertices[i].BonesIndices.Y = (vertices[i].BonesIndices.Y == NONE_INDEX) ? NONE_INDEX : NewModel.Rnd.Hierarchy[vertices[i].BonesIndices.Y].NodeTransform;
-						vertices[i].BonesIndices.Z = (vertices[i].BonesIndices.Z == NONE_INDEX) ? NONE_INDEX : NewModel.Rnd.Hierarchy[vertices[i].BonesIndices.Z].NodeTransform;
-						vertices[i].BonesIndices.W = (vertices[i].BonesIndices.W == NONE_INDEX) ? NONE_INDEX : NewModel.Rnd.Hierarchy[vertices[i].BonesIndices.W].NodeTransform;
+						for (int vertex_bone_index = 0; vertex_bone_index < 4; vertex_bone_index++)
+						{
+							UINT in_model_bone_index = vertices[vertex_index].BonesIndices[vertex_bone_index];
+							if (in_model_bone_index == NONE_INDEX)
+								continue;
+							gdr_index in_engine_node_transform = NewModel.Rnd.Hierarchy[in_model_bone_index].NodeTransform;
+							UINT in_bone_mapping_index = MAX_BONE_PER_MODEL;
+							
+							for (int i = 0; i < MAX_BONE_PER_MODEL && in_bone_mapping_index == MAX_BONE_PER_MODEL; i++)
+								// if we found same or place for new
+								if (Eng->BoneMappingSystem->Get(BoneMapping).BoneMapping[i] == in_engine_node_transform || 
+									Eng->BoneMappingSystem->Get(BoneMapping).BoneMapping[i] == NONE_INDEX)
+									in_bone_mapping_index = i;
+							
+							GDR_ASSERT(in_bone_mapping_index != MAX_BONE_PER_MODEL);
+							vertices[vertex_index].BonesIndices[vertex_bone_index] = in_bone_mapping_index;
+							if (Eng->BoneMappingSystem->Get(BoneMapping).BoneMapping[i] == NONE_INDEX)
+								Eng->BoneMappingSystem->GetEditable(BoneMapping).BoneMapping[in_bone_mapping_index] = in_engine_node_transform;
+						}
 					}
 
 					gdr_index geometry = Eng->GeometrySystem->Add(vertices.data(), vertices.size(), indices.data(), indices.size());
@@ -165,6 +183,7 @@ gdr_index gdr::models_manager::AddModel(mesh_import_data ImportData)
 					Eng->DrawCommandsSystem->GetEditable(NewModel.Rnd.Hierarchy[i].DrawCommand).Indices.ObjectTransformIndex = NewModel.Rnd.RootTransform;
 					Eng->DrawCommandsSystem->GetEditable(NewModel.Rnd.Hierarchy[i].DrawCommand).Indices.ObjectMaterialIndex = MaterialsIndices[ImportData.HierarchyNodes[i].MaterialIndex];
 					Eng->DrawCommandsSystem->GetEditable(NewModel.Rnd.Hierarchy[i].DrawCommand).Indices.ObjectParamsMask = ImportData.HierarchyNodes[i].Params;
+					Eng->DrawCommandsSystem->GetEditable(NewModel.Rnd.Hierarchy[i].DrawCommand).Indices.BoneMappingIndex = BoneMapping;
 				}
 			}
 		}

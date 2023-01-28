@@ -4,6 +4,7 @@
 // NodeTransformPool - which is a pool of GDRGPUNodeTransform
 // ObjectTransformPool - which is a pool of GDRGPUObjectTransform
 // GlobalValues - which is a constant buffer of GDRGPUGlobalData
+// BoneMappingPool - which is a pool of GDRGPUBoneMapping
 #ifndef __cplusplus
 
 #include "shared/normal_matrix.h"
@@ -34,16 +35,40 @@ VSOut ProcessVSIn(VSIn input)
     output.worldPos = (0).xxxx;
 
     // if we have bones, process them first
-    if (input.bones_indices.x != NONE_INDEX || input.bones_indices.y != NONE_INDEX || input.bones_indices.z != NONE_INDEX || input.bones_indices.w != NONE_INDEX)
+    if (indices.BoneMappingIndex != NONE_INDEX &&
+          (input.bones_indices.x != NONE_INDEX ||
+           input.bones_indices.y != NONE_INDEX ||
+           input.bones_indices.z != NONE_INDEX ||
+           input.bones_indices.w != NONE_INDEX))
     {
-        if (input.bones_indices.x != NONE_INDEX)
-            nodeTransform += input.bones_weights.x * mul(NodeTransformPool[input.bones_indices.x].GlobalTransform, NodeTransformPool[input.bones_indices.x].BoneOffset);
-        if (input.bones_indices.y != NONE_INDEX)
-            nodeTransform += input.bones_weights.y * mul(NodeTransformPool[input.bones_indices.y].GlobalTransform, NodeTransformPool[input.bones_indices.y].BoneOffset);
-        if (input.bones_indices.z != NONE_INDEX)
-            nodeTransform += input.bones_weights.z * mul(NodeTransformPool[input.bones_indices.z].GlobalTransform, NodeTransformPool[input.bones_indices.z].BoneOffset);
-        if (input.bones_indices.w != NONE_INDEX)
-            nodeTransform += input.bones_weights.w * mul(NodeTransformPool[input.bones_indices.w].GlobalTransform, NodeTransformPool[input.bones_indices.w].BoneOffset);
+        if (input.bones_indices.x != NONE_INDEX && BoneMappingPool[indices.BoneMappingIndex].BoneMapping[input.bones_indices.x] != NONE_INDEX)
+        {
+          uint ind = BoneMappingPool[indices.BoneMappingIndex].BoneMapping[input.bones_indices.x];
+          nodeTransform += 
+            input.bones_weights.x * 
+            mul(NodeTransformPool[ind].GlobalTransform, NodeTransformPool[ind].BoneOffset);
+        }
+        if (input.bones_indices.y != NONE_INDEX && BoneMappingPool[indices.BoneMappingIndex].BoneMapping[input.bones_indices.y] != NONE_INDEX)
+        {
+          uint ind = BoneMappingPool[indices.BoneMappingIndex].BoneMapping[input.bones_indices.y];
+          nodeTransform +=
+            input.bones_weights.y *
+            mul(NodeTransformPool[ind].GlobalTransform, NodeTransformPool[ind].BoneOffset);
+        }
+        if (input.bones_indices.z != NONE_INDEX && BoneMappingPool[indices.BoneMappingIndex].BoneMapping[input.bones_indices.z] != NONE_INDEX)
+        {
+          uint ind = BoneMappingPool[indices.BoneMappingIndex].BoneMapping[input.bones_indices.z];
+          nodeTransform +=
+            input.bones_weights.z *
+            mul(NodeTransformPool[ind].GlobalTransform, NodeTransformPool[ind].BoneOffset);
+        }
+        if (input.bones_indices.w != NONE_INDEX && BoneMappingPool[indices.BoneMappingIndex].BoneMapping[input.bones_indices.w] != NONE_INDEX)
+        {
+          uint ind = BoneMappingPool[indices.BoneMappingIndex].BoneMapping[input.bones_indices.w];
+          nodeTransform +=
+            input.bones_weights.w *
+            mul(NodeTransformPool[ind].GlobalTransform, NodeTransformPool[ind].BoneOffset);
+        }
         output.worldPos = mul(nodeTransform, float4(input.pos, 1.0));
         float4x4 normalMatr = GetNormalMatrix(nodeTransform);
         output.normal = mul(normalMatr, float4(input.normal, 1.0));

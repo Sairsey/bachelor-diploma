@@ -16,6 +16,7 @@ void gdr::visibility_hier_depth_pass::Initialize(void)
     static_assert(GDRGPUObjectIndicesRecordRootIndex == (int)root_parameters_draw_indices::index_buffer_index, "Index buffer not in right root signature index");
     params[(int)root_parameters_draw_indices::object_transform_pool_index].InitAsShaderResourceView(GDRGPUObjectTransformPoolSlot);
     params[(int)root_parameters_draw_indices::node_transform_pool_index].InitAsShaderResourceView(GDRGPUNodeTransformPoolSlot);
+    params[(int)root_parameters_draw_indices::bone_mapping_pool_index].InitAsShaderResourceView(GDRGPUBoneMappingSlot);
 
     {
       CD3DX12_ROOT_SIGNATURE_DESC rootSignatureDesc;
@@ -226,6 +227,9 @@ void gdr::visibility_hier_depth_pass::CallDirectDraw(ID3D12GraphicsCommandList* 
       currentCommandList->SetGraphicsRootShaderResourceView(
         (int)root_parameters_draw_indices::node_transform_pool_index,
         Render->NodeTransformsSystem->GetGPUResource().Resource->GetGPUVirtualAddress());
+      currentCommandList->SetGraphicsRootShaderResourceView(
+        (int)root_parameters_draw_indices::bone_mapping_pool_index,
+        Render->BoneMappingSystem->GetGPUResource().Resource->GetGPUVirtualAddress());
     }
     currentCommandList->DrawIndexedInstanced(command.DrawArguments.IndexCountPerInstance, 1, 0, 0, 0);
   }
@@ -253,6 +257,9 @@ void gdr::visibility_hier_depth_pass::CallIndirectDraw(ID3D12GraphicsCommandList
   currentCommandList->SetGraphicsRootShaderResourceView(
     (int)root_parameters_draw_indices::node_transform_pool_index,
     Render->NodeTransformsSystem->GetGPUResource().Resource->GetGPUVirtualAddress());
+  currentCommandList->SetGraphicsRootShaderResourceView(
+    (int)root_parameters_draw_indices::bone_mapping_pool_index,
+    Render->BoneMappingSystem->GetGPUResource().Resource->GetGPUVirtualAddress());
 
   currentCommandList->ExecuteIndirect(
     CommandSignature,

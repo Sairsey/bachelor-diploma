@@ -52,6 +52,7 @@ using uint4 = mth::vec4<UINT>;
 #define GDRGPULightsPoolSlot ShaderResourceSlot(6)
 #define GDRGPUAllCommandsPoolSlot ShaderResourceSlot(7)
 #define GDRGPUHierDepthSlot ShaderResourceSlot(8)
+#define GDRGPUBoneMappingSlot ShaderResourceSlot(9)
 // slots for all uavs
 #define GDRGPUOpaqueAllCommandsPoolSlot UnorderedAccessSlot(1)
 #define GDRGPUTransparentAllCommandsPoolSlot UnorderedAccessSlot(2)
@@ -145,6 +146,14 @@ struct GDRGPUObjectTransform
 	UINT pad2[1];
 };
 
+/// <summary>
+/// Bone mapping system
+/// </summary>
+#define MAX_BONE_PER_MODEL 512
+struct GDRGPUBoneMapping
+{
+	UINT BoneMapping[MAX_BONE_PER_MODEL];
+};
 
 /// <summary>
 /// Node Transform system
@@ -271,6 +280,7 @@ struct GDRGPUObjectIndices
 	UINT ObjectParamsMask;     // Flags of current object
 	UINT ObjectTransformIndex; // index in Object Transforms pool
 	UINT ObjectMaterialIndex;  // index in Object Materials pool
+	UINT BoneMappingIndex;     // index in Bone Mapping pool
 };
 
 /// <summary>
@@ -283,7 +293,7 @@ struct GDRGPUIndirectCommand
 	D3D12_INDEX_BUFFER_VIEW IndexBuffer;        // set correct index buffer
 	D3D12_DRAW_INDEXED_ARGUMENTS DrawArguments; // then draw indirect indexed primitive
 	UINT IsExist;                               // true if command is valid. False otherwise
-	UINT _pad1[1];
+	//UINT _pad1[0];
 };
 
 /// <summary>

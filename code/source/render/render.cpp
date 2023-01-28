@@ -79,6 +79,7 @@ bool gdr::render::Init(engine* Eng)
       LightsSystem = new lights_subsystem(this);
       LuminanceSystem = new luminance_subsystem(this);
       EnviromentSystem = new enviroment_subsystem(this);
+      BoneMappingSystem = new bone_mapping_subsystem(this);
   }
 
   // init passes
@@ -206,6 +207,11 @@ void gdr::render::DrawFrame(void)
           PROFILE_BEGIN(uploadCommandList, "Update Node Transforms");
           NodeTransformsSystem->UpdateGPUData(uploadCommandList);
           PROFILE_END(uploadCommandList);
+      }
+      {
+        PROFILE_BEGIN(uploadCommandList, "Update Bone Mappings");
+        BoneMappingSystem->UpdateGPUData(uploadCommandList);
+        PROFILE_END(uploadCommandList);
       }
       {
           PROFILE_BEGIN(uploadCommandList, "Update Object Transforms");
@@ -369,6 +375,7 @@ void gdr::render::Term(void)
       delete LightsSystem;
       delete LuminanceSystem;
       delete EnviromentSystem;
+      delete BoneMappingSystem;
   }
 
   for (auto& pass : Passes)

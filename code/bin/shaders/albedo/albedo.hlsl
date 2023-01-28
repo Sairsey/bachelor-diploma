@@ -16,8 +16,9 @@ StructuredBuffer<GDRGPUObjectTransform> ObjectTransformPool : register(GDRGPUObj
 StructuredBuffer<GDRGPUNodeTransform> NodeTransformPool : register(GDRGPUNodeTransformPoolSlot);        // SRV: Data with transforms which stored for whole hierarchy
 StructuredBuffer<GDRGPUMaterial> MaterialPool : register(GDRGPUMaterialPoolSlot);                       // SRV: Data with materials
 StructuredBuffer<GDRGPULightSource> LightsPool : register(GDRGPULightsPoolSlot);                        // SRV: Data with light sources
-Texture2D TexturePool[] : register(GDRGPUTexturePoolSlot, GDRGPUTexturePoolSpace);                  // Bindless Pool with all textures
-TextureCube CubeTexturePool[] : register(GDRGPUCubeTexturePoolSlot, GDRGPUCubeTexturePoolSpace); // Bindless Pool with all textures
+Texture2D TexturePool[] : register(GDRGPUTexturePoolSlot, GDRGPUTexturePoolSpace);                      // Bindless Pool with all textures
+TextureCube CubeTexturePool[] : register(GDRGPUCubeTexturePoolSlot, GDRGPUCubeTexturePoolSpace);        // Bindless Pool with all textures
+StructuredBuffer<GDRGPUBoneMapping> BoneMappingPool : register(GDRGPUBoneMappingSlot);                  // SRV: Data with bone mappings
 
 SamplerState LinearSampler : register(GDRGPULinearSamplerSlot);  // Linear texture sampler
 SamplerState NearestSampler : register(GDRGPUNearestSamplerSlot); // Nearest texture sampler

@@ -41,8 +41,8 @@
 
 /// Main Pass
   #include "render/passes/albedo_pass.h"
-  // transparent pass
   #include "render/passes/skybox_pass.h"
+  #include "render/passes/oit_transparent_pass.h"
 
 /// Postprocess
   #include "render/passes/luminance_pass.h"

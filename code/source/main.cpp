@@ -32,6 +32,9 @@
 // 16) Pass for nodes checking
 // 18) Check (and probably fix) PBR
 // 19) Need a link between Object transform and Node Transform
+// 20) I cannot add occlusion culling to models parts. Only for models.
+// 21) I need to add "Occluder" mesh parameter, which is a simplified version of model mesh. On Hier Depth draw only him.
+// 22) I cannot implement direct transparency, because I do not know position of my transparent mesh.
 
 
 #ifdef UNITS_ENABLED

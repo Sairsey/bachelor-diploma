@@ -74,11 +74,13 @@ void gdr::models_manager::CloneModel(gdr_index SrcModel, gdr_index DstModel)
 					NewMap = NewModel.Rnd.Hierarchy[index_to_find].NodeTransform;
 				}
 
-				NewModel.Rnd.Hierarchy[i].DrawCommand = Eng->DrawCommandsSystem->Add(
+				NewNode.DrawCommand = Eng->DrawCommandsSystem->Add(
 					Eng->DrawCommandsSystem->Get(OldNode.DrawCommand).Indices.ObjectIndex,
 					NewModel.Rnd.RootTransform,
 					Eng->DrawCommandsSystem->Get(OldNode.DrawCommand).Indices.ObjectMaterialIndex,
 					BoneMapping);
+				Eng->DrawCommandsSystem->GetEditable(NewNode.DrawCommand).Indices.ObjectParamsMask =
+					Eng->DrawCommandsSystem->GetEditable(OldNode.DrawCommand).Indices.ObjectParamsMask;
 			}
 		}
 	}
@@ -264,9 +266,9 @@ gdr_index gdr::models_manager::AddModel(mesh_import_data ImportData)
 									Eng->BoneMappingSystem->Get(BoneMapping).BoneMapping[i] == NONE_INDEX)
 									in_bone_mapping_index = i;
 							
-							GDR_ASSERT(in_bone_mapping_index != MAX_BONE_PER_MODEL);
+							GDR_ASSERT(in_bone_mapping_index < MAX_BONE_PER_MODEL);
 							vertices[vertex_index].BonesIndices[vertex_bone_index] = in_bone_mapping_index;
-							if (Eng->BoneMappingSystem->Get(BoneMapping).BoneMapping[i] == NONE_INDEX)
+							if (Eng->BoneMappingSystem->Get(BoneMapping).BoneMapping[in_bone_mapping_index] == NONE_INDEX)
 								Eng->BoneMappingSystem->GetEditable(BoneMapping).BoneMapping[in_bone_mapping_index] = in_engine_node_transform;
 						}
 					}
@@ -277,6 +279,7 @@ gdr_index gdr::models_manager::AddModel(mesh_import_data ImportData)
 					NewModel.Rnd.RootTransform,
 					MaterialsIndices[ImportData.HierarchyNodes[i].MaterialIndex],
 					BoneMapping);
+					Eng->DrawCommandsSystem->GetEditable(NewModel.Rnd.Hierarchy[i].DrawCommand).Indices.ObjectParamsMask = ImportData.HierarchyNodes[i].Params;
 				}
 			}
 		}
@@ -289,6 +292,7 @@ void gdr::models_manager::DeleteModel(gdr_index index)
 {
 	model& ModelToDelete = ModelsPool[index];
 	ModelToDelete.Name = "GDR_MODEL_DELETED";
+
 	for (int i = 0; i < ModelToDelete.Rnd.Hierarchy.size(); i++)
 	{
 		gdr::render_mesh_node &node = ModelToDelete.Rnd.Hierarchy[i];

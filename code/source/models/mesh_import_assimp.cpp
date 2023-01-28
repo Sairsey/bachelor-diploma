@@ -9,6 +9,7 @@
 #ifndef min
 #define min(a,b)            (((a) < (b)) ? (a) : (b))
 #endif
+#include "stb_image.h"
 
 struct mesh_assimp_importer
 {
@@ -29,6 +30,7 @@ struct mesh_assimp_importer
   gdr_index ImportTreeMesh(aiMesh* mesh, gdr_index ParentIndex, mth::matr4f Offset = mth::matr4f::Identity());
   gdr_index GetTextureFromAssimp(aiMaterial* assimpMaterial, aiTextureType textureType);
 
+  bool IsTextureTransparent(std::string path);
 
   void Import();
 };
@@ -387,6 +389,51 @@ gdr_index mesh_assimp_importer::ImportTreeMesh(aiMesh* mesh, gdr_index ParentInd
   return Current;
 }
 
+bool mesh_assimp_importer::IsTextureTransparent(std::string path)
+{
+  int w = 0, h = 0, components = 0;
+  uint8_t *data = stbi_load(path.c_str(), &w, &h, &components, 0);
+
+  if (components == 1)
+  {
+    stbi_image_free(data);
+    return true;
+  }
+  else if (components == 2)
+  {
+    for (int i = 0; i < h; i++)
+      for (int j = 0; j < w; j++)
+        if (data[i * w * 2 + j * 2 + 1] != 255)
+        {
+          stbi_image_free(data);
+          return true;
+        }
+    stbi_image_free(data);
+    return false;
+  }
+  else if (components == 3)
+  {
+    stbi_image_free(data);
+    return false;
+  }
+  else if (components == 4)
+  {
+    for (int i = 0; i < h; i++)
+      for (int j = 0; j < w; j++)
+        if (data[i * w * 4 + j * 4 + 3] != 255)
+        {
+          stbi_image_free(data);
+          return true;
+        }
+    stbi_image_free(data);
+    return false;
+  }
+
+  GDR_FAILED("Unknown amount of channels");
+  stbi_image_free(data);
+  return false;
+}
+
 void mesh_assimp_importer::Import()
 {
   scene = importer.ReadFile(FileName,
@@ -422,6 +469,27 @@ void mesh_assimp_importer::Import()
     Result.RootTransform.maxAABB.Y = max(Result.RootTransform.maxAABB.Y, scene->mMeshes[i]->mAABB.mMax.y);
     Result.RootTransform.maxAABB.Z = max(Result.RootTransform.maxAABB.Z, scene->mMeshes[i]->mAABB.mMax.z);
   }
+
+  std::vector<bool> IsTransparent;
+  IsTransparent.resize(Result.TexturesPaths.size());
+  for (int i = 0; i < Result.TexturesPaths.size(); i++)
+    IsTransparent[i] = IsTextureTransparent(Result.TexturesPaths[i]);
+
+  for (int i = 0; i < Result.HierarchyNodes.size(); i++)
+    if (Result.HierarchyNodes[i].Type == gdr_hier_node_type::mesh)
+    {
+      GDRGPUMaterial mat = Result.Materials[Result.HierarchyNodes[i].MaterialIndex];
+      gdr_index texture_id = NONE_INDEX;
+      if (mat.ShadeType == MATERIAL_SHADER_COLOR)
+        texture_id = GDRGPUMaterialColorGetColorMapIndex(mat);
+      else if (mat.ShadeType == MATERIAL_SHADER_PHONG)
+        texture_id = GDRGPUMaterialPhongGetDiffuseMapIndex(mat);
+      else if (mat.ShadeType == MATERIAL_SHADER_COOKTORRANCE_METALNESS || mat.ShadeType == MATERIAL_SHADER_COOKTORRANCE_SPECULAR)
+        texture_id = GDRGPUMaterialCookTorranceGetAlbedoMapIndex(mat);
+      
+      if (texture_id != NONE_INDEX && IsTransparent[texture_id])
+        Result.HierarchyNodes[i].Params |= OBJECT_PARAMETER_TRANSPARENT;
+    }
 }
 
 

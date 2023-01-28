@@ -36,6 +36,8 @@ namespace gdr
     float SceneExposure = 8.0;     // Exposure of scene
 
     bool IsIBL = true;            // Enable image based lighting
+
+    bool IsTransparent = true;    // Enable OIT Transparency
   };
   struct render_creation_params
   {

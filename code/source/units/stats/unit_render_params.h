@@ -52,6 +52,7 @@ public:
               ImGui::Checkbox("Tonemapping", &Engine->Params.IsTonemapping);
               ImGui::DragFloat("Scene Exposure", &Engine->Params.SceneExposure, 0.1f);
               ImGui::Checkbox("IBL", &Engine->Params.IsIBL);
+              ImGui::Checkbox("Transparency", &Engine->Params.IsTransparent);
               ImGui::TreePop();
           }
           bool pause = Engine->GetPause();

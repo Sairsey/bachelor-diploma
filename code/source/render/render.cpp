@@ -93,6 +93,7 @@ bool gdr::render::Init(engine* Eng)
     // Main pass
     Passes.push_back(new albedo_pass());
     Passes.push_back(new skybox_pass());
+    Passes.push_back(new oit_transparent_pass());
 
     // Postprocess
     Passes.push_back(new luminance_pass());
@@ -209,9 +210,9 @@ void gdr::render::DrawFrame(void)
           PROFILE_END(uploadCommandList);
       }
       {
-        PROFILE_BEGIN(uploadCommandList, "Update Bone Mappings");
-        BoneMappingSystem->UpdateGPUData(uploadCommandList);
-        PROFILE_END(uploadCommandList);
+          PROFILE_BEGIN(uploadCommandList, "Update Bone Mappings");
+          BoneMappingSystem->UpdateGPUData(uploadCommandList);
+          PROFILE_END(uploadCommandList);
       }
       {
           PROFILE_BEGIN(uploadCommandList, "Update Object Transforms");
@@ -278,6 +279,7 @@ void gdr::render::DrawFrame(void)
     MaterialsSystem->UpdateResourceState(pCommandList, true);
     DrawCommandsSystem->UpdateResourceState(pCommandList, true);
     LightsSystem->UpdateResourceState(pCommandList, true);
+    BoneMappingSystem->UpdateResourceState(pCommandList, true);
     PROFILE_END(pCommandList);
 
     auto renderStart = std::chrono::system_clock::now();
@@ -337,6 +339,7 @@ void gdr::render::DrawFrame(void)
     LuminanceSystem->UpdateResourceState(pCommandList, false);
     DrawCommandsSystem->UpdateResourceState(pCommandList, false);
     LightsSystem->UpdateResourceState(pCommandList, false);
+    BoneMappingSystem->UpdateResourceState(pCommandList, false);
     PROFILE_END(pCommandList);
 
     Device.CloseSubmitAndPresentRenderCommandList(false);

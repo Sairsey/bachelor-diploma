@@ -102,7 +102,7 @@ gdr_index mesh_assimp_importer::GetTextureFromAssimp(aiMaterial* assimpMaterial,
   std::string fullpath;
   if (Path.C_Str()[0] == '*')
   {
-    fullpath = ImportDirectory + scene->mTextures[textureNumber]->mFilename.C_Str() + (Path.C_Str() + 1) + "." + scene->mTextures[textureNumber]->achFormatHint;
+    fullpath = ImportDirectory + "\\" + scene->mTextures[textureNumber]->mFilename.C_Str() + (Path.C_Str() + 1) + "." + scene->mTextures[textureNumber]->achFormatHint;
 
     DWORD dwAttrib = GetFileAttributesA(fullpath.c_str());
     if (dwAttrib != INVALID_FILE_ATTRIBUTES && !(dwAttrib & FILE_ATTRIBUTE_DIRECTORY))
@@ -117,7 +117,7 @@ gdr_index mesh_assimp_importer::GetTextureFromAssimp(aiMaterial* assimpMaterial,
   }
   else
   {
-    fullpath = ImportDirectory + Path.C_Str();
+    fullpath = ImportDirectory + "\\" + Path.C_Str();
     FILE* F;
     if (fopen_s(&F, fullpath.c_str(), "r") != 0)
       return NONE_INDEX;
@@ -199,26 +199,6 @@ gdr_index mesh_assimp_importer::ImportTreeMesh(aiMesh* mesh, gdr_index ParentInd
     V.BonesWeights = mth::vec4f(1,0,0,0);
 
     Result.HierarchyNodes[Current].vertices.push_back(V);
-
-    minAABB.X = min(V.Pos.X, minAABB.X);
-    minAABB.Y = min(V.Pos.Y, minAABB.Y);
-    minAABB.Z = min(V.Pos.Z, minAABB.Z);
-    maxAABB.X = max(V.Pos.X, maxAABB.X);
-    maxAABB.Y = max(V.Pos.Y, maxAABB.Y);
-    maxAABB.Z = max(V.Pos.Z, maxAABB.Z);
-  }
-
-  // calculate AABB
-  minAABB = Offset * minAABB;
-  maxAABB = Offset * maxAABB;
-
-  {
-      Result.RootTransform.minAABB.X = min(Result.RootTransform.minAABB.X, minAABB.X);
-      Result.RootTransform.minAABB.Y = min(Result.RootTransform.minAABB.Y, minAABB.Y);
-      Result.RootTransform.minAABB.Z = min(Result.RootTransform.minAABB.Z, minAABB.Z);
-      Result.RootTransform.maxAABB.X = max(Result.RootTransform.maxAABB.X, maxAABB.X);
-      Result.RootTransform.maxAABB.Y = max(Result.RootTransform.maxAABB.Y, maxAABB.Y);
-      Result.RootTransform.maxAABB.Z = max(Result.RootTransform.maxAABB.Z, maxAABB.Z);
   }
 
   // fix bones in verices
@@ -411,10 +391,8 @@ void mesh_assimp_importer::Import()
 {
   scene = importer.ReadFile(FileName,
     aiProcessPreset_TargetRealtime_Fast |
-    aiProcess_SplitLargeMeshes |
     aiProcess_FlipUVs |
-    aiProcess_PopulateArmatureData |
-    aiProcess_GenBoundingBoxes);
+    aiProcess_PopulateArmatureData);
   
   if (!scene)
     return;
@@ -426,6 +404,13 @@ void mesh_assimp_importer::Import()
   
   ImportTreeFirstPass(scene->mRootNode);
   ImportTreeSecondPass(scene->mRootNode);
+  importer.FreeScene();
+
+  // calculate AABB
+  scene = importer.ReadFile(FileName,
+    aiProcessPreset_TargetRealtime_Fast |
+    aiProcess_PreTransformVertices |
+    aiProcess_GenBoundingBoxes);
 
   // calculate min-max AABB
   for (unsigned i = 0; i < scene->mNumMeshes; i++)
@@ -437,8 +422,6 @@ void mesh_assimp_importer::Import()
     Result.RootTransform.maxAABB.Y = max(Result.RootTransform.maxAABB.Y, scene->mMeshes[i]->mAABB.mMax.y);
     Result.RootTransform.maxAABB.Z = max(Result.RootTransform.maxAABB.Z, scene->mMeshes[i]->mAABB.mMax.z);
   }
-
-  importer.FreeScene();
 }
 
 
@@ -458,7 +441,7 @@ gdr::mesh_import_data gdr::ImportMeshAssimp(std::string filename)
     size_t last_slash_idx = filename.rfind('/');
     if (std::string::npos != last_slash_idx)
     {
-      myImporter.ImportDirectory = filename.substr(0, last_slash_idx) + "/";
+      myImporter.ImportDirectory = filename.substr(0, last_slash_idx);
     }
   }
 

@@ -37,7 +37,7 @@ void gdr::debug_hier_pass::Initialize(void)
         psoDesc.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
         psoDesc.RasterizerState.CullMode = D3D12_CULL_MODE_NONE;
         psoDesc.BlendState = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
-        psoDesc.DepthStencilState.DepthEnable = TRUE;
+        psoDesc.DepthStencilState.DepthEnable = FALSE;
         psoDesc.DepthStencilState.DepthFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL;
         psoDesc.DepthStencilState.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ALL;
         psoDesc.DepthStencilState.StencilEnable = FALSE;
@@ -99,6 +99,40 @@ void gdr::debug_hier_pass::Initialize(void)
     Render->GetDevice().CloseUploadCommandList();
 }
 
+void gdr::debug_hier_pass::DrawHier(ID3D12GraphicsCommandList* currentCommandList, gdr_index Me, gdr_index ObjectTransformIndex)
+{
+  if (!Render->NodeTransformsSystem->IsExist(Me))
+    return;
+
+  if (Render->NodeTransformsSystem->Get(Me).ParentIndex != NONE_INDEX)
+  {
+    ShaderParams params;
+    params.VP = Render->GlobalsSystem->Get().VP;
+    params.Element = Me;
+    params.RootTransform = 
+      Render->ObjectTransformsSystem->IsExist(ObjectTransformIndex) ? 
+      Render->ObjectTransformsSystem->Get(ObjectTransformIndex).Transform :
+      mth::matr4f::Identity();
+
+    currentCommandList->SetGraphicsRoot32BitConstants(
+      (int)root_parameters_draw_indices::params_buffer_index,
+      sizeof(ShaderParams) / sizeof(int32_t),
+      &params, 0);
+    currentCommandList->SetGraphicsRootShaderResourceView(
+      (int)root_parameters_draw_indices::node_transforms_buffer_index,
+      Render->NodeTransformsSystem->GetGPUResource().Resource->GetGPUVirtualAddress());
+
+    currentCommandList->DrawIndexedInstanced(IndexCount, 1, 0, 0, 0);
+  }
+
+  gdr_index IndexToDraw = Render->NodeTransformsSystem->Get(Me).ChildIndex;
+  while (IndexToDraw != NONE_INDEX)
+  {
+    DrawHier(currentCommandList, IndexToDraw, ObjectTransformIndex);
+    IndexToDraw = Render->NodeTransformsSystem->Get(IndexToDraw).NextIndex;
+  }
+}
+
 void gdr::debug_hier_pass::CallDirectDraw(ID3D12GraphicsCommandList* currentCommandList)
 {
     if (!Render->Params.IsShowHier)
@@ -112,31 +146,24 @@ void gdr::debug_hier_pass::CallDirectDraw(ID3D12GraphicsCommandList* currentComm
     currentCommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_LINELIST);
     currentCommandList->IASetVertexBuffers(0, 1, &VertexBufferView);
     currentCommandList->IASetIndexBuffer(&IndexBufferView);
-    
-
-    ShaderParams params;
-    params.VP = Render->GlobalsSystem->Get().VP;
 
     // just iterate for every draw call
-    for (int i = 0; i < Render->NodeTransformsSystem->AllocatedSize(); i++)
+    for (int i = 0; i < Render->DrawCommandsSystem->AllocatedSize(); i++)
     {
-        if (!Render->NodeTransformsSystem->IsExist(i))
+        if (!Render->DrawCommandsSystem->IsExist(i))
           continue;
-        auto& command = Render->NodeTransformsSystem->Get(i);
-        if (command.ParentIndex == NONE_INDEX)
-          continue;
-        
-        params.Element = i;
-        
-        currentCommandList->SetGraphicsRoot32BitConstants(
-          (int)root_parameters_draw_indices::params_buffer_index,
-          sizeof(ShaderParams) / sizeof(int32_t),
-          &params, 0);
-        currentCommandList->SetGraphicsRootShaderResourceView(
-            (int)root_parameters_draw_indices::node_transforms_buffer_index,
-            Render->NodeTransformsSystem->GetGPUResource().Resource->GetGPUVirtualAddress());
 
-        currentCommandList->DrawIndexedInstanced(IndexCount, 1, 0, 0, 0);
+        // get bone Mapping system
+        if (Render->DrawCommandsSystem->Get(i).Indices.BoneMappingIndex != NONE_INDEX)
+        {
+          gdr_index boneMapping = Render->DrawCommandsSystem->Get(i).Indices.BoneMappingIndex;
+          gdr_index rootNode = Render->BoneMappingSystem->Get(boneMapping).BoneMapping[0];
+
+          while (rootNode != NONE_INDEX && Render->NodeTransformsSystem->Get(rootNode).ParentIndex != NONE_INDEX)
+            rootNode = Render->NodeTransformsSystem->Get(rootNode).ParentIndex;
+          
+          DrawHier(currentCommandList, rootNode, Render->DrawCommandsSystem->Get(i).Indices.ObjectTransformIndex);
+        }
     }
 }
 

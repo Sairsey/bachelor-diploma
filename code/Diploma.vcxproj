@@ -67,6 +67,7 @@
     <ClInclude Include="source\units\enviroment\unit_yokohama.h" />
     <ClInclude Include="source\units\examples\unit_frustum_cull.h" />
     <ClInclude Include="source\units\examples\unit_light_example.h" />
+    <ClInclude Include="source\units\examples\unit_load_any.h" />
     <ClInclude Include="source\units\examples\unit_model_loading.h" />
     <ClInclude Include="source\units\examples\unit_normal_map.h" />
     <ClInclude Include="source\units\examples\unit_occlusion_cull.h" />
@@ -273,6 +274,7 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>p_header.h</PrecompiledHeaderFile>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -293,6 +295,7 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>p_header.h</PrecompiledHeaderFile>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>

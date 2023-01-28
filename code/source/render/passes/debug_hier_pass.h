@@ -15,6 +15,7 @@ namespace gdr
 			struct ShaderParams
 			{
 				mth::matr4f VP;
+				mth::matr4f RootTransform;
 				gdr_index Element;
 			};
 
@@ -40,6 +41,9 @@ namespace gdr
 			};
 
 			mth::vec3f Color = { 1, 0, 0 };
+
+			void DrawHier(ID3D12GraphicsCommandList* currentCommandList, gdr_index Me, gdr_index ObjectTransformIndex);
+
 		public:
 			/* Function to get name */
 			std::string GetName(void) override

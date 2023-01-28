@@ -29,7 +29,7 @@
 #define USE_PIX
 #include "WinPixEventRuntime/pix3.h"
 #include "imgui/imgui.h"
-
+#include "imgui/imfilebrowser.h"
 
 #define PROFILE_MARKERS
 

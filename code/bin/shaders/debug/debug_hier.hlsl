@@ -3,6 +3,7 @@
 cbuffer GlobalParams : register(GDRGPUUserConstantBuffer1Slot)
 {
 	float4x4 VP;
+	float4x4 RootTransform;
 	uint index;
 };
 
@@ -27,6 +28,7 @@ VSOut VS(VSIn input)
 	else
 		matr = NodeTransformPool[NodeTransformPool[index].ParentIndex].GlobalTransform;
 	output.pos = float4(matr[0][3], matr[1][3], matr[2][3], 1);
+	output.pos = mul(RootTransform, output.pos);
 	output.pos = mul(VP, output.pos);
 	return output;
 }

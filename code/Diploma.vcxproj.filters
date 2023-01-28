@@ -548,5 +548,8 @@
     <ClInclude Include="source\render\subsystems\bone_mapping_subsystem.h">
       <Filter>Source Files\Render\SubSystems\BoneMapping</Filter>
     </ClInclude>
+    <ClInclude Include="source\units\examples\unit_load_any.h">
+      <Filter>Source Files\Units\Examples</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

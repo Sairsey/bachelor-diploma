@@ -39,6 +39,7 @@ public:
         Engine->LightsSystem->GetEditable(Light).LinearAttenuation = 0.09f;
         Engine->LightsSystem->GetEditable(Light).QuadricAttenuation = 0.032f;
         Engine->ObjectTransformsSystem->GetEditable(Engine->LightsSystem->GetEditable(Light).ObjectTransformIndex).Transform = mth::matr4f::Translate({20, 20, 0});
+        Engine->ObjectTransformsSystem->IncreaseReferenceCount(Engine->LightsSystem->GetEditable(Light).ObjectTransformIndex);
     }
 
     void Response(void)

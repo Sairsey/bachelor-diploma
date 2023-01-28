@@ -56,6 +56,7 @@ public:
       Engine->LightsSystem->GetEditable(Lights[i]).ConstantAttenuation = 1.0f;
       Engine->LightsSystem->GetEditable(Lights[i]).LinearAttenuation = 0.09f;
       Engine->LightsSystem->GetEditable(Lights[i]).QuadricAttenuation = 0.032f;
+      Engine->ObjectTransformsSystem->IncreaseReferenceCount(Engine->ModelsPool[LightsModels[i]].Rnd.RootTransform);
     }
     PROFILE_END(commandList);
     Engine->GetDevice().CloseUploadCommandList();

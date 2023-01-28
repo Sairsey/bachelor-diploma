@@ -161,16 +161,20 @@ void gdr::draw_commands_subsystem::AfterResourceStateUpdateJob(ID3D12GraphicsCom
 }
 
 // Add one element to pool in correct way
-gdr_index gdr::draw_commands_subsystem::Add(gdr_index geometryIndex)
+gdr_index gdr::draw_commands_subsystem::Add(gdr_index geometryIndex, gdr_index transformIndex, gdr_index materialIndex, gdr_index boneMappingIndex)
 {
   gdr_index Result = resource_pool_subsystem::Add();
   GDRGPUIndirectCommand &DrawCommand = GetEditable(Result);
 
-  DrawCommand.Indices.ObjectIndex = NONE_INDEX;
+  DrawCommand.Indices.ObjectIndex = geometryIndex;
   DrawCommand.Indices.ObjectParamsMask = 0;
-  DrawCommand.Indices.ObjectTransformIndex = NONE_INDEX;
-  DrawCommand.Indices.ObjectMaterialIndex = NONE_INDEX;
-  DrawCommand.Indices.BoneMappingIndex = NONE_INDEX;
+  DrawCommand.Indices.ObjectTransformIndex = transformIndex;
+  DrawCommand.Indices.ObjectMaterialIndex = materialIndex;
+  DrawCommand.Indices.BoneMappingIndex = boneMappingIndex;
+
+  Render->ObjectTransformsSystem->IncreaseReferenceCount(transformIndex);
+  Render->MaterialsSystem->IncreaseReferenceCount(materialIndex);
+  Render->BoneMappingSystem->IncreaseReferenceCount(boneMappingIndex);
 
   DrawCommand.VertexBuffer = Render->GeometrySystem->Get(geometryIndex).VertexBufferView;
   DrawCommand.IndexBuffer = Render->GeometrySystem->Get(geometryIndex).IndexBufferView;
@@ -185,11 +189,16 @@ gdr_index gdr::draw_commands_subsystem::Add(gdr_index geometryIndex)
   return Result;
 }
 
-void gdr::draw_commands_subsystem::Remove(gdr_index index)
+void gdr::draw_commands_subsystem::BeforeRemoveJob(gdr_index index)
 {
   if (IsExist(index))
+  {
     GetEditable(index).IsExist = false;
-  resource_pool_subsystem::Remove(index);
+    Render->GeometrySystem->Remove(Get(index).Indices.ObjectIndex);
+    Render->MaterialsSystem->Remove(Get(index).Indices.ObjectMaterialIndex);
+    Render->BoneMappingSystem->Remove(Get(index).Indices.BoneMappingIndex);
+    Render->ObjectTransformsSystem->Remove(Get(index).Indices.ObjectTransformIndex);
+  }
 }
 
 gdr::draw_commands_subsystem::~draw_commands_subsystem()

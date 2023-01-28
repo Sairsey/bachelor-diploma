@@ -13,6 +13,7 @@ namespace gdr
     void UpdateHierarchy(gdr_index index);
   protected:
     void BeforeUpdateJob(ID3D12GraphicsCommandList* pCommandList) override;
+    void BeforeRemoveJob(gdr_index index) override;
   public:
     // Constructor
     node_transforms_subsystem(render* Rnd) : resource_pool_subsystem(Rnd)
@@ -33,8 +34,5 @@ namespace gdr
         }
         return resource_pool_subsystem::GetEditable(index);
     }
-
-    // Custom Remove mechanism
-    void Remove(gdr_index node);
   };
 }

@@ -17,6 +17,7 @@ namespace gdr
   {
   protected:
     void BeforeUpdateJob(ID3D12GraphicsCommandList* pCommandList) override;
+    void BeforeRemoveJob(gdr_index index) override;
   public:
     // Constructor
     cube_textures_subsystem(render* Rnd);
@@ -39,9 +40,6 @@ namespace gdr
 
     // Load Texture (OpenGL-style !!!)
     gdr_index Add(std::string directory, int MipsAmount);
-
-    // Remove Texture
-    void Remove(gdr_index index);
 
     // Handles for CPU and GPU tables
     D3D12_GPU_DESCRIPTOR_HANDLE CubeTextureTableGPU;

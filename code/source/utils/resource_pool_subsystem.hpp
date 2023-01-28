@@ -145,7 +145,10 @@ gdr_index gdr::resource_pool_subsystem<StoredType, ChunkSize>::Add()
   // Try to reuse old resources
   for (gdr_index i = 0; i < CPUData.size() && Result == NONE_INDEX; i++)
     if (!PoolRecords[i].IsAlive)
+    {
       Result = i;
+      PoolRecords[Result].IsAlive = true;
+    }
 
   // Otherwise we need to create new
   if (Result == NONE_INDEX)
@@ -162,15 +165,25 @@ gdr_index gdr::resource_pool_subsystem<StoredType, ChunkSize>::Add()
 template<typename StoredType, int ChunkSize>
 void gdr::resource_pool_subsystem<StoredType, ChunkSize>::Remove(gdr_index index)
 {
-  if (index >= CPUData.size() || index < 0 || !PoolRecords[index].IsAlive)
+  if (!IsExist(index))
     return;
-  PoolRecords[index].IsAlive = false;
 
-  // little defragmentation
-  while (!PoolRecords[PoolRecords.size() - 1].IsAlive)
+  if (PoolRecords[index].ReferenceCount > 0)
   {
-    PoolRecords.pop_back();
-    CPUData.pop_back();
+    PoolRecords[index].ReferenceCount--;
+  }
+
+  if (PoolRecords[index].ReferenceCount == 0)
+  {
+    BeforeRemoveJob(index);
+    PoolRecords[index].IsAlive = false;
+
+    // little defragmentation
+    while (!PoolRecords[PoolRecords.size() - 1].IsAlive)
+    {
+      PoolRecords.pop_back();
+      CPUData.pop_back();
+    }
   }
 }
 

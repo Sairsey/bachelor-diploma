@@ -8,6 +8,16 @@ namespace gdr
   // Light sources pool representation class
   class lights_subsystem : public resource_pool_subsystem<GDRGPULightSource, 16 * sizeof(GDRGPULightSource)>
   {
+  protected: 
+    // 
+    void BeforeRemoveJob(gdr_index index) override
+    {
+      if (IsExist(index) && GetEditable(index).ObjectTransformIndex != NONE_INDEX)
+      {
+        Render->ObjectTransformsSystem->Remove(GetEditable(index).ObjectTransformIndex);
+        GetEditable(index).ObjectTransformIndex = NONE_INDEX;
+      }
+    }
   public:
     // default constructor
     lights_subsystem(render* Rnd) : resource_pool_subsystem(Rnd)
@@ -32,15 +42,14 @@ namespace gdr
       return Result;
     }
 
-    //
-    void Remove(gdr_index index)
+    void SetTransform(gdr_index LightIndex, gdr_index ObjectTransformIndex)
     {
-      if (IsExist(index))
+      if (IsExist(LightIndex))
       {
-        GetEditable(index).ObjectTransformIndex = NONE_INDEX;
+        if (IsExist(ObjectTransformIndex))
+          Render->ObjectTransformsSystem->IncreaseReferenceCount(ObjectTransformIndex);
+        GetEditable(LightIndex).ObjectTransformIndex = ObjectTransformIndex;
       }
-
-      resource_pool_subsystem::Remove(index);
     }
   };
 }

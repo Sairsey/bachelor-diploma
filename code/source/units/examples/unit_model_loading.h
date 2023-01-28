@@ -9,11 +9,6 @@ public:
   void Initialize(void)
   {
     auto import_data = gdr::ImportMeshAssimp("bin/models/crazy_frog/crazy_frog.obj");
-    
-    import_data.Materials[0].ShadeType = MATERIAL_SHADER_COLOR;
-
-    GDRGPUMaterialColorGetColor(import_data.Materials[0]) = GDRGPUMaterialPhongGetDiffuse(import_data.Materials[0]);
-    GDRGPUMaterialColorGetColorMapIndex(import_data.Materials[0]) = GDRGPUMaterialPhongGetDiffuseMapIndex(import_data.Materials[0]);
 
     ID3D12GraphicsCommandList* commandList;
     Engine->GetDevice().BeginUploadCommandList(&commandList);

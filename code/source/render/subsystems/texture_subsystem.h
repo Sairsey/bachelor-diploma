@@ -21,6 +21,7 @@ namespace gdr
   {
   protected:
     void BeforeUpdateJob(ID3D12GraphicsCommandList* pCommandList) override;
+    void BeforeRemoveJob(gdr_index index) override;
   public:
     // Constructor
     textures_subsystem(render* Rnd);
@@ -34,9 +35,6 @@ namespace gdr
 
     // Load Texture
     gdr_index Add(std::string name, bool isSrgb = false);
-
-    // Remove Texture
-    void Remove(gdr_index index);
 
     // Handles for CPU and GPU tables
     D3D12_GPU_DESCRIPTOR_HANDLE TextureTableGPU;

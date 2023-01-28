@@ -20,7 +20,10 @@ gdr_index gdr::cube_textures_subsystem::Add(
   // check if we already have this texture
   for (int i = 0; i < AllocatedSize(); i++)
     if (IsExist(i) && Get(i).Name == name)
+    {
+      IncreaseReferenceCount(i);
       return i;
+    }
 
   gdr_index NewTextureIndex = resource_pool_subsystem::Add();
 
@@ -151,7 +154,10 @@ gdr_index gdr::cube_textures_subsystem::Add(std::string directory, int MipsAmoun
   // check if we already have this texture
   for (int i = 0; i < AllocatedSize(); i++)
     if (IsExist(i) && Get(i).Name == name)
+    {
+      IncreaseReferenceCount(i);
       return i;
+    }
 
   gdr_index NewTextureIndex = resource_pool_subsystem::Add();
 
@@ -252,7 +258,7 @@ gdr_index gdr::cube_textures_subsystem::Add(std::string directory, int MipsAmoun
 }
 
 // Delete Texture
-void gdr::cube_textures_subsystem::Remove(gdr_index index)
+void gdr::cube_textures_subsystem::BeforeRemoveJob(gdr_index index)
 {
   if (IsExist(index))
   {
@@ -260,7 +266,6 @@ void gdr::cube_textures_subsystem::Remove(gdr_index index)
     GetEditable(index).Name = "GDR_EMPTY";
     Render->GetDevice().ReleaseGPUResource(GetEditable(index).TextureResource);
   }
-  resource_pool_subsystem::Remove(index);
 }
 
 // Update data on GPU in case we need it 

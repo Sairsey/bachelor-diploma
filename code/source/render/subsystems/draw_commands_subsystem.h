@@ -40,6 +40,9 @@ namespace gdr
     void AfterUpdateJob(ID3D12GraphicsCommandList* pCommandList) override;
     // Job to do after update of resource state
     void AfterResourceStateUpdateJob(ID3D12GraphicsCommandList* pCommandList, bool IsRender) override;
+    
+    // Job to do after update of resource state
+    void BeforeRemoveJob(gdr_index index) override;
 
     size_t UAVStoredSize = 0; // Size on which UAV are allocated
   public:
@@ -47,10 +50,7 @@ namespace gdr
     draw_commands_subsystem(render* Rnd);
 
     // Add one element to pool in correct way
-    gdr_index Add(gdr_index geometryIndex);
-
-    // Remove one element from pool in correct way
-    void Remove(gdr_index index);
+    gdr_index Add(gdr_index geometryIndex, gdr_index transformIndex = NONE_INDEX, gdr_index materialIndex = NONE_INDEX, gdr_index boneMappingIndex = NONE_INDEX);
 
     // Destructor 
     ~draw_commands_subsystem(void);

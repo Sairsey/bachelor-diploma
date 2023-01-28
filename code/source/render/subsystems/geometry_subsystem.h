@@ -25,6 +25,9 @@ namespace gdr
   /* Geometry support subsystem class */
   class geometry_subsystem : public resource_pool_subsystem<geometry, 0>
   {
+    protected:
+      // Remove Geometry by index
+      void BeforeRemoveJob(gdr_index index) override;
     public:
       // default constructor
       geometry_subsystem(render* Rnd) : resource_pool_subsystem(Rnd) {}
@@ -38,9 +41,6 @@ namespace gdr
 
       // Create Geometry using vertices and Indices
       gdr_index Add(const GDRVertex* pVertex, size_t vertexCount, const UINT32* pIndices, size_t indexCount);
-
-      // Remove Geometry by index
-      void Remove(gdr_index index);
 
       // Destructor
       ~geometry_subsystem();

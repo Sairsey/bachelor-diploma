@@ -13,23 +13,16 @@ public:
     {
         auto import_data = gdr::ImportMeshAssimp("bin/models/pbr_sphere/pbr_sphere.glb");
 
-        import_data.Materials[0].ShadeType = MATERIAL_SHADER_COOKTORRANCE_METALNESS;
-        GDRGPUMaterialCookTorranceGetAmbientOcclusionMapIndex(import_data.Materials[0]) = NONE_INDEX;
-        GDRGPUMaterialCookTorranceGetAlbedo(import_data.Materials[0]) = mth::vec3f(1.0f, 0.71f, 0.29f);
-        GDRGPUMaterialCookTorranceGetAlbedoMapIndex(import_data.Materials[0]) = NONE_INDEX;
-        GDRGPUMaterialCookTorranceGetRoughnessMetalnessMapIndex(import_data.Materials[0]) = NONE_INDEX;
-        GDRGPUMaterialCookTorranceGetNormalMapIndex(import_data.Materials[0]) = NONE_INDEX;
-
-
         ID3D12GraphicsCommandList* commandList;
         Engine->GetDevice().BeginUploadCommandList(&commandList);
         PROFILE_BEGIN(commandList, "unit_pbr_metalness Init");
-
+        std::string OriginalName = import_data.FileName;
         for (int i = 0; i < RoughnessStamps; i++)
             for (int j = 0; j < MetalnessStamps; j++)
             {
                 float Roughness = 1.0f * i / (RoughnessStamps - 1);
                 float Metalness = 1.0f * j / (MetalnessStamps - 1);
+                import_data.FileName = OriginalName + std::to_string(i) + "_" + std::to_string(j);
                 GDRGPUMaterialCookTorranceGetRoughness(import_data.Materials[0]) = Roughness;
                 GDRGPUMaterialCookTorranceGetMetalness(import_data.Materials[0]) = Metalness;
                 Spheres.push_back(Engine->AddModel(import_data));

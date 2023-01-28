@@ -34,7 +34,7 @@ public:
     void Response(void)
     {
         gdr_index TransformIndex = Engine->ModelsPool[Fiat].Rnd.RootTransform;
-        Engine->ObjectTransformsSystem->GetEditable(TransformIndex).Transform = mth::matr::RotateX(90) * mth::matr::RotateY(Engine->GetTime());
+        Engine->ObjectTransformsSystem->GetEditable(TransformIndex).Transform = mth::matr::RotateY(Engine->GetTime());
     }
 
     std::string GetName(void)

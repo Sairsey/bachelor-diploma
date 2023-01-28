@@ -28,9 +28,7 @@ void unit_triangle::Initialize(void)
 	  GDRGPUMaterialColorGetColor(Engine->MaterialsSystem->GetEditable(TriangleMaterial)) = mth::vec3f(1, 0, 0);
   }
   {
-	  TriangleDrawCall = Engine->DrawCommandsSystem->Add(TriangleGeometry);
-	  Engine->DrawCommandsSystem->GetEditable(TriangleDrawCall).Indices.ObjectTransformIndex = TriangleTransform;
-	  Engine->DrawCommandsSystem->GetEditable(TriangleDrawCall).Indices.ObjectMaterialIndex = TriangleMaterial;
+	  TriangleDrawCall = Engine->DrawCommandsSystem->Add(TriangleGeometry, TriangleTransform, TriangleMaterial);
   }
   PROFILE_END(commandList);
   Engine->GetDevice().CloseUploadCommandList();

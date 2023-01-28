@@ -28,6 +28,15 @@ struct VSOut
 	float2 uv : TEXCOORD;
 };
 
+// idea is
+// 1) Do hierarchy transform
+//    1.1) Check if we have BoneMappingIndex
+//    1.2) Check if input.bones_indices.x != NONE_INDEX
+//    1.3) BoneMappingPool[indices.BoneMappingIndex].BoneMapping[input.bones_indices.x] is a index in NodeTransformPool
+//    1.4) Retrive transform with weight and use it
+//
+// 2) Do Root of hierarchy transfrom
+
 VSOut ProcessVSIn(VSIn input)
 {
     VSOut output;
@@ -41,28 +50,28 @@ VSOut ProcessVSIn(VSIn input)
            input.bones_indices.z != NONE_INDEX ||
            input.bones_indices.w != NONE_INDEX))
     {
-        if (input.bones_indices.x != NONE_INDEX && BoneMappingPool[indices.BoneMappingIndex].BoneMapping[input.bones_indices.x] != NONE_INDEX)
+        if (input.bones_indices.x != NONE_INDEX)
         {
           uint ind = BoneMappingPool[indices.BoneMappingIndex].BoneMapping[input.bones_indices.x];
           nodeTransform += 
             input.bones_weights.x * 
             mul(NodeTransformPool[ind].GlobalTransform, NodeTransformPool[ind].BoneOffset);
         }
-        if (input.bones_indices.y != NONE_INDEX && BoneMappingPool[indices.BoneMappingIndex].BoneMapping[input.bones_indices.y] != NONE_INDEX)
+        if (input.bones_indices.y != NONE_INDEX)
         {
           uint ind = BoneMappingPool[indices.BoneMappingIndex].BoneMapping[input.bones_indices.y];
           nodeTransform +=
             input.bones_weights.y *
             mul(NodeTransformPool[ind].GlobalTransform, NodeTransformPool[ind].BoneOffset);
         }
-        if (input.bones_indices.z != NONE_INDEX && BoneMappingPool[indices.BoneMappingIndex].BoneMapping[input.bones_indices.z] != NONE_INDEX)
+        if (input.bones_indices.z != NONE_INDEX)
         {
           uint ind = BoneMappingPool[indices.BoneMappingIndex].BoneMapping[input.bones_indices.z];
           nodeTransform +=
             input.bones_weights.z *
             mul(NodeTransformPool[ind].GlobalTransform, NodeTransformPool[ind].BoneOffset);
         }
-        if (input.bones_indices.w != NONE_INDEX && BoneMappingPool[indices.BoneMappingIndex].BoneMapping[input.bones_indices.w] != NONE_INDEX)
+        if (input.bones_indices.w != NONE_INDEX)
         {
           uint ind = BoneMappingPool[indices.BoneMappingIndex].BoneMapping[input.bones_indices.w];
           nodeTransform +=

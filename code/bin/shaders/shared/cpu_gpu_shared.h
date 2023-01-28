@@ -276,7 +276,7 @@ struct GDRGPUMaterial
 /// </summary>
 struct GDRGPUObjectIndices
 {
-	UINT ObjectIndex;          // Filled on GPU
+	UINT ObjectIndex;          // On CPU -> geometry index. On GPU -> filled on GPU with index 
 	UINT ObjectParamsMask;     // Flags of current object
 	UINT ObjectTransformIndex; // index in Object Transforms pool
 	UINT ObjectMaterialIndex;  // index in Object Materials pool

@@ -14,6 +14,16 @@ public:
     auto import_data = gdr::ImportMeshAssimp("bin/models/crazy_frog/crazy_frog.obj");
     auto light_import_data = gdr::ImportMeshAssimp("bin/models/light_meshes/sphere.obj");
     
+    import_data.Materials[0].ShadeType = MATERIAL_SHADER_PHONG;
+    GDRGPUMaterialPhongGetAmbient(import_data.Materials[0]) = {0, 0, 0};
+    GDRGPUMaterialPhongGetAmbientMapIndex(import_data.Materials[0]) = NONE_INDEX;
+    GDRGPUMaterialPhongGetDiffuse(import_data.Materials[0]) = { 1, 1, 1};
+    GDRGPUMaterialPhongGetDiffuseMapIndex(import_data.Materials[0]) = GDRGPUMaterialColorGetColorMapIndex(import_data.Materials[0]);
+    GDRGPUMaterialPhongGetSpecular(import_data.Materials[0]) = { 0.3, 0.3, 0.3 };
+    GDRGPUMaterialPhongGetSpecularMapIndex(import_data.Materials[0]) = NONE_INDEX;
+    GDRGPUMaterialPhongGetShiness(import_data.Materials[0]) = 30;
+    GDRGPUMaterialPhongGetNormalMapIndex(import_data.Materials[0]) = NONE_INDEX;
+
     // load Frog
     ID3D12GraphicsCommandList* commandList;
     Engine->GetDevice().BeginUploadCommandList(&commandList);
@@ -27,13 +37,15 @@ public:
       Lights.push_back(Engine->LightsSystem->Add());
 
     // load LightMeshes
+    
+    std::string OrigName = light_import_data.FileName;
     Engine->GetDevice().BeginUploadCommandList(&commandList);
     PROFILE_BEGIN(commandList, "unit_light_example Init lights");
     for (int i = 0; i < Lights.size(); i++)
     {
       light_import_data.Materials[0].ShadeType = MATERIAL_SHADER_COLOR;
-
-      GDRGPUMaterialColorGetColor(light_import_data.Materials[0]) = { 1.0f * rand() / RAND_MAX, 1.0f * rand() / RAND_MAX, 1.0f * rand() / RAND_MAX };
+      light_import_data.FileName = OrigName + std::to_string(i);
+      GDRGPUMaterialColorGetColor(light_import_data.Materials[0]) = { 10.0f * rand() / RAND_MAX, 10.0f * rand() / RAND_MAX, 10.0f * rand() / RAND_MAX };
       GDRGPUMaterialColorGetColorMapIndex(light_import_data.Materials[0]) = NONE_INDEX;
 
       LightsModels.push_back(Engine->AddModel(light_import_data));

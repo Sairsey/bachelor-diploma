@@ -8,6 +8,38 @@ namespace gdr
   // Material pool representation class
   class materials_subsystem : public resource_pool_subsystem<GDRGPUMaterial, 128 * sizeof(GDRGPUMaterial)>
   {
+  protected:
+    void BeforeRemoveJob(gdr_index index) override
+    {
+      if (IsExist(index))
+      {
+        if (Get(index).ShadeType == MATERIAL_SHADER_COLOR)
+        {
+          Render->TexturesSystem->Remove(GDRGPUMaterialColorGetColorMapIndex(Get(index)));
+        }
+        else if (Get(index).ShadeType == MATERIAL_SHADER_PHONG)
+        {
+          Render->TexturesSystem->Remove(GDRGPUMaterialPhongGetAmbientMapIndex(Get(index)));
+          Render->TexturesSystem->Remove(GDRGPUMaterialPhongGetDiffuseMapIndex(Get(index)));
+          Render->TexturesSystem->Remove(GDRGPUMaterialPhongGetSpecularMapIndex(Get(index)));
+          Render->TexturesSystem->Remove(GDRGPUMaterialPhongGetNormalMapIndex(Get(index)));
+        }
+        else if (Get(index).ShadeType == MATERIAL_SHADER_COOKTORRANCE_METALNESS)
+        {
+          Render->TexturesSystem->Remove(GDRGPUMaterialCookTorranceGetAlbedoMapIndex(Get(index)));
+          Render->TexturesSystem->Remove(GDRGPUMaterialCookTorranceGetAmbientOcclusionMapIndex(Get(index)));
+          Render->TexturesSystem->Remove(GDRGPUMaterialCookTorranceGetRoughnessMetalnessMapIndex(Get(index)));
+          Render->TexturesSystem->Remove(GDRGPUMaterialCookTorranceGetNormalMapIndex(Get(index)));
+        }
+        else if (Get(index).ShadeType == MATERIAL_SHADER_COOKTORRANCE_SPECULAR)
+        {
+          Render->TexturesSystem->Remove(GDRGPUMaterialCookTorranceGetAlbedoMapIndex(Get(index)));
+          Render->TexturesSystem->Remove(GDRGPUMaterialCookTorranceGetAmbientOcclusionMapIndex(Get(index)));
+          Render->TexturesSystem->Remove(GDRGPUMaterialCookTorranceGetSpecularGlossinessMapIndex(Get(index)));
+          Render->TexturesSystem->Remove(GDRGPUMaterialCookTorranceGetNormalMapIndex(Get(index)));
+        }
+      }
+    }
   public:
     // default constructor
     materials_subsystem(render* Rnd) : resource_pool_subsystem(Rnd)

@@ -23,6 +23,7 @@ namespace gdr
 			}
 
 			gdr_index AddModel(mesh_import_data ImportData);
+			void CloneModel(gdr_index SrcModel, gdr_index DstModel);
 			void DeleteModel(gdr_index Model);
 
 			std::vector<model> ModelsPool;

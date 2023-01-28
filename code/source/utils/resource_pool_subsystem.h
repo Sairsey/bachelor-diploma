@@ -11,6 +11,7 @@ namespace gdr
     struct resource_pool_record
     {
       bool IsAlive;           // if False -> this resource was deleted
+      int ReferenceCount = 0;
     };
 
     render* Render; // pointer on Render
@@ -43,6 +44,8 @@ namespace gdr
     virtual void AfterUpdateJob(ID3D12GraphicsCommandList* pCommandList) {};
     // Job to do after update of resource state
     virtual void AfterResourceStateUpdateJob(ID3D12GraphicsCommandList* pCommandList, bool IsRender) {};
+    // Job to do before removing
+    virtual void BeforeRemoveJob(gdr_index index) {};
 
     // Helper funtion to create GPUResource and init everything
     void CreateResource();
@@ -60,6 +63,13 @@ namespace gdr
 
     // Add element in Pool
     gdr_index Add();
+
+    // Increase refCount of current resource
+    void IncreaseReferenceCount(gdr_index index)
+    {
+      if (IsExist(index))
+        PoolRecords[index].ReferenceCount++;
+    }
 
     // Remove element from Pool
     void Remove(gdr_index index);
@@ -94,6 +104,7 @@ namespace gdr
     struct resource_pool_record
     {
       bool IsAlive;           // if False -> this resource was deleted
+      int ReferenceCount = 0;
     };
 
     render* Render; // pointer on Render
@@ -107,12 +118,22 @@ namespace gdr
 
     // Job to do after update
     virtual void AfterUpdateJob(ID3D12GraphicsCommandList* pCommandList) {};
+
+    // Job to do before removing
+    virtual void BeforeRemoveJob(gdr_index index) {};
   public:
     // Constructor
     resource_pool_subsystem(render* Rnd);
 
     // Add element in Pool
     gdr_index Add();
+
+    // Increase refCount of current resource
+    void IncreaseReferenceCount(gdr_index index)
+    {
+      if (IsExist(index))
+        PoolRecords[index].ReferenceCount++;
+    }
 
     // Remove element from Pool
     void Remove(gdr_index index);

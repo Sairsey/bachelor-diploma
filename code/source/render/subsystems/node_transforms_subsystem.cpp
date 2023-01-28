@@ -46,7 +46,7 @@ gdr_index gdr::node_transforms_subsystem::Add(gdr_index parent)
   return Result;
 }
 
-void gdr::node_transforms_subsystem::Remove(gdr_index node)
+void gdr::node_transforms_subsystem::BeforeRemoveJob(gdr_index node)
 {
   gdr_index parentIndex = Get(node).ParentIndex;
   // if we have parent
@@ -79,6 +79,5 @@ void gdr::node_transforms_subsystem::Remove(gdr_index node)
     childIndex = nextChildIndex;
   }
 
-  // now we can delete it in normal way
-  resource_pool_subsystem::Remove(node);
+  // now we can delete it in normal way;
 }

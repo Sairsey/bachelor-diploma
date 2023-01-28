@@ -12,7 +12,7 @@ public:
   void Initialize(void)
   {
     import_data = gdr::ImportMeshAssimp("bin/models/bread/bread.obj");
-    Engine->EnableFullscreen();
+    //Engine->EnableFullscreen();
   }
 
   void PushBack(int amount = 1)

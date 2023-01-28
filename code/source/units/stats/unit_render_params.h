@@ -27,9 +27,18 @@ public:
 
           ImGui::Text("Current GPU Usage = %f MB", CurrentGPUMemory);
           ImGui::Text("Max GPU budget = %f MB", MaxGPUMemoryPlot);
-          ImGui::Text("Objects allocated = %zd", Engine->DrawCommandsSystem->AllocatedSize());
-          ImGui::Text("Materials allocated = %zd", Engine->MaterialsSystem->AllocatedSize());
-          ImGui::Text("Max Textures amount = %zd", Engine->CreationParams.MaxTextureAmount);
+          if (ImGui::TreeNode("Resource stats"))
+          {
+            ImGui::Text("Draw commands allocated = %zd", Engine->DrawCommandsSystem->AllocatedSize());
+            ImGui::Text("Geometries allocated = %zd", Engine->GeometrySystem->AllocatedSize());
+            ImGui::Text("Lights allocated = %zd", Engine->LightsSystem->AllocatedSize());
+            ImGui::Text("Materials allocated = %zd", Engine->MaterialsSystem->AllocatedSize());
+            ImGui::Text("BoneMappings allocated = %zd", Engine->BoneMappingSystem->AllocatedSize());
+            ImGui::Text("Object Transforms allocated = %zd", Engine->ObjectTransformsSystem->AllocatedSize());
+            ImGui::Text("Node Transforms allocated = %zd", Engine->NodeTransformsSystem->AllocatedSize());
+            ImGui::Text("Max Textures amount = %zd", Engine->CreationParams.MaxTextureAmount);
+            ImGui::TreePop();
+          }
           if (ImGui::TreeNode("Runtime render params"))
           {
               ImGui::Checkbox("Move updates in separate cmdList", &Engine->Params.IsUploadEveryFrame);

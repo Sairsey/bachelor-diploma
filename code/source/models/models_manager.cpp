@@ -1,9 +1,102 @@
 #include "p_header.h"
 
+void gdr::models_manager::CloneModel(gdr_index SrcModel, gdr_index DstModel)
+{
+	model& OldModel = ModelsPool[SrcModel];
+	model& NewModel = ModelsPool[DstModel];
+
+	NewModel.Name == OldModel.Name;
+
+	// Clone Rnd
+	{
+		// Root Transform
+		NewModel.Rnd.RootTransform = Eng->ObjectTransformsSystem->Add();
+		Eng->ObjectTransformsSystem->GetEditable(NewModel.Rnd.RootTransform) = Eng->ObjectTransformsSystem->Get(OldModel.Rnd.RootTransform);
+
+		NewModel.Rnd.Hierarchy.resize(OldModel.Rnd.Hierarchy.size());
+		// Hierarchy 1-st pass
+		for (int i = 0; i < NewModel.Rnd.Hierarchy.size(); i++)
+		{
+			render_mesh_node& NewNode = NewModel.Rnd.Hierarchy[i];
+			render_mesh_node& OldNode = OldModel.Rnd.Hierarchy[i];
+
+			NewNode.Name = OldNode.Name;
+			NewNode.Type = OldNode.Type;
+			NewNode.ParentIndex = OldNode.ParentIndex;
+			NewNode.ChildIndex = OldNode.ChildIndex;
+			NewNode.NextIndex = OldNode.NextIndex;
+			if (NewModel.Rnd.Hierarchy[i].Type == gdr_hier_node_type::node)
+			{
+				NewModel.Rnd.Hierarchy[i].NodeTransform = Eng->NodeTransformsSystem->Add();
+			}
+		}
+
+		// Hierarchy 2-nd pass
+		for (int i = 0; i < NewModel.Rnd.Hierarchy.size(); i++)
+		{
+			render_mesh_node& NewNode = NewModel.Rnd.Hierarchy[i];
+			render_mesh_node& OldNode = OldModel.Rnd.Hierarchy[i];
+			if (NewModel.Rnd.Hierarchy[i].Type == gdr_hier_node_type::node)
+			{
+				GDRGPUNodeTransform& OldTransform = Eng->NodeTransformsSystem->GetEditable(OldNode.NodeTransform);
+				GDRGPUNodeTransform& NewTransform = Eng->NodeTransformsSystem->GetEditable(NewNode.NodeTransform);
+				NewTransform.LocalTransform = OldTransform.LocalTransform;
+				NewTransform.BoneOffset = OldTransform.BoneOffset;
+				NewTransform.GlobalTransform = OldTransform.GlobalTransform;
+				NewTransform.IsNeedRecalc = OldTransform.IsNeedRecalc;
+
+				//find parent child and next indices
+				NewTransform.ParentIndex = OldTransform.ParentIndex == NONE_INDEX ? NONE_INDEX : NewModel.Rnd.Hierarchy[NewNode.ParentIndex].NodeTransform;
+				NewTransform.ChildIndex = OldTransform.ChildIndex == NONE_INDEX ? NONE_INDEX : NewModel.Rnd.Hierarchy[NewNode.ChildIndex].NodeTransform;
+				NewTransform.NextIndex = OldTransform.NextIndex == NONE_INDEX ? NONE_INDEX : NewModel.Rnd.Hierarchy[NewNode.NextIndex].NodeTransform;
+			}
+			else
+			{
+				// we need new BoneMapping
+				gdr_index BoneMapping = Eng->BoneMappingSystem->Add();
+
+				for (int j = 0; j < MAX_BONE_PER_MODEL; j++)
+				{
+					// old index 
+					UINT OldMap = Eng->BoneMappingSystem->Get(Eng->DrawCommandsSystem->Get(OldNode.DrawCommand).Indices.BoneMappingIndex).BoneMapping[j];
+					UINT &NewMap = Eng->BoneMappingSystem->GetEditable(BoneMapping).BoneMapping[j];
+
+					if (OldMap == NONE_INDEX)
+						continue;
+
+					// find index
+					int index_to_find;
+					for (index_to_find = 0; index_to_find < OldModel.Rnd.Hierarchy.size(); index_to_find++)
+						if (OldModel.Rnd.Hierarchy[index_to_find].Type == gdr_hier_node_type::node &&
+							OldModel.Rnd.Hierarchy[index_to_find].NodeTransform == OldMap)
+							break;
+
+					NewMap = NewModel.Rnd.Hierarchy[index_to_find].NodeTransform;
+				}
+
+				NewModel.Rnd.Hierarchy[i].DrawCommand = Eng->DrawCommandsSystem->Add(
+					Eng->DrawCommandsSystem->Get(OldNode.DrawCommand).Indices.ObjectIndex,
+					NewModel.Rnd.RootTransform,
+					Eng->DrawCommandsSystem->Get(OldNode.DrawCommand).Indices.ObjectMaterialIndex,
+					BoneMapping);
+			}
+		}
+	}
+}
+
 gdr_index gdr::models_manager::AddModel(mesh_import_data ImportData)
 {
 	ModelsPool.emplace_back();
 	model& NewModel = ModelsPool[ModelsPool.size() - 1];
+
+	for (int i = 0; i < ModelsPool.size() - 1; i++)
+	{
+		if (ModelsPool[i].Name == ImportData.FileName)
+		{
+			CloneModel(i, ModelsPool.size() - 1);
+			return (gdr_index)(ModelsPool.size() - 1);
+		}
+	}
 
 	NewModel.Name = ImportData.FileName;
 
@@ -179,11 +272,11 @@ gdr_index gdr::models_manager::AddModel(mesh_import_data ImportData)
 					}
 
 					gdr_index geometry = Eng->GeometrySystem->Add(vertices.data(), vertices.size(), indices.data(), indices.size());
-					NewModel.Rnd.Hierarchy[i].DrawCommand = Eng->DrawCommandsSystem->Add(geometry);
-					Eng->DrawCommandsSystem->GetEditable(NewModel.Rnd.Hierarchy[i].DrawCommand).Indices.ObjectTransformIndex = NewModel.Rnd.RootTransform;
-					Eng->DrawCommandsSystem->GetEditable(NewModel.Rnd.Hierarchy[i].DrawCommand).Indices.ObjectMaterialIndex = MaterialsIndices[ImportData.HierarchyNodes[i].MaterialIndex];
-					Eng->DrawCommandsSystem->GetEditable(NewModel.Rnd.Hierarchy[i].DrawCommand).Indices.ObjectParamsMask = ImportData.HierarchyNodes[i].Params;
-					Eng->DrawCommandsSystem->GetEditable(NewModel.Rnd.Hierarchy[i].DrawCommand).Indices.BoneMappingIndex = BoneMapping;
+					NewModel.Rnd.Hierarchy[i].DrawCommand = Eng->DrawCommandsSystem->Add(
+					geometry,
+					NewModel.Rnd.RootTransform,
+					MaterialsIndices[ImportData.HierarchyNodes[i].MaterialIndex],
+					BoneMapping);
 				}
 			}
 		}
@@ -195,21 +288,21 @@ gdr_index gdr::models_manager::AddModel(mesh_import_data ImportData)
 void gdr::models_manager::DeleteModel(gdr_index index)
 {
 	model& ModelToDelete = ModelsPool[index];
-
-	Eng->ObjectTransformsSystem->Remove(ModelToDelete.Rnd.RootTransform);
+	ModelToDelete.Name = "GDR_MODEL_DELETED";
 	for (int i = 0; i < ModelToDelete.Rnd.Hierarchy.size(); i++)
 	{
 		gdr::render_mesh_node &node = ModelToDelete.Rnd.Hierarchy[i];
+		if (node.Type == gdr_hier_node_type::mesh)
+		{
+			Eng->DrawCommandsSystem->Remove(node.DrawCommand);
+		}
 		if (node.Type == gdr_hier_node_type::node)
 		{
 			Eng->NodeTransformsSystem->Remove(node.NodeTransform);
 		}
-		else if (node.Type == gdr_hier_node_type::mesh)
-		{
-			auto &command = Eng->DrawCommandsSystem->Get(node.DrawCommand);
-			Eng->MaterialsSystem->Remove(command.Indices.ObjectMaterialIndex);
-			// Do not delete textures. We might need them later
-			Eng->DrawCommandsSystem->Remove(node.DrawCommand);
-		}
 	}
+
+	// Little memory defrag
+	while (ModelsPool[ModelsPool.size() - 1].Name == "GDR_MODEL_DELETED")
+		ModelsPool.pop_back();
 }

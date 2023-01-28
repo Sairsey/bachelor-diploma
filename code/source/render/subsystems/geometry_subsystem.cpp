@@ -46,14 +46,13 @@ gdr_index gdr::geometry_subsystem::Add(const GDRVertex* pVertex, size_t vertexCo
 }
 
 // Remove Geometry by index
-void gdr::geometry_subsystem::Remove(gdr_index index)
+void gdr::geometry_subsystem::BeforeRemoveJob(gdr_index index)
 {
   if (IsExist(index))
   {
     Render->GetDevice().ReleaseGPUResource(GetEditable(index).IndexBuffer);
     Render->GetDevice().ReleaseGPUResource(GetEditable(index).VertexBuffer);
   }
-  resource_pool_subsystem::Remove(index);
 }
 
 // Destructor

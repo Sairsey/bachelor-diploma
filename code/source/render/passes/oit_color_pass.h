@@ -5,7 +5,7 @@
 namespace gdr
 {
 	/* Pass representation class */
-	class oit_transparent_pass : public base_pass
+	class oit_color_pass : public base_pass
 	{
 		private:
 			// Our shaders
@@ -33,6 +33,8 @@ namespace gdr
 				cube_texture_pool_index,            // root parameter for buffer with textures
 				lights_pool_index,                  // root parameter for buffer with light sources
 				bone_mapping_pool_index,            // root parameter for buffer with bone mappings
+				oit_texture_index,                  // root parameter for OIT texture
+				oit_pool_index,                     // root parameter for OIT Pool
 				total_root_parameters,
 			};
 
@@ -41,7 +43,7 @@ namespace gdr
 			/* Function to get name */
 			std::string GetName(void) override
 			{
-				return "oit_transparent_pass";
+				return "oit_color_pass";
 			};
 
 			/* Function to Initialize every PSO/InputLayout/Shaders we need */
@@ -54,6 +56,6 @@ namespace gdr
 			void CallIndirectDraw(ID3D12GraphicsCommandList* currentCommandList) override;
 
 			/* Virtual Destructor */
-			~oit_transparent_pass() override;
+			~oit_color_pass() override;
 	};
 }

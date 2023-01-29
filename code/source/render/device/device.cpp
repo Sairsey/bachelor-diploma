@@ -773,9 +773,10 @@ HRESULT gdr::device::UpdateTexture(ID3D12GraphicsCommandList* pCommandList, ID3D
   {
   case DXGI_FORMAT_R8G8B8A8_UNORM:
   case DXGI_FORMAT_R8G8B8A8_UNORM_SRGB:
+  case DXGI_FORMAT_R32_UINT:
     pixelSize = 4;
     break;
-
+  
   case DXGI_FORMAT_A8_UNORM:
     pixelSize = 1;
     break;

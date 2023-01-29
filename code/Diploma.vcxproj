@@ -43,7 +43,8 @@
     <ClInclude Include="source\render\passes\debug_hier_pass.h" />
     <ClInclude Include="source\render\passes\imgui_pass.h" />
     <ClInclude Include="source\render\passes\luminance_pass.h" />
-    <ClInclude Include="source\render\passes\oit_transparent_pass.h" />
+    <ClInclude Include="source\render\passes\oit_color_pass.h" />
+    <ClInclude Include="source\render\passes\oit_compose_pass.h" />
     <ClInclude Include="source\render\passes\skybox_pass.h" />
     <ClInclude Include="source\render\passes\tonemap_pass.h" />
     <ClInclude Include="source\render\passes\visibility_frustum_pass.h" />
@@ -60,6 +61,7 @@
     <ClInclude Include="source\render\subsystems\luminance_subsystem.h" />
     <ClInclude Include="source\render\subsystems\materials_subsystem.h" />
     <ClInclude Include="source\render\subsystems\node_transforms_subsystem.h" />
+    <ClInclude Include="source\render\subsystems\oit_transparency_subsystem.h" />
     <ClInclude Include="source\render\subsystems\render_target_subsystem.h" />
     <ClInclude Include="source\render\subsystems\object_transforms_subsystem.h" />
     <ClInclude Include="source\render\subsystems\texture_subsystem.h" />
@@ -131,7 +133,8 @@
     <ClCompile Include="source\render\passes\debug_hier_pass.cpp" />
     <ClCompile Include="source\render\passes\imgui_pass.cpp" />
     <ClCompile Include="source\render\passes\luminance_pass.cpp" />
-    <ClCompile Include="source\render\passes\oit_transparent_pass.cpp" />
+    <ClCompile Include="source\render\passes\oit_color_pass.cpp" />
+    <ClCompile Include="source\render\passes\oit_compose_pass.cpp" />
     <ClCompile Include="source\render\passes\skybox_pass.cpp" />
     <ClCompile Include="source\render\passes\tonemap_pass.cpp" />
     <ClCompile Include="source\render\passes\visibility_frustum_pass.cpp" />
@@ -145,6 +148,7 @@
     <ClCompile Include="source\render\subsystems\draw_commands_subsystem.cpp" />
     <ClCompile Include="source\render\subsystems\luminance_subsystem.cpp" />
     <ClCompile Include="source\render\subsystems\node_transforms_subsystem.cpp" />
+    <ClCompile Include="source\render\subsystems\oit_transparency_subsystem.cpp" />
     <ClCompile Include="source\render\subsystems\render_target_subsystem.cpp" />
     <ClCompile Include="source\render\subsystems\texture_subsystem.cpp" />
     <ClCompile Include="source\units\examples\unit_triangle.cpp" />

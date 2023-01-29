@@ -80,6 +80,7 @@ bool gdr::render::Init(engine* Eng)
       LuminanceSystem = new luminance_subsystem(this);
       EnviromentSystem = new enviroment_subsystem(this);
       BoneMappingSystem = new bone_mapping_subsystem(this);
+      OITTransparencySystem = new oit_transparency_subsystem(this);
   }
 
   // init passes
@@ -93,7 +94,8 @@ bool gdr::render::Init(engine* Eng)
     // Main pass
     Passes.push_back(new albedo_pass());
     Passes.push_back(new skybox_pass());
-    Passes.push_back(new oit_transparent_pass());
+    Passes.push_back(new oit_color_pass());
+    Passes.push_back(new oit_compose_pass());
 
     // Postprocess
     Passes.push_back(new luminance_pass());
@@ -196,6 +198,8 @@ void gdr::render::DrawFrame(void)
           GlobalsSystem->GetEditable().IsTonemap = Params.IsTonemapping;
           GlobalsSystem->GetEditable().SceneExposure = Params.SceneExposure;
           GlobalsSystem->GetEditable().IsIBL = Params.IsIBL;
+          GlobalsSystem->GetEditable().MaximumOITPoolSize = Engine->Width * Engine->Height * CreationParams.MaxTransparentDepth;
+          GlobalsSystem->GetEditable().DebugOIT = Params.IsDebugOIT;
           GlobalsSystem->UpdateGPUData(uploadCommandList);
           PROFILE_END(uploadCommandList);
       }
@@ -249,6 +253,11 @@ void gdr::render::DrawFrame(void)
           LuminanceSystem->UpdateGPUData(uploadCommandList);
           PROFILE_END(uploadCommandList);
       }
+      {
+        PROFILE_BEGIN(uploadCommandList, "Update OIT buffers");
+        OITTransparencySystem->UpdateGPUData(uploadCommandList);
+        PROFILE_END(uploadCommandList);
+      }
   };
 
 
@@ -280,6 +289,7 @@ void gdr::render::DrawFrame(void)
     DrawCommandsSystem->UpdateResourceState(pCommandList, true);
     LightsSystem->UpdateResourceState(pCommandList, true);
     BoneMappingSystem->UpdateResourceState(pCommandList, true);
+    OITTransparencySystem->UpdateResourceState(pCommandList, true);
     PROFILE_END(pCommandList);
 
     auto renderStart = std::chrono::system_clock::now();
@@ -340,6 +350,7 @@ void gdr::render::DrawFrame(void)
     DrawCommandsSystem->UpdateResourceState(pCommandList, false);
     LightsSystem->UpdateResourceState(pCommandList, false);
     BoneMappingSystem->UpdateResourceState(pCommandList, false);
+    OITTransparencySystem->UpdateResourceState(pCommandList, false);
     PROFILE_END(pCommandList);
 
     Device.CloseSubmitAndPresentRenderCommandList(false);
@@ -379,6 +390,7 @@ void gdr::render::Term(void)
       delete LuminanceSystem;
       delete EnviromentSystem;
       delete BoneMappingSystem;
+      delete OITTransparencySystem;
   }
 
   for (auto& pass : Passes)

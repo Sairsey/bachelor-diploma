@@ -53,6 +53,8 @@ public:
               ImGui::DragFloat("Scene Exposure", &Engine->Params.SceneExposure, 0.1f);
               ImGui::Checkbox("IBL", &Engine->Params.IsIBL);
               ImGui::Checkbox("Transparency", &Engine->Params.IsTransparent);
+              if (Engine->Params.IsTransparent)
+                ImGui::Checkbox("Debug transparency", &Engine->Params.IsDebugOIT);
               ImGui::TreePop();
           }
           bool pause = Engine->GetPause();

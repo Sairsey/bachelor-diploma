@@ -19,6 +19,7 @@ namespace gdr
   class luminance_subsystem;
   class enviroment_subsystem;
   class bone_mapping_subsystem;
+  class oit_transparency_subsystem;
   struct render_runtime_params
   {
     bool IsIndirect = true;        // Enables indirect draw
@@ -38,11 +39,13 @@ namespace gdr
     bool IsIBL = true;            // Enable image based lighting
 
     bool IsTransparent = true;    // Enable OIT Transparency
+    bool IsDebugOIT = false;      // Enable OIT Debugging
   };
   struct render_creation_params
   {
     size_t MaxTextureAmount = 256;   // maximum amount of textures allocated
     size_t MaxCubeTextureAmount = 6; // maximum amount of cube textures allocated
+    size_t MaxTransparentDepth = 10; // maximum amount of transparent pixels in case we draw full screen
   };
   /* Render representation class */
   class render
@@ -131,6 +134,7 @@ namespace gdr
       luminance_subsystem* LuminanceSystem;                // System to store info about Luminance
       enviroment_subsystem* EnviromentSystem;              // System to store info about Enviroment textures (Skybox for example)
       bone_mapping_subsystem* BoneMappingSystem;           // System to store mapping between GDRVertex-s BoneIndex field and NoteTransformsSystem
+      oit_transparency_subsystem* OITTransparencySystem;   // System to store info for Order Independent Transparency
 #if 0
       screenshot_support* ScreenshotsSystem; //System to store and generate Hierarhical Depth Texture
 #endif

@@ -19,6 +19,8 @@ StructuredBuffer<GDRGPULightSource> LightsPool : register(GDRGPULightsPoolSlot);
 Texture2D TexturePool[] : register(GDRGPUTexturePoolSlot, GDRGPUTexturePoolSpace);                      // Bindless Pool with all textures
 TextureCube CubeTexturePool[] : register(GDRGPUCubeTexturePoolSlot, GDRGPUCubeTexturePoolSpace);        // Bindless Pool with all textures
 StructuredBuffer<GDRGPUBoneMapping> BoneMappingPool : register(GDRGPUBoneMappingSlot);                  // SRV: Data with bone mappings
+globallycoherent RWTexture2D<UINT> OITTexture : register(GDRGPUOITTextureUAVSlot);                                       // UAV: Headers of lists
+RWStructuredBuffer<GDRGPUOITNode> OITPool : register(GDRGPUOITPoolUAVSlot);                             // UAV: Elements of lists
 
 SamplerState LinearSampler : register(GDRGPULinearSamplerSlot);  // Linear texture sampler
 SamplerState NearestSampler : register(GDRGPUNearestSamplerSlot); // Nearest texture sampler
@@ -33,13 +35,28 @@ VSOut VS(VSIn input)
 }
 
 [earlydepthstencil]
-float4 PS(VSOut input) : SV_TARGET
+void PS(VSOut input)
 {
 	float3 normal = CalculateNormal(input.normal.xyz, input.tangent.xyz, input.uv, indices.ObjectMaterialIndex);
+
+	float depthSquared = dot(globals.CameraPos - input.worldPos.xyz, globals.CameraPos - input.worldPos.xyz);
 
 	float val = dot(normal, globals.CameraPos - input.worldPos.xyz);
 	normal *= val / abs(val);
 
 	float4 col = Shade(input.worldPos, normal, input.uv, indices.ObjectMaterialIndex);
-	return col;
+	uint newHeadBufferValue = OITPool.IncrementCounter();
+	if (newHeadBufferValue >= globals.MaximumOITPoolSize) { return; };
+
+	uint2 upos = uint2(input.pos.x - 0.5, input.pos.y - 0.5);
+
+	uint previosHeadBufferValue;
+	InterlockedExchange(OITTexture[upos], newHeadBufferValue, previosHeadBufferValue);
+
+	// add element to the beginning of the list
+	OITPool[newHeadBufferValue].NextNodeIndex = previosHeadBufferValue;
+	OITPool[newHeadBufferValue].Depth = input.pos.z;
+	OITPool[newHeadBufferValue].Color = col;
+
+	return;
 }

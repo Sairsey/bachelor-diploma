@@ -21,6 +21,8 @@ void gdr::globals_subsystem::SetDefault(void)
   CPUData.IsTonemap = false;
   CPUData.SceneExposure = 8.0;
   CPUData.IsIBL = false;
+  CPUData.MaximumOITPoolSize = 0;
+  CPUData.DebugOIT = false;
   NeedUpdate = true;
 }
 

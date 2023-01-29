@@ -1,6 +1,6 @@
 #include "p_header.h"
 
-void gdr::oit_transparent_pass::Initialize(void)
+void gdr::oit_color_pass::Initialize(void)
 {
     // 1) Compile our shaders
     Render->GetDevice().CompileShader(_T("bin/shaders/transparent/oit_color.hlsl"), {}, shader_stage::Vertex, &VertexShader);
@@ -12,6 +12,8 @@ void gdr::oit_transparent_pass::Initialize(void)
         params.resize((int)root_parameters_draw_indices::total_root_parameters);
         CD3DX12_DESCRIPTOR_RANGE bindlessTexturesDesc[1];  // Textures Pool
         CD3DX12_DESCRIPTOR_RANGE cubeBindlessTexturesDesc[1];  // Cube Textures Pool
+        CD3DX12_DESCRIPTOR_RANGE oitTextureDesc[1];
+        CD3DX12_DESCRIPTOR_RANGE oitPoolDesc[1];
 
         params[(int)root_parameters_draw_indices::globals_buffer_index].InitAsConstantBufferView(GDRGPUGlobalDataConstantBufferSlot);
         params[(int)root_parameters_draw_indices::enviroment_buffer_index].InitAsConstantBufferView(GDRGPUEnviromentConstantBufferSlot);
@@ -44,6 +46,16 @@ void gdr::oit_transparent_pass::Initialize(void)
         }
 
         {
+          oitTextureDesc[0].Init(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 1, GDRGPUOITTextureUAVSlot);
+          params[(int)root_parameters_draw_indices::oit_texture_index].InitAsDescriptorTable(1, oitTextureDesc);
+        }
+
+        {
+          oitPoolDesc[0].Init(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 1, GDRGPUOITPoolUAVSlot);
+          params[(int)root_parameters_draw_indices::oit_pool_index].InitAsDescriptorTable(1, oitPoolDesc);
+        }
+
+        {
             CD3DX12_ROOT_SIGNATURE_DESC rootSignatureDesc;
             rootSignatureDesc.Init((UINT)params.size(), &params[0], (UINT)Render->TexturesSystem->SamplersDescs.size(), Render->TexturesSystem->SamplersDescs.data(), D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
             Render->GetDevice().CreateRootSignature(rootSignatureDesc, &RootSignature);
@@ -71,12 +83,11 @@ void gdr::oit_transparent_pass::Initialize(void)
 
         psoDesc.DepthStencilState.DepthEnable = TRUE;
         psoDesc.DepthStencilState.DepthFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL;
-        psoDesc.DepthStencilState.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ALL;
+        psoDesc.DepthStencilState.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ZERO;
         psoDesc.DepthStencilState.StencilEnable = FALSE;
         psoDesc.SampleMask = UINT_MAX;
         psoDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
-        psoDesc.NumRenderTargets = 1;
-        psoDesc.RTVFormats[0] = Render->RenderTargetsSystem->TargetParams[(int)render_targets_enum::target_frame_hdr].Format;
+        psoDesc.NumRenderTargets = 0;
         psoDesc.DSVFormat = Render->DepthBuffer.Resource->GetDesc().Format;
         psoDesc.SampleDesc.Count = 1;
 
@@ -86,7 +97,7 @@ void gdr::oit_transparent_pass::Initialize(void)
     Render->GetDevice().GetDXDevice()->CreateCommandSignature(&Render->DrawCommandsSystem->commandSignatureDesc, RootSignature, IID_PPV_ARGS(&CommandSignature));
 }
 
-void gdr::oit_transparent_pass::CallDirectDraw(ID3D12GraphicsCommandList* currentCommandList)
+void gdr::oit_color_pass::CallDirectDraw(ID3D12GraphicsCommandList* currentCommandList)
 {
     if (!Render->Params.IsTransparent)
       return;
@@ -138,13 +149,19 @@ void gdr::oit_transparent_pass::CallDirectDraw(ID3D12GraphicsCommandList* curren
             currentCommandList->SetGraphicsRootShaderResourceView(
               (int)root_parameters_draw_indices::bone_mapping_pool_index,
               Render->BoneMappingSystem->GetGPUResource().Resource->GetGPUVirtualAddress());
+            currentCommandList->SetGraphicsRootDescriptorTable(
+              (int)root_parameters_draw_indices::oit_texture_index,
+              Render->OITTransparencySystem->TextureUAVGPUDescriptor);
+            currentCommandList->SetGraphicsRootDescriptorTable(
+              (int)root_parameters_draw_indices::oit_pool_index,
+              Render->OITTransparencySystem->NodesPoolUAVGPUDescriptor);
         }
 
         currentCommandList->DrawIndexedInstanced(command.DrawArguments.IndexCountPerInstance, 1, 0, 0, 0);
     }
 }
 
-void gdr::oit_transparent_pass::CallIndirectDraw(ID3D12GraphicsCommandList* currentCommandList)
+void gdr::oit_color_pass::CallIndirectDraw(ID3D12GraphicsCommandList* currentCommandList)
 {
   if (!Render->Params.IsTransparent)
     return;
@@ -184,6 +201,12 @@ void gdr::oit_transparent_pass::CallIndirectDraw(ID3D12GraphicsCommandList* curr
   currentCommandList->SetGraphicsRootShaderResourceView(
     (int)root_parameters_draw_indices::bone_mapping_pool_index,
     Render->BoneMappingSystem->GetGPUResource().Resource->GetGPUVirtualAddress());
+  currentCommandList->SetGraphicsRootDescriptorTable(
+    (int)root_parameters_draw_indices::oit_texture_index,
+    Render->OITTransparencySystem->TextureUAVGPUDescriptor);
+  currentCommandList->SetGraphicsRootDescriptorTable(
+    (int)root_parameters_draw_indices::oit_pool_index,
+    Render->OITTransparencySystem->NodesPoolUAVGPUDescriptor);
 
   currentCommandList->ExecuteIndirect(
     CommandSignature,
@@ -195,7 +218,7 @@ void gdr::oit_transparent_pass::CallIndirectDraw(ID3D12GraphicsCommandList* curr
 }
 
 
-gdr::oit_transparent_pass::~oit_transparent_pass(void)
+gdr::oit_color_pass::~oit_color_pass(void)
 {
     CommandSignature->Release();
     PSO->Release();

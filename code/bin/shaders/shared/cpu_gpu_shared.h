@@ -53,6 +53,8 @@ using uint4 = mth::vec4<UINT>;
 #define GDRGPUAllCommandsPoolSlot ShaderResourceSlot(7)
 #define GDRGPUHierDepthSlot ShaderResourceSlot(8)
 #define GDRGPUBoneMappingSlot ShaderResourceSlot(9)
+#define GDRGPUOITTextureSRVSlot ShaderResourceSlot(10)
+#define GDRGPUOITPoolSRVSlot ShaderResourceSlot(11)
 // slots for all uavs
 #define GDRGPUOpaqueAllCommandsPoolSlot UnorderedAccessSlot(1)
 #define GDRGPUTransparentAllCommandsPoolSlot UnorderedAccessSlot(2)
@@ -60,22 +62,24 @@ using uint4 = mth::vec4<UINT>;
 #define GDRGPUOpaqueCulledCommandsPoolSlot UnorderedAccessSlot(4)
 #define GDRGPUTransparentsCulledCommandsPoolSlot UnorderedAccessSlot(5)
 #define GDRGPULuminanceUnorderedAccessBufferSlot UnorderedAccessSlot(6)
+#define GDRGPUOITTextureUAVSlot UnorderedAccessSlot(7)
+#define GDRGPUOITPoolUAVSlot UnorderedAccessSlot(8)
 
 // Parameters for any shit we might need, but do not want to map
-#define GDRGPUUserConstantBuffer1Slot ConstantBufferSlot(10)
-#define GDRGPUUserConstantBuffer2Slot ConstantBufferSlot(11)
-#define GDRGPUUserConstantBuffer3Slot ConstantBufferSlot(12)
-#define GDRGPUUserConstantBuffer4Slot ConstantBufferSlot(13)
+#define GDRGPUUserConstantBuffer1Slot ConstantBufferSlot(20)
+#define GDRGPUUserConstantBuffer2Slot ConstantBufferSlot(21)
+#define GDRGPUUserConstantBuffer3Slot ConstantBufferSlot(22)
+#define GDRGPUUserConstantBuffer4Slot ConstantBufferSlot(23)
 
-#define GDRGPUUserShaderResource1Slot ShaderResourceSlot(10)
-#define GDRGPUUserShaderResource2Slot ShaderResourceSlot(11)
-#define GDRGPUUserShaderResource3Slot ShaderResourceSlot(12)
-#define GDRGPUUserShaderResource4Slot ShaderResourceSlot(13)
+#define GDRGPUUserShaderResource1Slot ShaderResourceSlot(20)
+#define GDRGPUUserShaderResource2Slot ShaderResourceSlot(21)
+#define GDRGPUUserShaderResource3Slot ShaderResourceSlot(22)
+#define GDRGPUUserShaderResource4Slot ShaderResourceSlot(23)
 
-#define GDRGPUUserUnorderedAccess1Slot UnorderedAccessSlot(10)
-#define GDRGPUUserUnorderedAccess2Slot UnorderedAccessSlot(11)
-#define GDRGPUUserUnorderedAccess3Slot UnorderedAccessSlot(12)
-#define GDRGPUUserUnorderedAccess4Slot UnorderedAccessSlot(13)
+#define GDRGPUUserUnorderedAccess1Slot UnorderedAccessSlot(20)
+#define GDRGPUUserUnorderedAccess2Slot UnorderedAccessSlot(21)
+#define GDRGPUUserUnorderedAccess3Slot UnorderedAccessSlot(22)
+#define GDRGPUUserUnorderedAccess4Slot UnorderedAccessSlot(23)
 
 
 // Indexes of root params
@@ -130,7 +134,10 @@ struct GDRGPUGlobalData
 	UINT IsTonemap;      // Index of skybox in cube textures pool
 	float SceneExposure; // Additional exposure from scene
 	UINT IsIBL;          // Enable IBL
-	UINT pad[1];
+	UINT MaximumOITPoolSize; // Maximum size of OIT Pool
+
+	UINT DebugOIT;           // True if we want to debug OIT
+	UINT pad[3];
 };
 
 /// <summary>
@@ -321,6 +328,16 @@ struct GDRGPULuminanceVariables
 };
 
 #define GDRGPUComputeThreadBlockSize 1024
+
+/// <summary>
+/// Order Independent transparency system
+/// </summary>
+struct GDRGPUOITNode
+{
+	float4 Color;
+	float Depth;
+	UINT NextNodeIndex;
+};
 
 #ifdef __cplusplus
 // C++ code

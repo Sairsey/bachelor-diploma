@@ -27,6 +27,7 @@
 #include "render/subsystems/luminance_subsystem.h"
 #include "render/subsystems/enviroment_subsystem.h"
 #include "render/subsystems/bone_mapping_subsystem.h"
+#include "render/subsystems/oit_transparency_subsystem.h"
 
 #if 0
 #include "render/subsystems/hier_depth_support.h"
@@ -42,7 +43,8 @@
 /// Main Pass
   #include "render/passes/albedo_pass.h"
   #include "render/passes/skybox_pass.h"
-  #include "render/passes/oit_transparent_pass.h"
+  #include "render/passes/oit_color_pass.h"
+  #include "render/passes/oit_compose_pass.h"
 
 /// Postprocess
   #include "render/passes/luminance_pass.h"

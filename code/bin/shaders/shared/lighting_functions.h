@@ -87,7 +87,7 @@ bool CalcLight(in uint LightIndex, in float3 Position, out float3 DirectionToLig
 /// </summary>
 float4 ShadeColor(float2 uv, GDRGPUMaterial material)
 {
-  float4 baseColor = float4(GDRGPUMaterialColorGetColor(material), 1);
+  float4 baseColor = float4(GDRGPUMaterialColorGetColor(material), GDRGPUMaterialColorGetOpacity(material));
   if (GDRGPUMaterialColorGetColorMapIndex(material) != NONE_INDEX)
     baseColor *= TexturePool[GDRGPUMaterialColorGetColorMapIndex(material)].Sample(LinearSampler, uv);
   return baseColor;
@@ -102,7 +102,7 @@ float4 ShadePhong(float3 Normal, float3 Position, float2 uv, GDRGPUMaterial mate
   if (GDRGPUMaterialPhongGetAmbientMapIndex(material) != NONE_INDEX)
     Ka *= TexturePool[GDRGPUMaterialPhongGetAmbientMapIndex(material)].Sample(LinearSampler, uv);
 
-  float4 Kd = float4(GDRGPUMaterialPhongGetDiffuse(material), 1);
+  float4 Kd = float4(GDRGPUMaterialPhongGetDiffuse(material), GDRGPUMaterialPhongGetOpacity(material));
   if (GDRGPUMaterialPhongGetDiffuseMapIndex(material) != NONE_INDEX)
     Kd *= TexturePool[GDRGPUMaterialPhongGetDiffuseMapIndex(material)].Sample(LinearSampler, uv);
 
@@ -256,7 +256,7 @@ float4 ShadeCookTorranceMetal(float3 Normal, float3 Position, float2 uv, GDRGPUM
 
     // Diffuse + Transparency
     Params.Diffuse = GDRGPUMaterialCookTorranceGetAlbedo(material);
-    Params.Transparency = 1.0;
+    Params.Transparency = GDRGPUMaterialCookTorranceGetOpacity(material);
     if (GDRGPUMaterialCookTorranceGetAlbedoMapIndex(material) != NONE_INDEX)
     {
         float4 tmp = TexturePool[GDRGPUMaterialCookTorranceGetAlbedoMapIndex(material)].Sample(LinearSampler, uv);
@@ -299,7 +299,7 @@ float4 ShadeCookTorranceSpecular(float3 Normal, float3 Position, float2 uv, GDRG
 
     // Diffuse + Transparency
     Params.Diffuse = GDRGPUMaterialCookTorranceGetAlbedo(material);
-    Params.Transparency = 1.0;
+    Params.Transparency = GDRGPUMaterialCookTorranceGetOpacity(material);
     if (GDRGPUMaterialCookTorranceGetAlbedoMapIndex(material) != NONE_INDEX)
     {
         float4 tmp = TexturePool[GDRGPUMaterialCookTorranceGetAlbedoMapIndex(material)].Sample(LinearSampler, uv);

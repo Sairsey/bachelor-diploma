@@ -232,15 +232,20 @@ struct GDRGPUMaterial
 	UINT UintParam3;
 	float FloatParam0;
 	float FloatParam1;
+
+	float FloatParam2;
+	UINT pad[3];
 };
 // define getters for this weired material structure
 
 // SHADER_COLOR
 #define GDRGPUMaterialColorGetColor(Material) Material.VecParam0
 #define GDRGPUMaterialColorGetColorMapIndex(Material) Material.UintParam0
+#define GDRGPUMaterialColorGetOpacity(Material) Material.FloatParam2
 // SHADER_PHONG
 #define GDRGPUMaterialPhongGetAmbient(Material) Material.VecParam0            // Ka
 #define GDRGPUMaterialPhongGetAmbientMapIndex(Material) Material.UintParam1   // Ka map
+#define GDRGPUMaterialPhongGetOpacity(Material) Material.FloatParam2          // Opacity
 #define GDRGPUMaterialPhongGetDiffuse(Material) Material.VecParam1            // Kd map
 #define GDRGPUMaterialPhongGetDiffuseMapIndex(Material) Material.UintParam2   // Kd map
 #define GDRGPUMaterialPhongGetSpecular(Material) Material.VecParam2           // Ks 
@@ -261,6 +266,7 @@ struct GDRGPUMaterial
 #define GDRGPUMaterialCookTorranceGetMetalness(Material) Material.FloatParam1                        // metalness
 #define GDRGPUMaterialCookTorranceGetRoughnessMetalnessMapIndex(Material) Material.UintParam3        // roughness(g) + metallness(b)
 #define GDRGPUMaterialCookTorranceGetNormalMapIndex(Material) Material.UintParam0                    // Normal map
+#define GDRGPUMaterialCookTorranceGetOpacity(Material) Material.FloatParam2                          // Opacity
 // MATERIAL_SHADER_COOKTORRANCE_SPECULAR
 // contain 5 variables
 // 1) Ambient Occlusion (Same)
@@ -271,7 +277,7 @@ struct GDRGPUMaterial
 #define GDRGPUMaterialCookTorranceGetSpecular(Material) Material.VecParam1                            // Specular
 #define GDRGPUMaterialCookTorranceGetGlossiness(Material) Material.FloatParam0                        // Glossiness
 #define GDRGPUMaterialCookTorranceGetSpecularGlossinessMapIndex(Material) Material.UintParam3         // Specular(rgb) + Glossiness(a)
-
+#define GDRGPUMaterialCookTorranceGetOpacity(Material) Material.FloatParam2                           // Opacity
 
 #define ERROR_COLOR float4(1, 0, 1, 1);
 

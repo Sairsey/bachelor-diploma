@@ -575,5 +575,8 @@
     <ClInclude Include="source\render\passes\oit_compose_pass.h">
       <Filter>Source Files\Render\Passes\transparency</Filter>
     </ClInclude>
+    <ClInclude Include="source\units\examples\unit_transparent.h">
+      <Filter>Source Files\Units\Examples</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

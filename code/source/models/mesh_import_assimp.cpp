@@ -282,13 +282,19 @@ gdr_index mesh_assimp_importer::ImportTreeMesh(aiMesh* mesh, gdr_index ParentInd
         if (assimpMaterial->Get(AI_MATKEY_GLOSSINESS_FACTOR, glossFactor) == aiReturn_SUCCESS)
             GDRGPUMaterialCookTorranceGetGlossiness(newMaterial) = glossFactor;
         else
-            GDRGPUMaterialCookTorranceGetGlossiness(newMaterial) = 0.1;
+            GDRGPUMaterialCookTorranceGetGlossiness(newMaterial) = 0.1f;
 
         // Specular
         if (assimpMaterial->Get(AI_MATKEY_COLOR_SPECULAR, color) == aiReturn_SUCCESS)
             GDRGPUMaterialCookTorranceGetSpecular(newMaterial) = mth::vec3f(color.r, color.g, color.b);
         else
             GDRGPUMaterialCookTorranceGetSpecular(newMaterial) = mth::vec3f(0.04f, 0.04f, 0.04f);
+
+        // Opacity
+        if (assimpMaterial->Get(AI_MATKEY_OPACITY, glossFactor) == aiReturn_SUCCESS)
+          GDRGPUMaterialCookTorranceGetOpacity(newMaterial) = glossFactor;
+        else
+          GDRGPUMaterialCookTorranceGetOpacity(newMaterial) = 1.0f;
 
         // Specular + Glossiness map
         GDRGPUMaterialCookTorranceGetSpecularGlossinessMapIndex(newMaterial) = GetTextureFromAssimp(assimpMaterial, aiTextureType_SPECULAR);
@@ -315,13 +321,19 @@ gdr_index mesh_assimp_importer::ImportTreeMesh(aiMesh* mesh, gdr_index ParentInd
       if (assimpMaterial->Get(AI_MATKEY_ROUGHNESS_FACTOR, metallicFactor) == aiReturn_SUCCESS)
           GDRGPUMaterialCookTorranceGetRoughness(newMaterial) = metallicFactor;
       else
-          GDRGPUMaterialCookTorranceGetRoughness(newMaterial) = 0.3;
+          GDRGPUMaterialCookTorranceGetRoughness(newMaterial) = 0.3f;
 
       // Metallic
       if (assimpMaterial->Get(AI_MATKEY_METALLIC_FACTOR, metallicFactor) == aiReturn_SUCCESS)
           GDRGPUMaterialCookTorranceGetMetalness(newMaterial) = metallicFactor;
       else
-          GDRGPUMaterialCookTorranceGetMetalness(newMaterial) = 0.5;
+          GDRGPUMaterialCookTorranceGetMetalness(newMaterial) = 0.5f;
+
+      // Opacity
+      if (assimpMaterial->Get(AI_MATKEY_OPACITY, glossFactor) == aiReturn_SUCCESS)
+        GDRGPUMaterialCookTorranceGetOpacity(newMaterial) = glossFactor;
+      else
+        GDRGPUMaterialCookTorranceGetOpacity(newMaterial) = 1.0f;
 
       // Metallic + Roughness map
       GDRGPUMaterialCookTorranceGetRoughnessMetalnessMapIndex(newMaterial) = GetTextureFromAssimp(assimpMaterial, aiTextureType_UNKNOWN);
@@ -369,6 +381,12 @@ gdr_index mesh_assimp_importer::ImportTreeMesh(aiMesh* mesh, gdr_index ParentInd
         GDRGPUMaterialPhongGetSpecular(newMaterial) = mth::vec3f(color.r, color.g, color.b);
       }
 
+      // Opacity
+      if (assimpMaterial->Get(AI_MATKEY_OPACITY, glossFactor) == aiReturn_SUCCESS)
+        GDRGPUMaterialPhongGetOpacity(newMaterial) = glossFactor;
+      else
+        GDRGPUMaterialPhongGetOpacity(newMaterial) = 1;
+
       // Normal map
       GDRGPUMaterialPhongGetNormalMapIndex(newMaterial) = GetTextureFromAssimp(assimpMaterial, aiTextureType_NORMALS);
     }
@@ -381,6 +399,12 @@ gdr_index mesh_assimp_importer::ImportTreeMesh(aiMesh* mesh, gdr_index ParentInd
       // HACK
       if (GDRGPUMaterialColorGetColorMapIndex(newMaterial) != NONE_INDEX && color == aiColor3D(0.f))
         color = aiColor3D(1.f);
+
+      // Opacity
+      if (assimpMaterial->Get(AI_MATKEY_OPACITY, glossFactor) == aiReturn_SUCCESS)
+        GDRGPUMaterialColorGetOpacity(newMaterial) = glossFactor;
+      else
+        GDRGPUMaterialColorGetOpacity(newMaterial) = 1.0f;
       
       GDRGPUMaterialColorGetColor(newMaterial) = mth::vec3f(color.r, color.g, color.b);
     }
@@ -480,14 +504,24 @@ void mesh_assimp_importer::Import()
     {
       GDRGPUMaterial mat = Result.Materials[Result.HierarchyNodes[i].MaterialIndex];
       gdr_index texture_id = NONE_INDEX;
+      float opacity = 1.0;
       if (mat.ShadeType == MATERIAL_SHADER_COLOR)
+      {
         texture_id = GDRGPUMaterialColorGetColorMapIndex(mat);
+        opacity = GDRGPUMaterialColorGetOpacity(mat);
+      }
       else if (mat.ShadeType == MATERIAL_SHADER_PHONG)
+      {
         texture_id = GDRGPUMaterialPhongGetDiffuseMapIndex(mat);
+        opacity = GDRGPUMaterialPhongGetOpacity(mat);
+      }
       else if (mat.ShadeType == MATERIAL_SHADER_COOKTORRANCE_METALNESS || mat.ShadeType == MATERIAL_SHADER_COOKTORRANCE_SPECULAR)
+      {
         texture_id = GDRGPUMaterialCookTorranceGetAlbedoMapIndex(mat);
+        opacity = GDRGPUMaterialCookTorranceGetOpacity(mat);
+      }
       
-      if (texture_id != NONE_INDEX && IsTransparent[texture_id])
+      if (opacity != 1.0 || (texture_id != NONE_INDEX && IsTransparent[texture_id]))
         Result.HierarchyNodes[i].Params |= OBJECT_PARAMETER_TRANSPARENT;
     }
 }

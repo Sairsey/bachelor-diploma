@@ -56,6 +56,7 @@ namespace gdr
       GDRGPUMaterialPhongGetAmbient(mat) = mth::vec3f(0.f, 0.f, 0.f);
       GDRGPUMaterialPhongGetDiffuse(mat) = mth::vec3f(0.7f, 0.7f, 0.7f);
       GDRGPUMaterialPhongGetSpecular(mat) = mth::vec3f(0.1f, 0.1f, 0.1f);
+      GDRGPUMaterialPhongGetOpacity(mat) = 1.0f;
       GDRGPUMaterialPhongGetShiness(mat) = 30.0f;
       GDRGPUMaterialPhongGetAmbientMapIndex(mat) = NONE_INDEX;
       GDRGPUMaterialPhongGetDiffuseMapIndex(mat) = NONE_INDEX;

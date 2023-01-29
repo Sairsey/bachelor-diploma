@@ -27,9 +27,9 @@
     <ClInclude Include="source\def.h" />
     <ClInclude Include="source\engine\eng.h" />
     <ClInclude Include="source\input\input.h" />
-    <ClInclude Include="source\models\mesh_import_data.h" />
+    <ClInclude Include="source\models\model_import_data.h" />
     <ClInclude Include="source\models\models_manager.h" />
-    <ClInclude Include="source\models\render_mesh.h" />
+    <ClInclude Include="source\models\render_model.h" />
     <ClInclude Include="source\physics\physics.h" />
     <ClInclude Include="source\p_header.h" />
     <ClInclude Include="source\render\device\command_queue.h" />
@@ -72,6 +72,7 @@
     <ClInclude Include="source\units\examples\unit_light_example.h" />
     <ClInclude Include="source\units\examples\unit_load_any.h" />
     <ClInclude Include="source\units\examples\unit_model_loading.h" />
+    <ClInclude Include="source\units\examples\unit_model_splitted.h" />
     <ClInclude Include="source\units\examples\unit_normal_map.h" />
     <ClInclude Include="source\units\examples\unit_occlusion_cull.h" />
     <ClInclude Include="source\units\examples\unit_pbr_metalness.h" />

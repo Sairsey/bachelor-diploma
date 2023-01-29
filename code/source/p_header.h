@@ -74,8 +74,8 @@
 
 #include "physics/physics.h"
 
-#include "models/mesh_import_data.h"
-#include "models/render_mesh.h"
+#include "models/model_import_data.h"
+#include "models/render_model.h"
 #include "models/models_manager.h"
 
 #include "timer/timer.h"

@@ -11,7 +11,7 @@ private:
 public:
   void Initialize(void)
   {
-    auto import_data = gdr::ImportMeshAssimp("bin/models/bread/bread.obj");
+    auto import_data = gdr::ImportModelFromAssimp("bin/models/bread/bread.obj");
     
     ID3D12GraphicsCommandList* commandList;
     
@@ -27,12 +27,12 @@ public:
         mth::vec3f pos = { 1.0f * rand() / RAND_MAX, 1.0f * rand() / RAND_MAX, 1.0f * rand() / RAND_MAX };
         pos = pos * 2 - mth::vec3f(1, 1, 1);
         pos *= (float)halfBoxSize;
-        gdr_index ModelIndex = Engine->AddModel(import_data);
+        gdr_index ModelIndex = Engine->ModelsManager->Add(import_data);
         mth::matr4f Transform = mth::matr::Translate(pos);
         Models.push_back(ModelIndex);
         Translations.push_back(Transform);
         
-        gdr_index ModelRootTransform = Engine->ModelsPool[ModelIndex].Rnd.RootTransform;
+        gdr_index ModelRootTransform = Engine->ModelsManager->Get(ModelIndex).Render.RootTransform;
         Engine->ObjectTransformsSystem->GetEditable(ModelRootTransform).Transform = Transform;
       }
       PROFILE_END(commandList);

@@ -15,7 +15,9 @@ struct mesh_assimp_importer
 {
   std::string FileName;
   std::string ImportDirectory;
-  gdr::mesh_import_data Result;
+  gdr::model_import_data Result;
+  std::vector<gdr::model_import_data> Results;
+
   // mapping for bones
   std::unordered_map<aiNode *, gdr_index> tmpBoneMapping;
   // mapping from assimp material indices to ours
@@ -33,6 +35,7 @@ struct mesh_assimp_importer
   bool IsTextureTransparent(std::string path);
 
   void Import();
+  void ImportSplitted();
 };
 
 gdr_index mesh_assimp_importer::ImportTreeFirstPass(aiNode* node, gdr_index ParentIndex)
@@ -150,8 +153,8 @@ gdr_index mesh_assimp_importer::ImportTreeMesh(aiMesh* mesh, gdr_index ParentInd
   Result.HierarchyNodes[Current].NextIndex = NONE_INDEX;
   Result.HierarchyNodes[Current].ChildIndex = NONE_INDEX;
 
-  Result.HierarchyNodes[Current].vertices.reserve(mesh->mNumVertices);
-  Result.HierarchyNodes[Current].indices.reserve(mesh->mNumFaces * 3);
+  Result.HierarchyNodes[Current].Vertices.reserve(mesh->mNumVertices);
+  Result.HierarchyNodes[Current].Indices.reserve(mesh->mNumFaces * 3);
   bool isHasBones = mesh->HasBones();
 
   // load indices
@@ -161,12 +164,12 @@ gdr_index mesh_assimp_importer::ImportTreeMesh(aiMesh* mesh, gdr_index ParentInd
     {
       continue;
     }
-    Result.HierarchyNodes[Current].indices.push_back(mesh->mFaces[j].mIndices[0]);
-    Result.HierarchyNodes[Current].indices.push_back(mesh->mFaces[j].mIndices[1]);
-    Result.HierarchyNodes[Current].indices.push_back(mesh->mFaces[j].mIndices[2]);
+    Result.HierarchyNodes[Current].Indices.push_back(mesh->mFaces[j].mIndices[0]);
+    Result.HierarchyNodes[Current].Indices.push_back(mesh->mFaces[j].mIndices[1]);
+    Result.HierarchyNodes[Current].Indices.push_back(mesh->mFaces[j].mIndices[2]);
   }
 
-  if (Result.HierarchyNodes[Current].indices.size() == 0)
+  if (Result.HierarchyNodes[Current].Indices.size() == 0)
   {
     Result.HierarchyNodes.pop_back();
     return NONE_INDEX;
@@ -197,51 +200,74 @@ gdr_index mesh_assimp_importer::ImportTreeMesh(aiMesh* mesh, gdr_index ParentInd
     V.Tangent = mth::vec3f{ mesh->mTangents[j].x, mesh->mTangents[j].y, mesh->mTangents[j].z };
     V.Tangent.Normalize();
 
-    V.BonesIndices = mth::vec4<UINT>(ParentIndex, NONE_INDEX, NONE_INDEX, NONE_INDEX);
-    V.BonesWeights = mth::vec4f(1,0,0,0);
+    V.BonesIndices = mth::vec4<UINT>(NONE_INDEX, NONE_INDEX, NONE_INDEX, NONE_INDEX);
+    V.BonesWeights = mth::vec4f(0,0,0,0);
 
-    Result.HierarchyNodes[Current].vertices.push_back(V);
+    Result.HierarchyNodes[Current].Vertices.push_back(V);
   }
 
-  // fix bones in verices
+  // fix bones in vertices
   for (int i = 0; i < (int)mesh->mNumBones; i++)
   {
-    gdr_index ourIndex = tmpBoneMapping[mesh->mBones[i]->mNode];
-    Result.HierarchyNodes[ourIndex].BoneOffset = mth::matr4f(
+    gdr_index nodeIndex = tmpBoneMapping[mesh->mBones[i]->mNode];
+
+    Result.HierarchyNodes[nodeIndex].BoneOffset = mth::matr4f(
       mesh->mBones[i]->mOffsetMatrix.a1, mesh->mBones[i]->mOffsetMatrix.b1, mesh->mBones[i]->mOffsetMatrix.c1, mesh->mBones[i]->mOffsetMatrix.d1,
       mesh->mBones[i]->mOffsetMatrix.a2, mesh->mBones[i]->mOffsetMatrix.b2, mesh->mBones[i]->mOffsetMatrix.c2, mesh->mBones[i]->mOffsetMatrix.d2,
       mesh->mBones[i]->mOffsetMatrix.a3, mesh->mBones[i]->mOffsetMatrix.b3, mesh->mBones[i]->mOffsetMatrix.c3, mesh->mBones[i]->mOffsetMatrix.d3,
       mesh->mBones[i]->mOffsetMatrix.a4, mesh->mBones[i]->mOffsetMatrix.b4, mesh->mBones[i]->mOffsetMatrix.c4, mesh->mBones[i]->mOffsetMatrix.d4);
+
+    gdr_index nodeBoneMapping = NONE_INDEX;
+    for (int j = 0; j < Result.HierarchyNodes[Current].BonesMapping.size() && nodeBoneMapping == NONE_INDEX; j++)
+      if (Result.HierarchyNodes[Current].BonesMapping[j] == nodeIndex)
+        nodeBoneMapping = NONE_INDEX;
+
+    if (nodeBoneMapping == NONE_INDEX)
+    {
+      nodeBoneMapping = Result.HierarchyNodes[Current].BonesMapping.size();
+      Result.HierarchyNodes[Current].BonesMapping.push_back(nodeIndex);
+    }
+
     for (int j = 0; j < (int)mesh->mBones[i]->mNumWeights; j++)
     {
       int vertex_id = mesh->mBones[i]->mWeights[j].mVertexId;
       float weight = mesh->mBones[i]->mWeights[j].mWeight;
       if (weight == 0)
         continue;
-      if (Result.HierarchyNodes[Current].vertices[vertex_id].BonesIndices.X == -1)
+      if (Result.HierarchyNodes[Current].Vertices[vertex_id].BonesIndices.X == NONE_INDEX)
       {
-        Result.HierarchyNodes[Current].vertices[vertex_id].BonesIndices.X = ourIndex;
-        Result.HierarchyNodes[Current].vertices[vertex_id].BonesWeights.X = weight;
+        Result.HierarchyNodes[Current].Vertices[vertex_id].BonesIndices.X = nodeBoneMapping;
+        Result.HierarchyNodes[Current].Vertices[vertex_id].BonesWeights.X = weight;
       }
-      else if (Result.HierarchyNodes[Current].vertices[vertex_id].BonesIndices.Y == -1)
+      else if (Result.HierarchyNodes[Current].Vertices[vertex_id].BonesIndices.Y == NONE_INDEX)
       {
-        Result.HierarchyNodes[Current].vertices[vertex_id].BonesIndices.Y = ourIndex;
-        Result.HierarchyNodes[Current].vertices[vertex_id].BonesWeights.Y = weight;
+        Result.HierarchyNodes[Current].Vertices[vertex_id].BonesIndices.Y = nodeBoneMapping;
+        Result.HierarchyNodes[Current].Vertices[vertex_id].BonesWeights.Y = weight;
       }
-      else if (Result.HierarchyNodes[Current].vertices[vertex_id].BonesIndices.Z == -1)
+      else if (Result.HierarchyNodes[Current].Vertices[vertex_id].BonesIndices.Z == NONE_INDEX)
       {
-        Result.HierarchyNodes[Current].vertices[vertex_id].BonesIndices.Z = ourIndex;
-        Result.HierarchyNodes[Current].vertices[vertex_id].BonesWeights.Z = weight;
+        Result.HierarchyNodes[Current].Vertices[vertex_id].BonesIndices.Z = nodeBoneMapping;
+        Result.HierarchyNodes[Current].Vertices[vertex_id].BonesWeights.Z = weight;
       }
-      else if (Result.HierarchyNodes[Current].vertices[vertex_id].BonesIndices.W == -1)
+      else if (Result.HierarchyNodes[Current].Vertices[vertex_id].BonesIndices.W == NONE_INDEX)
       {
-        Result.HierarchyNodes[Current].vertices[vertex_id].BonesIndices.W = ourIndex;
-        Result.HierarchyNodes[Current].vertices[vertex_id].BonesWeights.W = weight;
+        Result.HierarchyNodes[Current].Vertices[vertex_id].BonesIndices.W = nodeBoneMapping;
+        Result.HierarchyNodes[Current].Vertices[vertex_id].BonesWeights.W = weight;
       }
       else
       {
-        OutputDebugString(L"ERROR! Number of Bone vertex index are greater than 4!!!\n");
+        GDR_FAILED("ERROR! Number of Bone vertex index are greater than 4!!!\n");
       }
+    }
+  }
+
+  if (Result.HierarchyNodes[Current].BonesMapping.size() == 0 && ParentIndex != NONE_INDEX)
+  {
+    Result.HierarchyNodes[Current].BonesMapping.push_back(ParentIndex);
+    for (int j = 0; j < (int)mesh->mNumVertices; j++)
+    {
+       Result.HierarchyNodes[Current].Vertices[j].BonesIndices.X = 0;
+       Result.HierarchyNodes[Current].Vertices[j].BonesWeights.X = 1.0;
     }
   }
 
@@ -526,8 +552,61 @@ void mesh_assimp_importer::Import()
     }
 }
 
+void mesh_assimp_importer::ImportSplitted()
+{
+  // at first -> Load everything
+  Import();
 
-gdr::mesh_import_data gdr::ImportMeshAssimp(std::string filename)
+  // after that -> Split
+  for (int mesh_index = 0; mesh_index < Result.HierarchyNodes.size(); mesh_index++)
+    if (Result.HierarchyNodes[mesh_index].Type == gdr_hier_node_type::mesh)
+    {
+      gdr::import_model_node &MeshNode = Result.HierarchyNodes[mesh_index];
+      gdr::model_import_data tmp;
+      tmp.FileName = MeshNode.Name + "__"  + Result.FileName;
+
+      // Calculate RootTransform
+      {
+        tmp.RootTransform.Transform = mth::matr::Identity();
+        tmp.RootTransform.maxAABB = MeshNode.Vertices[0].Pos;
+        tmp.RootTransform.minAABB = MeshNode.Vertices[0].Pos;
+        for (int vertex_id = 0; vertex_id < MeshNode.Vertices.size(); vertex_id++)
+          for (int component_index = 0; component_index < 3; component_index++)
+          {
+            tmp.RootTransform.maxAABB[component_index] = max(tmp.RootTransform.maxAABB[component_index], MeshNode.Vertices[vertex_id].Pos[component_index]);
+            tmp.RootTransform.minAABB[component_index] = min(tmp.RootTransform.minAABB[component_index], MeshNode.Vertices[vertex_id].Pos[component_index]);
+          }
+
+        GDR_ASSERT(Result.HierarchyNodes[mesh_index].BonesMapping.size() <= 1);
+        gdr_index node_to_mulipty = Result.HierarchyNodes[mesh_index].BonesMapping[0];
+        while (node_to_mulipty != NONE_INDEX)
+        {
+          tmp.RootTransform.Transform = tmp.RootTransform.Transform * Result.HierarchyNodes[node_to_mulipty].LocalTransform;
+          node_to_mulipty = Result.HierarchyNodes[node_to_mulipty].ParentIndex;
+        }
+      }
+
+      // Copy Mesh
+      {
+        tmp.HierarchyNodes.push_back(MeshNode);
+        tmp.HierarchyNodes[0].BonesMapping.clear();
+      }
+
+      // Copy Materials
+      {
+        if (MeshNode.MaterialIndex != NONE_INDEX)
+          tmp.Materials.push_back( Result.Materials[MeshNode.MaterialIndex]);
+        tmp.HierarchyNodes[0].MaterialIndex = 0;
+      }
+      
+      // Copy Textures
+      tmp.TexturesPaths = Result.TexturesPaths;
+
+      Results.push_back(tmp);
+    }
+}
+
+gdr::model_import_data gdr::ImportModelFromAssimp(std::string filename)
 {
   mesh_assimp_importer myImporter;
 
@@ -550,4 +629,29 @@ gdr::mesh_import_data gdr::ImportMeshAssimp(std::string filename)
   myImporter.Import();
 
   return myImporter.Result;
+}
+
+std::vector<gdr::model_import_data> gdr::ImportSplittedModelFromAssimp(std::string filename)
+{
+  mesh_assimp_importer myImporter;
+
+  myImporter.FileName = filename;
+
+  size_t last_slash_idx = filename.rfind('\\');
+  if (std::string::npos != last_slash_idx)
+  {
+    myImporter.ImportDirectory = filename.substr(0, last_slash_idx);
+  }
+  else
+  {
+    size_t last_slash_idx = filename.rfind('/');
+    if (std::string::npos != last_slash_idx)
+    {
+      myImporter.ImportDirectory = filename.substr(0, last_slash_idx);
+    }
+  }
+
+  myImporter.ImportSplitted();
+
+  return myImporter.Results;
 }

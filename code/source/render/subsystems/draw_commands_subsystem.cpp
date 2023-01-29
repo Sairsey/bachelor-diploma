@@ -175,6 +175,7 @@ gdr_index gdr::draw_commands_subsystem::Add(gdr_index geometryIndex, gdr_index t
   Render->ObjectTransformsSystem->IncreaseReferenceCount(transformIndex);
   Render->MaterialsSystem->IncreaseReferenceCount(materialIndex);
   Render->BoneMappingSystem->IncreaseReferenceCount(boneMappingIndex);
+  Render->GeometrySystem->IncreaseReferenceCount(geometryIndex);
 
   DrawCommand.VertexBuffer = Render->GeometrySystem->Get(geometryIndex).VertexBufferView;
   DrawCommand.IndexBuffer = Render->GeometrySystem->Get(geometryIndex).IndexBufferView;

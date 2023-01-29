@@ -12,7 +12,7 @@ namespace gdr
     void BeforeRemoveJob(gdr_index index) override
     {
       // iterate over used bones and decrease their ref counter by 1
-      for (int i = 0; i < MAX_BONE_PER_MODEL; i++)
+      for (int i = 0; i < MAX_BONE_PER_MESH; i++)
       {
         if (Get(index).BoneMapping[i] != NONE_INDEX)
           Render->NodeTransformsSystem->Remove(Get(index).BoneMapping[i]);
@@ -30,7 +30,7 @@ namespace gdr
     {
       gdr_index Result = resource_pool_subsystem::Add();
       GDRGPUBoneMapping &result = GetEditable(Result);
-      for (int i = 0; i < MAX_BONE_PER_MODEL; i++)
+      for (int i = 0; i < MAX_BONE_PER_MESH; i++)
         result.BoneMapping[i] = NONE_INDEX;
       return Result;
     }
@@ -39,14 +39,14 @@ namespace gdr
     {
       if (IsExist(BoneMappingIndex))
       {
-        UINT MappingIndex = MAX_BONE_PER_MODEL;
+        UINT MappingIndex = MAX_BONE_PER_MESH;
 
-        for (int i = 0; i < MAX_BONE_PER_MODEL && MappingIndex == MAX_BONE_PER_MODEL; i++)
+        for (int i = 0; i < MAX_BONE_PER_MESH && MappingIndex == MAX_BONE_PER_MESH; i++)
           // if we found same or place for new
           if (Get(BoneMappingIndex).BoneMapping[i] == NodeTransformIndex ||
             Get(BoneMappingIndex).BoneMapping[i] == NONE_INDEX)
             MappingIndex = i;
-        GDR_ASSERT(MappingIndex != MAX_BONE_PER_MODEL);
+        GDR_ASSERT(MappingIndex != MAX_BONE_PER_MESH);
 
         GetEditable(BoneMappingIndex).BoneMapping[MappingIndex] = NodeTransformIndex;
         Render->NodeTransformsSystem->IncreaseReferenceCount(NodeTransformIndex);

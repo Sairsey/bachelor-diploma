@@ -156,10 +156,10 @@ struct GDRGPUObjectTransform
 /// <summary>
 /// Bone mapping system
 /// </summary>
-#define MAX_BONE_PER_MODEL 512
+#define MAX_BONE_PER_MESH 32
 struct GDRGPUBoneMapping
 {
-	UINT BoneMapping[MAX_BONE_PER_MODEL];
+	UINT BoneMapping[MAX_BONE_PER_MESH];
 };
 
 /// <summary>

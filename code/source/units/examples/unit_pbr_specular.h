@@ -9,14 +9,14 @@ private:
 public:
     void Initialize(void)
     {
-        auto import_data = gdr::ImportMeshAssimp("bin/models/fiat/fiat.glb");
+        auto import_data = gdr::ImportModelFromAssimp("bin/models/fiat/fiat.glb");
         //auto import_data = gdr::ImportMeshAssimp("bin/models/sketchbook/sketchbook.glb");
 
         ID3D12GraphicsCommandList* commandList;
         Engine->GetDevice().BeginUploadCommandList(&commandList);
         PROFILE_BEGIN(commandList, "unit_pbr_specular Init");
 
-        Fiat = Engine->AddModel(import_data);
+        Fiat = Engine->ModelsManager->Add(import_data);
 
         PROFILE_END(commandList);
         Engine->GetDevice().CloseUploadCommandList();
@@ -34,7 +34,7 @@ public:
 
     void Response(void)
     {
-        gdr_index TransformIndex = Engine->ModelsPool[Fiat].Rnd.RootTransform;
+        gdr_index TransformIndex = Engine->ModelsManager->Get(Fiat).Render.RootTransform;
         Engine->ObjectTransformsSystem->GetEditable(TransformIndex).Transform = mth::matr::RotateY(Engine->GetTime());
     }
 

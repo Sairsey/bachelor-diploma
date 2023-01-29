@@ -14,6 +14,8 @@
 #include "units/examples/unit_normal_map.h"
 #include "units/examples/unit_load_any.h"
 #include "units/examples/unit_transparent.h"
+#include "units/examples/unit_model_splitted.h"
+
 
 #include "units/enviroment/unit_yokohama.h"
 #include "units/enviroment/unit_alex_apt.h"
@@ -119,10 +121,12 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
   //Engine.AddUnit(new unit_triangle());
   //Engine.AddUnit(new unit_runtime_add_remove());
   //Engine.AddUnit(new unit_pbr_metalness());
-  //Engine.AddUnit(new unit_pbr_specular());
+  Engine.AddUnit(new unit_pbr_specular());
   //Engine.AddUnit(new unit_normal_map());
-  //Engine.AddUnit(new unit_load_any());
-  Engine.AddUnit(new unit_transparent());
+  Engine.AddUnit(new unit_load_any());
+  //Engine.AddUnit(new unit_transparent());
+  //Engine.AddUnit(new unit_model_splitted());
+
 
   
   //Engine.AddUnit(new unit_yokohama());

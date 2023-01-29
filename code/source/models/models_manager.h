@@ -1,6 +1,6 @@
 #pragma once
 #include "def.h"
-#include "render_mesh.h"
+#include "render_model.h"
 
 //project namespace
 namespace gdr
@@ -9,23 +9,25 @@ namespace gdr
 	struct model
 	{
 		std::string Name;
-		render_mesh Rnd;
+		render_model Render;
 	};
 
-	class models_manager
+	class models_manager : public resource_pool_subsystem<model, 0>
 	{
-		private:
-			engine* Eng;
+		protected:
+			void BeforeRemoveJob(gdr_index index) override;
+
+			engine *Engine;
 		public:
-			void Init(engine* eng)
+			models_manager(engine* Eng);
+
+			gdr_index Add()
 			{
-				Eng = eng;
+				GDR_FAILED("IMPOSSIBLE TO GENERATE MODEL WITHOUT IMPORT DATA");
+				return NONE_INDEX;
 			}
 
-			gdr_index AddModel(mesh_import_data ImportData);
-			void CloneModel(gdr_index SrcModel, gdr_index DstModel);
-			void DeleteModel(gdr_index Model);
-
-			std::vector<model> ModelsPool;
+			gdr_index Add(const model_import_data& ImportData);
+			void Clone(gdr_index SrcModel, gdr_index DstModel);
 	};
 }

@@ -12,8 +12,7 @@ namespace gdr
     public win,
     public render,
     public timer_support,
-    public input_support,
-    public models_manager
+    public input_support
 #if PHYSICS_ENABLED
     public physics,
 #endif
@@ -95,5 +94,7 @@ namespace gdr
        * RETURNS: None.
        */
       VOID Idle(VOID) override;
+
+      models_manager *ModelsManager;
   };
 }

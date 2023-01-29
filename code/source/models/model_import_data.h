@@ -4,7 +4,7 @@
 //project namespace
 namespace gdr
 {
-	struct mesh_import_node
+	struct import_model_node
 	{
 		std::string Name;
 		gdr_hier_node_type Type;
@@ -19,19 +19,20 @@ namespace gdr
 		mth::matr4f BoneOffset;
 
 		// Mesh
-		std::vector<GDRVertex> vertices;
-		std::vector<UINT> indices;
+		std::vector<GDRVertex> Vertices;
+		std::vector<UINT> Indices;
+		std::vector<UINT> BonesMapping; // mapping of Bones to Hierarchy
 		gdr_index MaterialIndex;
 		UINT Params = 0;
 	};
 
-	// mesh import data representation class
-	struct mesh_import_data
+	// model import data representation class
+	struct model_import_data
 	{
 		std::string FileName;                         // File name
 		std::vector<GDRGPUMaterial> Materials;        // Materials
 		std::vector<std::string> TexturesPaths;       // Textures
-		std::vector<mesh_import_node> HierarchyNodes; // Hierarchy
+		std::vector<import_model_node> HierarchyNodes; // Hierarchy
 		GDRGPUObjectTransform RootTransform;          // Root transform
 
 		bool IsEmpty(void)
@@ -40,5 +41,6 @@ namespace gdr
 		}
 	};
 
-	mesh_import_data ImportMeshAssimp(std::string filename);
+	model_import_data ImportModelFromAssimp(std::string filename);
+	std::vector<model_import_data> ImportSplittedModelFromAssimp(std::string filename);
 }

@@ -11,7 +11,7 @@ private:
 public:
     void Initialize(void)
     {
-        auto import_data = gdr::ImportMeshAssimp("bin/models/pbr_sphere/pbr_sphere.glb");
+        auto import_data = gdr::ImportModelFromAssimp("bin/models/pbr_sphere/pbr_sphere.glb");
 
         ID3D12GraphicsCommandList* commandList;
         Engine->GetDevice().BeginUploadCommandList(&commandList);
@@ -25,7 +25,7 @@ public:
                 import_data.FileName = OriginalName + std::to_string(i) + "_" + std::to_string(j);
                 GDRGPUMaterialCookTorranceGetRoughness(import_data.Materials[0]) = Roughness;
                 GDRGPUMaterialCookTorranceGetMetalness(import_data.Materials[0]) = Metalness;
-                Spheres.push_back(Engine->AddModel(import_data));
+                Spheres.push_back(Engine->ModelsManager->Add(import_data));
             }
 
         PROFILE_END(commandList);
@@ -48,7 +48,7 @@ public:
             for (int j = 0; j < MetalnessStamps; j++)
             {
                 gdr_index ModelIndex = Spheres[i * MetalnessStamps + j];
-                gdr_index TransformIndex = Engine->ModelsPool[ModelIndex].Rnd.RootTransform;
+                gdr_index TransformIndex = Engine->ModelsManager->Get(ModelIndex).Render.RootTransform;
                 Engine->ObjectTransformsSystem->GetEditable(TransformIndex).Transform = mth::matr::Translate({2.0f *  j, 2.0f * i, -10.0f});
             }
     }

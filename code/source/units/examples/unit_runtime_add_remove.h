@@ -5,13 +5,13 @@ class unit_runtime_add_remove : public gdr::unit_base
 {
 private:
   // model import data
-  gdr::mesh_import_data import_data;
+  gdr::model_import_data import_data;
   std::vector<gdr_index> Models;
   int DeltaSize = 0;
 public:
   void Initialize(void)
   {
-    import_data = gdr::ImportMeshAssimp("bin/models/bread/bread.obj");
+    import_data = gdr::ImportModelFromAssimp("bin/models/bread/bread.obj");
     //Engine->EnableFullscreen();
   }
 
@@ -21,7 +21,7 @@ public:
     Engine->GetDevice().BeginUploadCommandList(&commandList);
     PROFILE_BEGIN(commandList, "Load new element Init");
     for (int i = 0; i < amount; i++)
-      Models.push_back(Engine->AddModel(import_data));
+      Models.push_back(Engine->ModelsManager->Add(import_data));
     PROFILE_END(commandList);
     Engine->GetDevice().CloseUploadCommandList();
 
@@ -32,7 +32,7 @@ public:
   {
     for (int i = 0; i < amount && Models.size() > 0; i++)
     {
-      Engine->DeleteModel(Models[Models.size() - 1]);
+      Engine->ModelsManager->Remove(Models[Models.size() - 1]);
       Models.pop_back();
     }
   }
@@ -71,7 +71,7 @@ public:
     for (int i = 0; i < Models.size(); i++)
     {
       gdr_index ModelIndex = Models[i];
-      gdr_index ModelRootTransform = Engine->ModelsPool[ModelIndex].Rnd.RootTransform;
+      gdr_index ModelRootTransform = Engine->ModelsManager->Get(ModelIndex).Render.RootTransform;
       float dist = (Engine->ObjectTransformsSystem->Get(ModelRootTransform).maxAABB - Engine->ObjectTransformsSystem->Get(ModelRootTransform).minAABB).Lenght();
       alpha = sqrt(alpha * alpha + dist);
       float radius = alpha * 2;

@@ -11,7 +11,7 @@ private:
 public:
   void Initialize(void)
   {
-    auto import_data = gdr::ImportMeshAssimp("bin/models/bread/bread.obj");
+    auto import_data = gdr::ImportModelFromAssimp("bin/models/bread/bread.obj");
     
     ID3D12GraphicsCommandList* commandList;
     for (int i = -halfBoxSize; i < halfBoxSize; i++)
@@ -25,7 +25,7 @@ public:
       {
         for (int k = -halfBoxSize; k < halfBoxSize; k++)
         {
-          Models.push_back(Engine->AddModel(import_data));
+          Models.push_back(Engine->ModelsManager->Add(import_data));
           Translations.push_back(
             mth::matr::Translate(
               { i * step, j * step, k * step }));
@@ -44,7 +44,7 @@ public:
     for (int i = 0; i < Models.size(); i++)
     {
       gdr_index ModelIndex = Models[i];
-      gdr_index ModelRootTransform = Engine->ModelsPool[ModelIndex].Rnd.RootTransform;
+      gdr_index ModelRootTransform = Engine->ModelsManager->Get(ModelIndex).Render.RootTransform;
       Engine->ObjectTransformsSystem->GetEditable(ModelRootTransform).Transform = rotation * Translations[i];
       //Engine->ObjectSystem->NodesPool[Bread[i]].GetTransformEditable() = rotation * Translations[i];
     }

@@ -16,37 +16,37 @@ public:
     fileDialog.SetTitle("Choose a model...");
     fileDialog.SetTypeFilters({".obj", ".fbx", ".glb"});
     
-    auto light_import_data = gdr::ImportMeshAssimp("bin/models/light_meshes/cone.obj");
+    auto light_import_data = gdr::ImportModelFromAssimp("bin/models/light_meshes/cone.obj");
     ID3D12GraphicsCommandList* commandList;
     Engine->GetDevice().BeginUploadCommandList(&commandList);
     PROFILE_BEGIN(commandList, "unit_load_any Init");
-    LightModel = Engine->AddModel(light_import_data);
+    LightModel = Engine->ModelsManager->Add(light_import_data);
     PROFILE_END(commandList);
     Engine->GetDevice().CloseUploadCommandList();
 
     Light = Engine->LightsSystem->Add();
     Engine->LightsSystem->GetEditable(Light).Color = mth::vec3f(10, 10, 10);
     Engine->LightsSystem->GetEditable(Light).LightSourceType = LIGHT_SOURCE_TYPE_SPOT;
-    Engine->LightsSystem->GetEditable(Light).ObjectTransformIndex = Engine->ModelsPool[LightModel].Rnd.RootTransform;
+    Engine->LightsSystem->GetEditable(Light).ObjectTransformIndex = Engine->ModelsManager->Get(LightModel).Render.RootTransform;
     Engine->LightsSystem->GetEditable(Light).ConstantAttenuation = 1.0f;
     Engine->LightsSystem->GetEditable(Light).LinearAttenuation = 0.09f;
     Engine->LightsSystem->GetEditable(Light).QuadricAttenuation = 0.032f;
     Engine->LightsSystem->GetEditable(Light).AngleInnerCone = 45;
     Engine->LightsSystem->GetEditable(Light).AngleOuterCone = 60;
     Engine->ObjectTransformsSystem->GetEditable(Engine->LightsSystem->GetEditable(Light).ObjectTransformIndex).Transform = mth::matr4f::RotateX(-30) * mth::matr4f::RotateY(-45) * mth::matr4f::Translate({10, 10, 0});
-    Engine->ObjectTransformsSystem->IncreaseReferenceCount(Engine->ModelsPool[LightModel].Rnd.RootTransform);
+    Engine->ObjectTransformsSystem->IncreaseReferenceCount(Engine->ModelsManager->Get(LightModel).Render.RootTransform);
   }
 
   void LoadModel(std::string path)
   {
     if (Model != NONE_INDEX)
     {
-      Engine->DeleteModel(Model);
+      Engine->ModelsManager->Remove(Model);
       Model = NONE_INDEX;
     }
-    auto import_data = gdr::ImportMeshAssimp(path);
+    auto import_data = gdr::ImportModelFromAssimp(path);
 
-    if (import_data.FileName == "")
+    if (import_data.IsEmpty())
     {
       IsLastSuccess = false;
     }
@@ -55,7 +55,7 @@ public:
       ID3D12GraphicsCommandList* commandList;
       Engine->GetDevice().BeginUploadCommandList(&commandList);
       PROFILE_BEGIN(commandList, charToWString(path.c_str()).c_str());
-      Model = Engine->AddModel(import_data);
+      Model = Engine->ModelsManager->Add(import_data);
       IsLastSuccess = true;
       PROFILE_END(commandList);
       Engine->GetDevice().CloseUploadCommandList();

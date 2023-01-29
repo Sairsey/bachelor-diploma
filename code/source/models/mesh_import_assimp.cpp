@@ -501,6 +501,213 @@ void mesh_assimp_importer::Import()
   
   ImportTreeFirstPass(scene->mRootNode);
   ImportTreeSecondPass(scene->mRootNode);
+
+  // Load keyframes
+  Result.AnimationDuration = 0;
+  if (scene->HasAnimations())
+  {
+    aiAnimation* anim = scene->mAnimations[0];
+    Result.AnimationDuration = anim->mDuration;
+
+    struct import_animation_keyframe
+    {
+      gdr::animation_keyframe Key;
+      bool IsPositionSet = false;
+      bool IsRotationSet = false;
+      bool IsScaleSet = false;
+    };
+                     // time                  // node             // keyframe
+    std::unordered_map<float, std::unordered_map<int, import_animation_keyframe>> tmpKeyframe;
+
+    // 1) Load all keyframes
+    for (int k = 0; k < (int)anim->mNumChannels; k++)
+    {
+      std::string NodeName = anim->mChannels[k]->mNodeName.C_Str();
+      gdr_index our_node_index = NONE_INDEX;
+      for (gdr_index i = 0; i < Result.HierarchyNodes.size() && our_node_index == NONE_INDEX; i++)
+        if (Result.HierarchyNodes[i].Name == NodeName && Result.HierarchyNodes[i].Type == gdr_hier_node_type::node)
+          our_node_index = i;
+
+      if (our_node_index == NONE_INDEX)
+      {
+        GDR_FAILED(L"Invalid bone name in animation. Skipping\n");
+        continue;
+      }
+      for (int i = 0; i < anim->mChannels[k]->mNumPositionKeys; i++)
+      {
+        float time = anim->mChannels[k]->mPositionKeys[i].mTime;
+        tmpKeyframe[time][our_node_index].Key.time = time;
+        tmpKeyframe[time][our_node_index].Key.pos = {
+          anim->mChannels[k]->mPositionKeys[i].mValue[0],
+          anim->mChannels[k]->mPositionKeys[i].mValue[1],
+          anim->mChannels[k]->mPositionKeys[i].mValue[2] };
+        tmpKeyframe[time][our_node_index].IsPositionSet = true;
+      }
+      for (int i = 0; i < anim->mChannels[k]->mNumRotationKeys; i++)
+      {
+        float time = anim->mChannels[k]->mRotationKeys[i].mTime;
+        tmpKeyframe[time][our_node_index].Key.time = time;
+        tmpKeyframe[time][our_node_index].Key.rotationQuat = {
+          anim->mChannels[k]->mRotationKeys[i].mValue.x,
+          anim->mChannels[k]->mRotationKeys[i].mValue.y,
+          anim->mChannels[k]->mRotationKeys[i].mValue.z,
+          anim->mChannels[k]->mRotationKeys[i].mValue.w };
+        tmpKeyframe[time][our_node_index].IsRotationSet = true;
+      }
+      for (int i = 0; i < anim->mChannels[k]->mNumScalingKeys; i++)
+      {
+        float time = anim->mChannels[k]->mScalingKeys[i].mTime;
+        tmpKeyframe[time][our_node_index].Key.time = time;
+        tmpKeyframe[time][our_node_index].Key.scale = {
+           anim->mChannels[k]->mScalingKeys[i].mValue.x,
+           anim->mChannels[k]->mScalingKeys[i].mValue.y,
+           anim->mChannels[k]->mScalingKeys[i].mValue.z };
+        tmpKeyframe[time][our_node_index].IsScaleSet = true;
+      }
+    }
+
+    // 2) get all times
+    std::vector<float> Times;
+    for (auto kv : tmpKeyframe)
+      Times.push_back(kv.first);
+
+    // 3) Fill local keyframes
+    for (int k = 0; k < (int)anim->mNumChannels; k++)
+    {
+      std::string NodeName = anim->mChannels[k]->mNodeName.C_Str();
+      gdr_index our_node_index = NONE_INDEX;
+      for (gdr_index i = 0; i < Result.HierarchyNodes.size() && our_node_index == NONE_INDEX; i++)
+        if (Result.HierarchyNodes[i].Name == NodeName && Result.HierarchyNodes[i].Type == gdr_hier_node_type::node)
+          our_node_index = i;
+
+      if (our_node_index == NONE_INDEX)
+        continue;
+
+      gdr::import_model_node &NodeToAnimate = Result.HierarchyNodes[our_node_index];
+      
+      if (NodeToAnimate.Type != gdr_hier_node_type::node)
+        continue;
+     
+      NodeToAnimate.LocalKeyframes.resize(Times.size());
+
+      for (int i = 0; i < Times.size(); i++)
+      {
+        import_animation_keyframe &LoadedKeyframe = tmpKeyframe[Times[i]][our_node_index];
+
+        // Fix using interpolation 
+        if (!LoadedKeyframe.IsPositionSet)
+        {
+          int leftIndex = i;
+          int rightIndex = i;
+          // find left node
+          while (leftIndex >= 0 && !tmpKeyframe[Times[leftIndex]][our_node_index].IsPositionSet)
+            leftIndex--;
+
+          // find right node
+          while (rightIndex < Times.size() && !tmpKeyframe[Times[rightIndex]][our_node_index].IsPositionSet)
+            rightIndex++;
+
+          if (leftIndex >= 0 && rightIndex < Times.size())
+          {
+            float alpha = (Times[i] - Times[leftIndex]) / (Times[rightIndex] - Times[leftIndex]);
+            LoadedKeyframe.Key.pos = tmpKeyframe[Times[leftIndex]][our_node_index].Key.pos * (1 - alpha) +
+              tmpKeyframe[Times[leftIndex]][our_node_index].Key.pos * alpha;
+            LoadedKeyframe.IsPositionSet = true;
+          }
+          else if (leftIndex >= 0) // if we have left -> copy it
+          {
+            LoadedKeyframe.Key.pos = tmpKeyframe[Times[leftIndex]][our_node_index].Key.pos;
+            LoadedKeyframe.IsPositionSet = true;
+          }
+          else if (rightIndex < Times.size()) // if we have right -> copy it
+          {
+            LoadedKeyframe.Key.pos = tmpKeyframe[Times[rightIndex]][our_node_index].Key.pos;
+            LoadedKeyframe.IsPositionSet = true;
+          }
+          else // if nothing -> forget about it
+          {
+            LoadedKeyframe.IsPositionSet = true;
+          }
+        }
+
+        // Fix using interpolation 
+        if (!LoadedKeyframe.IsRotationSet)
+        {
+          int leftIndex = i;
+          int rightIndex = i;
+          // find left node
+          while (leftIndex >= 0 && !tmpKeyframe[Times[leftIndex]][our_node_index].IsRotationSet)
+            leftIndex--;
+
+          // find right node
+          while (rightIndex < Times.size() && !tmpKeyframe[Times[rightIndex]][our_node_index].IsRotationSet)
+            rightIndex++;
+
+          if (leftIndex >= 0 && rightIndex < Times.size())
+          {
+            float alpha = (Times[i] - Times[leftIndex]) / (Times[rightIndex] - Times[leftIndex]);
+            LoadedKeyframe.Key.rotationQuat = tmpKeyframe[Times[leftIndex]][our_node_index].Key.rotationQuat.slerp(
+              tmpKeyframe[Times[rightIndex]][our_node_index].Key.rotationQuat, alpha);
+            LoadedKeyframe.IsRotationSet = true;
+          }
+          else if (leftIndex >= 0) // if we have left -> copy it
+          {
+            LoadedKeyframe.Key.rotationQuat = tmpKeyframe[Times[leftIndex]][our_node_index].Key.rotationQuat;
+            LoadedKeyframe.IsRotationSet = true;
+          }
+          else if (rightIndex < Times.size()) // if we have right -> copy it
+          {
+            LoadedKeyframe.Key.rotationQuat = tmpKeyframe[Times[rightIndex]][our_node_index].Key.rotationQuat;
+            LoadedKeyframe.IsRotationSet = true;
+          }
+          else // if nothing -> forget about it
+          {
+            LoadedKeyframe.IsRotationSet = true;
+          }
+        }
+
+        // Fix using interpolation 
+        if (!LoadedKeyframe.IsScaleSet)
+        {
+          int leftIndex = i;
+          int rightIndex = i;
+          // find left node
+          while (leftIndex >= 0 && !tmpKeyframe[Times[leftIndex]][our_node_index].IsScaleSet)
+            leftIndex--;
+
+          // find right node
+          while (rightIndex < Times.size() && !tmpKeyframe[Times[rightIndex]][our_node_index].IsScaleSet)
+            rightIndex++;
+
+          if (leftIndex >= 0 && rightIndex < Times.size())
+          {
+            float alpha = (Times[i] - Times[leftIndex]) / (Times[rightIndex] - Times[leftIndex]);
+            LoadedKeyframe.Key.scale = tmpKeyframe[Times[leftIndex]][our_node_index].Key.scale * (1-alpha) +
+              tmpKeyframe[Times[rightIndex]][our_node_index].Key.rotationQuat * alpha;
+            LoadedKeyframe.IsScaleSet = true;
+          }
+          else if (leftIndex >= 0) // if we have left -> copy it
+          {
+            LoadedKeyframe.Key.scale = tmpKeyframe[Times[leftIndex]][our_node_index].Key.scale;
+            LoadedKeyframe.IsScaleSet = true;
+          }
+          else if (rightIndex < Times.size()) // if we have right -> copy it
+          {
+            LoadedKeyframe.Key.scale = tmpKeyframe[Times[rightIndex]][our_node_index].Key.scale;
+            LoadedKeyframe.IsScaleSet = true;
+          }
+          else // if nothing -> forget about it
+          {
+            LoadedKeyframe.IsScaleSet = true;
+          }
+        }
+
+        // And copy
+        NodeToAnimate.LocalKeyframes[i] = LoadedKeyframe.Key;
+      }
+    }
+  }
+
   importer.FreeScene();
 
   // calculate AABB

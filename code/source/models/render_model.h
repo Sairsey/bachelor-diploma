@@ -4,6 +4,14 @@
 //project namespace
 namespace gdr
 {
+	struct animation_keyframe
+	{
+		float time = 0; 
+		mth::vec3f pos = {0, 0, 0};
+		mth::vec4f rotationQuat = {0, 0, 0, 1};
+		mth::vec3f scale = {1, 1, 1};
+	};
+
 	// Node of render mesh
 	struct render_model_node
 	{
@@ -14,6 +22,8 @@ namespace gdr
 		gdr_index ParentIndex = NONE_INDEX;
 		gdr_index ChildIndex = NONE_INDEX;
 		gdr_index NextIndex = NONE_INDEX;
+		std::vector<animation_keyframe> LocalKeyframes;
+		std::vector<animation_keyframe> GlobalKeyframes;
 
 		// Node
 		gdr_index NodeTransform = NONE_INDEX;

@@ -13,10 +13,12 @@ namespace gdr
 		UINT ParentIndex;
 		UINT ChildIndex;
 		UINT NextIndex;
-
+		
 		// Node
 		mth::matr4f LocalTransform;
 		mth::matr4f BoneOffset;
+		std::vector<gdr::animation_keyframe> GlobalKeyframes;
+		std::vector<gdr::animation_keyframe> LocalKeyframes;
 
 		// Mesh
 		std::vector<GDRVertex> Vertices;
@@ -34,6 +36,7 @@ namespace gdr
 		std::vector<std::string> TexturesPaths;       // Textures
 		std::vector<import_model_node> HierarchyNodes; // Hierarchy
 		GDRGPUObjectTransform RootTransform;          // Root transform
+		float AnimationDuration;
 
 		bool IsEmpty(void)
 		{

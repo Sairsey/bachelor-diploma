@@ -145,6 +145,8 @@ gdr_index gdr::models_manager::Add(const model_import_data& ImportData)
 			NewNode.ParentIndex = ImportData.HierarchyNodes[i].ParentIndex;
 			NewNode.ChildIndex = ImportData.HierarchyNodes[i].ChildIndex;
 			NewNode.NextIndex = ImportData.HierarchyNodes[i].NextIndex;
+			NewNode.GlobalKeyframes = ImportData.HierarchyNodes[i].GlobalKeyframes;
+			NewNode.LocalKeyframes = ImportData.HierarchyNodes[i].LocalKeyframes;
 			if (NewNode.Type == gdr_hier_node_type::node)
 			{
 				NewNode.NodeTransform = Engine->NodeTransformsSystem->Add();
@@ -239,6 +241,8 @@ void gdr::models_manager::Clone(gdr_index SrcModel, gdr_index DstModel)
 			NewNode.ParentIndex = OldNode.ParentIndex;
 			NewNode.ChildIndex = OldNode.ChildIndex;
 			NewNode.NextIndex = OldNode.NextIndex;
+			NewNode.GlobalKeyframes = OldNode.GlobalKeyframes;
+			NewNode.LocalKeyframes = OldNode.LocalKeyframes;
 			if (NewNode.Type == gdr_hier_node_type::node)
 			{
 				NewNode.NodeTransform = Engine->NodeTransformsSystem->Add();

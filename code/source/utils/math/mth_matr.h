@@ -147,6 +147,29 @@ namespace mth
                            pos.X, pos.Y, pos.Z, 1);
       }
 
+      /* matrix generator from quaternion And position
+       * ARGUMENTS: None.
+       * RETURNS: (matr4<Type>) matrix
+       */
+      inline static matr4<Type> BuildTransform(vec3<Type> scale, vec4<Type> quat, vec3<Type> pos)
+      {
+        Type angle = 2 * acos(quat.W) * MTH_R2D;
+        mth::vec3<Type> axis = {
+          quat.X / sqrt(1 - quat.W * quat.W),
+          quat.Y / sqrt(1 - quat.W * quat.W),
+          quat.Z / sqrt(1 - quat.W * quat.W)
+        };
+        axis.Normalize();
+
+        if (quat.W == 1)
+        {
+          axis = { 1, 0, 0 };
+          angle = 0;
+        }
+
+        return mth::matr4<Type>::Rotate(angle, axis)* mth::matr4<Type>::Scale(scale)* mth::matr4<Type>::Translate(pos);
+      }
+
       /* Rotation around X axis transformation matrix setup function.
        * ARGUMENTS:
        *   - rotation angle in degrees:
@@ -273,6 +296,85 @@ namespace mth
         tmpMatr.A[2][2] *= invSZ;
         
         RotationPerAxis = tmpMatr.GetEulerAngles();
+
+        Scale.X = sx;
+        Scale.Y = sy;
+        Scale.Z = sz;
+      }
+
+      /* Decompose matrix to its elements.
+       * ARGUMENTS:
+       * RETURNS:
+       *   (vec3<Type>) Translation vector.
+       *   (vec3<Type>) Rotation per each axis in degrees.
+       *   (vec3<Type>) Scale per each axis.
+       */
+      void Decompose(vec3<Type>& Translation, vec4<Type>& Quaternion, vec3<Type>& Scale)
+      {
+        Type sx = vec3<Type>(A[0][0], A[0][1], A[0][2]).Lenght();
+        Type sy = vec3<Type>(A[1][0], A[1][1], A[1][2]).Lenght();
+        Type sz = vec3<Type>(A[2][0], A[2][1], A[2][2]).Lenght();
+
+        // if determine is negative, we need to invert one scale
+        Type det = Determ();
+        if (det < 0) {
+          sx = -sx;
+        }
+
+        // Translation vector
+        Translation.X = A[3][0];
+        Translation.Y = A[3][1];
+        Translation.Z = A[3][2];
+
+        // Scale rotation part
+        Type invSX = 1.0 / sx;
+        Type invSY = 1.0 / sy;
+        Type invSZ = 1.0 / sz;
+
+        matr4<Type> tmpMatr = *this;
+
+        tmpMatr.A[0][0] *= invSX;
+        tmpMatr.A[0][1] *= invSX;
+        tmpMatr.A[0][2] *= invSX;
+
+        tmpMatr.A[1][0] *= invSY;
+        tmpMatr.A[1][1] *= invSY;
+        tmpMatr.A[1][2] *= invSY;
+
+        tmpMatr.A[2][0] *= invSZ;
+        tmpMatr.A[2][1] *= invSZ;
+        tmpMatr.A[2][2] *= invSZ;
+
+        float tr = tmpMatr.A[0][0] + tmpMatr.A[1][1] + tmpMatr.A[2][2];
+
+        if (tr > 0) {
+          float S = sqrt(tr + 1.0) * 2; // S=4*qw 
+          Quaternion.W = 0.25 * S;
+          Quaternion.X = (tmpMatr.A[1][2] - tmpMatr.A[2][1]) / S;
+          Quaternion.Y = (tmpMatr.A[2][0] - tmpMatr.A[0][2]) / S;
+          Quaternion.Z = (tmpMatr.A[0][1] - tmpMatr.A[1][0]) / S;
+        }
+        else if ((tmpMatr.A[0][0] > tmpMatr.A[1][1]) & (tmpMatr.A[0][0] > tmpMatr.A[2][2])) {
+          float S = sqrt(1.0 + tmpMatr.A[0][0] - tmpMatr.A[1][1] - tmpMatr.A[2][2]) * 2; // S=4*qx 
+          Quaternion.W = (tmpMatr.A[1][2] - tmpMatr.A[2][1]) / S;
+          Quaternion.X = 0.25 * S;
+          Quaternion.Y = (tmpMatr.A[1][0] + tmpMatr.A[0][1]) / S;
+          Quaternion.Z = (tmpMatr.A[2][0] + tmpMatr.A[0][2]) / S;
+        }
+        else if (tmpMatr.A[1][1] > tmpMatr.A[2][2]) {
+          float S = sqrt(1.0 + tmpMatr.A[1][1] - tmpMatr.A[0][0] - tmpMatr.A[2][2]) * 2; // S=4*qy
+          Quaternion.W = (tmpMatr.A[2][0] - tmpMatr.A[0][2]) / S;
+          Quaternion.X = (tmpMatr.A[1][0] + tmpMatr.A[0][1]) / S;
+          Quaternion.Y = 0.25 * S;
+          Quaternion.Z = (tmpMatr.A[2][1] + tmpMatr.A[1][2]) / S;
+        }
+        else {
+          float S = sqrt(1.0 + tmpMatr.A[2][2] - tmpMatr.A[0][0] - tmpMatr.A[1][1]) * 2; // S=4*qz
+          Quaternion.W = (tmpMatr.A[0][1] - tmpMatr.A[1][0]) / S;
+          Quaternion.X = (tmpMatr.A[2][0] + tmpMatr.A[0][2]) / S;
+          Quaternion.Y = (tmpMatr.A[2][1] + tmpMatr.A[1][2]) / S;
+          Quaternion.Z = 0.25 * S;
+        }
 
         Scale.X = sx;
         Scale.Y = sy;

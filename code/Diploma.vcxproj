@@ -78,6 +78,7 @@
     <ClInclude Include="source\units\examples\unit_pbr_metalness.h" />
     <ClInclude Include="source\units\examples\unit_pbr_specular.h" />
     <ClInclude Include="source\units\examples\unit_runtime_add_remove.h" />
+    <ClInclude Include="source\units\examples\unit_specialist.h" />
     <ClInclude Include="source\units\examples\unit_transparent.h" />
     <ClInclude Include="source\units\examples\unit_triangle.h" />
     <ClInclude Include="source\units\shooter\unit_shooter_enemy.h" />

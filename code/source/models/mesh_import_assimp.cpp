@@ -34,6 +34,8 @@ struct mesh_assimp_importer
 
   bool IsTextureTransparent(std::string path);
 
+  void CalculateGlobalKeyframes(gdr_index MyIndex);
+
   void Import();
   void ImportSplitted();
 };
@@ -484,6 +486,49 @@ bool mesh_assimp_importer::IsTextureTransparent(std::string path)
   return false;
 }
 
+void mesh_assimp_importer::CalculateGlobalKeyframes(gdr_index MyIndex)
+{
+  if (MyIndex == NONE_INDEX)
+    return;
+
+  gdr::import_model_node& Me = Result.HierarchyNodes[MyIndex];
+
+  if (Me.Type != gdr_hier_node_type::node)
+    return;
+
+  if (Me.ParentIndex == NONE_INDEX)
+  {
+    Me.GlobalKeyframes = Me.LocalKeyframes;
+  }
+  else
+  {
+    gdr::import_model_node& Parent = Result.HierarchyNodes[Me.ParentIndex];
+    Me.GlobalKeyframes.resize(Me.LocalKeyframes.size());
+    for (int i = 0; i < Parent.GlobalKeyframes.size(); i++)
+    {
+      mth::matr4f parentGlobalTransform = mth::matr4f::BuildTransform(Parent.GlobalKeyframes[i].scale, Parent.GlobalKeyframes[i].rotationQuat, Parent.GlobalKeyframes[i].pos);
+      mth::matr4f localTransform = mth::matr4f::BuildTransform(Me.LocalKeyframes[i].scale, Me.LocalKeyframes[i].rotationQuat, Me.LocalKeyframes[i].pos);
+      mth::matr4f globalTransform = localTransform * parentGlobalTransform;
+      
+      mth::vec3f GlobalPos, GlobalScale;
+      mth::vec4f GlobalRot;
+      globalTransform.Decompose(GlobalPos, GlobalRot, GlobalScale);
+
+      Me.GlobalKeyframes[i].time = Parent.GlobalKeyframes[i].time;
+      Me.GlobalKeyframes[i].pos = GlobalPos;
+      Me.GlobalKeyframes[i].rotationQuat = GlobalRot;
+      Me.GlobalKeyframes[i].scale = GlobalScale;
+    }
+  }
+
+  gdr_index NextIndex = Me.ChildIndex;
+  while (NextIndex != NONE_INDEX)
+  {
+    CalculateGlobalKeyframes(NextIndex);
+    NextIndex = Result.HierarchyNodes[NextIndex].NextIndex;
+  }
+}
+
 void mesh_assimp_importer::Import()
 {
   scene = importer.ReadFile(FileName,
@@ -502,6 +547,15 @@ void mesh_assimp_importer::Import()
   ImportTreeFirstPass(scene->mRootNode);
   ImportTreeSecondPass(scene->mRootNode);
 
+  /*
+  mth::vec3f RotateAxis = {2 * MTH_PI * rand()/ RAND_MAX, 2 * MTH_PI * rand() / RAND_MAX, 2 * MTH_PI * rand() / RAND_MAX };
+  mth::vec4f RotateQuaternion = ToQuaternion(RotateAxis);
+  mth::matr4f MatrFromAxises = mth::matr4f::RotateZ(RotateAxis.Z) * mth::matr4f::RotateY(RotateAxis.Y) * mth::matr4f::RotateX(RotateAxis.X);
+  mth::matr4f MatrFromQuaternion = mth::matr4f::FromQuaternionAndPosition(RotateQuaternion, {0, 0, 0});
+  mth::vec3f dummy, dummy2, AxisFromAxis, AxisFromQuat;
+  MatrFromAxises.Decompose(dummy, AxisFromAxis, dummy2);
+  MatrFromQuaternion.Decompose(dummy, AxisFromQuat, dummy2);
+  */
   // Load keyframes
   Result.AnimationDuration = 0;
   if (scene->HasAnimations())
@@ -530,7 +584,7 @@ void mesh_assimp_importer::Import()
 
       if (our_node_index == NONE_INDEX)
       {
-        GDR_FAILED(L"Invalid bone name in animation. Skipping\n");
+        GDR_FAILED("Invalid bone name in animation. Skipping\n");
         continue;
       }
       for (int i = 0; i < anim->mChannels[k]->mNumPositionKeys; i++)
@@ -571,6 +625,8 @@ void mesh_assimp_importer::Import()
     for (auto kv : tmpKeyframe)
       Times.push_back(kv.first);
 
+    std::sort(Times.begin(), Times.end());
+
     // 3) Fill local keyframes
     for (int k = 0; k < (int)anim->mNumChannels; k++)
     {
@@ -585,6 +641,11 @@ void mesh_assimp_importer::Import()
 
       gdr::import_model_node &NodeToAnimate = Result.HierarchyNodes[our_node_index];
       
+      mth::vec3f LocalPos, LocalScale;
+      mth::vec4f LocalRot;
+
+      NodeToAnimate.LocalTransform.Decompose(LocalPos, LocalRot, LocalScale);
+
       if (NodeToAnimate.Type != gdr_hier_node_type::node)
         continue;
      
@@ -626,6 +687,7 @@ void mesh_assimp_importer::Import()
           }
           else // if nothing -> forget about it
           {
+            LoadedKeyframe.Key.pos = LocalPos;
             LoadedKeyframe.IsPositionSet = true;
           }
         }
@@ -662,6 +724,7 @@ void mesh_assimp_importer::Import()
           }
           else // if nothing -> forget about it
           {
+            LoadedKeyframe.Key.rotationQuat = LocalRot;
             LoadedKeyframe.IsRotationSet = true;
           }
         }
@@ -698,6 +761,7 @@ void mesh_assimp_importer::Import()
           }
           else // if nothing -> forget about it
           {
+            LoadedKeyframe.Key.scale = LocalScale;
             LoadedKeyframe.IsScaleSet = true;
           }
         }
@@ -706,6 +770,29 @@ void mesh_assimp_importer::Import()
         NodeToAnimate.LocalKeyframes[i] = LoadedKeyframe.Key;
       }
     }
+
+    // 4) Fill empty keyframes
+    for (int k = 0; k < Result.HierarchyNodes.size(); k++)
+    {
+      if (Result.HierarchyNodes[k].Type == gdr_hier_node_type::node && Result.HierarchyNodes[k].LocalKeyframes.size() == 0)
+      {
+        gdr::import_model_node& NodeToAnimate = Result.HierarchyNodes[k];
+        mth::vec3f LocalPos, LocalScale;
+        mth::vec4f LocalRot;
+        NodeToAnimate.LocalTransform.Decompose(LocalPos, LocalRot, LocalScale);
+        NodeToAnimate.LocalKeyframes.resize(Times.size());
+        for (int l = 0; l < NodeToAnimate.LocalKeyframes.size(); l++)
+        {
+          NodeToAnimate.LocalKeyframes[l].time = Times[l];
+          NodeToAnimate.LocalKeyframes[l].pos = LocalPos;
+          NodeToAnimate.LocalKeyframes[l].scale = LocalScale;
+          NodeToAnimate.LocalKeyframes[l].rotationQuat = LocalRot;
+        }
+      }
+    }
+
+    // 5) Calculate Global Keyframes
+    CalculateGlobalKeyframes(0);
   }
 
   importer.FreeScene();

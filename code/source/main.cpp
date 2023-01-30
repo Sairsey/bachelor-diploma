@@ -15,7 +15,7 @@
 #include "units/examples/unit_load_any.h"
 #include "units/examples/unit_transparent.h"
 #include "units/examples/unit_model_splitted.h"
-
+#include "units/examples/unit_specialist.h"
 
 #include "units/enviroment/unit_yokohama.h"
 #include "units/enviroment/unit_alex_apt.h"
@@ -34,9 +34,9 @@
 // 16) Pass for nodes checking
 // 18) Check (and probably fix) PBR
 // 19) Need a link between Object transform and Node Transform
-// 20) I cannot add occlusion culling to models parts. So I need special import for non-skinned mesh.
 // 21) I need to add "Occluder" mesh parameter, which is a simplified version of model mesh. On Hier Depth draw only him.
 // 22) I cannot implement direct transparency, because I do not know position of my transparent mesh.
+// 23) Animations needs their own system. And calculate transforms only once
 
 
 #ifdef UNITS_ENABLED
@@ -121,11 +121,12 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
   //Engine.AddUnit(new unit_triangle());
   //Engine.AddUnit(new unit_runtime_add_remove());
   //Engine.AddUnit(new unit_pbr_metalness());
-  Engine.AddUnit(new unit_pbr_specular());
+  //Engine.AddUnit(new unit_pbr_specular());
   //Engine.AddUnit(new unit_normal_map());
   Engine.AddUnit(new unit_load_any());
   //Engine.AddUnit(new unit_transparent());
   //Engine.AddUnit(new unit_model_splitted());
+  //Engine.AddUnit(new unit_specialist());
 
 
   

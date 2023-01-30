@@ -40,14 +40,23 @@ float4 PS(VSOut input) : SV_TARGET
   GDRGPUOITNode nearest3;
   GDRGPUOITNode nearest4;
   uint arraySize = 0;
+
+  uint OITTexW, OITTexH;
+  OITTexture.GetDimensions(OITTexW, OITTexH);
+  if (screen_pos.x < 0 || screen_pos.x >= OITTexW || screen_pos.y < 0 || screen_pos.y >= OITTexH)
+    return float4(0, 0, 0, 0);
+
+  uint OITNumNodes, dummy;
+  OITPool.GetDimensions(OITNumNodes, dummy);
+
   uint n = OITTexture[screen_pos];
-  if (n == NONE_INDEX)
+  if (n == NONE_INDEX || n >= OITNumNodes)
     return float4(0, 0, 0, 0);
 
   if (globals.DebugOIT)
   {
     arraySize++;
-    while (n != NONE_INDEX)
+    while (n != NONE_INDEX && n < OITNumNodes)
     {
       arraySize++;
 
@@ -92,7 +101,7 @@ float4 PS(VSOut input) : SV_TARGET
   nearest3 = nearest;
   nearest4 = nearest;
   n = OITTexture[screen_pos];
-  while (n != NONE_INDEX)
+  while (n != NONE_INDEX && n < OITNumNodes)
   {
     if (OITPool[n].Depth < nearest.Depth)
     {

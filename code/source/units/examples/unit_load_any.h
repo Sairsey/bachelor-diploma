@@ -73,6 +73,7 @@ public:
       Engine->GetDevice().ResizeUpdateBuffer(true);
       Asked = "";
     }
+    Engine->ModelsManager->SetAnimationTime(Model, Engine->GetTime() * 1000);
     Engine->AddLambdaForIMGUI(
       [&]()
       {

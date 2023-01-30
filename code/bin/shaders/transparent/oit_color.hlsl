@@ -49,14 +49,18 @@ void PS(VSOut input)
 	if (newHeadBufferValue >= globals.MaximumOITPoolSize) { return; };
 
 	uint2 upos = uint2(input.pos.x - 0.5, input.pos.y - 0.5);
+	uint OITTexW, OITTexH;
+	OITTexture.GetDimensions(OITTexW, OITTexH);
+	if (upos.x >= 0 && upos.x < OITTexW && upos.y >= 0 && upos.y < OITTexH)
+	{
+		uint previosHeadBufferValue;
+		InterlockedExchange(OITTexture[upos], newHeadBufferValue, previosHeadBufferValue);
 
-	uint previosHeadBufferValue;
-	InterlockedExchange(OITTexture[upos], newHeadBufferValue, previosHeadBufferValue);
-
-	// add element to the beginning of the list
-	OITPool[newHeadBufferValue].NextNodeIndex = previosHeadBufferValue;
-	OITPool[newHeadBufferValue].Depth = input.pos.z;
-	OITPool[newHeadBufferValue].Color = col;
+		// add element to the beginning of the list
+		OITPool[newHeadBufferValue].NextNodeIndex = previosHeadBufferValue;
+		OITPool[newHeadBufferValue].Depth = input.pos.z;
+		OITPool[newHeadBufferValue].Color = col;
+	}
 
 	return;
 }

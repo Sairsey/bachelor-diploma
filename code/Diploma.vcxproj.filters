@@ -581,5 +581,8 @@
     <ClInclude Include="source\units\examples\unit_model_splitted.h">
       <Filter>Source Files\Units\Examples</Filter>
     </ClInclude>
+    <ClInclude Include="source\units\examples\unit_specialist.h">
+      <Filter>Source Files\Units\Examples</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

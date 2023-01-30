@@ -96,5 +96,6 @@ namespace gdr
       VOID Idle(VOID) override;
 
       models_manager *ModelsManager;
+      animation_manager *AnimationManager;
   };
 }

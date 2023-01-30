@@ -5,6 +5,7 @@ gdr::engine::engine()
 {
   render::Init(this);
   ModelsManager = new models_manager(this);
+  AnimationManager = new animation_manager(this);
 }
 
 /* Add new Unit function.
@@ -37,6 +38,7 @@ gdr::engine::~engine()
 
   Units.clear();
   delete ModelsManager;
+  delete AnimationManager;
 }
 
 /* Initialization function.

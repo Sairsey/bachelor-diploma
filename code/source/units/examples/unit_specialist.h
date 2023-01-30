@@ -8,16 +8,18 @@ private:
   std::vector<gdr_index> Models;
   gdr_index Light;
   gdr_index LightModel;
+  gdr_index Animation;
   int DeltaSize = 0;
 public:
   void Initialize(void)
   {
     SpecialistImportData = gdr::ImportModelFromAssimp("bin/models/specialist/specialist2.glb");
+    Animation = Engine->AnimationManager->Add(SpecialistImportData);
 
     auto light_import_data = gdr::ImportModelFromAssimp("bin/models/light_meshes/cone.obj");
     ID3D12GraphicsCommandList* commandList;
     Engine->GetDevice().BeginUploadCommandList(&commandList);
-    PROFILE_BEGIN(commandList, "unit_load_any Init");
+    PROFILE_BEGIN(commandList, "unit_specialist Init");
     LightModel = Engine->ModelsManager->Add(light_import_data);
     PROFILE_END(commandList);
     Engine->GetDevice().CloseUploadCommandList();
@@ -76,14 +78,11 @@ public:
         ImGui::End();
       });
 
-    mth::matr rotation = mth::matr::RotateY(Engine->GetTime() * 50.0f);
-
     if (DeltaSize > 0)
       PushBack(DeltaSize);
     else if (DeltaSize < 0)
       PopBack(-DeltaSize);
     DeltaSize = 0;
-
 
     int row = max(sqrt(Models.size()), 2);
     /* single-thread computing */
@@ -93,9 +92,9 @@ public:
       gdr_index ModelRootTransform = Engine->ModelsManager->Get(ModelIndex).Render.RootTransform;
       float dist = (Engine->ObjectTransformsSystem->Get(ModelRootTransform).maxAABB - Engine->ObjectTransformsSystem->Get(ModelRootTransform).minAABB).Lenght();
 
-      Engine->ObjectTransformsSystem->GetEditable(ModelRootTransform).Transform = rotation * mth::matr::Translate({ (i % row) * dist, 0, (i / row) * dist});
+      Engine->ObjectTransformsSystem->GetEditable(ModelRootTransform).Transform = mth::matr::Translate({ (i % row - row / 2) * dist, 0, -(i / row) * dist});
 
-      Engine->ModelsManager->SetAnimationTime(ModelIndex, Engine->GetTime() * 1000.0);
+      Engine->AnimationManager->SetAnimationTime(ModelIndex, Animation, Engine->GetTime() * 1000.0);
     }
   }
 

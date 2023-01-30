@@ -24,6 +24,7 @@
     <ClInclude Include="bin\shaders\shared\lighting_functions.h" />
     <ClInclude Include="bin\shaders\shared\normal_matrix.h" />
     <ClInclude Include="bin\shaders\shared\vertex_process.h" />
+    <ClInclude Include="source\animations\animations_manager.h" />
     <ClInclude Include="source\def.h" />
     <ClInclude Include="source\engine\eng.h" />
     <ClInclude Include="source\input\input.h" />
@@ -116,6 +117,7 @@
     <ClInclude Include="source\window\win.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="source\animations\animations_manager.cpp" />
     <ClCompile Include="source\engine\eng.cpp" />
     <ClCompile Include="source\input\input.cpp" />
     <ClCompile Include="source\main.cpp" />

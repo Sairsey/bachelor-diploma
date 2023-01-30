@@ -5,6 +5,7 @@ class unit_load_any : public gdr::unit_base
 {
 private:
   gdr_index Model = NONE_INDEX;
+  gdr_index Animation = NONE_INDEX;
   gdr_index Light;
   gdr_index LightModel;
   ImGui::FileBrowser fileDialog;
@@ -42,6 +43,7 @@ public:
     if (Model != NONE_INDEX)
     {
       Engine->ModelsManager->Remove(Model);
+      Engine->AnimationManager->Remove(Animation);
       Model = NONE_INDEX;
     }
     auto import_data = gdr::ImportModelFromAssimp(path);
@@ -56,6 +58,7 @@ public:
       Engine->GetDevice().BeginUploadCommandList(&commandList);
       PROFILE_BEGIN(commandList, charToWString(path.c_str()).c_str());
       Model = Engine->ModelsManager->Add(import_data);
+      Animation = Engine->AnimationManager->Add(import_data);
       IsLastSuccess = true;
       PROFILE_END(commandList);
       Engine->GetDevice().CloseUploadCommandList();
@@ -73,7 +76,7 @@ public:
       Engine->GetDevice().ResizeUpdateBuffer(true);
       Asked = "";
     }
-    Engine->ModelsManager->SetAnimationTime(Model, Engine->GetTime() * 1000);
+    Engine->AnimationManager->SetAnimationTime(Model, Animation, Engine->GetTime() * 1000);
     Engine->AddLambdaForIMGUI(
       [&]()
       {

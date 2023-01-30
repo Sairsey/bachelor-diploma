@@ -10,7 +10,6 @@ namespace gdr
 	{
 		std::string Name;
 		render_model Render;
-		float AnimationDuration;
 	};
 
 	class models_manager : public resource_pool_subsystem<model, 0>
@@ -30,7 +29,5 @@ namespace gdr
 
 			gdr_index Add(const model_import_data& ImportData);
 			void Clone(gdr_index SrcModel, gdr_index DstModel);
-
-			void SetAnimationTime(gdr_index ModelIndex, float time, float offset = 0, float duration = -1);
 	};
 }

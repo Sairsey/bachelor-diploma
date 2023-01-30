@@ -133,6 +133,9 @@
     <Filter Include="Source Files\Render\SubSystems\OIT">
       <UniqueIdentifier>{9524b580-a0dc-4842-998f-a153f26262b2}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Animations">
+      <UniqueIdentifier>{ea36b24d-6a3a-47c2-ad8b-77ca38234097}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\main.cpp">
@@ -290,6 +293,9 @@
     </ClCompile>
     <ClCompile Include="source\render\passes\oit_compose_pass.cpp">
       <Filter>Source Files\Render\Passes\transparency</Filter>
+    </ClCompile>
+    <ClCompile Include="source\animations\animations_manager.cpp">
+      <Filter>Source Files\Animations</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -583,6 +589,9 @@
     </ClInclude>
     <ClInclude Include="source\units\examples\unit_specialist.h">
       <Filter>Source Files\Units\Examples</Filter>
+    </ClInclude>
+    <ClInclude Include="source\animations\animations_manager.h">
+      <Filter>Source Files\Animations</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

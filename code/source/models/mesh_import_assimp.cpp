@@ -658,6 +658,7 @@ void mesh_assimp_importer::Import()
         // Fix using interpolation 
         if (!LoadedKeyframe.IsPositionSet)
         {
+          GDR_FAILED("NOT IMPLEMENTED");
           int leftIndex = i;
           int rightIndex = i;
           // find left node
@@ -695,6 +696,7 @@ void mesh_assimp_importer::Import()
         // Fix using interpolation 
         if (!LoadedKeyframe.IsRotationSet)
         {
+          GDR_FAILED("NOT IMPLEMENTED");
           int leftIndex = i;
           int rightIndex = i;
           // find left node
@@ -732,6 +734,7 @@ void mesh_assimp_importer::Import()
         // Fix using interpolation 
         if (!LoadedKeyframe.IsScaleSet)
         {
+          GDR_FAILED("NOT IMPLEMENTED");
           int leftIndex = i;
           int rightIndex = i;
           // find left node

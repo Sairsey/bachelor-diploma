@@ -36,7 +36,6 @@ gdr_index gdr::models_manager::Add(const model_import_data& ImportData)
 	model &NewModel = GetEditable(NewModelIndex);
 
 	NewModel.Name = ImportData.FileName;
-	NewModel.AnimationDuration = ImportData.AnimationDuration;
 	// Render model import
 	{
 		render_model &NewModelRender = NewModel.Render;
@@ -145,8 +144,6 @@ gdr_index gdr::models_manager::Add(const model_import_data& ImportData)
 			NewNode.ParentIndex = ImportData.HierarchyNodes[i].ParentIndex;
 			NewNode.ChildIndex = ImportData.HierarchyNodes[i].ChildIndex;
 			NewNode.NextIndex = ImportData.HierarchyNodes[i].NextIndex;
-			NewNode.GlobalKeyframes = ImportData.HierarchyNodes[i].GlobalKeyframes;
-			NewNode.LocalKeyframes = ImportData.HierarchyNodes[i].LocalKeyframes;
 			if (NewNode.Type == gdr_hier_node_type::node)
 			{
 				NewNode.NodeTransform = Engine->NodeTransformsSystem->Add();
@@ -213,7 +210,6 @@ void gdr::models_manager::Clone(gdr_index SrcModel, gdr_index DstModel)
 	model& NewModel = GetEditable(DstModel);
 
 	NewModel.Name = OldModel.Name;
-	NewModel.AnimationDuration = OldModel.AnimationDuration;
 	// Render Model Clone
 	{
 		const render_model& OldModelRender = OldModel.Render;
@@ -241,20 +237,18 @@ void gdr::models_manager::Clone(gdr_index SrcModel, gdr_index DstModel)
 			NewNode.ParentIndex = OldNode.ParentIndex;
 			NewNode.ChildIndex = OldNode.ChildIndex;
 			NewNode.NextIndex = OldNode.NextIndex;
-			NewNode.GlobalKeyframes = OldNode.GlobalKeyframes;
-			NewNode.LocalKeyframes = OldNode.LocalKeyframes;
-if (NewNode.Type == gdr_hier_node_type::node)
-{
-	NewNode.NodeTransform = Engine->NodeTransformsSystem->Add();
-}
-else if (NewNode.Type == gdr_hier_node_type::mesh)
-{
-	NewModelRender.Meshes.push_back(i);
-}
-else
-{
-	GDR_FAILED("UNKNWON NODE TYPE");
-}
+			if (NewNode.Type == gdr_hier_node_type::node)
+			{
+				NewNode.NodeTransform = Engine->NodeTransformsSystem->Add();
+			}
+			else if (NewNode.Type == gdr_hier_node_type::mesh)
+			{
+				NewModelRender.Meshes.push_back(i);
+			}
+			else
+			{
+				GDR_FAILED("UNKNWON NODE TYPE");
+			}
 		}
 
 		// Hierarchy second pass
@@ -312,64 +306,5 @@ else
 				GDR_FAILED("UNKNWON NODE TYPE");
 			}
 		}
-	}
-}
-
-void gdr::models_manager::SetAnimationTime(gdr_index ModelIndex, float time, float offset, float duration)
-{
-	if (!IsExist(ModelIndex))
-		return;
-
-	model& ModelToAnimate = GetEditable(ModelIndex);
-
-	if (ModelToAnimate.Render.GetRootNode().GlobalKeyframes.size() == 0)
-		return;
-
-	if (duration == -1)
-		duration = ModelToAnimate.AnimationDuration;
-
-	time = fmod(time, duration - offset) + offset;
-
-	{
-		render_model& RenderModel = ModelToAnimate.Render;
-
-		// find left and right keys
-		int leftIndex = 0;
-		int rightIndex = ModelToAnimate.Render.GetRootNode().GlobalKeyframes.size() - 1;
-		for (int j = 0; j < ModelToAnimate.Render.GetRootNode().GlobalKeyframes.size(); j++)
-		{
-			if (ModelToAnimate.Render.GetRootNode().GlobalKeyframes[j].time <= time)
-				leftIndex = j;
-
-			if (ModelToAnimate.Render.GetRootNode().GlobalKeyframes[j].time >= time)
-			{
-				rightIndex = j;
-				break;
-			}
-		}
-
-		float alpha = 0;
-		if (leftIndex != rightIndex)
-			alpha = (time - ModelToAnimate.Render.GetRootNode().GlobalKeyframes[leftIndex].time) /
-				(ModelToAnimate.Render.GetRootNode().GlobalKeyframes[rightIndex].time - ModelToAnimate.Render.GetRootNode().GlobalKeyframes[leftIndex].time);
-
-		for (int i = 0; i < RenderModel.Hierarchy.size(); i++)
-			if (RenderModel.Hierarchy[i].Type == gdr_hier_node_type::node)
-			{
-				render_model_node& NodeToAnimate = RenderModel.Hierarchy[i];
-				
-				mth::vec3f localPosition = NodeToAnimate.LocalKeyframes[leftIndex].pos * (1.0 - alpha) + NodeToAnimate.LocalKeyframes[rightIndex].pos * alpha;
-				mth::vec3f localScale = NodeToAnimate.LocalKeyframes[leftIndex].scale * (1.0 - alpha) + NodeToAnimate.LocalKeyframes[rightIndex].scale * alpha;
-				mth::vec4f localRotation = NodeToAnimate.LocalKeyframes[leftIndex].rotationQuat.slerp(NodeToAnimate.LocalKeyframes[rightIndex].rotationQuat, alpha);
-
-				mth::vec3f globalPosition = NodeToAnimate.GlobalKeyframes[leftIndex].pos * (1.0 - alpha) + NodeToAnimate.GlobalKeyframes[rightIndex].pos * alpha;
-				mth::vec3f globalScale = NodeToAnimate.GlobalKeyframes[leftIndex].scale * (1.0 - alpha) + NodeToAnimate.GlobalKeyframes[rightIndex].scale * alpha;
-				mth::vec4f globalRotation = NodeToAnimate.GlobalKeyframes[leftIndex].rotationQuat.slerp(NodeToAnimate.GlobalKeyframes[rightIndex].rotationQuat, alpha);
-
-				GDRGPUNodeTransform &Node = Engine->NodeTransformsSystem->GetEditable(NodeToAnimate.NodeTransform);
-				Node.LocalTransform = mth::matr4f::BuildTransform(localScale, localRotation, localPosition);
-				Node.GlobalTransform = mth::matr4f::BuildTransform(globalScale, globalRotation, globalPosition);
-				Node.IsNeedRecalc = false;
-			}
 	}
 }

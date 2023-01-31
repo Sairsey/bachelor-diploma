@@ -17,6 +17,11 @@
 #include "units/examples/unit_model_splitted.h"
 #include "units/examples/unit_specialist.h"
 
+#include "units/thriller/unit_thriller_stage.h"
+#include "units/thriller/unit_thriller_env.h"
+#include "units/thriller/unit_thriller_camera.h"
+#include "units/thriller/unit_thriller_dancers.h"
+
 #include "units/enviroment/unit_yokohama.h"
 #include "units/enviroment/unit_alex_apt.h"
 
@@ -128,11 +133,13 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
   //Engine.AddUnit(new unit_model_splitted());
   //Engine.AddUnit(new unit_specialist());
 
-
+  //Engine.AddUnit(new unit_thriller_stage());
+  //Engine.AddUnit(new unit_thriller_env());
+  //Engine.AddUnit(new unit_thriller_camera());
+  //Engine.AddUnit(new unit_thriller_dancers());
   
   //Engine.AddUnit(new unit_yokohama());
   Engine.AddUnit(new unit_alex_apt());
-
   Engine.AddUnit(new unit_control());
   
   Engine.AddUnit(new unit_frame_times());

@@ -342,6 +342,32 @@ namespace mth
       return *this;
     } /* End of 'Translate' function */
 
+    /* Move camera in world cs funciton
+     * ARGUMENTS:
+     *   - translation vector:
+     *       const vec3<Type> &Translation;
+     * RETURNS:
+     *   (cam3 &) link to this cam.
+     */
+    cam3& SetPos(const vec3<Type>& Position)
+    {
+      SetView(Position, Position + Dir, Up);
+      return *this;
+    } /* End of 'SetPos' function */
+
+    /* Move camera in world cs funciton
+     * ARGUMENTS:
+     *   - translation vector:
+     *       const vec3<Type> &Translation;
+     * RETURNS:
+     *   (cam3 &) link to this cam.
+     */
+    cam3& SetDir(const vec3<Type>& Direction)
+    {
+      SetView(Loc, Loc + Direction, Up);
+      return *this;
+    } /* End of 'SetDir' function */
+
     /* Move camera in camera cs funciton
      * ARGUMENTS:
      *   - translation vector:

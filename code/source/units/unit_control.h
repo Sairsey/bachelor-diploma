@@ -8,6 +8,9 @@ private:
   float MinCameraSpeed;
   float MaxCameraSpeed;
   float CameraSpeedStep;
+  bool SavingTrack;
+  float PrevTrackTime;
+  std::vector<mth::vec3f> Track;
 public:
   void Initialize(void);
 

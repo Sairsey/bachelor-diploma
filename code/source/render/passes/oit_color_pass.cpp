@@ -70,7 +70,7 @@ void gdr::oit_color_pass::Initialize(void)
         psoDesc.VS = CD3DX12_SHADER_BYTECODE(VertexShader);
         psoDesc.PS = CD3DX12_SHADER_BYTECODE(PixelShader);
         psoDesc.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
-        psoDesc.RasterizerState.CullMode = D3D12_CULL_MODE_NONE;
+        psoDesc.RasterizerState.CullMode = D3D12_CULL_MODE_NONE; // FRONT FOR THRILLER
         psoDesc.BlendState = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
 
         psoDesc.BlendState.RenderTarget[0].BlendEnable = TRUE;
@@ -82,7 +82,7 @@ void gdr::oit_color_pass::Initialize(void)
         psoDesc.BlendState.RenderTarget[0].BlendOpAlpha = D3D12_BLEND_OP_ADD;
 
         psoDesc.DepthStencilState.DepthEnable = TRUE;
-        psoDesc.DepthStencilState.DepthFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL;
+        psoDesc.DepthStencilState.DepthFunc = D3D12_COMPARISON_FUNC_LESS;
         psoDesc.DepthStencilState.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ZERO;
         psoDesc.DepthStencilState.StencilEnable = FALSE;
         psoDesc.SampleMask = UINT_MAX;

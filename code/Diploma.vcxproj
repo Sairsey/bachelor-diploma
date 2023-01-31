@@ -90,6 +90,10 @@
     <ClInclude Include="source\units\stats\unit_frame_times.h" />
     <ClInclude Include="source\units\stats\unit_render_params.h" />
     <ClInclude Include="source\units\stats\unit_resource_viewier.h" />
+    <ClInclude Include="source\units\thriller\unit_thriller_camera.h" />
+    <ClInclude Include="source\units\thriller\unit_thriller_dancers.h" />
+    <ClInclude Include="source\units\thriller\unit_thriller_env.h" />
+    <ClInclude Include="source\units\thriller\unit_thriller_stage.h" />
     <ClInclude Include="source\units\unit_base.h" />
     <ClInclude Include="source\units\unit_bathroom.h" />
     <ClInclude Include="source\units\unit_bread.h" />

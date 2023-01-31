@@ -136,6 +136,9 @@
     <Filter Include="Source Files\Animations">
       <UniqueIdentifier>{ea36b24d-6a3a-47c2-ad8b-77ca38234097}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Units\Thriller">
+      <UniqueIdentifier>{78d2a9de-cf47-4c16-be27-aafede837288}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\main.cpp">
@@ -592,6 +595,18 @@
     </ClInclude>
     <ClInclude Include="source\animations\animations_manager.h">
       <Filter>Source Files\Animations</Filter>
+    </ClInclude>
+    <ClInclude Include="source\units\thriller\unit_thriller_stage.h">
+      <Filter>Source Files\Units\Thriller</Filter>
+    </ClInclude>
+    <ClInclude Include="source\units\thriller\unit_thriller_env.h">
+      <Filter>Source Files\Units\Thriller</Filter>
+    </ClInclude>
+    <ClInclude Include="source\units\thriller\unit_thriller_camera.h">
+      <Filter>Source Files\Units\Thriller</Filter>
+    </ClInclude>
+    <ClInclude Include="source\units\thriller\unit_thriller_dancers.h">
+      <Filter>Source Files\Units\Thriller</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

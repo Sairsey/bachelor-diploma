@@ -45,7 +45,7 @@ namespace gdr
   {
     size_t MaxTextureAmount = 256;   // maximum amount of textures allocated
     size_t MaxCubeTextureAmount = 6; // maximum amount of cube textures allocated
-    size_t MaxTransparentDepth = 10; // maximum amount of transparent pixels in case we draw full screen
+    size_t MaxTransparentDepth = 10; // 32 for thirller maximum amount of transparent pixels in case we draw full screen
   };
   /* Render representation class */
   class render

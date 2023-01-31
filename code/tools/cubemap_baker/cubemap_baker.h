@@ -342,7 +342,7 @@ class cubemap_baker
       for (int i = 0; i < 6; i++)
       {
         printf("Side %i\n", i);
-        float_image side = GetIrradianceSide(dirs[i], rights[i], 32, 32, 400, 100);
+        float_image side = GetIrradianceSide(dirs[i], rights[i], 32, 32, 1024, 1024);
         side.Save(OutputPath + "\\irradiance" + names[i]);
       }
     }

@@ -10,7 +10,8 @@ void unit_control::Initialize(void)
   CameraSpeedStep = 10;
 
   CameraSpeed = MinCameraSpeed;
-  
+  SavingTrack = false;
+  PrevTrackTime = 0;
   #if 0
   DefaultLight = Engine->LightsSystem->AddDirectionalLightSource();
   Engine->LightsSystem->GetTransform(DefaultLight).transform = mth::matr4f::RotateX(30);
@@ -79,4 +80,36 @@ void unit_control::Response(void)
     if (CameraSpeed > MaxCameraSpeed)
       CameraSpeed = MinCameraSpeed;
   }
+
+  if (SavingTrack && (Engine->GetTime() - PrevTrackTime) > 1.0f)
+  {
+    Track.push_back(Engine->PlayerCamera.GetPos());
+    PrevTrackTime = Engine->GetTime();
+  }
+  
+  Engine->AddLambdaForIMGUI([&]() {
+    ImGui::Begin("Track Recorder", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
+    if (!SavingTrack)
+    {
+      if (ImGui::Button("Start"))
+        SavingTrack = true;
+    }
+    else
+    {
+      if (ImGui::Button("Stop"))
+      {
+        SavingTrack = false;
+        FILE *dump;
+        fopen_s(&dump, "Camera_log.txt", "wt");
+        fprintf_s(dump,"%d\n", Track.size());
+        for (int i = 0; i < Track.size(); i++)
+          fprintf_s(dump, "%g %g %g\n", Track[i].X, Track[i].Y, Track[i].Z);
+        fclose(dump);
+        Track.clear();
+      }
+    }
+    
+    
+    ImGui::End();
+    });
 }

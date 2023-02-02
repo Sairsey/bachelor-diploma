@@ -213,10 +213,10 @@
     <ClCompile Include="source\units\unit_cubemap_capture.cpp">
       <Filter>Source Files\Units</Filter>
     </ClCompile>
-    <ClCompile Include="source\physics\physics.cpp">
+    <ClCompile Include="source\physics\physics_manager.cpp">
       <Filter>Source Files\Physics</Filter>
     </ClCompile>
-    <ClCompile Include="source\physics\physics_object.cpp">
+    <ClCompile Include="source\physics\physics_body.cpp">
       <Filter>Source Files\Physics</Filter>
     </ClCompile>
     <ClCompile Include="source\units\unit_physic_spheres.cpp">
@@ -401,7 +401,7 @@
     <ClInclude Include="source\units\unit_cubemap_capture.h">
       <Filter>Source Files\Units</Filter>
     </ClInclude>
-    <ClInclude Include="source\physics\physics.h">
+    <ClInclude Include="source\physics\physics_manager.h">
       <Filter>Source Files\Physics</Filter>
     </ClInclude>
     <ClInclude Include="source\units\unit_physic_spheres.h">
@@ -607,6 +607,9 @@
     </ClInclude>
     <ClInclude Include="source\units\thriller\unit_thriller_dancers.h">
       <Filter>Source Files\Units\Thriller</Filter>
+    </ClInclude>
+    <ClInclude Include="source\units\examples\unit_pit.h">
+      <Filter>Source Files\Units\Examples</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

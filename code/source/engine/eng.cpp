@@ -6,6 +6,7 @@ gdr::engine::engine()
   render::Init(this);
   ModelsManager = new models_manager(this);
   AnimationManager = new animation_manager(this);
+  PhysicsManager = new physics_manager(this);
 }
 
 /* Add new Unit function.
@@ -39,6 +40,7 @@ gdr::engine::~engine()
   Units.clear();
   delete ModelsManager;
   delete AnimationManager;
+  delete PhysicsManager;
 }
 
 /* Initialization function.
@@ -112,7 +114,7 @@ VOID gdr::engine::Timer(VOID)
   input_support::UpdateWheel(win::MouseWheel);
 
   // update Physics
-  //physics::Update(GetDeltaTime());
+  PhysicsManager->Update(GetTime());
 
   // update Units
   if (ToAdd.size())

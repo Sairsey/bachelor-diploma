@@ -1,9 +1,8 @@
 #include "p_header.h"
-#if PHYSICS_ENABLED
 
-void gdr::gdr_physics_object::ToggleRotation(void)
+void gdr::physic_body::ToggleRotation(void)
 {
-  physx::PxRigidDynamic *BodyReal = Body->is<physx::PxRigidDynamic>();
+  physx::PxRigidDynamic *BodyReal = PhysxBody->is<physx::PxRigidDynamic>();
   IsLockedRotation = !IsLockedRotation;
   physx::PxRigidDynamicLockFlags flags;
   if (IsLockedRotation)
@@ -12,9 +11,10 @@ void gdr::gdr_physics_object::ToggleRotation(void)
     flags = flags | physx::PxRigidDynamicLockFlag::eLOCK_LINEAR_X | physx::PxRigidDynamicLockFlag::eLOCK_LINEAR_Y | physx::PxRigidDynamicLockFlag::eLOCK_LINEAR_Z;
   BodyReal->setRigidDynamicLockFlags(flags);
 }
-void gdr::gdr_physics_object::ToggleTranslation(void)
+
+void gdr::physic_body::ToggleTranslation(void)
 {
-  physx::PxRigidDynamic *BodyReal = Body->is<physx::PxRigidDynamic>();
+  physx::PxRigidDynamic *BodyReal = PhysxBody->is<physx::PxRigidDynamic>();
   IsLockedTranslation = !IsLockedTranslation;
   physx::PxRigidDynamicLockFlags flags;
   if (IsLockedRotation)
@@ -23,25 +23,23 @@ void gdr::gdr_physics_object::ToggleTranslation(void)
     flags = flags | physx::PxRigidDynamicLockFlag::eLOCK_LINEAR_X | physx::PxRigidDynamicLockFlag::eLOCK_LINEAR_Y | physx::PxRigidDynamicLockFlag::eLOCK_LINEAR_Z;
   BodyReal->setRigidDynamicLockFlags(flags);
 }
-mth::matr4f gdr::gdr_physics_object::GetTransform(void)
+
+mth::matr4f gdr::physic_body::GetTransform(void) const
 {
-  physx::PxTransform Trans = Body->getGlobalPose();
-  physx::PxMat44 Matr(Trans);
-  mth::matr4f ans;
-  std::copy(&Matr[0][0], &Matr[3][3], &ans[0][0]);
-  ans[3][3] = 1;
-  return ans;
+  return mth::matr4f::BuildTransform({1, 1, 1}, InterpolatedRot, InterpolatedPos);
 }
-void gdr::gdr_physics_object::ChangeDensity(float Density)
+
+void gdr::physic_body::ChangeDensity(float Density)
 {
   if (IsStatic)
     return;
-  physx::PxRigidBody *BodyReal = Body->is<physx::PxRigidBody>();
+  physx::PxRigidBody *BodyReal = PhysxBody->is<physx::PxRigidBody>();
   physx::PxRigidBodyExt::updateMassAndInertia(*BodyReal, Density);
 }
-void gdr::gdr_physics_object::ChangeRotation(mth::matr4f Rot)
+
+void gdr::physic_body::ChangeRotation(mth::matr4f Rot)
 {
-  physx::PxRigidBody *BodyReal = Body->is<physx::PxRigidBody>();
+  physx::PxRigidBody *BodyReal = PhysxBody->is<physx::PxRigidBody>();
   physx::PxVec3 Pos = BodyReal->getGlobalPose().p;
   float arr[9] = {
       Rot[0][0], Rot[0][1], Rot[0][2],
@@ -50,11 +48,12 @@ void gdr::gdr_physics_object::ChangeRotation(mth::matr4f Rot)
   physx::PxMat33 RotM = physx::PxMat33(arr);
   BodyReal->setGlobalPose(physx::PxTransform(Pos, physx::PxQuat(RotM)));
 }
-void gdr::gdr_physics_object::AddVelocity(float3 Vel)
+
+void gdr::physic_body::AddVelocity(mth::vec3f Vel)
 {
   if (IsStatic)
     return;
-  physx::PxRigidBody *BodyReal = Body->is<physx::PxRigidBody>();
+  physx::PxRigidBody *BodyReal = PhysxBody->is<physx::PxRigidBody>();
   
   physx::PxVec3 OldVelocity = BodyReal->getLinearVelocity();
   OldVelocity[0] += Vel[0];
@@ -64,11 +63,11 @@ void gdr::gdr_physics_object::AddVelocity(float3 Vel)
   return;
 }
 
-void gdr::gdr_physics_object::SetVelocity(float3 Vel)
+void gdr::physic_body::SetVelocity(mth::vec3f Vel)
 {
   if (IsStatic)
     return;
-  physx::PxRigidBody* BodyReal = Body->is<physx::PxRigidBody>();
+  physx::PxRigidBody* BodyReal = PhysxBody->is<physx::PxRigidBody>();
 
   physx::PxVec3 OldVelocity = BodyReal->getLinearVelocity();
   OldVelocity[0] = Vel[0];
@@ -78,69 +77,55 @@ void gdr::gdr_physics_object::SetVelocity(float3 Vel)
   return;
 }
 
-float3 gdr::gdr_physics_object::GetVelocity(void)
+float3 gdr::physic_body::GetVelocity(void) const
 {
   if (IsStatic)
     return {0, 0, 0};
-  physx::PxRigidBody* BodyReal = Body->is<physx::PxRigidBody>();
+  physx::PxRigidBody* BodyReal = PhysxBody->is<physx::PxRigidBody>();
   physx::PxVec3 OldVelocity = BodyReal->getLinearVelocity();
   return {OldVelocity[0], OldVelocity[1], OldVelocity[2]};
 }
 
-void gdr::gdr_physics_object::SetPos(float3 Pos)
+void gdr::physic_body::SetPos(mth::vec3f Pos)
 {
   if (IsStatic)
     return;
-  physx::PxRigidBody *BodyReal = Body->is<physx::PxRigidBody>();
+  physx::PxRigidBody *BodyReal = PhysxBody->is<physx::PxRigidBody>();
   physx::PxQuat Rot = BodyReal->getGlobalPose().q;
   BodyReal->setGlobalPose(physx::PxTransform({ Pos[0], Pos[1], Pos[2] }, Rot));
   return;
 }
-void gdr::gdr_physics_object::Stop(void)
+void gdr::physic_body::Stop(void)
 {
   if (IsStatic)
     return;
 
-  physx::PxRigidBody *BodyReal = Body->is<physx::PxRigidBody>();
+  physx::PxRigidBody *BodyReal = PhysxBody->is<physx::PxRigidBody>();
   BodyReal->setLinearVelocity(physx::PxVec3(0));
   BodyReal->setAngularVelocity(physx::PxVec3(0));
   return;
 }
 
-void gdr::gdr_physics_object::SetCollideCallback(std::function<void(gdr_physics_object* Me, gdr_physics_object* Other)> Callback)
+void gdr::physic_body::SetCollideCallback(std::function<void(gdr_index Me, gdr_index Other)> Callback)
 {
   CollideCallback = Callback;
   return;
 }
 
-double gdr::gdr_physics_object::GetMass(void)
+double gdr::physic_body::GetMass(void) const
 {
   if (IsStatic)
     return 0;
 
-  physx::PxRigidBody *BodyReal = Body->is<physx::PxRigidBody>();
+  physx::PxRigidBody *BodyReal = PhysxBody->is<physx::PxRigidBody>();
   return BodyReal->getMass();
 }
 
-void gdr::gdr_physics_object::ApplyForce(float3 F)
+void gdr::physic_body::ApplyForce(mth::vec3f F)
 {
   if (IsStatic)
     return;
-  physx::PxRigidBody *BodyReal = Body->is<physx::PxRigidBody>();
+  physx::PxRigidBody *BodyReal = PhysxBody->is<physx::PxRigidBody>();
   BodyReal->addForce({ F[0], F[1], F[2] });
   return;
 }
-gdr::gdr_physics_object::~gdr_physics_object()
-{
-    if (Body != nullptr)
-    {
-        Body->release();
-        Body = nullptr;
-    }
-    if (Material != nullptr)
-    {
-        Material->release();
-        Material = nullptr;
-    }
-}
-#endif

@@ -72,12 +72,12 @@
 
 #endif
 
-#include "physics/physics.h"
-
 #include "animations/animations_manager.h"
 
 #include "models/render_model.h"
 #include "models/model_import_data.h"
+
+#include "physics/physics_manager.h"
 #include "models/models_manager.h"
 
 #include "timer/timer.h"

@@ -13,9 +13,6 @@ namespace gdr
     public render,
     public timer_support,
     public input_support
-#if PHYSICS_ENABLED
-    public physics,
-#endif
   {
     private:
       /* Vector of all units we will draw */
@@ -97,5 +94,6 @@ namespace gdr
 
       models_manager *ModelsManager;
       animation_manager *AnimationManager;
+      physics_manager *PhysicsManager;
   };
 }

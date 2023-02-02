@@ -31,7 +31,7 @@
     <ClInclude Include="source\models\model_import_data.h" />
     <ClInclude Include="source\models\models_manager.h" />
     <ClInclude Include="source\models\render_model.h" />
-    <ClInclude Include="source\physics\physics.h" />
+    <ClInclude Include="source\physics\physics_manager.h" />
     <ClInclude Include="source\p_header.h" />
     <ClInclude Include="source\render\device\command_queue.h" />
     <ClInclude Include="source\render\device\d3dinclude.h" />
@@ -78,6 +78,7 @@
     <ClInclude Include="source\units\examples\unit_occlusion_cull.h" />
     <ClInclude Include="source\units\examples\unit_pbr_metalness.h" />
     <ClInclude Include="source\units\examples\unit_pbr_specular.h" />
+    <ClInclude Include="source\units\examples\unit_pit.h" />
     <ClInclude Include="source\units\examples\unit_runtime_add_remove.h" />
     <ClInclude Include="source\units\examples\unit_specialist.h" />
     <ClInclude Include="source\units\examples\unit_transparent.h" />
@@ -127,8 +128,8 @@
     <ClCompile Include="source\main.cpp" />
     <ClCompile Include="source\models\mesh_import_assimp.cpp" />
     <ClCompile Include="source\models\models_manager.cpp" />
-    <ClCompile Include="source\physics\physics.cpp" />
-    <ClCompile Include="source\physics\physics_object.cpp" />
+    <ClCompile Include="source\physics\physics_manager.cpp" />
+    <ClCompile Include="source\physics\physics_body.cpp" />
     <ClCompile Include="source\p_header.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>

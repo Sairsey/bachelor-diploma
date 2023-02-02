@@ -16,6 +16,7 @@
 #include "units/examples/unit_transparent.h"
 #include "units/examples/unit_model_splitted.h"
 #include "units/examples/unit_specialist.h"
+#include "units/examples/unit_pit.h"
 
 #include "units/thriller/unit_thriller_stage.h"
 #include "units/thriller/unit_thriller_env.h"
@@ -128,10 +129,11 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
   //Engine.AddUnit(new unit_pbr_metalness());
   //Engine.AddUnit(new unit_pbr_specular());
   //Engine.AddUnit(new unit_normal_map());
-  Engine.AddUnit(new unit_load_any());
+  //Engine.AddUnit(new unit_load_any());
   //Engine.AddUnit(new unit_transparent());
   //Engine.AddUnit(new unit_model_splitted());
   //Engine.AddUnit(new unit_specialist());
+  Engine.AddUnit(new unit_pit());
 
   //Engine.AddUnit(new unit_thriller_stage());
   //Engine.AddUnit(new unit_thriller_env());

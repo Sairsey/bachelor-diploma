@@ -4,8 +4,8 @@
 class unit_shooter_first_person : public gdr::unit_base
 {
 private:
-  gdr::gdr_index PlayerCapsule;
-  gdr::gdr_light PlayerLight;
+  gdr_index PlayerCapsule;
+  gdr_index PlayerLight;
   double PlayerHeight = 1.83; // meters
   double PlayerWidth = 0.25 * PlayerHeight; // Leonardo da Vinchi said so
   double PlayerSpeed = 5; // m/s
@@ -14,17 +14,20 @@ private:
 public:
   void Initialize(void)
   {
-    PlayerCapsule = Engine->NewDynamicCapsule(gdr::physic_material(), PlayerWidth / 2.0, (PlayerHeight - PlayerWidth) / 2.0, "PlayerCapsule");
+
+    PlayerCapsule = Engine->PhysicsManager->AddDynamicCapsule(PlayerWidth / 2.0, (PlayerHeight - PlayerWidth) / 2.0);
     // disable rotation
-    Engine->GetPhysObject(PlayerCapsule).ToggleRotation();
-    Engine->GetPhysObject(PlayerCapsule).SetPos({0, 1, 0});
-    Engine->GetPhysObject(PlayerCapsule).SetCollideCallback([&](gdr::gdr_physics_object* Me, gdr::gdr_physics_object* Other)
+    Engine->PhysicsManager->GetEditable(PlayerCapsule).ToggleRotation();
+    Engine->PhysicsManager->GetEditable(PlayerCapsule).SetPos({ 0, 1, 0 });
+    Engine->PhysicsManager->GetEditable(PlayerCapsule).SetCollideCallback([&](gdr_index Me, gdr_index Other)
       {
         IsJump = false;
       });
     Engine->PlayerCamera.SetView({0, 1, 0}, {1, 1, 0}, {0, 1, 0});
-    PlayerLight = Engine->LightsSystem->AddPointLightSource();
-    Engine->LightsSystem->GetLight(PlayerLight).Color = {1, 0.5, 0};
+    PlayerLight = Engine->LightsSystem->Add();
+    Engine->LightsSystem->GetEditable(PlayerLight).LightSourceType = LIGHT_SOURCE_TYPE_POINT;
+    Engine->LightsSystem->GetEditable(PlayerLight).Color = { 1, 0.5, 0 };
+    Engine->LightsSystem->GetEditable(PlayerLight).ObjectTransformIndex = Engine->ObjectTransformsSystem->Add();
   }
 
   void Response(void)
@@ -65,14 +68,14 @@ public:
     }
 
     // Set Camera position according to Capsule position
-    mth::matr4f capsuleTransform = Engine->GetPhysObject(PlayerCapsule).GetTransform();
+    mth::matr4f capsuleTransform = Engine->PhysicsManager->Get(PlayerCapsule).GetTransform();
 
     mth::vec3f capsulePosition = mth::vec3f(capsuleTransform[3][0], capsuleTransform[3][1], capsuleTransform[3][2]);
     mth::vec3f cameraPosition = capsulePosition + mth::vec3f(0, 1, 0) * PlayerHeight / 2.0;
 
     Engine->PlayerCamera.SetView(cameraPosition, cameraPosition + Engine->PlayerCamera.GetDir(), {0, 1, 0});
-
-    Engine->LightsSystem->GetTransform(PlayerLight).transform = mth::matr4f::Translate(cameraPosition);
+    
+    Engine->ObjectTransformsSystem->GetEditable(Engine->LightsSystem->Get(PlayerLight).ObjectTransformIndex).Transform = mth::matr4f::Translate(cameraPosition);
 
     // MOVING
     if (!Engine->GetPause())
@@ -103,14 +106,14 @@ public:
         Engine->PlayerCamera.GetDir() * VelocityInCameraCS.Z;
 
       Velocity.Y = 0;
-      mth::vec3f PreviousVelocity = Engine->GetPhysObject(PlayerCapsule).GetVelocity();
+      mth::vec3f PreviousVelocity = Engine->PhysicsManager->Get(PlayerCapsule).GetVelocity();
       PreviousVelocity.X = Velocity.X;
       PreviousVelocity.Z = Velocity.Z;
-      Engine->GetPhysObject(PlayerCapsule).SetVelocity(PreviousVelocity);
+      Engine->PhysicsManager->GetEditable(PlayerCapsule).SetVelocity(PreviousVelocity);
  
       if (Engine->KeysClick[VK_SPACE] && !IsJump)
       {
-        Engine->GetPhysObject(PlayerCapsule).AddVelocity({ 0, float(JumpPower), 0 });
+        Engine->PhysicsManager->GetEditable(PlayerCapsule).AddVelocity({ 0, float(JumpPower), 0 });
         IsJump = true;
       }
     }

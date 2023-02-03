@@ -277,10 +277,11 @@ gdr_index gdr::physics_manager::AddDynamicMesh(model_import_data ImportModel, ph
     convexDesc.points.stride = sizeof(mth::vec3f);
     convexDesc.points.data = Vert.data();
     convexDesc.flags = physx::PxConvexFlag::eCOMPUTE_CONVEX;
-    convexDesc.vertexLimit = 255;
+    convexDesc.vertexLimit = 64;
 
     physx::PxDefaultMemoryOutputStream buf;
-    GDR_ASSERT(Cooking->cookConvexMesh(convexDesc, buf));
+    bool status = Cooking->cookConvexMesh(convexDesc, buf);
+    GDR_ASSERT(status);
     physx::PxDefaultMemoryInputData readBuffer(buf.getData(), buf.getSize());
     physx::PxConvexMesh* Model = PhysX->createConvexMesh(readBuffer);
 

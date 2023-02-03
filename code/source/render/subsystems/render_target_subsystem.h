@@ -76,6 +76,9 @@ namespace gdr
     // Function to store display buffer rtv
     void SaveDisplayBuffer(D3D12_CPU_DESCRIPTOR_HANDLE *RTView, ID3D12Resource *Resource);
 
+    // Function to get Render target view of Specific frame
+    D3D12_CPU_DESCRIPTOR_HANDLE GetHDRRenderTargetView() { return RenderTargetViews[(int)render_targets_enum::target_frame_hdr]; }
+
     // Function to store Depth stencil buffer 
     void SaveDepthStencilBuffer(D3D12_CPU_DESCRIPTOR_HANDLE* DSView);
 

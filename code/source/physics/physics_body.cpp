@@ -24,6 +24,17 @@ void gdr::physic_body::ToggleTranslation(void)
   BodyReal->setRigidDynamicLockFlags(flags);
 }
 
+gdr_index gdr::physic_body::GetParent() const
+{
+    return ParentIndex;
+}
+
+void gdr::physic_body::SetParent(gdr_index index)
+{
+    ParentIndex = index;
+}
+
+
 mth::matr4f gdr::physic_body::GetTransform(void) const
 {
   return mth::matr4f::BuildTransform({1, 1, 1}, InterpolatedRot, InterpolatedPos);

@@ -861,7 +861,7 @@ void mesh_assimp_importer::ImportSplitted()
       gdr::import_model_node &MeshNode = Result.HierarchyNodes[mesh_index];
       gdr::model_import_data tmp;
       tmp.FileName = MeshNode.Name + "__"  + Result.FileName;
-
+      
       // Calculate RootTransform
       {
         tmp.RootTransform.Transform = mth::matr::Identity();
@@ -887,6 +887,9 @@ void mesh_assimp_importer::ImportSplitted()
       {
         tmp.HierarchyNodes.push_back(MeshNode);
         tmp.HierarchyNodes[0].BonesMapping.clear();
+        tmp.HierarchyNodes[0].ParentIndex = NONE_INDEX;
+        tmp.HierarchyNodes[0].ChildIndex = NONE_INDEX;
+        tmp.HierarchyNodes[0].NextIndex = NONE_INDEX;
       }
 
       // Copy Materials

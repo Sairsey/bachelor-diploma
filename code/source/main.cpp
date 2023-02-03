@@ -23,6 +23,11 @@
 #include "units/thriller/unit_thriller_camera.h"
 #include "units/thriller/unit_thriller_dancers.h"
 
+#include "units/shooter/unit_shooter_first_person.h"
+#include "units/shooter/unit_shooter_enviroment.h"
+#include "units/shooter/unit_shooter_enemy_spawner.h"
+#include "units/shooter/unit_shooter_gun.h"
+
 #include "units/enviroment/unit_yokohama.h"
 #include "units/enviroment/unit_alex_apt.h"
 
@@ -56,11 +61,6 @@
 #include "units/unit_physic_spheres.h"
 
 #include "units/unit_pit.h"
-
-#include "units/shooter/unit_shooter_first_person.h"
-#include "units/shooter/unit_shooter_enviroment.h"
-#include "units/shooter/unit_shooter_enemy_spawner.h"
-#include "units/shooter/unit_shooter_gun.h"
 
 enum EXAMPLE
 {
@@ -133,16 +133,21 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
   //Engine.AddUnit(new unit_transparent());
   //Engine.AddUnit(new unit_model_splitted());
   //Engine.AddUnit(new unit_specialist());
-  Engine.AddUnit(new unit_pit());
+  //Engine.AddUnit(new unit_pit());
 
   //Engine.AddUnit(new unit_thriller_stage());
   //Engine.AddUnit(new unit_thriller_env());
   //Engine.AddUnit(new unit_thriller_camera());
   //Engine.AddUnit(new unit_thriller_dancers());
+
+  Engine.AddUnit(new unit_shooter_first_person());
+  Engine.AddUnit(new unit_shooter_enviroment());
+  Engine.AddUnit(new unit_shooter_enemy_spawner(1000));
+  Engine.AddUnit(new unit_shooter_gun());
   
   //Engine.AddUnit(new unit_yokohama());
-  Engine.AddUnit(new unit_alex_apt());
-  Engine.AddUnit(new unit_control());
+  //Engine.AddUnit(new unit_alex_apt());
+  //Engine.AddUnit(new unit_control());
   
   Engine.AddUnit(new unit_frame_times());
   Engine.AddUnit(new unit_resource_viewier());

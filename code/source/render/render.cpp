@@ -309,11 +309,13 @@ void gdr::render::DrawFrame(void)
       Rect.right = Engine->Width;
 
       pCommandList->ClearRenderTargetView(rtvHandle, clearColor, 1, &Rect);
+      pCommandList->ClearRenderTargetView(RenderTargetsSystem->GetHDRRenderTargetView(), clearColor, 1, &Rect);
       pCommandList->ClearDepthStencilView(dsvHandle, D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.0f, 0, 1, &Rect);
 
       // Save DepthStencil and Display buffers
       RenderTargetsSystem->SaveDepthStencilBuffer(&dsvHandle);
       RenderTargetsSystem->SaveDisplayBuffer(&rtvHandle, pBackBuffer);
+      
 
       ID3D12DescriptorHeap* pDescriptorHeaps = GetDevice().GetDescriptorHeap();
       pCommandList->SetDescriptorHeaps(1, &pDescriptorHeaps);

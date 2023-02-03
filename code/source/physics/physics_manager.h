@@ -47,10 +47,12 @@ namespace gdr
       bool IsStatic = false;
       bool IsLockedTranslation = false;
       bool IsLockedRotation = false;
+      gdr_index ParentIndex = NONE_INDEX;
     public:
-
       mth::matr4f GetTransform(void) const;
       double GetMass(void) const;
+      gdr_index GetParent() const;
+      void SetParent(gdr_index index);
       void SetVelocity(mth::vec3f Vel);
       void AddVelocity(mth::vec3f Vel);
       mth::vec3f GetVelocity(void) const;

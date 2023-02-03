@@ -4,8 +4,8 @@
 class unit_shooter_enemy : public gdr::unit_base
 {
 private:
-  gdr::gdr_index EnemyCapsule;
-  gdr::gdr_index EnemyModel;
+  gdr_index EnemyCapsule;
+  gdr_index EnemyModel;
   double EnemyHeight = 4.1; // meters
   double EnemyWidth = 2;
   double EnemySpeed = 2; // m/s
@@ -24,14 +24,23 @@ public:
 
   void Initialize()
   {
-    EnemyModel = Engine->ObjectSystem->CreateObjectFromFile("bin/models/shrek/shrek.glb");
-    EnemyCapsule = Engine->NewDynamicCapsule(gdr::physic_material(), EnemyWidth / 2.0, (EnemyHeight - EnemyWidth) / 2.0, "EnemyCapsule");
+    static auto shrek_model = gdr::ImportModelFromAssimp("bin/models/shrek/shrek.glb");
+
+    ID3D12GraphicsCommandList* commandList;
+    Engine->GetDevice().BeginUploadCommandList(&commandList);
+    EnemyModel = Engine->ModelsManager->Add(shrek_model);
+    Engine->GetDevice().CloseUploadCommandList();
+    
+    EnemyCapsule = Engine->PhysicsManager->AddDynamicCapsule(EnemyWidth / 2.0, (EnemyHeight - EnemyWidth) / 2.0);
     // disable rotation
-    Engine->GetPhysObject(EnemyCapsule).ToggleRotation();
-    Engine->GetPhysObject(EnemyCapsule).SetPos(EnemyPos + mth::vec3f(0, EnemyHeight / 2.0, 0));
-    Engine->GetPhysObject(EnemyCapsule).SetCollideCallback([&](gdr::gdr_physics_object* Me, gdr::gdr_physics_object* Other)
+    Engine->PhysicsManager->GetEditable(EnemyCapsule).SetParent(EnemyModel);
+    Engine->PhysicsManager->GetEditable(EnemyCapsule).ToggleRotation();
+    Engine->PhysicsManager->GetEditable(EnemyCapsule).SetPos(EnemyPos + mth::vec3f(0, EnemyHeight / 2.0, 0));
+    Engine->PhysicsManager->GetEditable(EnemyCapsule).SetCollideCallback([&](gdr_index Me, gdr_index Other)
     {
-        if (Other && Other->Name == "Bullet")
+        if (Engine->PhysicsManager->IsExist(Other) && 
+            Engine->ModelsManager->IsExist(Engine->PhysicsManager->Get(Other).GetParent()) && 
+            Engine->ModelsManager->Get(Engine->PhysicsManager->Get(Other).GetParent()).Name == "Bullet")
         {
           IsDeadAnimation = true;
           IsDeadAnimationStart = Engine->GetTime();
@@ -42,7 +51,7 @@ public:
   void Reinitialize(mth::vec3f Position)
   {
     EnemyPos = Position;
-    Engine->GetPhysObject(EnemyCapsule).SetPos(EnemyPos + mth::vec3f(0, EnemyHeight / 2.0, 0));
+    Engine->PhysicsManager->GetEditable(EnemyCapsule).SetPos(EnemyPos + mth::vec3f(0, EnemyHeight / 2.0, 0));
     IsDead = false;
     IsDeadAnimation = false;
     IsDeadAnimationStart = false;
@@ -56,7 +65,7 @@ public:
   void Response(void)
   {
     // Get current EnemyPosition
-    mth::matr4f capsuleTransform = Engine->GetPhysObject(EnemyCapsule).GetTransform();
+    mth::matr4f capsuleTransform = Engine->PhysicsManager->Get(EnemyCapsule).GetTransform();
     EnemyPos = mth::vec3f(capsuleTransform[3][0], capsuleTransform[3][1], capsuleTransform[3][2]);
     if (!IsDead && !IsDeadAnimation)
     {
@@ -68,17 +77,18 @@ public:
       Velocity.Y = 0;
 
       // Move Phys Object
-      Engine->GetPhysObject(EnemyCapsule).SetVelocity(Velocity * EnemySpeed + mth::vec3f( 0, Engine->GetPhysObject(EnemyCapsule).GetVelocity().Y, 0 ));
+      Engine->PhysicsManager->GetEditable(EnemyCapsule).SetVelocity(Velocity * EnemySpeed + mth::vec3f( 0, Engine->PhysicsManager->Get(EnemyCapsule).GetVelocity().Y, 0 ));
 
       float sina = -Velocity.X;
       float cosa = Velocity.Z;
 
       // Rotate and Move Model
-      Engine->ObjectSystem->NodesPool[EnemyModel].GetTransformEditable() = 
-        mth::matr4f::RotateY(atan2f(sina, cosa) * MTH_R2D) *
-        mth::matr4f::Scale(0.05) *
-        mth::matr4f::Translate(EnemyPos - mth::vec3f( 0, EnemyHeight / 2.0, 0 ));
-      SavedTransform = Engine->ObjectSystem->NodesPool[EnemyModel].GetTransformEditable();
+
+      SavedTransform = mth::matr4f::RotateY(atan2f(sina, cosa) * MTH_R2D) *
+          mth::matr4f::Scale(0.05) *
+          mth::matr4f::Translate(EnemyPos - mth::vec3f(0, EnemyHeight / 2.0, 0));
+
+      Engine->ObjectTransformsSystem->GetEditable(Engine->ModelsManager->Get(EnemyModel).Render.RootTransform).Transform = SavedTransform;
     }
     else if (IsDeadAnimation && !IsDead)
     {
@@ -89,11 +99,11 @@ public:
         IsDead = true;
         IsDeadAnimation = false;
       }
-      Engine->GetPhysObject(EnemyCapsule).SetPos({0, -10, 0});
-      Engine->ObjectSystem->NodesPool[EnemyModel].GetTransformEditable() = mth::matr4f::Scale(1 - x) * SavedTransform;
+      Engine->PhysicsManager->GetEditable(EnemyCapsule).SetPos({0, -10, 0});
+      Engine->ObjectTransformsSystem->GetEditable(Engine->ModelsManager->Get(EnemyModel).Render.RootTransform).Transform = mth::matr4f::Scale(1 - x) * SavedTransform;
     }
     else
-      Engine->ObjectSystem->NodesPool[EnemyModel].GetTransformEditable() = mth::matr4f::Scale(0);
+        Engine->ObjectTransformsSystem->GetEditable(Engine->ModelsManager->Get(EnemyModel).Render.RootTransform).Transform = mth::matr4f::Scale(0);
     
   }
 

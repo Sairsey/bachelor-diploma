@@ -4,10 +4,10 @@
 class unit_shooter_gun : public gdr::unit_base
 {
 private:
-  gdr::gdr_index PlayerGun;
+  gdr_index PlayerGun;
 
-  gdr::gdr_index Bullet;
-  gdr::gdr_index BulletSphere;
+  gdr_index Bullet;
+  gdr_index BulletSphere;
   float BulletSpeed = 100; // m/s
   float BulletSize = 0.1; // m
   const float ReloadTime = 0.2; // s
@@ -18,10 +18,20 @@ private:
 public:
   void Initialize(void)
   {
-    PlayerGun = Engine->ObjectSystem->CreateObjectFromFile("bin/models/gun/gun.glb");
-    Bullet = Engine->ObjectSystem->CreateObjectFromFile("bin/models/pbr_sphere/pbr_sphere.glb");
-    BulletSphere = Engine->NewDynamicSphere(gdr::physic_material(), BulletSize, "Bullet");
-    Engine->GetPhysObject(BulletSphere).SetCollideCallback([&](gdr::gdr_physics_object* Me, gdr::gdr_physics_object* Other)
+    auto gun_model = gdr::ImportModelFromAssimp("bin/models/gun/gun.glb");
+    auto bullet_model = gdr::ImportModelFromAssimp("bin/models/pbr_sphere/pbr_sphere.glb");
+
+    ID3D12GraphicsCommandList* commandList;
+    Engine->GetDevice().BeginUploadCommandList(&commandList);
+    PlayerGun = Engine->ModelsManager->Add(gun_model);
+    Bullet = Engine->ModelsManager->Add(bullet_model);
+    Engine->GetDevice().CloseUploadCommandList();
+
+    Engine->ModelsManager->GetEditable(Bullet).Name = "Bullet";
+
+    BulletSphere = Engine->PhysicsManager->AddDynamicSphere(BulletSize);
+    Engine->PhysicsManager->GetEditable(BulletSphere).SetParent(Bullet);
+    Engine->PhysicsManager->GetEditable(BulletSphere).SetCollideCallback([&](gdr_index Me, gdr_index Other)
       {
         BulletFly = false;
       });
@@ -38,11 +48,11 @@ public:
       if (Engine->KeysClick[VK_LBUTTON])
       {
         LastShotTime = Engine->GetTime();
-        Engine->GetPhysObject(BulletSphere).SetPos(Engine->PlayerCamera.GetPos() 
+        Engine->PhysicsManager->GetEditable(BulletSphere).SetPos(Engine->PlayerCamera.GetPos() 
           + Engine->PlayerCamera.GetDir() * BulletOffset * 2.0
           - Engine->PlayerCamera.GetUp() * BulletOffset / 4.0
           + Engine->PlayerCamera.GetRight() * BulletOffset / 4.0);
-        Engine->GetPhysObject(BulletSphere).SetVelocity(Engine->PlayerCamera.GetDir() * BulletSpeed);
+        Engine->PhysicsManager->GetEditable(BulletSphere).SetVelocity(Engine->PlayerCamera.GetDir() * BulletSpeed);
         BulletFly = true;
       }
     }
@@ -53,7 +63,7 @@ public:
     rotation[3][2] = 0;
     rotation.Transpose();
 
-    Engine->ObjectSystem->NodesPool[PlayerGun].GetTransformEditable() =
+    Engine->ObjectTransformsSystem->GetEditable(Engine->ModelsManager->Get(PlayerGun).Render.RootTransform).Transform =
       mth::matr4f::Scale(0.1) *
       mth::matr4f::RotateZ(-70) *
       rotation *
@@ -66,12 +76,14 @@ public:
     // Update bullet
     if (BulletFly)
     {
-      Engine->ObjectSystem->NodesPool[Bullet].GetTransformEditable() = mth::matr4f::Scale(BulletSize) * Engine->GetPhysObject(BulletSphere).GetTransform();
+      Engine->ObjectTransformsSystem->GetEditable(Engine->ModelsManager->Get(Bullet).Render.RootTransform).Transform = 
+        mth::matr4f::Scale(BulletSize) *
+        Engine->PhysicsManager->Get(BulletSphere).GetTransform();
     }
     else
     {
-      Engine->ObjectSystem->NodesPool[Bullet].GetTransformEditable() = mth::matr4f::Scale(0);
-      Engine->GetPhysObject(BulletSphere).SetPos({0, 1000, 0});
+      Engine->ObjectTransformsSystem->GetEditable(Engine->ModelsManager->Get(Bullet).Render.RootTransform).Transform = mth::matr4f::Scale(0);
+      Engine->PhysicsManager->GetEditable(BulletSphere).SetPos({0, 1000, 0});
     }
   }
 

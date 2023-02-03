@@ -5,7 +5,7 @@ class ContactReportCallback;
 
 namespace gdr
 {
-  const double PHYSICS_TICK = 1 / 60.0;
+  const float PHYSICS_TICK = 1 / 30.0;
   struct physic_material
   {
     float StaticFriction;
@@ -74,7 +74,6 @@ namespace gdr
 
       physx::PxFoundation* Foundation;                     // SDK
       physx::PxPhysics* PhysX;                             // Physics repr
-      physx::PxCudaContextManager* CudaContextManager;     // Cuda manager for GPU acceleration
       physx::PxDefaultCpuDispatcher* Dispatcher;           // Dispathcer to calculate physics
       physx::PxCooking* Cooking;                           // Cooker
 
@@ -87,13 +86,8 @@ namespace gdr
 
       std::vector<physic_body> ToDelete;
 
-      float CurrentSimulationTime = 0;
-      float NextNextSimulationTime = 0; // we are simulating it now 
-      float NextSimulationTime = 0;    // Simulated already
-      float PrevSimulationTime = 0;    // Simulated already
-
-
-      float ThrottleTime = 0;
+      float SimulationDeltaTime = 0;
+      bool IsThrottle;
     public:
       physics_manager(engine* Eng);
 
@@ -108,7 +102,7 @@ namespace gdr
       gdr_index AddDynamicMesh(model_import_data ImportModel, physic_material Material = physic_material());
       gdr_index AddStaticMesh(model_import_data ImportModel, physic_material Material = physic_material());
       bool Raycast(mth::vec3f Org, mth::vec3f Dir, float MaxLength, std::vector<gdr::ray_intersect> &Output);
-      void Update(float Time);
+      void Update(float DeltaTime);
 
       ~physics_manager();
   };

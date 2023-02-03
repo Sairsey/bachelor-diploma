@@ -114,7 +114,7 @@ VOID gdr::engine::Timer(VOID)
   input_support::UpdateWheel(win::MouseWheel);
 
   // update Physics
-  PhysicsManager->Update(GetTime());
+  PhysicsManager->Update(GetDeltaTime());
 
   // update Units
   if (ToAdd.size())

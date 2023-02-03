@@ -25,7 +25,7 @@
 #define MTH_R2D   57.2957795130823208767f
 
 
-#define clamp(s, in, ax) ((s) < (in) ? (in) : (s) > (ax) ? (ax) : (s))
+//#define clamp(s, in, ax) ((s) < (in) ? (in) : (s) > (ax) ? (ax) : (s))
 
 /* Math namespace */
 namespace mth

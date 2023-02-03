@@ -42,6 +42,18 @@ namespace gdr
 		{
 			return FileName == "";
 		}
+
+		mth::matr4f GetTransform(gdr_index node_index)
+		{
+			gdr_index parentNode = HierarchyNodes[node_index].ParentIndex;
+			mth::matr4f transform = mth::matr4f::Identity();
+			while (parentNode != NONE_INDEX)
+			{
+				transform = transform * HierarchyNodes[parentNode].LocalTransform;
+				parentNode = HierarchyNodes[parentNode].ParentIndex;
+			}
+			return transform;
+		}
 	};
 
 	model_import_data ImportModelFromAssimp(std::string filename);

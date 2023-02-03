@@ -125,10 +125,6 @@ gdr::physics_manager::physics_manager(engine * Eng) : resource_pool_subsystem(En
   //Init Cooking
   Cooking = PxCreateCooking(PX_PHYSICS_VERSION, *Foundation, PhysX->getTolerancesScale());
 
-  // Add Cuda support
-  physx::PxCudaContextManagerDesc cudaContextManagerDesc;
-  CudaContextManager = PxCreateCudaContextManager(*Foundation, cudaContextManagerDesc, PxGetProfilerCallback());
-
   // Descript Scene
   physx::PxSceneDesc sceneDesc(PhysX->getTolerancesScale());
 
@@ -140,11 +136,9 @@ gdr::physics_manager::physics_manager(engine * Eng) : resource_pool_subsystem(En
   Dispatcher = physx::PxDefaultCpuDispatcherCreate(processor_count > 1 ? processor_count - 2 : 1);
   sceneDesc.cpuDispatcher = Dispatcher;
   sceneDesc.filterShader = physx::PxDefaultSimulationFilterShader;
-  sceneDesc.cudaContextManager = CudaContextManager;
-
-  sceneDesc.flags |= physx::PxSceneFlag::eENABLE_GPU_DYNAMICS;
+  
   sceneDesc.flags |= physx::PxSceneFlag::eENABLE_PCM;
-  sceneDesc.broadPhaseType = physx::PxBroadPhaseType::eGPU;
+  sceneDesc.broadPhaseType = physx::PxBroadPhaseType::eSAP;
   sceneDesc.filterShader = contactReportFilterShader;
   sceneDesc.simulationEventCallback = &gContactReportCallback;
 
@@ -167,6 +161,7 @@ gdr::physics_manager::physics_manager(engine * Eng) : resource_pool_subsystem(En
 
   Material->release();
   resource_pool_subsystem::Add(); // Add one for ground plane
+  Scene->simulate(PHYSICS_TICK);
 }
 
 gdr_index gdr::physics_manager::AddDynamicSphere(float Radius, gdr::physic_material Material)
@@ -218,10 +213,12 @@ gdr_index gdr::physics_manager::AddStaticMesh(model_import_data ImportModel, phy
       const unsigned CutSize = 65536;
       unsigned  CutCount = ((unsigned)MeshNode.Indices.size() / 3 + CutSize - 1) / CutSize;
 
+      mth::matr4f myTransform = ImportModel.GetTransform(node_index);
+
       std::vector<mth::vec3f> Vert;
       Vert.resize(MeshNode.Vertices.size());
       for (int i = 0; i < Vert.size(); i++)
-        Vert[i] = MeshNode.Vertices[i].Pos;
+        Vert[i] = MeshNode.Vertices[i].Pos * myTransform;
 
       for (unsigned i = 0; i < CutCount; i++)
       {
@@ -268,8 +265,10 @@ gdr_index gdr::physics_manager::AddDynamicMesh(model_import_data ImportModel, ph
       size_t StartIndex = Vert.size();
       Vert.resize(Vert.size() + ImportModel.HierarchyNodes[node_index].Vertices.size());
       
+      mth::matr4f myTransform = ImportModel.GetTransform(node_index);
+
       for (size_t i = StartIndex; i < Vert.size(); i++)
-        Vert[i] = ImportModel.HierarchyNodes[node_index].Vertices[i - StartIndex].Pos;
+        Vert[i] = ImportModel.HierarchyNodes[node_index].Vertices[i - StartIndex].Pos * myTransform;
     }
 
   {
@@ -277,8 +276,8 @@ gdr_index gdr::physics_manager::AddDynamicMesh(model_import_data ImportModel, ph
     convexDesc.points.count = Vert.size();
     convexDesc.points.stride = sizeof(mth::vec3f);
     convexDesc.points.data = Vert.data();
-    convexDesc.flags = physx::PxConvexFlag::eCOMPUTE_CONVEX | physx::PxConvexFlag::eGPU_COMPATIBLE;
-    convexDesc.vertexLimit = 64;
+    convexDesc.flags = physx::PxConvexFlag::eCOMPUTE_CONVEX;
+    convexDesc.vertexLimit = 255;
 
     physx::PxDefaultMemoryOutputStream buf;
     GDR_ASSERT(Cooking->cookConvexMesh(convexDesc, buf));
@@ -305,85 +304,55 @@ void gdr::physics_manager::BeforeRemoveJob(gdr_index index)
   }
 }
 
-void gdr::physics_manager::Update(float Time)
+void gdr::physics_manager::Update(float DeltaTime)
 {
-  float DeltaTime = Time - CurrentSimulationTime;
-  CurrentSimulationTime = Time;
+  SimulationDeltaTime += DeltaTime;
 
-  if (NextSimulationTime == 0 && PrevSimulationTime == 0)
+  if (!IsThrottle && SimulationDeltaTime > 3 * PHYSICS_TICK)
   {
-    PrevSimulationTime = CurrentSimulationTime;
-    Scene->simulate(PHYSICS_TICK);
-    Scene->fetchResults(true);
-    NextSimulationTime = PrevSimulationTime + PHYSICS_TICK;
+      OutputDebugStringA("PHYSICS_DELTA_TIME IS TOO BIG. ENGINE PAUSED\n");
+      IsThrottle = true;
+  }
+
+  Engine->SetPhysPause(IsThrottle);
+
+  if ((IsThrottle || SimulationDeltaTime > PHYSICS_TICK) && Scene->fetchResults(false))
+  {
+    Engine->SetPause(false);
+    PROFILE_CPU_BEGIN("Physics next frame");
+    // delete objects then we are not simulating
+    for (const auto& i : ToDelete)
+    {
+      i.PhysxBody->release();
+      i.PhysxMaterial->release();
+    }
+    ToDelete.clear();
+
+    SimulationDeltaTime -= PHYSICS_TICK;
+    SimulationDeltaTime = max(SimulationDeltaTime, 0);
+    if (SimulationDeltaTime == 0)
+        IsThrottle = false;
+
+    {
+        PROFILE_CPU_BEGIN("Simulate");
+        Scene->simulate(PHYSICS_TICK);
+        PROFILE_CPU_END();
+    }
 
     for (gdr_index i = 1; i < AllocatedSize(); i++)
       if (IsExist(i))
       {
         physx::PxTransform Trans = Get(i).PhysxBody->getGlobalPose();
-        GetEditable(i).PrevTickPos = { Trans.p.x, Trans.p.y, Trans.p.z };
-        GetEditable(i).PrevTickRot = { Trans.q.x, Trans.q.y, Trans.q.z, Trans.q.w };
+        GetEditable(i).PrevTickPos = Get(i).IsCreated ? mth::vec3f{ Trans.p.x, Trans.p.y, Trans.p.z } : Get(i).NextTickPos;
+        GetEditable(i).PrevTickRot = Get(i).IsCreated ? mth::vec4f{ Trans.q.x, Trans.q.y, Trans.q.z, Trans.q.w } : Get(i).NextTickRot;
         GetEditable(i).NextTickPos = { Trans.p.x, Trans.p.y, Trans.p.z };
         GetEditable(i).NextTickRot = { Trans.q.x, Trans.q.y, Trans.q.z, Trans.q.w };
+        GetEditable(i).IsCreated = false;
       }
-    Scene->simulate(PHYSICS_TICK);
-    NextNextSimulationTime = NextSimulationTime + PHYSICS_TICK;
+    PROFILE_CPU_END();
   }
 
-  if (CurrentSimulationTime > NextSimulationTime)
-  {
-    // if this check are happened -> we should 
-    if (!Scene->checkResults(false))
-    {
-      ThrottleTime += DeltaTime;
-      if (ThrottleTime > 0.33)
-      {
-        NextNextSimulationTime += NextSimulationTime - CurrentSimulationTime;
-        NextSimulationTime = CurrentSimulationTime;
-      }
-    }
-    else
-    {
-      PROFILE_CPU_BEGIN("Physics next frame");
-      Scene->fetchResults(true);
-
-      if (ThrottleTime)
-      {
-        std::string Msg;
-        Msg = "Physics throttled ";
-        Msg += std::to_string(ThrottleTime);
-        Msg += "s\n";
-        OutputDebugStringA(Msg.c_str());
-      }
-
-      // delete objects then we are not simulating
-      for (const auto& i : ToDelete)
-      {
-        i.PhysxBody->release();
-        i.PhysxMaterial->release();
-      }
-      ToDelete.clear();
-
-      PrevSimulationTime = NextSimulationTime;
-      NextSimulationTime = NextNextSimulationTime;
-      NextNextSimulationTime = NextSimulationTime + PHYSICS_TICK + ThrottleTime;
-      Scene->simulate(NextNextSimulationTime - NextSimulationTime);
-      ThrottleTime = 0;
-      for (gdr_index i = 1; i < AllocatedSize(); i++)
-        if (IsExist(i))
-        {
-          physx::PxTransform Trans = Get(i).PhysxBody->getGlobalPose();
-          GetEditable(i).PrevTickPos = Get(i).IsCreated ? mth::vec3f{ Trans.p.x, Trans.p.y, Trans.p.z } : Get(i).NextTickPos;
-          GetEditable(i).PrevTickRot = Get(i).IsCreated ? mth::vec4f{ Trans.q.x, Trans.q.y, Trans.q.z, Trans.q.w } : Get(i).NextTickRot;
-          GetEditable(i).NextTickPos = { Trans.p.x, Trans.p.y, Trans.p.z };
-          GetEditable(i).NextTickRot = { Trans.q.x, Trans.q.y, Trans.q.z, Trans.q.w };
-          GetEditable(i).IsCreated = false;
-        }
-      PROFILE_CPU_END();
-    }
-  }
-
-  float interpolParam = (CurrentSimulationTime - PrevSimulationTime) / (NextSimulationTime - PrevSimulationTime);
+  float interpolParam = (SimulationDeltaTime) / (PHYSICS_TICK);
 
   interpolParam = max(0, min(1, interpolParam));
 

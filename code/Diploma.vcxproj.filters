@@ -611,5 +611,8 @@
     <ClInclude Include="source\units\examples\unit_pit.h">
       <Filter>Source Files\Units\Examples</Filter>
     </ClInclude>
+    <ClInclude Include="source\units\examples\unit_choose.h">
+      <Filter>Source Files\Units\Examples</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

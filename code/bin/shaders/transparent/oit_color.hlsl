@@ -35,8 +35,14 @@ VSOut VS(VSIn input)
 }
 
 [earlydepthstencil]
-void PS(VSOut input)
+void PS(VSOut input, bool IsFrontFace : SV_IsFrontFace)
 {
+	if (indices.ObjectParamsMask & OBJECT_PARAMETER_FRONT_FACE_CULL && IsFrontFace)
+		return;
+
+	if (indices.ObjectParamsMask & OBJECT_PARAMETER_BACK_FACE_CULL && !IsFrontFace)
+		return;
+
 	float3 normal = CalculateNormal(input.normal.xyz, input.tangent.xyz, input.uv, indices.ObjectMaterialIndex);
 
 	float depthSquared = dot(globals.CameraPos - input.worldPos.xyz, globals.CameraPos - input.worldPos.xyz);

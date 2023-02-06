@@ -69,6 +69,7 @@
     <ClInclude Include="source\timer\timer.h" />
     <ClInclude Include="source\units\enviroment\unit_alex_apt.h" />
     <ClInclude Include="source\units\enviroment\unit_yokohama.h" />
+    <ClInclude Include="source\units\examples\unit_choose.h" />
     <ClInclude Include="source\units\examples\unit_frustum_cull.h" />
     <ClInclude Include="source\units\examples\unit_light_example.h" />
     <ClInclude Include="source\units\examples\unit_load_any.h" />

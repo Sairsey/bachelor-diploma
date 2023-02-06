@@ -2,6 +2,7 @@
 
 gdr::animation_manager::animation_manager(engine* Eng) : resource_pool_subsystem(Eng), Engine(Eng)
 {
+	SavedAnimation = NONE_INDEX;
 }
 
 void gdr::animation_manager::BeforeRemoveJob(gdr_index index)

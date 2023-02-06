@@ -389,6 +389,11 @@ bool gdr::physics_manager::Raycast(mth::vec3f Org, mth::vec3f Dir, float MaxLeng
         Objects.push_back(A);
       }
   }
+  std::sort(Objects.begin(), Objects.end(), [](const gdr::ray_intersect& a, const gdr::ray_intersect& b)
+      {
+          return a.Distance < b.Distance;
+      });
+  Output = Objects;
   return status;
 }
 

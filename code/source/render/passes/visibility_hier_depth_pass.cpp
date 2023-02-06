@@ -4,6 +4,7 @@ void gdr::visibility_hier_depth_pass::Initialize(void)
 {
   // 1) Compile our shader
   Render->GetDevice().CompileShader(_T("bin/shaders/visibility/depth_draw.hlsl"), {}, shader_stage::Vertex, &VertexShader);
+  Render->GetDevice().CompileShader(_T("bin/shaders/visibility/depth_draw.hlsl"), {}, shader_stage::Pixel, &PixelShader);
   Render->GetDevice().CompileShader(_T("bin/shaders/shared/mip_generate.hlsl"), {}, shader_stage::Compute, &ComputeShader);
 
   // 2) Create root signature for draw depth
@@ -31,6 +32,7 @@ void gdr::visibility_hier_depth_pass::Initialize(void)
     psoDesc.InputLayout = { defaultInputElementLayout, _countof(defaultInputElementLayout) };
     psoDesc.pRootSignature = RootSignature;
     psoDesc.VS = CD3DX12_SHADER_BYTECODE(VertexShader);
+    psoDesc.PS = CD3DX12_SHADER_BYTECODE(PixelShader);
     psoDesc.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
     psoDesc.RasterizerState.CullMode = D3D12_CULL_MODE_NONE;
     psoDesc.BlendState = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
@@ -281,5 +283,6 @@ gdr::visibility_hier_depth_pass::~visibility_hier_depth_pass(void)
   RootSignature->Release();
   PSO->Release();
   VertexShader->Release();
+  PixelShader->Release();
   CommandSignature->Release();
 }

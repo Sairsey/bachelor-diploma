@@ -283,6 +283,8 @@ struct GDRGPUMaterial
 
 // Some Object params
 #define OBJECT_PARAMETER_TRANSPARENT 0x1
+#define OBJECT_PARAMETER_FRONT_FACE_CULL 0x2
+#define OBJECT_PARAMETER_BACK_FACE_CULL 0x4
 
 /// <summary>
 /// Object system

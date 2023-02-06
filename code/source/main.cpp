@@ -17,6 +17,7 @@
 #include "units/examples/unit_model_splitted.h"
 #include "units/examples/unit_specialist.h"
 #include "units/examples/unit_pit.h"
+#include "units/examples/unit_choose.h"
 
 #include "units/thriller/unit_thriller_stage.h"
 #include "units/thriller/unit_thriller_env.h"
@@ -133,22 +134,24 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
   //Engine.AddUnit(new unit_transparent());
   //Engine.AddUnit(new unit_model_splitted());
   //Engine.AddUnit(new unit_specialist());
-  //Engine.AddUnit(new unit_pit());
-
+  Engine.AddUnit(new unit_pit());
+  
   //Engine.AddUnit(new unit_thriller_stage());
   //Engine.AddUnit(new unit_thriller_env());
   //Engine.AddUnit(new unit_thriller_camera());
   //Engine.AddUnit(new unit_thriller_dancers());
-
+  /*
   Engine.AddUnit(new unit_shooter_first_person());
   Engine.AddUnit(new unit_shooter_enviroment());
   Engine.AddUnit(new unit_shooter_enemy_spawner(1000));
   Engine.AddUnit(new unit_shooter_gun());
-  
+  */
   //Engine.AddUnit(new unit_yokohama());
-  //Engine.AddUnit(new unit_alex_apt());
-  //Engine.AddUnit(new unit_control());
+  Engine.AddUnit(new unit_alex_apt());
+  Engine.AddUnit(new unit_control());
   
+  Engine.AddUnit(new unit_choose());
+
   Engine.AddUnit(new unit_frame_times());
   Engine.AddUnit(new unit_resource_viewier());
   Engine.AddUnit(new unit_render_params());

@@ -160,6 +160,26 @@ namespace mth
       return MATRICES<Type>::MatrVP;
     } /* End of 'GetVP' function */
 
+    /* Camera view proj matrix get function.
+     * ARGUMENTS: None.
+     * RETURNS:
+     *   (matr4<Type> &) link to VP martix.
+     */
+    const matr4<Type>& GetView(void)
+    {
+        return MATRICES<Type>::MatrView;
+    } /* End of 'GetVP' function */
+
+    /* Camera view proj matrix get function.
+     * ARGUMENTS: None.
+     * RETURNS:
+     *   (matr4<Type> &) link to VP martix.
+     */
+    const matr4<Type>& GetProj(void)
+    {
+        return MATRICES<Type>::MatrProj;
+    } /* End of 'GetVP' function */
+
     /* Camera position get function.
      * ARGUMENTS: None.
      * RETURNS:

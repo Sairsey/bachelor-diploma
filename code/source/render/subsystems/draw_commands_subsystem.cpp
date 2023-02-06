@@ -177,15 +177,21 @@ gdr_index gdr::draw_commands_subsystem::Add(gdr_index geometryIndex, gdr_index t
   Render->BoneMappingSystem->IncreaseReferenceCount(boneMappingIndex);
   Render->GeometrySystem->IncreaseReferenceCount(geometryIndex);
 
-  DrawCommand.VertexBuffer = Render->GeometrySystem->Get(geometryIndex).VertexBufferView;
-  DrawCommand.IndexBuffer = Render->GeometrySystem->Get(geometryIndex).IndexBufferView;
-
-  DrawCommand.DrawArguments.IndexCountPerInstance = Render->GeometrySystem->Get(geometryIndex).IndexCount;
+  if (geometryIndex != NONE_INDEX)
+  {
+      DrawCommand.VertexBuffer = Render->GeometrySystem->Get(geometryIndex).VertexBufferView;
+      DrawCommand.IndexBuffer = Render->GeometrySystem->Get(geometryIndex).IndexBufferView;
+      DrawCommand.DrawArguments.IndexCountPerInstance = Render->GeometrySystem->Get(geometryIndex).IndexCount;
+      DrawCommand.IsExist = true;
+  }
+  else
+  {
+      DrawCommand.IsExist = false;
+  }
   DrawCommand.DrawArguments.InstanceCount = 1;
   DrawCommand.DrawArguments.BaseVertexLocation = 0;
   DrawCommand.DrawArguments.StartIndexLocation = 0;
   DrawCommand.DrawArguments.StartInstanceLocation = 0;
-  DrawCommand.IsExist = true;
 
   return Result;
 }

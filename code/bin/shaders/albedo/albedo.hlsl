@@ -32,9 +32,15 @@ VSOut VS(VSIn input)
 	return output;
 }
 
-[earlydepthstencil]
-float4 PS(VSOut input) : SV_TARGET
+
+float4 PS(VSOut input, bool IsFrontFace : SV_IsFrontFace) : SV_TARGET
 {
+	if (indices.ObjectParamsMask & OBJECT_PARAMETER_FRONT_FACE_CULL && IsFrontFace)
+		discard;
+
+	if (indices.ObjectParamsMask & OBJECT_PARAMETER_BACK_FACE_CULL && !IsFrontFace)
+		discard;
+	
 	float3 normal = CalculateNormal(input.normal.xyz, input.tangent.xyz, input.uv, indices.ObjectMaterialIndex);
 
 	float4 col = Shade(input.worldPos, normal, input.uv, indices.ObjectMaterialIndex);

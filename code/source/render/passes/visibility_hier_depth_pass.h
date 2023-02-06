@@ -9,6 +9,7 @@ namespace gdr
   {
   private:
     ID3DBlob* VertexShader;  // Only vertex shader used to draw
+    ID3DBlob* PixelShader;  // Only vertex shader used to draw
     ID3DBlob* ComputeShader; // Compute Shader to calc Mips
 
     // Root signature

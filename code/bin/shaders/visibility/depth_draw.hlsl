@@ -20,3 +20,13 @@ VSOut VS(VSIn input)
 	VSOut output = ProcessVSIn(input);
 	return output;
 }
+
+void PS(VSOut output, bool IsFrontFace : SV_IsFrontFace)
+{
+	if (indices.ObjectParamsMask & OBJECT_PARAMETER_FRONT_FACE_CULL && IsFrontFace)
+		discard;
+
+	if (indices.ObjectParamsMask & OBJECT_PARAMETER_BACK_FACE_CULL && !IsFrontFace)
+		discard;
+	return;
+}

@@ -23,6 +23,7 @@ public:
       {
         IsJump = false;
       });
+    Engine->PhysicsManager->GetEditable(PlayerCapsule).ChangeDensity(200);
     Engine->PlayerCamera.SetView({0, 1, 0}, {1, 1, 0}, {0, 1, 0});
     PlayerLight = Engine->LightsSystem->Add();
     Engine->LightsSystem->GetEditable(PlayerLight).LightSourceType = LIGHT_SOURCE_TYPE_POINT;
@@ -106,15 +107,24 @@ public:
         Engine->PlayerCamera.GetDir() * VelocityInCameraCS.Z;
 
       Velocity.Y = 0;
-      mth::vec3f PreviousVelocity = Engine->PhysicsManager->Get(PlayerCapsule).GetVelocity();
-      PreviousVelocity.X = Velocity.X;
-      PreviousVelocity.Z = Velocity.Z;
-      Engine->PhysicsManager->GetEditable(PlayerCapsule).SetVelocity(PreviousVelocity);
- 
-      if (Engine->KeysClick[VK_SPACE] && !IsJump)
+
+      static float DeltaTime = 0;
+
+      DeltaTime += Engine->GetDeltaTime();
+
+      if (DeltaTime >= gdr::PHYSICS_TICK)
       {
-        Engine->PhysicsManager->GetEditable(PlayerCapsule).AddVelocity({ 0, float(JumpPower), 0 });
-        IsJump = true;
+        DeltaTime -= gdr::PHYSICS_TICK;
+        mth::vec3f PreviousVelocity = Engine->PhysicsManager->Get(PlayerCapsule).GetVel();
+        PreviousVelocity.X = Velocity.X;
+        PreviousVelocity.Z = Velocity.Z;
+        Engine->PhysicsManager->GetEditable(PlayerCapsule).SetVel(PreviousVelocity);
+ 
+        if (Engine->Keys[VK_SPACE] && !IsJump)
+        {
+           Engine->PhysicsManager->GetEditable(PlayerCapsule).AddVel({ 0, sqrtf(2 * 9.81 * 1), 0});
+          IsJump = true;
+        }
       }
     }
   }

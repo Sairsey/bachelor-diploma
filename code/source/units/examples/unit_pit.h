@@ -79,7 +79,7 @@ public:
               Engine->GetDevice().CloseUploadCommandList();
               SpheresPhysic.push_back(Engine->PhysicsManager->AddDynamicSphere(1.0f));
               Engine->PhysicsManager->GetEditable(SpheresPhysic[SpheresPhysic.size() - 1]).SetPos({ 2.0f * rand() / RAND_MAX - 1.f, 2.f * float(i) + 20.f, 2.0f * rand() / RAND_MAX - 1.f });
-              Engine->PhysicsManager->GetEditable(SpheresPhysic[SpheresPhysic.size() - 1]).AddVelocity({ 0, -20, 0 });
+              Engine->PhysicsManager->GetEditable(SpheresPhysic[SpheresPhysic.size() - 1]).AddVel({ 0, -20, 0 });
               Engine->PhysicsManager->GetEditable(SpheresPhysic[SpheresPhysic.size() - 1]).SetParent(SpheresModels[SpheresModels.size() - 1]);
             }
         }

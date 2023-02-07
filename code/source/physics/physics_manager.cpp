@@ -104,7 +104,7 @@ ContactReportCallback gContactReportCallback;
 
 gdr::physics_manager::physics_manager(engine * Eng) : resource_pool_subsystem(Eng), Engine(Eng)
 {
-  static const bool IsVisualDebugger = false;
+  static const bool IsVisualDebugger = true;
 
   //init SDK
   Foundation = PxCreateFoundation(PX_PHYSICS_VERSION, Allocator, ErrorCallback);
@@ -129,7 +129,7 @@ gdr::physics_manager::physics_manager(engine * Eng) : resource_pool_subsystem(En
   physx::PxSceneDesc sceneDesc(PhysX->getTolerancesScale());
 
   // set gravity
-  sceneDesc.gravity = physx::PxVec3(0.0f, -9.80665f, 0.0f);
+  sceneDesc.gravity = physx::PxVec3(0.0f, -9.81f, 0.0f);
 
   // set Number of threads to compute 
   const auto processor_count = std::thread::hardware_concurrency(); // can return 0 if cannot determine
@@ -138,7 +138,7 @@ gdr::physics_manager::physics_manager(engine * Eng) : resource_pool_subsystem(En
   sceneDesc.filterShader = physx::PxDefaultSimulationFilterShader;
   
   sceneDesc.flags |= physx::PxSceneFlag::eENABLE_PCM;
-  sceneDesc.broadPhaseType = physx::PxBroadPhaseType::eSAP;
+  //sceneDesc.broadPhaseType = physx::PxBroadPhaseType::eSAP;
   sceneDesc.filterShader = contactReportFilterShader;
   sceneDesc.simulationEventCallback = &gContactReportCallback;
 
@@ -156,7 +156,7 @@ gdr::physics_manager::physics_manager(engine * Eng) : resource_pool_subsystem(En
 
   physx::PxMaterial* Material = PhysX->createMaterial(1.f, 1.f, 0.1f);
   groundPlane = PxCreatePlane(*PhysX, physx::PxPlane(0, 1, 0, 0), *Material);
-  groundPlane->userData = (void*)-1;
+  groundPlane->userData = (void*)NONE_INDEX;
   Scene->addActor(*groundPlane);
 
   Material->release();
@@ -175,6 +175,7 @@ gdr_index gdr::physics_manager::AddDynamicSphere(float Radius, gdr::physic_mater
   NewBody.PhysxBody->userData = (void *)NewSphereIndex;
   Scene->addActor(*NewBody.PhysxBody);
   NewBody.IsStatic = false;
+  NewBody.ChangeDensity(1);
   return NewSphereIndex;
 }
 
@@ -195,6 +196,7 @@ gdr_index gdr::physics_manager::AddDynamicCapsule(float Radius, float HalfHeight
   NewBody.PhysxBody->userData = (void*)NewCapsuleIndex;
   Scene->addActor(*NewBody.PhysxBody);
   NewBody.IsStatic = false;
+  NewBody.ChangeDensity(1);
   return NewCapsuleIndex;
 } 
 
@@ -203,7 +205,10 @@ gdr_index gdr::physics_manager::AddStaticMesh(model_import_data ImportModel, phy
   gdr_index NewStaticMeshIndex = resource_pool_subsystem::Add();
   physic_body& NewBody = resource_pool_subsystem::GetEditable(NewStaticMeshIndex);
   NewBody.Material = Material;
-  NewBody.PhysxBody = PhysX->createRigidStatic(physx::PxTransform(physx::PxIdentity));
+  mth::vec3f Pos, Scale;
+  mth::vec4f Quat;
+  ImportModel.RootTransform.Transform.Decompose(Pos, Quat, Scale);
+  NewBody.PhysxBody = PhysX->createRigidStatic(physx::PxTransform({ Pos[0], Pos[1], Pos[2] }, { Quat[0], Quat[1], Quat[2], Quat[3] }));
   NewBody.PhysxMaterial = PhysX->createMaterial(Material.StaticFriction, Material.DynamicFriction, Material.Restitution);
 
   for (int node_index = 0; node_index < ImportModel.HierarchyNodes.size(); node_index++)
@@ -218,7 +223,12 @@ gdr_index gdr::physics_manager::AddStaticMesh(model_import_data ImportModel, phy
       std::vector<mth::vec3f> Vert;
       Vert.resize(MeshNode.Vertices.size());
       for (int i = 0; i < Vert.size(); i++)
+      {
         Vert[i] = MeshNode.Vertices[i].Pos * myTransform;
+        Vert[i].X *= Scale.X;
+        Vert[i].Y *= Scale.Y;
+        Vert[i].Z *= Scale.Z;
+      }
 
       for (unsigned i = 0; i < CutCount; i++)
       {
@@ -247,6 +257,7 @@ gdr_index gdr::physics_manager::AddStaticMesh(model_import_data ImportModel, phy
   NewBody.PhysxBody->userData = (void*)NewStaticMeshIndex;
   Scene->addActor(*NewBody.PhysxBody);
   NewBody.IsStatic = true;
+  NewBody.ChangeDensity(1);
   return NewStaticMeshIndex;
 }
 
@@ -255,7 +266,11 @@ gdr_index gdr::physics_manager::AddDynamicMesh(model_import_data ImportModel, ph
   gdr_index NewDynamicMeshIndex = resource_pool_subsystem::Add();
   physic_body& NewBody = resource_pool_subsystem::GetEditable(NewDynamicMeshIndex);
   NewBody.Material = Material;
-  NewBody.PhysxBody = PhysX->createRigidStatic(physx::PxTransform(physx::PxIdentity));
+  mth::vec3f Pos, Scale;
+  mth::vec4f Quat;
+  ImportModel.RootTransform.Transform.Decompose(Pos, Quat, Scale);
+  NewBody.PhysxBody = PhysX->createRigidDynamic(physx::PxTransform({ Pos[0], Pos[1], Pos[2] }, { Quat[0], Quat[1], Quat[2], Quat[3] }));
+
   NewBody.PhysxMaterial = PhysX->createMaterial(Material.StaticFriction, Material.DynamicFriction, Material.Restitution);
   
   std::vector<mth::vec3f> Vert;
@@ -268,7 +283,12 @@ gdr_index gdr::physics_manager::AddDynamicMesh(model_import_data ImportModel, ph
       mth::matr4f myTransform = ImportModel.GetTransform(node_index);
 
       for (size_t i = StartIndex; i < Vert.size(); i++)
+      {
         Vert[i] = ImportModel.HierarchyNodes[node_index].Vertices[i - StartIndex].Pos * myTransform;
+        Vert[i].X *= Scale.X; 
+        Vert[i].Y *= Scale.Y;
+        Vert[i].Z *= Scale.Z;
+      }
     }
 
   {
@@ -293,7 +313,7 @@ gdr_index gdr::physics_manager::AddDynamicMesh(model_import_data ImportModel, ph
   
   NewBody.PhysxBody->userData = (void*)NewDynamicMeshIndex;
   Scene->addActor(*NewBody.PhysxBody);
-  NewBody.IsStatic = true;
+  NewBody.ChangeDensity(1);
   return NewDynamicMeshIndex;
 }
 
@@ -319,7 +339,6 @@ void gdr::physics_manager::Update(float DeltaTime)
 
   if ((IsThrottle || SimulationDeltaTime > PHYSICS_TICK) && Scene->fetchResults(false))
   {
-    Engine->SetPause(false);
     PROFILE_CPU_BEGIN("Physics next frame");
     // delete objects then we are not simulating
     for (const auto& i : ToDelete)
@@ -343,11 +362,30 @@ void gdr::physics_manager::Update(float DeltaTime)
     for (gdr_index i = 1; i < AllocatedSize(); i++)
       if (IsExist(i))
       {
-        physx::PxTransform Trans = Get(i).PhysxBody->getGlobalPose();
-        GetEditable(i).PrevTickPos = Get(i).IsCreated ? mth::vec3f{ Trans.p.x, Trans.p.y, Trans.p.z } : Get(i).NextTickPos;
-        GetEditable(i).PrevTickRot = Get(i).IsCreated ? mth::vec4f{ Trans.q.x, Trans.q.y, Trans.q.z, Trans.q.w } : Get(i).NextTickRot;
-        GetEditable(i).NextTickPos = { Trans.p.x, Trans.p.y, Trans.p.z };
-        GetEditable(i).NextTickRot = { Trans.q.x, Trans.q.y, Trans.q.z, Trans.q.w };
+        physx::PxTransform Trans = Get(i).PhysxBody->getGlobalPose();             
+        GetEditable(i).PrevTickState.Pos = Get(i).IsCreated ? mth::vec3f{ Trans.p.x, Trans.p.y, Trans.p.z } : Get(i).NextTickState.Pos;
+        GetEditable(i).PrevTickState.Rot = Get(i).IsCreated ? mth::vec4f{ Trans.q.x, Trans.q.y, Trans.q.z, Trans.q.w } : Get(i).NextTickState.Rot;
+        GetEditable(i).NextTickState.Pos = { Trans.p.x, Trans.p.y, Trans.p.z };
+        GetEditable(i).NextTickState.Rot = { Trans.q.x, Trans.q.y, Trans.q.z, Trans.q.w };
+
+        physx::PxRigidBody* BodyReal = Get(i).PhysxBody->is<physx::PxRigidBody>();
+        if (Get(i).IsStatic || !BodyReal)
+        {
+          GetEditable(i).PrevTickState.Vel = {0, 0, 0};
+          GetEditable(i).PrevTickState.AngVel = { 0, 0, 0 };
+          GetEditable(i).NextTickState.Vel = { 0, 0, 0 };
+          GetEditable(i).NextTickState.AngVel = { 0, 0, 0 };
+        }
+        else
+        {
+          physx::PxVec3 Vel = BodyReal->getLinearVelocity();
+          physx::PxVec3 AngVel = BodyReal->getAngularVelocity();
+          GetEditable(i).PrevTickState.Vel = Get(i).IsCreated ? mth::vec3f{ Vel[0], Vel[1], Vel[2] } : Get(i).NextTickState.Vel;
+          GetEditable(i).PrevTickState.AngVel = Get(i).IsCreated ? mth::vec3f{ AngVel[0], AngVel[1], AngVel[2] } : Get(i).NextTickState.AngVel;
+          GetEditable(i).NextTickState.Vel = mth::vec3f{ Vel[0], Vel[1], Vel[2] };
+          GetEditable(i).NextTickState.AngVel = mth::vec3f{ AngVel[0], AngVel[1], AngVel[2] };
+        }        
+
         GetEditable(i).IsCreated = false;
       }
     PROFILE_CPU_END();
@@ -360,8 +398,10 @@ void gdr::physics_manager::Update(float DeltaTime)
   for (gdr_index i = 1; i < AllocatedSize(); i++)
     if (IsExist(i))
     {
-      GetEditable(i).InterpolatedPos = Get(i).PrevTickPos * (1 - interpolParam) + Get(i).NextTickPos * (interpolParam);
-      GetEditable(i).InterpolatedRot = Get(i).PrevTickRot.slerp(Get(i).NextTickRot, interpolParam);
+      GetEditable(i).InterpolatedState.Pos = Get(i).PrevTickState.Pos * (1 - interpolParam) + Get(i).NextTickState.Pos * (interpolParam);
+      GetEditable(i).InterpolatedState.Vel = Get(i).PrevTickState.Vel * (1 - interpolParam) + Get(i).NextTickState.Vel * (interpolParam);
+      GetEditable(i).InterpolatedState.AngVel = Get(i).PrevTickState.AngVel * (1 - interpolParam) + Get(i).NextTickState.AngVel * (interpolParam);
+      GetEditable(i).InterpolatedState.Rot = Get(i).PrevTickState.Rot.slerp(Get(i).NextTickState.Rot, interpolParam);
     }
 }
 

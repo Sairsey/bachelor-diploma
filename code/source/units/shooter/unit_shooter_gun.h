@@ -52,7 +52,7 @@ public:
           + Engine->PlayerCamera.GetDir() * BulletOffset * 2.0
           - Engine->PlayerCamera.GetUp() * BulletOffset / 4.0
           + Engine->PlayerCamera.GetRight() * BulletOffset / 4.0);
-        Engine->PhysicsManager->GetEditable(BulletSphere).SetVelocity(Engine->PlayerCamera.GetDir() * BulletSpeed);
+        Engine->PhysicsManager->GetEditable(BulletSphere).SetVel(Engine->PlayerCamera.GetDir() * BulletSpeed);
         BulletFly = true;
       }
     }

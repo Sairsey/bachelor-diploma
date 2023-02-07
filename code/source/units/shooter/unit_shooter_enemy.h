@@ -77,7 +77,7 @@ public:
       Velocity.Y = 0;
 
       // Move Phys Object
-      Engine->PhysicsManager->GetEditable(EnemyCapsule).SetVelocity(Velocity * EnemySpeed + mth::vec3f( 0, Engine->PhysicsManager->Get(EnemyCapsule).GetVelocity().Y, 0 ));
+      Engine->PhysicsManager->GetEditable(EnemyCapsule).SetVel(Velocity * EnemySpeed + mth::vec3f( 0, Engine->PhysicsManager->Get(EnemyCapsule).GetVel().Y, 0 ));
 
       float sina = -Velocity.X;
       float cosa = Velocity.Z;

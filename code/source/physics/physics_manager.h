@@ -29,6 +29,14 @@ namespace gdr
       friend class physics_manager;
       friend class ContactReportCallback;
 
+      struct physic_state
+      {
+        mth::vec3f Pos;
+        mth::vec4f Rot;
+        mth::vec3f Vel;
+        mth::vec3f AngVel;
+      };
+
       bool IsCreated = true;
 
       physx::PxRigidActor *PhysxBody;
@@ -37,32 +45,34 @@ namespace gdr
 
       std::function<void(gdr_index Me, gdr_index Other)> CollideCallback = [](gdr_index Me, gdr_index Other) {return; };
 
-      mth::vec3f PrevTickPos = { 0, 0, 0 };
-      mth::vec3f InterpolatedPos;
-      mth::vec3f NextTickPos = { 0, 0, 0 };
+      physic_state PrevTickState;
+      physic_state InterpolatedState;
+      physic_state NextTickState;
 
-      mth::vec4f PrevTickRot = { 0, 0, 0, 1 };
-      mth::vec4f InterpolatedRot;
-      mth::vec4f NextTickRot = {0, 0, 0, 1};
       bool IsStatic = false;
       bool IsLockedTranslation = false;
       bool IsLockedRotation = false;
       gdr_index ParentIndex = NONE_INDEX;
     public:
       mth::matr4f GetTransform(void) const;
-      double GetMass(void) const;
+      float GetMass(void) const;
       gdr_index GetParent() const;
-      void SetParent(gdr_index index);
-      void SetVelocity(mth::vec3f Vel);
-      void AddVelocity(mth::vec3f Vel);
-      mth::vec3f GetVelocity(void) const;
+      mth::vec3f GetVel(void) const;
+      mth::vec3f GetPos(void) const;
+      mth::vec4f GetRot(void) const;
+      
       void Stop(void);
-      void ApplyForce(mth::vec3f F);
+      void AddForce(mth::vec3f F);
+      void AddVel(mth::vec3f Vel);
+      void SetVel(mth::vec3f Vel);
       void SetPos(mth::vec3f Pos);
+      void SetRot(mth::matr4f Rot);
+      void SetRot(mth::vec4f Quat);
+      void SetParent(gdr_index index);
+
       void ChangeDensity(float Density);
       void ToggleRotation(void);
       void ToggleTranslation(void);
-      void ChangeRotation(mth::matr4f Rot);
       void SetCollideCallback(std::function<void(gdr_index Me, gdr_index Other)> Callback);
   };
 

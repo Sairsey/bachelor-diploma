@@ -114,7 +114,7 @@ VOID gdr::engine::Timer(VOID)
   input_support::UpdateWheel(win::MouseWheel);
 
   // update Physics
-  PhysicsManager->Update(GetDeltaTime());
+  bool IsPhysTick = PhysicsManager->Update(GetDeltaTime());
 
   // update Units
   if (ToAdd.size())
@@ -160,7 +160,19 @@ VOID gdr::engine::Timer(VOID)
     PROFILE_CPU_END();
   }
 
-  PROFILE_CPU_BEGIN("Units update");
+  if (IsPhysTick)
+  {
+    PROFILE_CPU_BEGIN("Units update tick");
+    for (auto& unit : Units)
+    {
+      PROFILE_CPU_BEGIN(unit->GetName().c_str());
+      unit->ResponsePhys();
+      PROFILE_CPU_END();
+    }
+    PROFILE_CPU_END();
+  }
+
+  PROFILE_CPU_BEGIN("Units update frame");
   for (auto& unit : Units)
   {
     PROFILE_CPU_BEGIN(unit->GetName().c_str());

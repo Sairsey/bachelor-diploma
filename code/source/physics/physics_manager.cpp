@@ -56,7 +56,10 @@ physx::PxFilterFlags contactReportFilterShader(physx::PxFilterObjectAttributes a
   pairFlags = physx::PxPairFlag::eSOLVE_CONTACT | physx::PxPairFlag::eDETECT_DISCRETE_CONTACT
     | physx::PxPairFlag::eNOTIFY_TOUCH_FOUND
     | physx::PxPairFlag::eNOTIFY_TOUCH_PERSISTS
-    | physx::PxPairFlag::eNOTIFY_CONTACT_POINTS;
+    | physx::PxPairFlag::eNOTIFY_CONTACT_POINTS
+    | physx::PxPairFlag::eDETECT_CCD_CONTACT
+    | physx::PxPairFlag::eNOTIFY_TOUCH_CCD
+    ;
   return physx::PxFilterFlag::eDEFAULT;
 }
 
@@ -137,7 +140,7 @@ gdr::physics_manager::physics_manager(engine * Eng) : resource_pool_subsystem(En
   sceneDesc.cpuDispatcher = Dispatcher;
   sceneDesc.filterShader = physx::PxDefaultSimulationFilterShader;
   
-  sceneDesc.flags |= physx::PxSceneFlag::eENABLE_PCM;
+  sceneDesc.flags |= physx::PxSceneFlag::eENABLE_PCM | physx::PxSceneFlag::eENABLE_CCD;
   //sceneDesc.broadPhaseType = physx::PxBroadPhaseType::eSAP;
   sceneDesc.filterShader = contactReportFilterShader;
   sceneDesc.simulationEventCallback = &gContactReportCallback;
@@ -325,8 +328,9 @@ void gdr::physics_manager::BeforeRemoveJob(gdr_index index)
   }
 }
 
-void gdr::physics_manager::Update(float DeltaTime)
+bool gdr::physics_manager::Update(float DeltaTime)
 {
+  bool res = false;
   SimulationDeltaTime += DeltaTime;
 
   if (!IsThrottle && SimulationDeltaTime > 3 * PHYSICS_TICK)
@@ -339,6 +343,7 @@ void gdr::physics_manager::Update(float DeltaTime)
 
   if ((IsThrottle || SimulationDeltaTime > PHYSICS_TICK) && Scene->fetchResults(false))
   {
+    res = !IsThrottle;
     PROFILE_CPU_BEGIN("Physics next frame");
     // delete objects then we are not simulating
     for (const auto& i : ToDelete)
@@ -403,6 +408,7 @@ void gdr::physics_manager::Update(float DeltaTime)
       GetEditable(i).InterpolatedState.AngVel = Get(i).PrevTickState.AngVel * (1 - interpolParam) + Get(i).NextTickState.AngVel * (interpolParam);
       GetEditable(i).InterpolatedState.Rot = Get(i).PrevTickState.Rot.slerp(Get(i).NextTickState.Rot, interpolParam);
     }
+  return res;
 }
 
 bool gdr::physics_manager::Raycast(mth::vec3f Org, mth::vec3f Dir, float MaxLength, std::vector<gdr::ray_intersect>& Output)

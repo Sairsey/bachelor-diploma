@@ -42,6 +42,7 @@ public:
 
   void Response(void)
   {
+    /*
     if (Engine->GetTime() - PreviousTime > UpdateTime)
     {
       for (int i = 0; i < Enemies.size(); i++)
@@ -50,6 +51,7 @@ public:
 
       PreviousTime = Engine->GetTime();
     }
+    */
   }
 
   std::string GetName(void)

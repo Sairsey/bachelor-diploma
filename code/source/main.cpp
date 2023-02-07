@@ -143,8 +143,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
   
   Engine.AddUnit(new unit_shooter_first_person());
   Engine.AddUnit(new unit_shooter_enviroment());
-  //Engine.AddUnit(new unit_shooter_enemy_spawner(100));
-  //Engine.AddUnit(new unit_shooter_gun());
+  Engine.AddUnit(new unit_shooter_enemy_spawner(10));
+  Engine.AddUnit(new unit_shooter_gun());
   
   //Engine.AddUnit(new unit_yokohama());
   //Engine.AddUnit(new unit_alex_apt());

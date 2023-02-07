@@ -8,13 +8,12 @@ private:
   gdr_index PlayerLight;
   double PlayerHeight = 1.83; // meters
   double PlayerWidth = 0.25 * PlayerHeight; // Leonardo da Vinchi said so
-  double PlayerSpeed = 5; // m/s
+  double PlayerSpeed = 10; // m/s
   double JumpPower = 5; // m/s
   bool IsJump = false;
 public:
   void Initialize(void)
   {
-
     PlayerCapsule = Engine->PhysicsManager->AddDynamicCapsule(PlayerWidth / 2.0, (PlayerHeight - PlayerWidth) / 2.0);
     // disable rotation
     Engine->PhysicsManager->GetEditable(PlayerCapsule).ToggleRotation();
@@ -90,42 +89,40 @@ public:
       {
         Engine->PlayerCamera.RotateAroundLocRight(-Engine->Mdy * 0.1);
       }
+    }
+  }
 
-      mth::vec3f VelocityInCameraCS;
-      if (Engine->Keys['W'])
-        VelocityInCameraCS = mth::vec3f(0, 0, PlayerSpeed);
-      else if (Engine->Keys['A'])
-        VelocityInCameraCS = mth::vec3f(-PlayerSpeed, 0, 0);
-      else if (Engine->Keys['S'])
-        VelocityInCameraCS = mth::vec3f(0, 0, -PlayerSpeed);
-      else if (Engine->Keys['D'])
-        VelocityInCameraCS = mth::vec3f(PlayerSpeed, 0, 0);
+  void ResponsePhys(void)
+  {
+    mth::vec3f VelocityInCameraCS;
+    if (Engine->Keys['W'])
+      VelocityInCameraCS = mth::vec3f(0, 0, PlayerSpeed);
+    else if (Engine->Keys['A'])
+      VelocityInCameraCS = mth::vec3f(-PlayerSpeed, 0, 0);
+    else if (Engine->Keys['S'])
+      VelocityInCameraCS = mth::vec3f(0, 0, -PlayerSpeed);
+    else if (Engine->Keys['D'])
+      VelocityInCameraCS = mth::vec3f(PlayerSpeed, 0, 0);
 
-      mth::vec3f Velocity =
-        Engine->PlayerCamera.GetRight() * VelocityInCameraCS.X +
-        Engine->PlayerCamera.GetUp() * VelocityInCameraCS.Y +
-        Engine->PlayerCamera.GetDir() * VelocityInCameraCS.Z;
+    mth::vec3f Velocity =
+      Engine->PlayerCamera.GetRight() * VelocityInCameraCS.X +
+      Engine->PlayerCamera.GetUp() * VelocityInCameraCS.Y +
+      Engine->PlayerCamera.GetDir() * VelocityInCameraCS.Z;
 
-      Velocity.Y = 0;
+    Velocity.Y = 0;
 
-      static float DeltaTime = 0;
+    mth::vec3f DiffVelocity = Velocity - Engine->PhysicsManager->Get(PlayerCapsule).GetVel();
+    mth::vec3f Accel = DiffVelocity / gdr::PHYSICS_TICK;
+    Accel *= Engine->PhysicsManager->GetEditable(PlayerCapsule).GetPhysXMaterial()->getStaticFriction() * 0.9;
+    Accel.Y = 0;
+    Engine->PhysicsManager->GetEditable(PlayerCapsule).AddForce(
+      Accel *
+      Engine->PhysicsManager->Get(PlayerCapsule).GetMass());
 
-      DeltaTime += Engine->GetDeltaTime();
-
-      if (DeltaTime >= gdr::PHYSICS_TICK)
-      {
-        DeltaTime -= gdr::PHYSICS_TICK;
-        mth::vec3f PreviousVelocity = Engine->PhysicsManager->Get(PlayerCapsule).GetVel();
-        PreviousVelocity.X = Velocity.X;
-        PreviousVelocity.Z = Velocity.Z;
-        Engine->PhysicsManager->GetEditable(PlayerCapsule).SetVel(PreviousVelocity);
- 
-        if (Engine->Keys[VK_SPACE] && !IsJump)
-        {
-           Engine->PhysicsManager->GetEditable(PlayerCapsule).AddVel({ 0, sqrtf(2 * 9.81 * 1), 0});
-          IsJump = true;
-        }
-      }
+    if (Engine->Keys[VK_SPACE] && !IsJump)
+    {
+      Engine->PhysicsManager->GetEditable(PlayerCapsule).AddVel({ 0, sqrtf(2 * 9.81 * 1), 0 });
+      IsJump = true;
     }
   }
 

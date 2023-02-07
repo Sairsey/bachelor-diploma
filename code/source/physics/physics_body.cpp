@@ -21,7 +21,7 @@ gdr_index gdr::physic_body::GetParent() const
 
 mth::vec3f gdr::physic_body::GetVel(void) const
 {
-  return InterpolatedState.Vel;
+  return NextTickState.Vel;
 }
 
 mth::vec3f gdr::physic_body::GetPos(void) const

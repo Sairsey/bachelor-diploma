@@ -31,10 +31,10 @@ namespace gdr
 
       struct physic_state
       {
-        mth::vec3f Pos;
-        mth::vec4f Rot;
-        mth::vec3f Vel;
-        mth::vec3f AngVel;
+        mth::vec3f Pos = {0, 0, 0};
+        mth::vec4f Rot = { 0, 0, 0, 1};
+        mth::vec3f Vel = { 0, 0, 0 };
+        mth::vec3f AngVel = { 0, 0, 0 };
       };
 
       bool IsCreated = true;
@@ -60,6 +60,9 @@ namespace gdr
       mth::vec3f GetVel(void) const;
       mth::vec3f GetPos(void) const;
       mth::vec4f GetRot(void) const;
+      physx::PxMaterial* GetPhysXMaterial(void) { return PhysxMaterial; }
+      physx::PxRigidActor* GetPhysXActor(void) { return PhysxBody; }
+      physx::PxRigidBody* GetPhysXBody(void) { return PhysxBody->is<physx::PxRigidBody>(); }
       
       void Stop(void);
       void AddForce(mth::vec3f F);
@@ -114,7 +117,7 @@ namespace gdr
       gdr_index AddDynamicMesh(model_import_data ImportModel, physic_material Material = physic_material());
       gdr_index AddStaticMesh(model_import_data ImportModel, physic_material Material = physic_material());
       bool Raycast(mth::vec3f Org, mth::vec3f Dir, float MaxLength, std::vector<gdr::ray_intersect> &Output);
-      void Update(float DeltaTime);
+      bool Update(float DeltaTime);
 
       ~physics_manager();
   };

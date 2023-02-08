@@ -32,14 +32,13 @@ void gdr::render_targets_subsystem::Set(ID3D12GraphicsCommandList* CommandList, 
   if (ResultTarget == CurrentRT)
     return;
 
+  // transit state of previous rt
   if (CurrentRT != render_targets_enum::target_none)
-  {
-    // transit state of previous rt
     Render->GetDevice().TransitResourceState(CommandList, Textures[(int)CurrentRT].Resource, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_COMMON);
-
-    // transit state of current rt
+  
+  // transit state of current rt
+  if (ResultTarget != render_targets_enum::target_none)
     Render->GetDevice().TransitResourceState(CommandList, Textures[(int)ResultTarget].Resource, D3D12_RESOURCE_STATE_COMMON, D3D12_RESOURCE_STATE_RENDER_TARGET);
-  }
 
   CurrentRT = ResultTarget;
 

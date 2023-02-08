@@ -12,6 +12,8 @@ namespace gdr
     // lambdas to execute on imgui_pass
     std::vector<std::function<void(void)>> lambdas_to_draw;
 
+    D3D12_CPU_DESCRIPTOR_HANDLE CPUDescriptor;
+    D3D12_GPU_DESCRIPTOR_HANDLE GPUDescriptor;
   public:
     /* Function to get name */
     std::string GetName(void) override

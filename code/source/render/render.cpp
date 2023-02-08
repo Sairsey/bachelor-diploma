@@ -308,18 +308,25 @@ void gdr::render::DrawFrame(void)
       Rect.bottom = Engine->Height;
       Rect.right = Engine->Width;
 
-      pCommandList->ClearRenderTargetView(rtvHandle, clearColor, 1, &Rect);
-      pCommandList->ClearRenderTargetView(RenderTargetsSystem->GetHDRRenderTargetView(), clearColor, 1, &Rect);
-      pCommandList->ClearDepthStencilView(dsvHandle, D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.0f, 0, 1, &Rect);
+      Device.TransitResourceState(pCommandList, pBackBuffer, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_COMMON);
 
       // Save DepthStencil and Display buffers
       RenderTargetsSystem->SaveDepthStencilBuffer(&dsvHandle);
       RenderTargetsSystem->SaveDisplayBuffer(&rtvHandle, pBackBuffer);
       
+      // Clear them
+      RenderTargetsSystem->Set(pCommandList, render_targets_enum::target_display);
+      pCommandList->ClearRenderTargetView(rtvHandle, clearColor, 1, &Rect);
+
+      RenderTargetsSystem->Set(pCommandList, render_targets_enum::target_frame_hdr);
+      pCommandList->ClearRenderTargetView(RenderTargetsSystem->GetHDRRenderTargetView(), clearColor, 1, &Rect);
+
+      pCommandList->ClearDepthStencilView(dsvHandle, D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.0f, 0, 1, &Rect);
 
       ID3D12DescriptorHeap* pDescriptorHeaps = GetDevice().GetDescriptorHeap();
       pCommandList->SetDescriptorHeaps(1, &pDescriptorHeaps);
 
+      // Set display as current RT
       RenderTargetsSystem->Set(pCommandList, render_targets_enum::target_display);
 
       for (int i = 0; i < Passes.size(); i++)

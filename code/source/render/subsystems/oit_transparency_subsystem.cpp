@@ -93,7 +93,7 @@ void gdr::oit_transparency_subsystem::UpdateGPUData(ID3D12GraphicsCommandList* p
     }
     // create Nodes Pool
     {
-      UINT UAVSize = AlignForUavCounter((UINT)(W * H * Render->CreationParams.MaxTransparentDepth) * sizeof(GDRGPUOITNode));
+      UINT UAVSize = AlignForUavCounter((UINT)(W * H * Render->CreationParams.MaxTransparentDepth * sizeof(GDRGPUOITNode)));
       CounterOffset = UAVSize;
       
       Render->GetDevice().CreateGPUResource(

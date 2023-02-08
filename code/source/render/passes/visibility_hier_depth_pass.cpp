@@ -244,6 +244,8 @@ void gdr::visibility_hier_depth_pass::CallIndirectDraw(ID3D12GraphicsCommandList
   if (Render->Params.IsViewLocked)
     return; // Keep previous HierDepth
 
+  Render->RenderTargetsSystem->Set(currentCommandList, gdr::render_targets_enum::target_frame_hdr);
+
   // set common params
   currentCommandList->SetPipelineState(PSO);
   currentCommandList->SetGraphicsRootSignature(RootSignature);

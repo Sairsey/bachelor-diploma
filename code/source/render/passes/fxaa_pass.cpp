@@ -1,10 +1,10 @@
 #include "p_header.h"
 
-void gdr::tonemap_pass::Initialize(void)
+void gdr::fxaa_pass::Initialize(void)
 {
   // 1) Compile our shaders
-  Render->GetDevice().CompileShader(_T("bin/shaders/tonemap/tonemap.hlsl"), {}, shader_stage::Vertex, &VertexShader);
-  Render->GetDevice().CompileShader(_T("bin/shaders/tonemap/tonemap.hlsl"), {}, shader_stage::Pixel, &PixelShader);
+  Render->GetDevice().CompileShader(_T("bin/shaders/fxaa/fxaa.hlsl"), {}, shader_stage::Vertex, &VertexShader);
+  Render->GetDevice().CompileShader(_T("bin/shaders/fxaa/fxaa.hlsl"), {}, shader_stage::Pixel, &PixelShader);
 
   // 2) Create InputLayout
   static const D3D12_INPUT_ELEMENT_DESC onScreenInputElementDescs[] =
@@ -20,7 +20,6 @@ void gdr::tonemap_pass::Initialize(void)
     D3D12_DESCRIPTOR_RANGE descRanges[1] = {};
 
     params[(int)root_parameters_draw_indices::globals_buffer_index].InitAsConstantBufferView(GDRGPUGlobalDataConstantBufferSlot);
-    params[(int)root_parameters_draw_indices::luminance_buffer_index].InitAsConstantBufferView(GDRGPULuminanceConstantBufferSlot);
 
     {
       descRanges[0].BaseShaderRegister = GDRGPUUserShaderResource1Slot;
@@ -75,7 +74,7 @@ void gdr::tonemap_pass::Initialize(void)
 
     ID3D12GraphicsCommandList* commandList;
     Render->GetDevice().BeginUploadCommandList(&commandList);
-    PROFILE_BEGIN(commandList, "luminance pass create screen mesh");
+    PROFILE_BEGIN(commandList, "fxaa pass create screen mesh");
 
     {
       Render->GetDevice().CreateGPUResource(
@@ -85,7 +84,7 @@ void gdr::tonemap_pass::Initialize(void)
         ScreenVertexBuffer,
         vertices,
         5 * sizeof(float) * 6);
-      ScreenVertexBuffer.Resource->SetName(L"Tonemap Screen vertex buffer");
+      ScreenVertexBuffer.Resource->SetName(L"fxaa Screen vertex buffer");
     }
     {
       ScreenVertexBufferView.BufferLocation = ScreenVertexBuffer.Resource->GetGPUVirtualAddress();
@@ -99,9 +98,9 @@ void gdr::tonemap_pass::Initialize(void)
 
 }
 
-void gdr::tonemap_pass::CallDirectDraw(ID3D12GraphicsCommandList* currentCommandList)
+void gdr::fxaa_pass::CallDirectDraw(ID3D12GraphicsCommandList* currentCommandList)
 {
-  Render->RenderTargetsSystem->Set(currentCommandList, render_targets_enum::target_tmp_display);
+  Render->RenderTargetsSystem->Set(currentCommandList, render_targets_enum::target_display);
 
   // set common params
   currentCommandList->SetPipelineState(PSO);
@@ -116,19 +115,15 @@ void gdr::tonemap_pass::CallDirectDraw(ID3D12GraphicsCommandList* currentCommand
       Render->GlobalsSystem->GetGPUResource().Resource->GetGPUVirtualAddress());
 
     D3D12_GPU_DESCRIPTOR_HANDLE tmp_descr = Render->RenderTargetsSystem->ShaderResourceViewsGPU;
-    tmp_descr.ptr += (int)render_targets_enum::target_frame_hdr * Render->GetDevice().GetSRVDescSize();
+    tmp_descr.ptr += (int)render_targets_enum::target_tmp_display * Render->GetDevice().GetSRVDescSize();
     currentCommandList->SetGraphicsRootDescriptorTable(
       (int)root_parameters_draw_indices::input_texture_index, tmp_descr);
-
-    currentCommandList->SetGraphicsRootConstantBufferView(
-      (int)root_parameters_draw_indices::luminance_buffer_index, 
-      Render->LuminanceSystem->GPUData.Resource->GetGPUVirtualAddress());
   }
 
   currentCommandList->DrawInstanced(6, 1, 0, 0);
 }
 
-gdr::tonemap_pass::~tonemap_pass(void)
+gdr::fxaa_pass::~fxaa_pass(void)
 {
   Render->GetDevice().ReleaseGPUResource(ScreenVertexBuffer);
 

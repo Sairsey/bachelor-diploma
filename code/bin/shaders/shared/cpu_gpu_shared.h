@@ -137,7 +137,8 @@ struct GDRGPUGlobalData
 	UINT MaximumOITPoolSize; // Maximum size of OIT Pool
 
 	UINT DebugOIT;           // True if we want to debug OIT
-	UINT pad[3];
+	UINT IsFXAA;             // True if we want to use FXAA
+	UINT pad[2];
 };
 
 /// <summary>

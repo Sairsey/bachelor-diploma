@@ -55,6 +55,7 @@ public:
               ImGui::Checkbox("Transparency", &Engine->Params.IsTransparent);
               if (Engine->Params.IsTransparent)
                 ImGui::Checkbox("Debug transparency", &Engine->Params.IsDebugOIT);
+              ImGui::Checkbox("FXAA", &Engine->Params.IsFXAA);
               ImGui::TreePop();
           }
           bool pause = Engine->GetPause();

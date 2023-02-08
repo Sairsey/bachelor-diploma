@@ -70,8 +70,19 @@ float3 linear_to_srgb(float3 color) {
 
 float4 PS(VSOut input) : SV_TARGET
 {
+  float4 Data;
+  // Tone mapping
   if (globals.IsTonemap)
-    return float4(linear_to_srgb(TonemapFilmic(Source.Sample(LinearSampler, input.uv).rgb, data.ExposureAdapted)), 1);
+    Data = float4(TonemapFilmic(Source.Sample(LinearSampler, input.uv).rgb, data.ExposureAdapted), 1);
   else
-    return float4(linear_to_srgb(Source.Sample(LinearSampler, input.uv).rgb), 1);
+    Data = float4(Source.Sample(LinearSampler, input.uv).rgb, 1);
+  
+  
+  // Lum in 4-th component
+  Data.a = dot(Data.xyz, float3(0.299, 0.587, 0.114));
+
+  // SRGB
+  Data.xyz = linear_to_srgb(Data.xyz);
+
+  return Data;
 }

@@ -100,6 +100,7 @@ bool gdr::render::Init(engine* Eng)
     // Postprocess
     Passes.push_back(new luminance_pass());
     Passes.push_back(new tonemap_pass());
+    Passes.push_back(new fxaa_pass());
 
     // debug passes
     Passes.push_back(new debug_aabb_pass());
@@ -200,6 +201,7 @@ void gdr::render::DrawFrame(void)
           GlobalsSystem->GetEditable().IsIBL = Params.IsIBL;
           GlobalsSystem->GetEditable().MaximumOITPoolSize = Engine->Width * Engine->Height * CreationParams.MaxTransparentDepth;
           GlobalsSystem->GetEditable().DebugOIT = Params.IsDebugOIT;
+          GlobalsSystem->GetEditable().IsFXAA = Params.IsFXAA;
           GlobalsSystem->UpdateGPUData(uploadCommandList);
           PROFILE_END(uploadCommandList);
       }

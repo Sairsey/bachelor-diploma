@@ -139,6 +139,9 @@
     <Filter Include="Source Files\Units\Thriller">
       <UniqueIdentifier>{78d2a9de-cf47-4c16-be27-aafede837288}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Render\Passes\fxaa">
+      <UniqueIdentifier>{8bc90c44-65bb-4dab-b155-6bbca9f10856}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\main.cpp">
@@ -299,6 +302,9 @@
     </ClCompile>
     <ClCompile Include="source\animations\animations_manager.cpp">
       <Filter>Source Files\Animations</Filter>
+    </ClCompile>
+    <ClCompile Include="source\render\passes\fxaa_pass.cpp">
+      <Filter>Source Files\Render\Passes\fxaa</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -613,6 +619,9 @@
     </ClInclude>
     <ClInclude Include="source\units\examples\unit_choose.h">
       <Filter>Source Files\Units\Examples</Filter>
+    </ClInclude>
+    <ClInclude Include="source\render\passes\fxaa_pass.h">
+      <Filter>Source Files\Render\Passes\fxaa</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

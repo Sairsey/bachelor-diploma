@@ -40,6 +40,8 @@ namespace gdr
 
     bool IsTransparent = true;    // Enable OIT Transparency
     bool IsDebugOIT = false;      // Enable OIT Debugging
+
+    bool IsFXAA = true;          // Enable FXAA
   };
   struct render_creation_params
   {

@@ -142,6 +142,9 @@
     <Filter Include="Source Files\Render\Passes\fxaa">
       <UniqueIdentifier>{8bc90c44-65bb-4dab-b155-6bbca9f10856}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Units\Cameras">
+      <UniqueIdentifier>{dee7afb4-6d0c-4a90-8193-ec5c5f0ba96d}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\main.cpp">
@@ -177,53 +180,23 @@
     <ClCompile Include="source\render\device\d3dinclude.cpp">
       <Filter>Source Files\Render\Device</Filter>
     </ClCompile>
-    <ClCompile Include="source\units\unit_control.cpp">
-      <Filter>Source Files\Units</Filter>
-    </ClCompile>
-    <ClCompile Include="source\units\unit_bread.cpp">
-      <Filter>Source Files\Units</Filter>
-    </ClCompile>
     <ClCompile Include="source\render\device\device_time_query.cpp">
       <Filter>Source Files\Render\Device</Filter>
     </ClCompile>
     <ClCompile Include="source\utils\stb_image.cpp">
       <Filter>Source Files\Utils</Filter>
     </ClCompile>
-    <ClCompile Include="source\units\unit_stats.cpp">
-      <Filter>Source Files\Units</Filter>
-    </ClCompile>
-    <ClCompile Include="source\units\unit_city.cpp">
-      <Filter>Source Files\Units</Filter>
-    </ClCompile>
-    <ClCompile Include="source\units\unit_pbr_spheres.cpp">
-      <Filter>Source Files\Units</Filter>
-    </ClCompile>
-    <ClCompile Include="source\units\unit_bathroom.cpp">
-      <Filter>Source Files\Units</Filter>
-    </ClCompile>
     <ClCompile Include="source\input\input.cpp">
       <Filter>Source Files\Input</Filter>
     </ClCompile>
-    <ClCompile Include="source\units\unit_chief.cpp">
-      <Filter>Source Files\Units</Filter>
-    </ClCompile>
-    <ClCompile Include="source\units\unit_specialist.cpp">
-      <Filter>Source Files\Units</Filter>
-    </ClCompile>
     <ClCompile Include="source\utils\ScreenGrab12.cpp">
       <Filter>Source Files\Utils\ScreenGrab</Filter>
-    </ClCompile>
-    <ClCompile Include="source\units\unit_cubemap_capture.cpp">
-      <Filter>Source Files\Units</Filter>
     </ClCompile>
     <ClCompile Include="source\physics\physics_manager.cpp">
       <Filter>Source Files\Physics</Filter>
     </ClCompile>
     <ClCompile Include="source\physics\physics_body.cpp">
       <Filter>Source Files\Physics</Filter>
-    </ClCompile>
-    <ClCompile Include="source\units\unit_physic_spheres.cpp">
-      <Filter>Source Files\Units</Filter>
     </ClCompile>
     <ClCompile Include="source\render\subsystems\globals_subsystem.cpp">
       <Filter>Source Files\Render\SubSystems\Globals</Filter>
@@ -365,12 +338,6 @@
     <ClInclude Include="source\utils\math\mth_cam.h">
       <Filter>Source Files\Utils\Math</Filter>
     </ClInclude>
-    <ClInclude Include="source\units\unit_control.h">
-      <Filter>Source Files\Units</Filter>
-    </ClInclude>
-    <ClInclude Include="source\units\unit_bread.h">
-      <Filter>Source Files\Units</Filter>
-    </ClInclude>
     <ClInclude Include="source\render\render.h">
       <Filter>Source Files\Render</Filter>
     </ClInclude>
@@ -383,35 +350,11 @@
     <ClInclude Include="source\input\input.h">
       <Filter>Source Files\Input</Filter>
     </ClInclude>
-    <ClInclude Include="source\units\unit_stats.h">
-      <Filter>Source Files\Units</Filter>
-    </ClInclude>
-    <ClInclude Include="source\units\unit_city.h">
-      <Filter>Source Files\Units</Filter>
-    </ClInclude>
-    <ClInclude Include="source\units\unit_pbr_spheres.h">
-      <Filter>Source Files\Units</Filter>
-    </ClInclude>
-    <ClInclude Include="source\units\unit_bathroom.h">
-      <Filter>Source Files\Units</Filter>
-    </ClInclude>
-    <ClInclude Include="source\units\unit_chief.h">
-      <Filter>Source Files\Units</Filter>
-    </ClInclude>
-    <ClInclude Include="source\units\unit_specialist.h">
-      <Filter>Source Files\Units</Filter>
-    </ClInclude>
     <ClInclude Include="source\utils\ScreenGrab12.h">
       <Filter>Source Files\Utils\ScreenGrab</Filter>
     </ClInclude>
-    <ClInclude Include="source\units\unit_cubemap_capture.h">
-      <Filter>Source Files\Units</Filter>
-    </ClInclude>
     <ClInclude Include="source\physics\physics_manager.h">
       <Filter>Source Files\Physics</Filter>
-    </ClInclude>
-    <ClInclude Include="source\units\unit_physic_spheres.h">
-      <Filter>Source Files\Units</Filter>
     </ClInclude>
     <ClInclude Include="source\units\shooter\unit_shooter_first_person.h">
       <Filter>Source Files\Units\Shooter</Filter>
@@ -427,9 +370,6 @@
     </ClInclude>
     <ClInclude Include="source\units\shooter\unit_shooter_gun.h">
       <Filter>Source Files\Units\Shooter</Filter>
-    </ClInclude>
-    <ClInclude Include="source\units\unit_pit.h">
-      <Filter>Source Files\Units</Filter>
     </ClInclude>
     <ClInclude Include="source\render\passes\base_pass.h">
       <Filter>Source Files\Render\Passes</Filter>
@@ -622,6 +562,12 @@
     </ClInclude>
     <ClInclude Include="source\render\passes\fxaa_pass.h">
       <Filter>Source Files\Render\Passes\fxaa</Filter>
+    </ClInclude>
+    <ClInclude Include="source\units\cameras\unit_first_person_camera.h">
+      <Filter>Source Files\Units\Cameras</Filter>
+    </ClInclude>
+    <ClInclude Include="source\units\cameras\unit_flying_camera.h">
+      <Filter>Source Files\Units\Cameras</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

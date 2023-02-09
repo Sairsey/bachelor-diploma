@@ -77,12 +77,11 @@ float4 PS(VSOut input) : SV_TARGET
   else
     Data = float4(Source.Sample(LinearSampler, input.uv).rgb, 1);
   
-  
-  // Lum in 4-th component
-  Data.a = dot(Data.xyz, float3(0.299, 0.587, 0.114));
-
   // SRGB
   Data.xyz = linear_to_srgb(Data.xyz);
+
+  // Lum in 4-th component
+  Data.a = dot(Data.xyz, float3(0.299, 0.587, 0.114));
 
   return Data;
 }

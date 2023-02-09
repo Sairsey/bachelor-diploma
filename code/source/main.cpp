@@ -32,26 +32,18 @@
 #include "units/enviroment/unit_yokohama.h"
 #include "units/enviroment/unit_alex_apt.h"
 
-#include "units/unit_control.h"
-
-// TODO:
-// 1) Fix Resize
-// 2) Restore everything
-// 4) DrawCommands is now used as ObjectIndices storage and Indirect.
-// 6) Restore shaders lighting
-// 7) Add Animations
-// 8) Error checking
-// 11) times profiling on CPU too
-// 14) Fix pools States (Probably done, but I have sometimes strange bug, when albedo rise its draw time)
-// 16) Pass for nodes checking
-// 18) Check (and probably fix) PBR
-// 19) Need a link between Object transform and Node Transform
-// 21) I need to add "Occluder" mesh parameter, which is a simplified version of model mesh. On Hier Depth draw only him.
-// 22) I cannot implement direct transparency, because I do not know position of my transparent mesh.
-// 23) Animations needs their own system. And calculate transforms only once
+#include "units/cameras/unit_flying_camera.h"
+#include "units/cameras/unit_first_person_camera.h"
 
 
-#ifdef UNITS_ENABLED
+// Notes:
+// 1) Error checking
+// 2) times profiling on CPU too
+// 3) Need a link between Object transform and Node Transform
+// 4) I need to add "Occluder" mesh parameter, which is a simplified version of model mesh. On Hier Depth draw only him.
+// 5) I cannot implement direct transparency, because I do not know position of my transparent mesh.
+
+#if 0
 #include "units/unit_stats.h"
 #include "units/unit_city.h"
 #include "units/unit_pbr_spheres.h"
@@ -79,7 +71,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 {
   gdr::engine Engine;
   
-#ifdef UNITS_ENABLED
+#if 0
   EXAMPLE usedExample = NONE;
 
   if (usedExample == SPECIALIST)
@@ -130,7 +122,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
   //Engine.AddUnit(new unit_pbr_metalness());
   //Engine.AddUnit(new unit_pbr_specular());
   //Engine.AddUnit(new unit_normal_map());
-  //Engine.AddUnit(new unit_load_any());
+  Engine.AddUnit(new unit_load_any());
   //Engine.AddUnit(new unit_transparent());
   //Engine.AddUnit(new unit_model_splitted());
   //Engine.AddUnit(new unit_specialist());
@@ -141,16 +133,18 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
   //Engine.AddUnit(new unit_thriller_camera());
   //Engine.AddUnit(new unit_thriller_dancers());
   
-  Engine.AddUnit(new unit_shooter_first_person());
-  Engine.AddUnit(new unit_shooter_enviroment());
-  Engine.AddUnit(new unit_shooter_enemy_spawner(10));
-  Engine.AddUnit(new unit_shooter_gun());
+  //Engine.AddUnit(new unit_shooter_first_person());
+  //Engine.AddUnit(new unit_shooter_enviroment());
+  //Engine.AddUnit(new unit_shooter_enemy_spawner(10));
+  //Engine.AddUnit(new unit_shooter_gun());
   
   //Engine.AddUnit(new unit_yokohama());
-  //Engine.AddUnit(new unit_alex_apt());
-  //Engine.AddUnit(new unit_control());
+  Engine.AddUnit(new unit_alex_apt());
   
   //Engine.AddUnit(new unit_choose());
+
+  Engine.AddUnit(new unit_flying_camera());
+  //Engine.AddUnit(new unit_first_person_camera());
 
   Engine.AddUnit(new unit_frame_times());
   Engine.AddUnit(new unit_resource_viewier());

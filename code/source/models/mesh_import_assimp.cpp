@@ -35,6 +35,8 @@ struct mesh_assimp_importer
   bool IsTextureTransparent(std::string path);
 
   void CalculateGlobalKeyframes(gdr_index MyIndex);
+  void CalculateAABB(gdr_index MyIndex, gdr_index KeyframeIndex);
+
 
   void Import();
   void ImportSplitted();
@@ -70,6 +72,47 @@ gdr_index mesh_assimp_importer::ImportTreeFirstPass(aiNode* node, gdr_index Pare
   return Current;
 }
 
+void mesh_assimp_importer::CalculateAABB(gdr_index MyIndex, gdr_index KeyframeIndex)
+{
+  if (Result.HierarchyNodes[MyIndex].Type == gdr_hier_node_type::mesh)
+  {
+    for (auto& Vert : Result.HierarchyNodes[MyIndex].Vertices)
+    {
+      mth::vec3f pos;
+      for (int i = 0; i < 4; i++)
+      {
+        if (Vert.BonesIndices[i] != NONE_INDEX)
+        {
+          gdr_index boneIndex = Result.HierarchyNodes[MyIndex].BonesMapping[Vert.BonesIndices[i]];
+          mth::matr4f globalTransform = (KeyframeIndex == NONE_INDEX) ?
+            Result.HierarchyNodes[boneIndex].GlobalTransform :
+            mth::matr4f::BuildTransform(
+              Result.HierarchyNodes[boneIndex].GlobalKeyframes[KeyframeIndex].scale,
+              Result.HierarchyNodes[boneIndex].GlobalKeyframes[KeyframeIndex].rotationQuat,
+              Result.HierarchyNodes[boneIndex].GlobalKeyframes[KeyframeIndex].pos);
+          pos += (Result.HierarchyNodes[boneIndex].BoneOffset * globalTransform) * Vert.Pos * Vert.BonesWeights[i];
+        }
+      }
+
+      for (int component_index = 0; component_index < 3; component_index++)
+      {
+        Result.RootTransform.maxAABB[component_index] = max(Result.RootTransform.maxAABB[component_index], pos[component_index]);
+        Result.RootTransform.minAABB[component_index] = min(Result.RootTransform.minAABB[component_index], pos[component_index]);
+      }
+    }
+  }
+
+  // into hierarchy
+  gdr_index ChildIndex = Result.HierarchyNodes[MyIndex].ChildIndex;
+  
+    
+  while (ChildIndex != NONE_INDEX)
+  {
+    CalculateAABB(ChildIndex, KeyframeIndex);
+    ChildIndex = Result.HierarchyNodes[ChildIndex].NextIndex;
+  }
+}
+
 void mesh_assimp_importer::ImportTreeSecondPass(aiNode* node, gdr_index CurrentIndex, mth::matr4f Offset)
 {
   // import meshes
@@ -89,6 +132,9 @@ void mesh_assimp_importer::ImportTreeSecondPass(aiNode* node, gdr_index CurrentI
       }
     }
   }
+
+  // copy GlobalTransform
+  Result.HierarchyNodes[CurrentIndex].GlobalTransform = Result.HierarchyNodes[CurrentIndex].LocalTransform * Offset;
 
   // into hierarchy
   gdr_index ChildIndex = Result.HierarchyNodes[CurrentIndex].ChildIndex;
@@ -541,8 +587,8 @@ void mesh_assimp_importer::Import()
   
   Result.FileName = FileName;
   Result.RootTransform.Transform = mth::matr::Identity();
-  Result.RootTransform.minAABB = mth::vec3f(0, 0, 0);
-  Result.RootTransform.maxAABB = mth::vec3f(0, 0, 0);
+  Result.RootTransform.minAABB = mth::vec3f(FLT_MAX, FLT_MAX, FLT_MAX);
+  Result.RootTransform.maxAABB = mth::vec3f(-FLT_MAX, -FLT_MAX, -FLT_MAX);
   
   ImportTreeFirstPass(scene->mRootNode);
   ImportTreeSecondPass(scene->mRootNode);
@@ -796,25 +842,15 @@ void mesh_assimp_importer::Import()
 
     // 5) Calculate Global Keyframes
     CalculateGlobalKeyframes(0);
+
+    // 6) Calculate AABB for all frames
+    for (int i = 0; i < Result.HierarchyNodes[0].GlobalKeyframes.size(); i++)
+      CalculateAABB(0, i);
   }
-
-  importer.FreeScene();
-
-  // calculate AABB
-  scene = importer.ReadFile(FileName,
-    aiProcessPreset_TargetRealtime_Fast |
-    aiProcess_PreTransformVertices |
-    aiProcess_GenBoundingBoxes);
-
-  // calculate min-max AABB
-  for (unsigned i = 0; i < scene->mNumMeshes; i++)
+  else
   {
-    Result.RootTransform.minAABB.X = min(Result.RootTransform.minAABB.X, scene->mMeshes[i]->mAABB.mMin.x);
-    Result.RootTransform.minAABB.Y = min(Result.RootTransform.minAABB.Y, scene->mMeshes[i]->mAABB.mMin.y);
-    Result.RootTransform.minAABB.Z = min(Result.RootTransform.minAABB.Z, scene->mMeshes[i]->mAABB.mMin.z);
-    Result.RootTransform.maxAABB.X = max(Result.RootTransform.maxAABB.X, scene->mMeshes[i]->mAABB.mMax.x);
-    Result.RootTransform.maxAABB.Y = max(Result.RootTransform.maxAABB.Y, scene->mMeshes[i]->mAABB.mMax.y);
-    Result.RootTransform.maxAABB.Z = max(Result.RootTransform.maxAABB.Z, scene->mMeshes[i]->mAABB.mMax.z);
+    // 6) Calculate for root frame
+    CalculateAABB(0, NONE_INDEX);
   }
 
   std::vector<bool> IsTransparent;
@@ -847,6 +883,7 @@ void mesh_assimp_importer::Import()
       if (opacity != 1.0 || (texture_id != NONE_INDEX && IsTransparent[texture_id]))
         Result.HierarchyNodes[i].Params |= OBJECT_PARAMETER_TRANSPARENT;
     }
+  importer.FreeScene();
 }
 
 void mesh_assimp_importer::ImportSplitted()

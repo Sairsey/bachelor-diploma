@@ -60,7 +60,7 @@ void gdr::resource_pool_subsystem<StoredType, 0>::Remove(gdr_index index)
     PoolRecords[index].IsAlive = false;
 
     // little defragmentation
-    while (!PoolRecords[PoolRecords.size() - 1].IsAlive)
+    while (PoolRecords.size() > 0 && !PoolRecords[PoolRecords.size() - 1].IsAlive)
     {
       PoolRecords.pop_back();
       CPUData.pop_back();

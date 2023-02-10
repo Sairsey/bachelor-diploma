@@ -16,7 +16,6 @@ private:
 
   std::vector<Fish> LeftTank;
   std::vector<Fish> RightTank;
-  size_t StartFishesAmount = 100000;
   std::vector<gdr::model_import_data> Fishes;
 
   mth::vec3f LeftTankBottom = { -5.5f, 1.f, -1.5f };
@@ -24,6 +23,16 @@ private:
   float MaxHeight = 1.5;
   float MaxRadius = 0.5;
   float MaxSpeed = 1;
+
+  bool SavePerf = false;
+
+  size_t StartFishesAmount = 1000;
+  size_t FishesStep = 100;
+  size_t MaxFishesAmount = 5000;
+  int FramesToCalc = 400;
+  double SumEngTime = 0;
+  double SumCPUTime = 0;
+  std::string Filename = "indirect_perf.txt";
 
 public:
   void Initialize(void)
@@ -40,40 +49,78 @@ public:
         Fishes[i] = FishesPack2[i - FishesPack1.size()];
       else
         Fishes[i] = FishesPack3[i - FishesPack1.size() - FishesPack2.size()];
+    AddFishes(StartFishesAmount);
 
-    // Load fishes
-    ID3D12GraphicsCommandList* commandList;
-    Engine->GetDevice().BeginUploadCommandList(&commandList);
-    PROFILE_BEGIN(commandList, "unit_thriller_stage Load stage");
-    for (int i = 0; i < StartFishesAmount; i++)
-    {
-      Fish fish;
+    Engine->Params.IsOccusionCulling = false;
+    Engine->Params.IsFrustumCulling = false;
+    Engine->Params.IsIndirect = true;
+    Engine->EnableFullscreen();
+  }
 
-      int Tank = rand() % 2;
-      fish.IsClockwise = rand() % 2;
-      fish.Height = 1.0f * rand() / RAND_MAX * MaxHeight;
-      fish.Radius = 1.0f * rand() / RAND_MAX * MaxRadius;
-      fish.Speed = 1.0f * rand() / RAND_MAX * MaxSpeed;
-      fish.Angle = 1.0f * rand() / RAND_MAX * 360.0;
-
-      fish.Model = Engine->ModelsManager->Add(Fishes[0]);
-      GDRGPUMaterialCookTorranceGetAlbedo(Engine->MaterialsSystem->GetEditable(Engine->ModelsManager->Get(fish.Model).Render.Materials[0])) = { 1.0f * rand() / RAND_MAX, 1.0f * rand() / RAND_MAX, 1.0f * rand() / RAND_MAX };
-
-      if (Tank == 0)
+  void AddFishes(int count)
+  {
+      // Load fishes
+      ID3D12GraphicsCommandList* commandList;
+      Engine->GetDevice().BeginUploadCommandList(&commandList);
+      PROFILE_BEGIN(commandList, "unit_fishes_rotating Load");
+      for (int i = 0; i < count; i++)
       {
-        LeftTank.push_back(fish);
+          Fish fish;
+
+          int Tank = 1;// rand() % 2;
+          fish.IsClockwise = rand() % 2;
+          fish.Height = 1.0f * rand() / RAND_MAX * MaxHeight;
+          fish.Radius = 1.0f * rand() / RAND_MAX * MaxRadius;
+          fish.Speed = 1.0f * rand() / RAND_MAX * MaxSpeed;
+          fish.Angle = 1.0f * rand() / RAND_MAX * 360.0;
+
+          fish.Model = Engine->ModelsManager->Add(Fishes[rand() % Fishes.size()]);
+          GDRGPUMaterialCookTorranceGetAlbedo(Engine->MaterialsSystem->GetEditable(Engine->ModelsManager->Get(fish.Model).Render.Materials[0])) = { 1.0f * rand() / RAND_MAX, 1.0f * rand() / RAND_MAX, 1.0f * rand() / RAND_MAX };
+
+          if (Tank == 0)
+          {
+              LeftTank.push_back(fish);
+          }
+          else
+          {
+              RightTank.push_back(fish);
+          }
       }
-      else 
-      {
-        RightTank.push_back(fish);
-      }
-    }
-    PROFILE_END(commandList);
-    Engine->GetDevice().CloseUploadCommandList();
+      PROFILE_END(commandList);
+      Engine->GetDevice().CloseUploadCommandList();
   }
 
   void Response(void)
   {
+    static size_t frameCount = 0;
+    frameCount++;
+    Engine->PlayerCamera.SetView({ 7, 2, -1.5 }, { 8, 2, -1.5 }, { 0, 1, 0 });
+    if (SavePerf)
+    {
+        if (frameCount % FramesToCalc == 0)
+        {
+            FILE* F;
+            fopen_s(&F, Filename.c_str(), "a");
+            // fishes, Frame time, CPU Render time, GPU Render time
+            fprintf(F, "%d, %f, %f, %f\n", RightTank.size(), SumEngTime / FramesToCalc * 4.0/3.0, SumCPUTime / FramesToCalc * 4.0 / 3.0, Engine->DeviceFrameCounter.GetUSec());
+            fclose(F);
+            SumEngTime = 0;
+            SumCPUTime = 0;
+
+            if (RightTank.size() >= MaxFishesAmount)
+            {
+                exit(0);
+            }
+
+            AddFishes(FishesStep);
+        }
+        else if (frameCount % FramesToCalc >= FramesToCalc / 4)
+        {
+            SumEngTime += Engine->EngineClock;
+            SumCPUTime += Engine->CPUDrawFrameTime;
+        }
+    }
+
     for (int i = 0; i < LeftTank.size(); i++)
     {
       Fish& f = LeftTank[i];

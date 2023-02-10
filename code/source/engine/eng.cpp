@@ -104,6 +104,7 @@ VOID gdr::engine::Activate(BOOL IsActive)
  */
 VOID gdr::engine::Timer(VOID)
 {
+  auto cpuStart = std::chrono::system_clock::now();
   PROFILE_CPU_BEGIN("ENGINE TICK");
   // update Time
   timer_support::IncreaseFrameCounter();
@@ -184,6 +185,8 @@ VOID gdr::engine::Timer(VOID)
   // Draw Frame
   render::DrawFrame();
   PROFILE_CPU_END();
+  auto cpuEnd = std::chrono::system_clock::now();
+  EngineClock = std::chrono::duration_cast<std::chrono::nanoseconds>(cpuEnd - cpuStart).count();
 }
 
 /* Free CPU time handling function.

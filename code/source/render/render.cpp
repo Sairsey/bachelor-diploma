@@ -283,6 +283,8 @@ void gdr::render::DrawFrame(void)
         Device.ClearUploadListReference();
     }
 
+    auto renderStart = std::chrono::system_clock::now();
+
     PROFILE_BEGIN(pCommandList, "Update resource states");
     NodeTransformsSystem->UpdateResourceState(pCommandList, true);
     ObjectTransformsSystem->UpdateResourceState(pCommandList, true);
@@ -294,7 +296,6 @@ void gdr::render::DrawFrame(void)
     OITTransparencySystem->UpdateResourceState(pCommandList, true);
     PROFILE_END(pCommandList);
 
-    auto renderStart = std::chrono::system_clock::now();
     PROFILE_BEGIN(pCommandList, "Frame");
     DeviceFrameCounter.Start(pCommandList);
 

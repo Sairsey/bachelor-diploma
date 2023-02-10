@@ -1,4 +1,5 @@
 #include "p_header.h"
+#include "units/stats/unit_log_time.h"
 #include "units/stats/unit_frame_times.h"
 #include "units/stats/unit_resource_viewier.h"
 #include "units/stats/unit_render_params.h"
@@ -28,6 +29,9 @@
 #include "units/shooter/unit_shooter_enviroment.h"
 #include "units/shooter/unit_shooter_enemy_spawner.h"
 #include "units/shooter/unit_shooter_gun.h"
+
+#include "units/fishes/unit_fishes_env.h"
+#include "units/fishes/unit_fishes_rotating.h"
 
 #include "units/enviroment/unit_yokohama.h"
 #include "units/enviroment/unit_alex_apt.h"
@@ -118,11 +122,11 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
   //Engine.AddUnit(new unit_light_example());
   //Engine.AddUnit(new unit_occlusion_cull());
   //Engine.AddUnit(new unit_triangle());
-  //Engine.AddUnit(new unit_runtime_add_remove());
+  Engine.AddUnit(new unit_runtime_add_remove());
   //Engine.AddUnit(new unit_pbr_metalness());
   //Engine.AddUnit(new unit_pbr_specular());
   //Engine.AddUnit(new unit_normal_map());
-  Engine.AddUnit(new unit_load_any());
+  //Engine.AddUnit(new unit_load_any());
   //Engine.AddUnit(new unit_transparent());
   //Engine.AddUnit(new unit_model_splitted());
   //Engine.AddUnit(new unit_specialist());
@@ -137,11 +141,15 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
   //Engine.AddUnit(new unit_shooter_enviroment());
   //Engine.AddUnit(new unit_shooter_enemy_spawner(10));
   //Engine.AddUnit(new unit_shooter_gun());
+
+  //Engine.AddUnit(new unit_fishes_env());
+  //Engine.AddUnit(new unit_fishes_rotating());
   
   //Engine.AddUnit(new unit_yokohama());
   Engine.AddUnit(new unit_alex_apt());
   
   //Engine.AddUnit(new unit_choose());
+  Engine.AddUnit(new unit_log_time());
 
   Engine.AddUnit(new unit_flying_camera());
   //Engine.AddUnit(new unit_first_person_camera());

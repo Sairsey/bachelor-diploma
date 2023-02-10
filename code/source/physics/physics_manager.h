@@ -104,6 +104,8 @@ namespace gdr
       float SimulationDeltaTime = 0;
       bool IsThrottle;
     public:
+      bool IsInterpolating = true;;
+
       physics_manager(engine* Eng);
 
       gdr_index Add()

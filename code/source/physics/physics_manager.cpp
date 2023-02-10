@@ -331,83 +331,130 @@ void gdr::physics_manager::BeforeRemoveJob(gdr_index index)
 bool gdr::physics_manager::Update(float DeltaTime)
 {
   bool res = false;
-  SimulationDeltaTime += DeltaTime;
-
-  if (!IsThrottle && SimulationDeltaTime > 3 * PHYSICS_TICK)
+  if (IsInterpolating)
   {
-      OutputDebugStringA("PHYSICS_DELTA_TIME IS TOO BIG. ENGINE PAUSED\n");
-      IsThrottle = true;
-  }
+      SimulationDeltaTime += DeltaTime;
 
-  Engine->SetPhysPause(IsThrottle);
-
-  if ((IsThrottle || SimulationDeltaTime > PHYSICS_TICK) && Scene->fetchResults(false))
-  {
-    res = !IsThrottle;
-    PROFILE_CPU_BEGIN("Physics next frame");
-    // delete objects then we are not simulating
-    for (const auto& i : ToDelete)
-    {
-      i.PhysxBody->release();
-      i.PhysxMaterial->release();
-    }
-    ToDelete.clear();
-
-    SimulationDeltaTime -= PHYSICS_TICK;
-    SimulationDeltaTime = max(SimulationDeltaTime, 0);
-    if (SimulationDeltaTime == 0)
-        IsThrottle = false;
-
-    {
-        PROFILE_CPU_BEGIN("Simulate");
-        Scene->simulate(PHYSICS_TICK);
-        PROFILE_CPU_END();
-    }
-
-    for (gdr_index i = 1; i < AllocatedSize(); i++)
-      if (IsExist(i))
+      if (!IsThrottle && SimulationDeltaTime > 3 * PHYSICS_TICK)
       {
-        physx::PxTransform Trans = Get(i).PhysxBody->getGlobalPose();             
-        GetEditable(i).PrevTickState.Pos = Get(i).IsCreated ? mth::vec3f{ Trans.p.x, Trans.p.y, Trans.p.z } : Get(i).NextTickState.Pos;
-        GetEditable(i).PrevTickState.Rot = Get(i).IsCreated ? mth::vec4f{ Trans.q.x, Trans.q.y, Trans.q.z, Trans.q.w } : Get(i).NextTickState.Rot;
-        GetEditable(i).NextTickState.Pos = { Trans.p.x, Trans.p.y, Trans.p.z };
-        GetEditable(i).NextTickState.Rot = { Trans.q.x, Trans.q.y, Trans.q.z, Trans.q.w };
-
-        physx::PxRigidBody* BodyReal = Get(i).PhysxBody->is<physx::PxRigidBody>();
-        if (Get(i).IsStatic || !BodyReal)
-        {
-          GetEditable(i).PrevTickState.Vel = {0, 0, 0};
-          GetEditable(i).PrevTickState.AngVel = { 0, 0, 0 };
-          GetEditable(i).NextTickState.Vel = { 0, 0, 0 };
-          GetEditable(i).NextTickState.AngVel = { 0, 0, 0 };
-        }
-        else
-        {
-          physx::PxVec3 Vel = BodyReal->getLinearVelocity();
-          physx::PxVec3 AngVel = BodyReal->getAngularVelocity();
-          GetEditable(i).PrevTickState.Vel = Get(i).IsCreated ? mth::vec3f{ Vel[0], Vel[1], Vel[2] } : Get(i).NextTickState.Vel;
-          GetEditable(i).PrevTickState.AngVel = Get(i).IsCreated ? mth::vec3f{ AngVel[0], AngVel[1], AngVel[2] } : Get(i).NextTickState.AngVel;
-          GetEditable(i).NextTickState.Vel = mth::vec3f{ Vel[0], Vel[1], Vel[2] };
-          GetEditable(i).NextTickState.AngVel = mth::vec3f{ AngVel[0], AngVel[1], AngVel[2] };
-        }        
-
-        GetEditable(i).IsCreated = false;
+          OutputDebugStringA("PHYSICS_DELTA_TIME IS TOO BIG. ENGINE PAUSED\n");
+          IsThrottle = true;
       }
-    PROFILE_CPU_END();
+
+      Engine->SetPhysPause(IsThrottle);
+
+      if ((IsThrottle || SimulationDeltaTime > PHYSICS_TICK) && Scene->fetchResults(false))
+      {
+          res = !IsThrottle;
+          PROFILE_CPU_BEGIN("Physics next frame");
+          // delete objects then we are not simulating
+          for (const auto& i : ToDelete)
+          {
+              i.PhysxBody->release();
+              i.PhysxMaterial->release();
+          }
+          ToDelete.clear();
+
+          SimulationDeltaTime -= PHYSICS_TICK;
+          SimulationDeltaTime = max(SimulationDeltaTime, 0);
+          if (SimulationDeltaTime == 0)
+              IsThrottle = false;
+
+          {
+              PROFILE_CPU_BEGIN("Simulate");
+              Scene->simulate(PHYSICS_TICK);
+              PROFILE_CPU_END();
+          }
+
+          for (gdr_index i = 1; i < AllocatedSize(); i++)
+              if (IsExist(i))
+              {
+                  physx::PxTransform Trans = Get(i).PhysxBody->getGlobalPose();
+                  GetEditable(i).PrevTickState.Pos = Get(i).IsCreated ? mth::vec3f{ Trans.p.x, Trans.p.y, Trans.p.z } : Get(i).NextTickState.Pos;
+                  GetEditable(i).PrevTickState.Rot = Get(i).IsCreated ? mth::vec4f{ Trans.q.x, Trans.q.y, Trans.q.z, Trans.q.w } : Get(i).NextTickState.Rot;
+                  GetEditable(i).NextTickState.Pos = { Trans.p.x, Trans.p.y, Trans.p.z };
+                  GetEditable(i).NextTickState.Rot = { Trans.q.x, Trans.q.y, Trans.q.z, Trans.q.w };
+
+                  physx::PxRigidBody* BodyReal = Get(i).PhysxBody->is<physx::PxRigidBody>();
+                  if (Get(i).IsStatic || !BodyReal)
+                  {
+                      GetEditable(i).PrevTickState.Vel = { 0, 0, 0 };
+                      GetEditable(i).PrevTickState.AngVel = { 0, 0, 0 };
+                      GetEditable(i).NextTickState.Vel = { 0, 0, 0 };
+                      GetEditable(i).NextTickState.AngVel = { 0, 0, 0 };
+                  }
+                  else
+                  {
+                      physx::PxVec3 Vel = BodyReal->getLinearVelocity();
+                      physx::PxVec3 AngVel = BodyReal->getAngularVelocity();
+                      GetEditable(i).PrevTickState.Vel = Get(i).IsCreated ? mth::vec3f{ Vel[0], Vel[1], Vel[2] } : Get(i).NextTickState.Vel;
+                      GetEditable(i).PrevTickState.AngVel = Get(i).IsCreated ? mth::vec3f{ AngVel[0], AngVel[1], AngVel[2] } : Get(i).NextTickState.AngVel;
+                      GetEditable(i).NextTickState.Vel = mth::vec3f{ Vel[0], Vel[1], Vel[2] };
+                      GetEditable(i).NextTickState.AngVel = mth::vec3f{ AngVel[0], AngVel[1], AngVel[2] };
+                  }
+
+                  GetEditable(i).IsCreated = false;
+              }
+          PROFILE_CPU_END();
+      }
+
+      float interpolParam = (SimulationDeltaTime) / (PHYSICS_TICK);
+
+      interpolParam = max(0, min(1, interpolParam));
+
+      for (gdr_index i = 1; i < AllocatedSize(); i++)
+          if (IsExist(i))
+          {
+              GetEditable(i).InterpolatedState.Pos = Get(i).PrevTickState.Pos * (1 - interpolParam) + Get(i).NextTickState.Pos * (interpolParam);
+              GetEditable(i).InterpolatedState.Vel = Get(i).PrevTickState.Vel * (1 - interpolParam) + Get(i).NextTickState.Vel * (interpolParam);
+              GetEditable(i).InterpolatedState.AngVel = Get(i).PrevTickState.AngVel * (1 - interpolParam) + Get(i).NextTickState.AngVel * (interpolParam);
+              GetEditable(i).InterpolatedState.Rot = Get(i).PrevTickState.Rot.slerp(Get(i).NextTickState.Rot, interpolParam);
+          }
   }
+  else
+  {
+      IsThrottle = false;
+      Engine->SetPhysPause(IsThrottle);
+      Scene->fetchResults(true);
+      Scene->simulate(max(DeltaTime, 0));
+      for (gdr_index i = 1; i < AllocatedSize(); i++)
+          if (IsExist(i))
+          {
+              physx::PxTransform Trans = Get(i).PhysxBody->getGlobalPose();
+              GetEditable(i).PrevTickState.Pos = Get(i).IsCreated ? mth::vec3f{ Trans.p.x, Trans.p.y, Trans.p.z } : Get(i).NextTickState.Pos;
+              GetEditable(i).PrevTickState.Rot = Get(i).IsCreated ? mth::vec4f{ Trans.q.x, Trans.q.y, Trans.q.z, Trans.q.w } : Get(i).NextTickState.Rot;
+              GetEditable(i).NextTickState.Pos = { Trans.p.x, Trans.p.y, Trans.p.z };
+              GetEditable(i).NextTickState.Rot = { Trans.q.x, Trans.q.y, Trans.q.z, Trans.q.w };
 
-  float interpolParam = (SimulationDeltaTime) / (PHYSICS_TICK);
-
-  interpolParam = max(0, min(1, interpolParam));
-
-  for (gdr_index i = 1; i < AllocatedSize(); i++)
-    if (IsExist(i))
-    {
-      GetEditable(i).InterpolatedState.Pos = Get(i).PrevTickState.Pos * (1 - interpolParam) + Get(i).NextTickState.Pos * (interpolParam);
-      GetEditable(i).InterpolatedState.Vel = Get(i).PrevTickState.Vel * (1 - interpolParam) + Get(i).NextTickState.Vel * (interpolParam);
-      GetEditable(i).InterpolatedState.AngVel = Get(i).PrevTickState.AngVel * (1 - interpolParam) + Get(i).NextTickState.AngVel * (interpolParam);
-      GetEditable(i).InterpolatedState.Rot = Get(i).PrevTickState.Rot.slerp(Get(i).NextTickState.Rot, interpolParam);
-    }
+              physx::PxRigidBody* BodyReal = Get(i).PhysxBody->is<physx::PxRigidBody>();
+              if (Get(i).IsStatic || !BodyReal)
+              {
+                  GetEditable(i).PrevTickState.Vel = { 0, 0, 0 };
+                  GetEditable(i).PrevTickState.AngVel = { 0, 0, 0 };
+                  GetEditable(i).NextTickState.Vel = { 0, 0, 0 };
+                  GetEditable(i).NextTickState.AngVel = { 0, 0, 0 };
+              }
+              else
+              {
+                  physx::PxVec3 Vel = BodyReal->getLinearVelocity();
+                  physx::PxVec3 AngVel = BodyReal->getAngularVelocity();
+                  GetEditable(i).PrevTickState.Vel = Get(i).IsCreated ? mth::vec3f{ Vel[0], Vel[1], Vel[2] } : Get(i).NextTickState.Vel;
+                  GetEditable(i).PrevTickState.AngVel = Get(i).IsCreated ? mth::vec3f{ AngVel[0], AngVel[1], AngVel[2] } : Get(i).NextTickState.AngVel;
+                  GetEditable(i).NextTickState.Vel = mth::vec3f{ Vel[0], Vel[1], Vel[2] };
+                  GetEditable(i).NextTickState.AngVel = mth::vec3f{ AngVel[0], AngVel[1], AngVel[2] };
+              }
+              GetEditable(i).IsCreated = false;
+          }
+      for (gdr_index i = 1; i < AllocatedSize(); i++)
+          if (IsExist(i))
+          {
+              GetEditable(i).InterpolatedState.Pos = Get(i).NextTickState.Pos;
+              GetEditable(i).InterpolatedState.Vel = Get(i).NextTickState.Vel;
+              GetEditable(i).InterpolatedState.AngVel = Get(i).NextTickState.AngVel;
+              GetEditable(i).InterpolatedState.Rot = Get(i).NextTickState.Rot;
+          }
+      res = true;
+  }
   return res;
 }
 

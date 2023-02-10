@@ -80,8 +80,6 @@ public:
     Engine->AddLambdaForIMGUI(
       [&]()
       {
-        ImGui::ShowDemoWindow();
-
         ImGui::Begin("Model open window");
           // open file dialog when user clicks this button
           if (ImGui::Button("open file dialog"))

@@ -223,11 +223,13 @@ gdr_index mesh_assimp_importer::ImportTreeMesh(aiMesh* mesh, gdr_index ParentInd
     return NONE_INDEX;
   }
 
+  /*
   if (!mesh->HasTextureCoords(0))
   {
     Result.HierarchyNodes.pop_back();
     return NONE_INDEX;
   }
+  */
 
   mth::vec3f minAABB = mth::vec3f(INFINITY);
   mth::vec3f maxAABB = mth::vec3f(-INFINITY);
@@ -241,11 +243,18 @@ gdr_index mesh_assimp_importer::ImportTreeMesh(aiMesh* mesh, gdr_index ParentInd
     aiVector3D uv;
 
     if (mesh->mTextureCoords[0])
-      uv = mesh->mTextureCoords[0][j];
+    {
+        uv = mesh->mTextureCoords[0][j];
 
-    V.UV = mth::vec2f({ uv.x, uv.y });
+        V.UV = mth::vec2f({ uv.x, uv.y });
 
-    V.Tangent = mth::vec3f{ mesh->mTangents[j].x, mesh->mTangents[j].y, mesh->mTangents[j].z };
+        V.Tangent = mth::vec3f{ mesh->mTangents[j].x, mesh->mTangents[j].y, mesh->mTangents[j].z };
+    }
+    else
+    {
+        V.UV = { 0, 0 };
+        V.Tangent = { 0, 0, 1 };
+    }
     V.Tangent.Normalize();
 
     V.BonesIndices = mth::vec4<UINT>(NONE_INDEX, NONE_INDEX, NONE_INDEX, NONE_INDEX);

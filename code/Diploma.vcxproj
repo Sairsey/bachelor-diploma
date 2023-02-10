@@ -87,12 +87,15 @@
     <ClInclude Include="source\units\examples\unit_specialist.h" />
     <ClInclude Include="source\units\examples\unit_transparent.h" />
     <ClInclude Include="source\units\examples\unit_triangle.h" />
+    <ClInclude Include="source\units\fishes\unit_fishes_env.h" />
+    <ClInclude Include="source\units\fishes\unit_fishes_rotating.h" />
     <ClInclude Include="source\units\shooter\unit_shooter_enemy.h" />
     <ClInclude Include="source\units\shooter\unit_shooter_enemy_spawner.h" />
     <ClInclude Include="source\units\shooter\unit_shooter_enviroment.h" />
     <ClInclude Include="source\units\shooter\unit_shooter_first_person.h" />
     <ClInclude Include="source\units\shooter\unit_shooter_gun.h" />
     <ClInclude Include="source\units\stats\unit_frame_times.h" />
+    <ClInclude Include="source\units\stats\unit_log_time.h" />
     <ClInclude Include="source\units\stats\unit_render_params.h" />
     <ClInclude Include="source\units\stats\unit_resource_viewier.h" />
     <ClInclude Include="source\units\thriller\unit_thriller_camera.h" />

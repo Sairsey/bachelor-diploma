@@ -145,6 +145,12 @@
     <Filter Include="Source Files\Units\Cameras">
       <UniqueIdentifier>{dee7afb4-6d0c-4a90-8193-ec5c5f0ba96d}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Units\Fishes">
+      <UniqueIdentifier>{96998b8b-f2ff-41cd-b27b-42c44599f5b3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Units\Ocean">
+      <UniqueIdentifier>{a4d45991-71cb-4ff1-91a0-862563997118}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\main.cpp">
@@ -568,6 +574,15 @@
     </ClInclude>
     <ClInclude Include="source\units\cameras\unit_flying_camera.h">
       <Filter>Source Files\Units\Cameras</Filter>
+    </ClInclude>
+    <ClInclude Include="source\units\fishes\unit_fishes_env.h">
+      <Filter>Source Files\Units\Fishes</Filter>
+    </ClInclude>
+    <ClInclude Include="source\units\fishes\unit_fishes_rotating.h">
+      <Filter>Source Files\Units\Fishes</Filter>
+    </ClInclude>
+    <ClInclude Include="source\units\stats\unit_log_time.h">
+      <Filter>Source Files\Units\Stats</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

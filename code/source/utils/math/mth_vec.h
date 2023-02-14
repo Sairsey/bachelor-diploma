@@ -772,7 +772,7 @@ namespace mth
       } /* End of 'Cross' function */
 
       // Spherical linear interpolation between unit quaternions q1 and q2 with interpolation parameter t.
-      vec4<Type> slerp(vec4<Type> q2, float t)
+      vec4<Type> slerp(vec4<Type> q2, float t) const
       {
         float w1, x1, y1, z1, w2, x2, y2, z2, w3, x3, y3, z3;
         vec4<Type> q2New;

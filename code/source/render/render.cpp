@@ -64,40 +64,54 @@ bool gdr::render::Init(engine* Eng)
     localIsInited = localIsInited && CreateDepthStencil();
   }
 
-  //init subsystems
-  if (localIsInited)
+  // init subsystems
+  if (localIsInited) 
   {
-    GeometrySystem = new gdr::geometry_support(this);
-    ObjectSystem = new gdr::object_support(this);
-    GlobalsSystem = new gdr::globals_support(this);
-    TransformsSystem = new gdr::transforms_support(this);
-    IndirectSystem = new gdr::indirect_support(this);
-    MaterialsSystem = new gdr::materials_support(this);
-    TexturesSystem = new gdr::textures_support(this);
-    CubeTexturesSystem= new gdr::cube_textures_support(this);
-    LightsSystem = new gdr::light_sources_support(this);
-    RenderTargets = new gdr::render_targets_support(this);
-    HierDepth = new gdr::hier_depth_support(this);
-    ScreenshotsSystem = new gdr::screenshot_support(this);
+      GlobalsSystem = new globals_subsystem(this);
+      RenderTargetsSystem = new render_targets_subsystem(this);
+      ObjectTransformsSystem = new object_transforms_subsystem(this);
+      NodeTransformsSystem = new node_transforms_subsystem(this);
+      DrawCommandsSystem = new draw_commands_subsystem(this);
+      GeometrySystem = new geometry_subsystem(this);
+      MaterialsSystem = new materials_subsystem(this);
+      TexturesSystem = new textures_subsystem(this);
+      CubeTexturesSystem = new cube_textures_subsystem(this);
+      LightsSystem = new lights_subsystem(this);
+      LuminanceSystem = new luminance_subsystem(this);
+      EnviromentSystem = new enviroment_subsystem(this);
+      BoneMappingSystem = new bone_mapping_subsystem(this);
+      OITTransparencySystem = new oit_transparency_subsystem(this);
   }
 
   // init passes
   if (localIsInited)
   {
-    Passes.push_back(new frustum_pass());
-    Passes.push_back(new hier_depth_pass());
-    Passes.push_back(new occlusion_pass());
-    Passes.push_back(new debug_pass());
+    // Preprocess
+    Passes.push_back(new visibility_frustum_pass());
+    Passes.push_back(new visibility_hier_depth_pass());
+    Passes.push_back(new visibility_occlusion_pass());
+    
+    // Main pass
     Passes.push_back(new albedo_pass());
     Passes.push_back(new skybox_pass());
-    Passes.push_back(new oit_transparent_pass());
-    Passes.push_back(new tonemap_pass());
-    //Passes.push_back(new hdr_copy_pass());
-    Passes.push_back(new imgui_pass());
+    Passes.push_back(new oit_color_pass());
+    Passes.push_back(new oit_compose_pass());
 
+    // Postprocess
+    Passes.push_back(new luminance_pass());
+    Passes.push_back(new tonemap_pass());
+    Passes.push_back(new fxaa_pass());
+
+    // debug passes
+    Passes.push_back(new debug_aabb_pass());
+    Passes.push_back(new debug_hier_pass());
+
+    // postprocess
+    Passes.push_back(new imgui_pass());
     for (auto& pass : Passes)
     {
       pass->SetRender(this);
+      pass->DeviceTimeCounter = device_time_query(&Device);
       pass->Initialize();
     }
   }
@@ -121,6 +135,21 @@ void gdr::render::AddLambdaForIMGUI(std::function<void(void)> func)
   }
 }
 
+void gdr::render::EnableFullscreen()
+{
+  IDXGIOutput* pOutput = nullptr;
+  int outputIndex = 0;
+  while (Device.GetAdapter()->EnumOutputs(outputIndex, &pOutput) == S_OK)
+  {
+    DXGI_OUTPUT_DESC desc;
+    pOutput->GetDesc(&desc);
+    Device.GetSwapchain()->SetFullscreenState(true, pOutput);
+    pOutput->Release();
+    ++outputIndex;
+    break;
+  }
+}
+
 /* Resize frame function
  * ARGUMENTS:
  *      - new frame width
@@ -132,10 +161,8 @@ void gdr::render::AddLambdaForIMGUI(std::function<void(void)> func)
 void gdr::render::Resize(UINT w, UINT h)
 {
   Device.ResizeSwapchain(w, h);
-
+  
   PlayerCamera.Resize(w, h);
-
-  RenderTargets->Resize(w, h);
 
   if (DepthBuffer.Resource != nullptr)
   {
@@ -147,55 +174,130 @@ void gdr::render::Resize(UINT w, UINT h)
       CreateDepthStencil();
     }
   }
+
+  // Hier Depth texture needs update
+  RenderTargetsSystem->Resize(w, h);
 }
 
 /* Draw frame function */
 void gdr::render::DrawFrame(void)
 {
-  if (!IsInited)
+  if (!IsInited || DrawCommandsSystem->AllocatedSize() == 0)
     return;
-  PROFILE_CPU_BEGIN("DrawFrame");
-  PROFILE_CPU_BEGIN("Update objects transforms");
-  ObjectSystem->UpdateAllNodes();
-  PROFILE_CPU_END();
 
-  ID3D12GraphicsCommandList* uploadCommandList;
-  GetDevice().BeginUploadCommandList(&uploadCommandList);
-  auto updateStart = std::chrono::system_clock::now();
-  PROFILE_BEGIN(uploadCommandList, "Update transforms");
-  TransformsSystem->UpdateGPUData(uploadCommandList);
-  PROFILE_END(uploadCommandList);
-  PROFILE_BEGIN(uploadCommandList, "Update materials");
-  MaterialsSystem->UpdateGPUData(uploadCommandList);
-  PROFILE_END(uploadCommandList);
-  PROFILE_BEGIN(uploadCommandList, "Update Textures");
-  TexturesSystem->UpdateGPUData(uploadCommandList);
-  PROFILE_END(uploadCommandList);
-  PROFILE_BEGIN(uploadCommandList, "Update cube Textures");
-  CubeTexturesSystem->UpdateGPUData(uploadCommandList);
-  PROFILE_END(uploadCommandList);
-  PROFILE_BEGIN(uploadCommandList, "Update Lights");
-  LightsSystem->UpdateGPUData(uploadCommandList);
-  PROFILE_END(uploadCommandList);
-  GetDevice().CloseUploadCommandListBeforeRenderCommandList();
-  auto updateEnd = std::chrono::system_clock::now();
-  UpdateBuffersTime = std::chrono::duration_cast<std::chrono::nanoseconds>(updateEnd - updateStart).count();
+  auto updateAllSystems = [&](ID3D12GraphicsCommandList* uploadCommandList) {
+      {
+          PROFILE_BEGIN(uploadCommandList, "Update Globals");
+          GlobalsSystem->GetEditable().VP = PlayerCamera.GetVP(); // camera view-proj
+          GlobalsSystem->GetEditable().CameraPos = PlayerCamera.GetPos(); // Camera position
+          GlobalsSystem->GetEditable().Time = Engine->GetGlobalTime(); // Time in seconds
 
+          GlobalsSystem->GetEditable().DeltaTime = Engine->GetDeltaTime(); // Delta time in seconds	
+          GlobalsSystem->GetEditable().Width = Engine->Width;  // Screen size 
+          GlobalsSystem->GetEditable().Height = Engine->Height; // Screen size 
+          GlobalsSystem->GetEditable().LightsAmount = (UINT)Engine->LightsSystem->AllocatedSize();
+          GlobalsSystem->GetEditable().IsTonemap = Params.IsTonemapping;
+          GlobalsSystem->GetEditable().SceneExposure = Params.SceneExposure;
+          GlobalsSystem->GetEditable().IsIBL = Params.IsIBL;
+          GlobalsSystem->GetEditable().MaximumOITPoolSize = Engine->Width * Engine->Height * CreationParams.MaxTransparentDepth;
+          GlobalsSystem->GetEditable().DebugOIT = Params.IsDebugOIT;
+          GlobalsSystem->GetEditable().IsFXAA = Params.IsFXAA;
+          GlobalsSystem->UpdateGPUData(uploadCommandList);
+          PROFILE_END(uploadCommandList);
+      }
+      {
+          PROFILE_BEGIN(uploadCommandList, "Update Enviroment");
+          EnviromentSystem->UpdateGPUData(uploadCommandList);
+          PROFILE_END(uploadCommandList);
+      }
+      {
+          PROFILE_BEGIN(uploadCommandList, "Update Node Transforms");
+          NodeTransformsSystem->UpdateGPUData(uploadCommandList);
+          PROFILE_END(uploadCommandList);
+      }
+      {
+          PROFILE_BEGIN(uploadCommandList, "Update Bone Mappings");
+          BoneMappingSystem->UpdateGPUData(uploadCommandList);
+          PROFILE_END(uploadCommandList);
+      }
+      {
+          PROFILE_BEGIN(uploadCommandList, "Update Object Transforms");
+          ObjectTransformsSystem->UpdateGPUData(uploadCommandList);
+          PROFILE_END(uploadCommandList);
+      }
+      {
+          PROFILE_BEGIN(uploadCommandList, "Update Materials");
+          MaterialsSystem->UpdateGPUData(uploadCommandList);
+          PROFILE_END(uploadCommandList);
+      }
+      {
+          PROFILE_BEGIN(uploadCommandList, "Update Light sources");
+          LightsSystem->UpdateGPUData(uploadCommandList);
+          PROFILE_END(uploadCommandList);
+      }
+      {
+          PROFILE_BEGIN(uploadCommandList, "Update Textures");
+          TexturesSystem->UpdateGPUData(uploadCommandList);
+          PROFILE_END(uploadCommandList);
+      }
+      {
+          PROFILE_BEGIN(uploadCommandList, "Update Cube textures");
+          CubeTexturesSystem->UpdateGPUData(uploadCommandList);
+          PROFILE_END(uploadCommandList);
+      }
+      {
+          PROFILE_BEGIN(uploadCommandList, "Update Indirect buffers");
+          DrawCommandsSystem->UpdateGPUData(uploadCommandList);
+          PROFILE_END(uploadCommandList);
+      }
+      {
+          PROFILE_BEGIN(uploadCommandList, "Update Luminance buffer");
+          LuminanceSystem->UpdateGPUData(uploadCommandList);
+          PROFILE_END(uploadCommandList);
+      }
+      {
+        PROFILE_BEGIN(uploadCommandList, "Update OIT buffers");
+        OITTransparencySystem->UpdateGPUData(uploadCommandList);
+        PROFILE_END(uploadCommandList);
+      }
+  };
+
+
+  if (Params.IsUploadEveryFrame)
+  {
+      ID3D12GraphicsCommandList* uploadCommandList = nullptr;
+      Device.BeginUploadCommandList(&uploadCommandList);
+      updateAllSystems(uploadCommandList);
+      Device.CloseUploadCommandList();
+  }
+  PROFILE_CPU_BEGIN("gdr::render::DrawFrame");
   ID3D12GraphicsCommandList* pCommandList = nullptr;
   ID3D12Resource* pBackBuffer = nullptr;
   D3D12_CPU_DESCRIPTOR_HANDLE rtvHandle;
   if (Device.BeginRenderCommandList(&pCommandList, &pBackBuffer, &rtvHandle))
   {
+    if (!Params.IsUploadEveryFrame)
+    {
+        Device.SetCommandListAsUpload(pCommandList);
+        updateAllSystems(pCommandList);
+        Device.ClearUploadListReference();
+    }
+
     auto renderStart = std::chrono::system_clock::now();
+
+    PROFILE_BEGIN(pCommandList, "Update resource states");
+    NodeTransformsSystem->UpdateResourceState(pCommandList, true);
+    ObjectTransformsSystem->UpdateResourceState(pCommandList, true);
+    LuminanceSystem->UpdateResourceState(pCommandList, true);
+    MaterialsSystem->UpdateResourceState(pCommandList, true);
+    DrawCommandsSystem->UpdateResourceState(pCommandList, true);
+    LightsSystem->UpdateResourceState(pCommandList, true);
+    BoneMappingSystem->UpdateResourceState(pCommandList, true);
+    OITTransparencySystem->UpdateResourceState(pCommandList, true);
+    PROFILE_END(pCommandList);
+
     PROFILE_BEGIN(pCommandList, "Frame");
     DeviceFrameCounter.Start(pCommandList);
-
-    PROFILE_BEGIN(pCommandList, "Update indirect SRVs and UAVs");
-    GetDevice().SetCommandListAsUpload(pCommandList);
-    // Update all subsytems except globals, it will be updated in each pass
-    IndirectSystem->UpdateGPUData(pCommandList);
-    GetDevice().ClearUploadListReference();
-    PROFILE_END(pCommandList);
 
     HRESULT hr = S_OK;
     D3D12_CPU_DESCRIPTOR_HANDLE dsvHandle = DSVHeap->GetCPUDescriptorHandleForHeapStart();
@@ -209,21 +311,30 @@ void gdr::render::DrawFrame(void)
       Rect.bottom = Engine->Height;
       Rect.right = Engine->Width;
 
-      pCommandList->ClearRenderTargetView(rtvHandle, clearColor, 1, &Rect);
-      pCommandList->ClearDepthStencilView(dsvHandle, D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.0f, 0, 1, &Rect);
+      Device.TransitResourceState(pCommandList, pBackBuffer, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_COMMON);
 
       // Save DepthStencil and Display buffers
-      RenderTargets->SaveDepthStencilBuffer(&dsvHandle);
-      RenderTargets->SaveDisplayBuffer(&rtvHandle, pBackBuffer);
+      RenderTargetsSystem->SaveDepthStencilBuffer(&dsvHandle);
+      RenderTargetsSystem->SaveDisplayBuffer(&rtvHandle, pBackBuffer);
+      
+      // Clear them
+      RenderTargetsSystem->Set(pCommandList, render_targets_enum::target_display);
+      pCommandList->ClearRenderTargetView(rtvHandle, clearColor, 1, &Rect);
+
+      RenderTargetsSystem->Set(pCommandList, render_targets_enum::target_frame_hdr);
+      pCommandList->ClearRenderTargetView(RenderTargetsSystem->GetHDRRenderTargetView(), clearColor, 1, &Rect);
+
+      pCommandList->ClearDepthStencilView(dsvHandle, D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.0f, 0, 1, &Rect);
 
       ID3D12DescriptorHeap* pDescriptorHeaps = GetDevice().GetDescriptorHeap();
       pCommandList->SetDescriptorHeaps(1, &pDescriptorHeaps);
 
-      RenderTargets->Set(pCommandList, render_targets_enum::target_display);
+      // Set display as current RT
+      RenderTargetsSystem->Set(pCommandList, render_targets_enum::target_display);
 
-      assert(Passes.size() >= 1);
       for (int i = 0; i < Passes.size(); i++)
       {
+        Passes[i]->DeviceTimeCounter.Start(pCommandList);
         if (Params.IsIndirect)
         {
           PROFILE_BEGIN(pCommandList, (Passes[i]->GetName() + " Indirect draw").c_str());
@@ -236,18 +347,29 @@ void gdr::render::DrawFrame(void)
           Passes[i]->CallDirectDraw(pCommandList);
           PROFILE_END(pCommandList);
         }
+        Passes[i]->DeviceTimeCounter.Stop(pCommandList);
       }
       DeviceFrameCounter.Stop(pCommandList);
       Device.TransitResourceState(pCommandList, pBackBuffer, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
     }
     PROFILE_END(pCommandList);
 
+    PROFILE_BEGIN(pCommandList, "Update resource states");
+    NodeTransformsSystem->UpdateResourceState(pCommandList, false);
+    ObjectTransformsSystem->UpdateResourceState(pCommandList,false);
+    MaterialsSystem->UpdateResourceState(pCommandList, false);
+    LuminanceSystem->UpdateResourceState(pCommandList, false);
+    DrawCommandsSystem->UpdateResourceState(pCommandList, false);
+    LightsSystem->UpdateResourceState(pCommandList, false);
+    BoneMappingSystem->UpdateResourceState(pCommandList, false);
+    OITTransparencySystem->UpdateResourceState(pCommandList, false);
+    PROFILE_END(pCommandList);
+
     Device.CloseSubmitAndPresentRenderCommandList(false);
     auto renderEnd = std::chrono::system_clock::now();
-    DrawFrameTime = std::chrono::duration_cast<std::chrono::nanoseconds>(renderEnd - renderStart).count();
+    CPUDrawFrameTime = std::chrono::duration_cast<std::chrono::nanoseconds>(renderEnd - renderStart).count();
   }
   PROFILE_CPU_END();
-  ScreenshotsSystem->Update();
 }
 
 gdr::engine *gdr::render::GetEngine(void)
@@ -266,22 +388,25 @@ void gdr::render::Term(void)
   if (!IsInited)
     return;
 
-  delete ScreenshotsSystem;
-  delete HierDepth;
-  delete RenderTargets;
-  delete LightsSystem;
-  delete TexturesSystem;
-  delete CubeTexturesSystem;
-  delete IndirectSystem;
-  delete MaterialsSystem; 
-  delete TransformsSystem;
-  delete ObjectSystem;
-  delete GeometrySystem;
-  delete GlobalsSystem;
-  for (auto& pass : Passes)
   {
-    delete pass;
+      delete GlobalsSystem;
+      delete RenderTargetsSystem;
+      delete ObjectTransformsSystem;
+      delete NodeTransformsSystem;
+      delete DrawCommandsSystem;
+      delete GeometrySystem;
+      delete MaterialsSystem;
+      delete TexturesSystem;
+      delete CubeTexturesSystem;
+      delete LightsSystem;
+      delete LuminanceSystem;
+      delete EnviromentSystem;
+      delete BoneMappingSystem;
+      delete OITTransparencySystem;
   }
+
+  for (auto& pass : Passes)
+    delete pass;
   Device.ReleaseGPUResource(DepthBuffer);
   DSVHeap->Release();
   Passes.clear();

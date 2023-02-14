@@ -53,22 +53,35 @@ class float_image
 
   mth::vec3f SampleHDR(mth::vec3f Direction)
   {
-    Direction.Normalize();
+    Direction = Direction.Normalize();
     mth::vec2f uv;
-    uv[0] = atan2f(Direction.Z, Direction.X) * 0.1591f;
-    uv[1] = asinf(Direction.Y) * 0.3183f;
-    uv[1] = 0.5f - uv[1];
-    if (uv[1] < 0)
-      uv[1] += 1;
+    // vector (0, 0, -1) should hit right in center
+    // uv[0] = 0.5 <=> atan2f()/2pi = 0.5 <=> atan2f = pi
+
+    // vector (-1, 0, 0) should be less then 0.5
+    // uv[0] < 0.5 <=? atan2f()/2pi < 0.5 <=> atan2f() < pi <=> atan() < pi
+
+    // (0, 1, 0) -> uv[1] = 0
+    // (0, -1, 0) -> uv[1] = 1
+    // (*, 0, *) -> uv[1] = 0.5
+
+    uv[0] = atan2f(-Direction.X, Direction.Z) / (2 * MTH_PI);
+    uv[1] = asinf(Direction.Y) / (MTH_PI / 2); // from -1 to 1
+    uv[1] = 1.0 - (uv[1] + 1) / 2.0;
+
     if (uv[0] < 0)
-      uv[0] += 1;
+        uv[0] += 1;
+
+    uv[0] = max(0, min(1, uv[0]));
+    uv[1] = max(0, min(1, uv[1]));
+
     uv[0] *= (W - 1);
     uv[1] *= (H - 1);
 
-    int up_u = ceil(uv[0]);
-    int down_u = floor(uv[0]);
-    int up_v = ceil(uv[1]);
-    int down_v = floor(uv[1]);
+    int up_u = (int)ceil(uv[0]);
+    int down_u = (int)floor(uv[0]);
+    int up_v = (int)ceil(uv[1]);
+    int down_v = (int)floor(uv[1]);
     float a1 = uv[1] - down_v;
     float a2 = uv[0] - down_u;
 
@@ -95,6 +108,8 @@ class float_image
 
   mth::vec3f GetPixel(int x, int y)
   {
+    x = max(0, min(x, W - 1));
+    y = max(0, min(y, H - 1));
     return mth::vec3f(data[y * W * components + x * components], data[y * W * components + x * components + 1], data[y * W * components + x * components + 2]);
   }
 
@@ -113,10 +128,10 @@ public:
   float_cube_image(std::string dir)
   {
     data[0] = float_image(dir + "/px.hdr");
-    data[1] = float_image(dir + "/ny.hdr");
-    data[2] = float_image(dir + "/pz.hdr");
-    data[3] = float_image(dir + "/nx.hdr");
-    data[4] = float_image(dir + "/py.hdr");
+    data[1] = float_image(dir + "/nx.hdr");
+    data[2] = float_image(dir + "/py.hdr");
+    data[3] = float_image(dir + "/ny.hdr");
+    data[4] = float_image(dir + "/pz.hdr");
     data[5] = float_image(dir + "/nz.hdr");
   }
 
@@ -138,11 +153,11 @@ public:
 
     // POSITIVE X
     if (isXPositive && absX >= absY && absX >= absZ) {
-      // u (0 to 1) goes from +z to -z
+      // u (0 to 1) goes from z to -z
       // v (0 to 1) goes from -y to +y
       maxAxis = absX;
-      uc = -Direction.Z;
-      vc = Direction.Y;
+      uc = Direction.Z;
+      vc = -Direction.Y;
       index = 0;
     }
     // NEGATIVE X
@@ -150,9 +165,9 @@ public:
       // u (0 to 1) goes from -z to +z
       // v (0 to 1) goes from -y to +y
       maxAxis = absX;
-      uc = Direction.Z;
-      vc = Direction.Y;
-      index = 3;
+      uc = -Direction.Z;
+      vc = -Direction.Y;
+      index = 1;
     }
     // POSITIVE Y
     if (isYPositive && absY >= absX && absY >= absZ) {
@@ -161,7 +176,7 @@ public:
       maxAxis = absY;
       uc = Direction.X;
       vc = -Direction.Z;
-      index = 1;
+      index = 2;
     }
     // NEGATIVE Y
     if (!isYPositive && absY >= absX && absY >= absZ) {
@@ -170,24 +185,24 @@ public:
       maxAxis = absY;
       uc = Direction.X;
       vc = Direction.Z;
-      index = 4;
+      index = 3;
     }
     // POSITIVE Z
     if (isZPositive && absZ >= absX && absZ >= absY) {
       // u (0 to 1) goes from -x to +x
       // v (0 to 1) goes from -y to +y
       maxAxis = absZ;
-      uc = Direction.X;
-      vc = Direction.Y;
-      index = 2;
+      uc = -Direction.X;
+      vc = -Direction.Y;
+      index = 4;
     }
     // NEGATIVE Z
     if (!isZPositive && absZ >= absX && absZ >= absY) {
       // u (0 to 1) goes from +x to -x
       // v (0 to 1) goes from -y to +y
       maxAxis = absZ;
-      uc = -Direction.X;
-      vc = Direction.Y;
+      uc = Direction.X;
+      vc = -Direction.Y;
       index = 5;
     }
 
@@ -196,18 +211,24 @@ public:
     uv[0] = 0.5f * (uc / maxAxis + 1.0f);
     uv[1] = 0.5f * (vc / maxAxis + 1.0f);
 
-    if (uv[1] < 0)
+    while (uv[1] < 0)
       uv[1] += 1;
-    if (uv[0] < 0)
+    while (uv[0] < 0)
       uv[0] += 1;
+    while (uv[1] > 1)
+      uv[1] -= 1;
+    while (uv[0] > 1)
+      uv[0] -= 1;
+
+    uv[1] = 1.0 - uv[1];
 
     uv[0] *= (data[index].W - 1);
     uv[1] *= (data[index].H - 1);
 
-    int up_u = ceil(uv[0]);
-    int down_u = floor(uv[0]);
-    int up_v = ceil(uv[1]);
-    int down_v = floor(uv[1]);
+    int up_u = (int)ceil(uv[0]);
+    int down_u = (int)floor(uv[0]);
+    int up_v = (int)ceil(uv[1]);
+    int down_v = (int)floor(uv[1]);
     float a1 = uv[1] - down_v;
     float a2 = uv[0] - down_u;
 

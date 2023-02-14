@@ -40,7 +40,7 @@ HRESULT gdr::d3dinclude::Open(D3D_INCLUDE_TYPE IncludeType, LPCSTR pFileName, LP
     *pBytes = (UINT)data.size();
   }
 
-  assert(res);
+  GDR_ASSERT(res);
 
   return res ? S_OK : E_FAIL;
 }

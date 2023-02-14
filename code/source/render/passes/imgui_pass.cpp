@@ -11,17 +11,18 @@ void gdr::imgui_pass::Initialize(void)
   ImGuiIO& io = ImGui::GetIO();
   ImGui::StyleColorsDark();
 
+  Render->GetDevice().AllocateStaticDescriptors(1, CPUDescriptor, GPUDescriptor);
+
   ImGui_ImplWin32_Init(Render->GetEngine()->hWnd);
   ImGui_ImplDX12_Init(Render->GetDevice().GetDXDevice(), 3,
     DXGI_FORMAT_R8G8B8A8_UNORM, Render->GetDevice().GetDescriptorHeap(),
-    Render->GetDevice().GetDescriptorHeap()->GetCPUDescriptorHandleForHeapStart(),
-    Render->GetDevice().GetDescriptorHeap()->GetGPUDescriptorHandleForHeapStart());
+      CPUDescriptor, GPUDescriptor);
 
 }
 
 void gdr::imgui_pass::CallDirectDraw(ID3D12GraphicsCommandList* currentCommandList)
 {
-  Render->RenderTargets->Set(currentCommandList, render_targets_enum::target_display);
+  Render->RenderTargetsSystem->Set(currentCommandList, render_targets_enum::target_display);
   ImGui_ImplDX12_NewFrame();
   ImGui_ImplWin32_NewFrame();
   ImGui::NewFrame();

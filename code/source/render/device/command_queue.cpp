@@ -1,5 +1,7 @@
 #include "p_header.h"
 
+UINT64 gdr::command_queue::CurrentFenceValue = 0;
+
 bool gdr::command_list::Init(ID3D12Device* pDevice, const D3D12_COMMAND_LIST_TYPE& type)
 {
   HRESULT hr = S_OK;
@@ -40,7 +42,7 @@ void gdr::command_list::Term()
 
 HRESULT gdr::command_list::Open(UINT64 fenceValue)
 {
-  assert(PendingFenceValue == NoneValue && SubmittedFenceValue == NoneValue && CurrentFenceValue == NoneValue);
+  GDR_ASSERT(PendingFenceValue == NoneValue && SubmittedFenceValue == NoneValue && CurrentFenceValue == NoneValue);
 
   HRESULT hr = S_OK;
   D3D_CHECK(CommandAllocator->Reset());
@@ -53,7 +55,7 @@ HRESULT gdr::command_list::Open(UINT64 fenceValue)
 
 HRESULT gdr::command_list::Close()
 {
-  assert(PendingFenceValue == NoneValue && SubmittedFenceValue == NoneValue && CurrentFenceValue != NoneValue);
+  GDR_ASSERT(PendingFenceValue == NoneValue && SubmittedFenceValue == NoneValue && CurrentFenceValue != NoneValue);
 
   HRESULT hr = S_OK;
   D3D_CHECK(CommandList->Close());
@@ -66,7 +68,7 @@ HRESULT gdr::command_list::Close()
 
 HRESULT gdr::command_list::Submit(ID3D12CommandQueue* pQueue)
 {
-  assert(PendingFenceValue != NoneValue && SubmittedFenceValue == NoneValue && CurrentFenceValue == NoneValue);
+  GDR_ASSERT(PendingFenceValue != NoneValue && SubmittedFenceValue == NoneValue && CurrentFenceValue == NoneValue);
 
   pQueue->ExecuteCommandLists(1, &CommandListForSubmit);
 
@@ -78,8 +80,8 @@ HRESULT gdr::command_list::Submit(ID3D12CommandQueue* pQueue)
 
 HRESULT gdr::command_list::Wait(UINT64& finishedFenceValue)
 {
-  assert(PendingFenceValue == NoneValue);
-  assert(CurrentFenceValue == NoneValue);
+  GDR_ASSERT(PendingFenceValue == NoneValue);
+  GDR_ASSERT(CurrentFenceValue == NoneValue);
 
   finishedFenceValue = NoneValue;
 
@@ -94,7 +96,7 @@ HRESULT gdr::command_list::Wait(UINT64& finishedFenceValue)
       {
         WaitForSingleObject(hEvent, INFINITE);
         completed = Fence->GetCompletedValue();
-        assert(completed != NoneValue && completed >= SubmittedFenceValue);
+        GDR_ASSERT(completed != NoneValue && completed >= SubmittedFenceValue);
       }
     }
     finishedFenceValue = SubmittedFenceValue;
@@ -158,7 +160,7 @@ bool gdr::command_queue::Init(ID3D12Device* pDevice, const D3D12_COMMAND_LIST_TY
       {
         D3D_CHECK(pFence->SetEventOnCompletion(CurrentFenceValue, hEvent));
         hr = WaitForSingleObject(hEvent, INFINITE) == WAIT_OBJECT_0 ? S_OK : E_FAIL;
-        assert(SUCCEEDED(hr));
+        GDR_ASSERT(SUCCEEDED(hr));
       }
 
       ++CurrentFenceValue;
@@ -286,7 +288,10 @@ void gdr::command_queue::WaitIdle(UINT64& finishedFenceValue)
       pCmdList->Wait(cmdListFinishedFenceValue);
       if (cmdListFinishedFenceValue != NoneValue)
       {
-        finishedFenceValue = cmdListFinishedFenceValue;
+        if (finishedFenceValue == NoneValue)
+          finishedFenceValue = cmdListFinishedFenceValue;
+        else
+          finishedFenceValue = max(finishedFenceValue, cmdListFinishedFenceValue);
       }
     }
   }
@@ -294,5 +299,5 @@ void gdr::command_queue::WaitIdle(UINT64& finishedFenceValue)
 
 HRESULT gdr::present_command_queue::PreSignal()
 {
-  return Swapchain->Present(VSync ? 1 : 0, DXGI_PRESENT_ALLOW_TEARING);
+  return Swapchain->Present(VSync ? 1 : 0, 0);
 }

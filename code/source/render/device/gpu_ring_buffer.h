@@ -193,7 +193,7 @@ namespace gdr
     {
       if (CPUData != nullptr)
       {
-        assert(CpuBuffer.Resource != nullptr);
+        GDR_ASSERT(CpuBuffer.Resource != nullptr);
 
         CpuBuffer.Resource->Unmap(0, nullptr);
 

@@ -89,9 +89,9 @@ namespace gdr
   private:
     ID3D12CommandQueue* Queue = nullptr; // our Queue of commands
 
-    UINT64 CurrentFenceValue = NoneValue; // value of current fence
+    static UINT64 CurrentFenceValue; // value of current fence
 
-    int CurCmdList = -1; // current command list number
+    int CurCmdList = 0; // current command list number
     std::vector<command_list*> CmdLists; // all command lists
   };
 

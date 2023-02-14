@@ -160,6 +160,26 @@ namespace mth
       return MATRICES<Type>::MatrVP;
     } /* End of 'GetVP' function */
 
+    /* Camera view proj matrix get function.
+     * ARGUMENTS: None.
+     * RETURNS:
+     *   (matr4<Type> &) link to VP martix.
+     */
+    const matr4<Type>& GetView(void)
+    {
+        return MATRICES<Type>::MatrView;
+    } /* End of 'GetVP' function */
+
+    /* Camera view proj matrix get function.
+     * ARGUMENTS: None.
+     * RETURNS:
+     *   (matr4<Type> &) link to VP martix.
+     */
+    const matr4<Type>& GetProj(void)
+    {
+        return MATRICES<Type>::MatrProj;
+    } /* End of 'GetVP' function */
+
     /* Camera position get function.
      * ARGUMENTS: None.
      * RETURNS:
@@ -341,6 +361,32 @@ namespace mth
       SetView(Loc + Translation, LookAt + Translation, Up);
       return *this;
     } /* End of 'Translate' function */
+
+    /* Move camera in world cs funciton
+     * ARGUMENTS:
+     *   - translation vector:
+     *       const vec3<Type> &Translation;
+     * RETURNS:
+     *   (cam3 &) link to this cam.
+     */
+    cam3& SetPos(const vec3<Type>& Position)
+    {
+      SetView(Position, Position + Dir, Up);
+      return *this;
+    } /* End of 'SetPos' function */
+
+    /* Move camera in world cs funciton
+     * ARGUMENTS:
+     *   - translation vector:
+     *       const vec3<Type> &Translation;
+     * RETURNS:
+     *   (cam3 &) link to this cam.
+     */
+    cam3& SetDir(const vec3<Type>& Direction)
+    {
+      SetView(Loc, Loc + Direction, Up);
+      return *this;
+    } /* End of 'SetDir' function */
 
     /* Move camera in camera cs funciton
      * ARGUMENTS:

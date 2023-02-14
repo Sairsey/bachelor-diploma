@@ -1,8 +1,8 @@
 #ifndef __mth_h_
 #define __mth_h_
 
-//#define USE_DXMATH
-#ifdef USE_DXMATH
+//#define USE_DX_MATH
+#ifdef USE_DX_MATH
 #include "mth_def.h"
 #include "mth_vec.h"
 #include "mth_quat.h"
@@ -38,7 +38,7 @@ namespace mth
   using matr = matr4f;
   using cam = cam3<float>;
 }
-#endif // USE_DXMATH
+#endif // USE_DX_MATH
 
 #endif /* __mth_h_*/
 

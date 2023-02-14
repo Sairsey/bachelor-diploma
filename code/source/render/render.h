@@ -1,33 +1,54 @@
 #pragma once
 #include "def.h"
 
-
 /* Project namespace */
 namespace gdr
 {
   class engine;
   class base_pass;
-  class geometry_support;
-  class globals_support;
-  class object_support;
-  class transforms_support;
-  class materials_support;
-  class indirect_support;
-  class textures_support;
-  class cube_textures_support;
-  class light_sources_support;
-  class render_targets_support;
-  class hier_depth_support;
-  class screenshot_support;
-
+  class globals_subsystem;
+  class render_targets_subsystem;
+  class object_transforms_subsystem;
+  class node_transforms_subsystem;
+  class draw_commands_subsystem;
+  class geometry_subsystem;
+  class materials_subsystem;
+  class textures_subsystem;
+  class cube_textures_subsystem;
+  class lights_subsystem;
+  class luminance_subsystem;
+  class enviroment_subsystem;
+  class bone_mapping_subsystem;
+  class oit_transparency_subsystem;
   struct render_runtime_params
   {
-    bool IsIndirect = false;     // Enables indirect draw
-    bool IsCulling = false;      // Enables culling
-    bool IsTransparent = false; // Enables Transparency support
-    bool IsVisibilityLocked = false;
-  };
+    bool IsIndirect = true;        // Enables indirect draw
 
+    bool IsUploadEveryFrame = true; // If true, each frame contains 2 cmd lists, 1-upload and 1-draw. They are trying to sync one to another.
+    
+    bool IsFrustumCulling = true;  // Enables Frustum Culling
+    bool IsOccusionCulling = true; // Enables Occlusion Culling (avalible only with Frustum Culling and only in Indirect mode)
+    bool IsViewLocked = false;     // Lock View for culling debugging (avalible only with Frustum Culling or Frustum + Occlusion)
+    
+    bool IsShowAABB = false;       // Show AABBs of objects
+    bool IsShowHier = false;       // Show Hierarchy of objects
+
+    bool IsTonemapping = true;    // Enable tonemapping or not
+    float SceneExposure = 8.0;     // Exposure of scene
+
+    bool IsIBL = true;            // Enable image based lighting
+
+    bool IsTransparent = true;    // Enable OIT Transparency
+    bool IsDebugOIT = false;      // Enable OIT Debugging
+
+    bool IsFXAA = true;          // Enable FXAA
+  };
+  struct render_creation_params
+  {
+    size_t MaxTextureAmount = 256;   // maximum amount of textures allocated
+    size_t MaxCubeTextureAmount = 6; // maximum amount of cube textures allocated
+    size_t MaxTransparentDepth = 10; // 32 for thirller maximum amount of transparent pixels in case we draw full screen
+  };
   /* Render representation class */
   class render
   {
@@ -41,12 +62,10 @@ namespace gdr
       bool IsInited;
       // Device
       device Device;
-      // All supported passes
-      std::vector<base_pass *> Passes;
-
       // Depth-Stencil buffer support
       ID3D12DescriptorHeap* DSVHeap;
     public:
+
       /* Default Contructor */
       render();
 
@@ -71,6 +90,8 @@ namespace gdr
        */
       void Resize(UINT w, UINT h);
 
+      void EnableFullscreen();
+
       /* Get Device function */
       device &GetDevice(void) {return Device;}
 
@@ -91,26 +112,36 @@ namespace gdr
 
       // Current params
       render_runtime_params Params;
+      const render_creation_params CreationParams;
+
       // Current player camera
       mth::cam PlayerCamera;
       // Depth buffer resource
       GPUResource DepthBuffer;
-      // Subsystems
-      globals_support *GlobalsSystem; // Store camera info and other important stuff
-      indirect_support* IndirectSystem; // support of SRVs and UAVs for indirect draw
-      geometry_support *GeometrySystem; // support of geometry creation
-      transforms_support* TransformsSystem; // support of object Transforms
-      object_support *ObjectSystem; // Helper of every subsystem
-      materials_support *MaterialsSystem; //System to store info about materials
-      textures_support* TexturesSystem; //System to store info about textures
-      cube_textures_support* CubeTexturesSystem; // System to store info about cube textures
-      light_sources_support* LightsSystem; //System to store info about lights
-      render_targets_support* RenderTargets; //System to store info about lights
-      hier_depth_support* HierDepth; //System to store and generate Hierarhical Depth Texture
-      screenshot_support* ScreenshotsSystem; //System to store and generate Hierarhical Depth Texture
 
+      // All supported passes
+      std::vector<base_pass*> Passes;
+
+      // Subsystems
+      globals_subsystem* GlobalsSystem;                    // Store camera info and other important stuff, which is relevant per frame
+      render_targets_subsystem* RenderTargetsSystem;       // System to change and use different render targets
+      object_transforms_subsystem* ObjectTransformsSystem; // System to store Root transforms of objects and AABB-s for culling
+      node_transforms_subsystem* NodeTransformsSystem;     // System to store hierarchical transform data.
+      draw_commands_subsystem* DrawCommandsSystem;         // support of SRVs and UAVs for indirect draw
+      geometry_subsystem* GeometrySystem;                  // support of geometry creation
+      materials_subsystem* MaterialsSystem;                // system to store info about materials
+      textures_subsystem* TexturesSystem;                  // System to store info about textures
+      lights_subsystem* LightsSystem;                      // System to store info about light sources
+      cube_textures_subsystem* CubeTexturesSystem;         // System to store info about cube textures
+      luminance_subsystem* LuminanceSystem;                // System to store info about Luminance
+      enviroment_subsystem* EnviromentSystem;              // System to store info about Enviroment textures (Skybox for example)
+      bone_mapping_subsystem* BoneMappingSystem;           // System to store mapping between GDRVertex-s BoneIndex field and NoteTransformsSystem
+      oit_transparency_subsystem* OITTransparencySystem;   // System to store info for Order Independent Transparency
+#if 0
+      screenshot_support* ScreenshotsSystem; //System to store and generate Hierarhical Depth Texture
+#endif
       long long UpdateBuffersTime;
-      long long DrawFrameTime;
+      long long CPUDrawFrameTime;
       device_time_query DeviceFrameCounter;
   };
 }

@@ -11,6 +11,9 @@ namespace gdr
       render *Render;
     public:
 
+    // to track each pass time
+    device_time_query DeviceTimeCounter;
+
     /* Default constructor */
     base_pass()
     {

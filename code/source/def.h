@@ -9,7 +9,6 @@
 
 #include <tchar.h>
 #include <set>
-#include <assert.h>
 #include <comdef.h>
 
 #include <dxgi.h>
@@ -26,11 +25,11 @@
 
 #include "D3D12MemAlloc.h"
 #include "utils/math/mth.h"
+
 #define USE_PIX
 #include "WinPixEventRuntime/pix3.h"
 #include "imgui/imgui.h"
-
-
+#include "imgui/imfilebrowser.h"
 
 #define PROFILE_MARKERS
 
@@ -46,6 +45,28 @@
 #define PROFILE_CPU_END()
 #endif
 
+inline void AssertMessage(const char *file, int line, const char* msg)
+{
+  char buf[300] = {};
+  sprintf_s(buf, "Assert Failed!\n File %s\n Line %i\n %s\n", file, line, msg);
+  OutputDebugStringA(buf);
+  DebugBreak();
+  if (MessageBoxA(GetActiveWindow(), buf, "GDR Error Report", MB_OK | MB_ICONERROR))
+  {
+    abort();
+  }
+}
+
+#ifdef _DEBUG
+#define GDR_ASSERT(expr) \
+    if (!(expr)) \
+        AssertMessage(__FILE__, __LINE__, #expr)
+#define GDR_FAILED(msg) \
+        AssertMessage(__FILE__, __LINE__, msg)
+#else
+#define GDR_ASSERT(expr) ((void)0)
+#define GDR_FAILED(msg) ((void)0)
+#endif
 
 #define D3D_RELEASE(a) if ((a) != nullptr) {\
     (a)->Release();\
@@ -63,7 +84,7 @@ if (SUCCEEDED(hr))\
         OutputDebugString(err.ErrorMessage());\
         OutputDebugString(_T("\n"));\
     }\
-    assert(SUCCEEDED(hr));\
+    GDR_ASSERT(SUCCEEDED(hr));\
 }
 #else
 #define D3D_CHECK(a) \
@@ -90,4 +111,36 @@ inline std::wstring charToWString(const char* text)
   std::string str(text);
   std::wstring wstr(str.begin(), str.end());
   return wstr;
+}
+
+using gdr_index = uint32_t;
+
+#ifndef NONE_INDEX
+#define NONE_INDEX 0xFFFFFFFF
+#endif // !NONE_INDEX
+
+enum struct gdr_hier_node_type
+{
+    node,
+    mesh
+};
+
+inline UINT NearestPowerOf2(UINT val)
+{
+  DWORD idx = 0;
+  _BitScanReverse(&idx, val);
+  UINT res = 1 << idx;
+
+  return (val & ~res) == 0 ? res : (res << 1);
+};
+
+inline UINT CalculateMipMapsAmount(UINT W, UINT H)
+{
+  int res = 0;
+  for (res = 0; W >= 1 && H >= 1; res++)
+  {
+    W /= 2;
+    H /= 2;
+  }
+  return res;
 }

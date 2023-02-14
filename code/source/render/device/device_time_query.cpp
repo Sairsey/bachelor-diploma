@@ -16,13 +16,13 @@ gdr::device_time_query::device_time_query(device* pDevice)
 
 void gdr::device_time_query::Start(ID3D12GraphicsCommandList* pCmdList)
 {
-  assert(Device != nullptr);
+  GDR_ASSERT(Device != nullptr);
   Device->QueryTimestamp(pCmdList, [&start = StartTicks](UINT64 value) {start = value; });
 }
 
 void gdr::device_time_query::Stop(ID3D12GraphicsCommandList* pCmdList)
 {
-  assert(Device != nullptr);
+  GDR_ASSERT(Device != nullptr);
   Device->QueryTimestamp(pCmdList, [&end = EndTicks](UINT64 value) {end = value; });
 }
 

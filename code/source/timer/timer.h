@@ -13,7 +13,8 @@ namespace gdr
       Time, DeltaTime,             /* Time with pause and interframe interval */
       FPS;                         /* Frames per seond value */
     BOOL
-      IsPause,                     /* Pause flag */
+      IsPause,                     /* Engine Pause flag */
+      IsPhysicPause,               /* Physic Pause flag */
       IsSleep;                     /* Sleep flag */
   private:
     /* Timer local data */
@@ -22,6 +23,7 @@ namespace gdr
       OldTime,    /* Time from program start to previous frame */
       OldTimeFPS, /* Old time FPS measurement */
       PauseTime,  /* Time during pause period */
+      PhysicPauseTime,  /* Time during pause period because of Physic*/
       TimePerSec, /* Timer resolution */
       FrameCounter; /* Frames counter */
     float
@@ -138,9 +140,14 @@ namespace gdr
         PauseTime += t.QuadPart - OldTime;
         DeltaTime = 0;
       }
+      else if (IsPhysicPause)
+      {
+          PhysicPauseTime += t.QuadPart - OldTime;
+          DeltaTime = 0;
+      }
       else
       {
-        Time = (float)(t.QuadPart - PauseTime - StartTime) / TimePerSec;
+        Time = (float)(t.QuadPart - PauseTime - PhysicPauseTime - StartTime) / TimePerSec;
         DeltaTime = GlobalDeltaTime;
       }
       /* Sleep */
@@ -171,6 +178,15 @@ namespace gdr
     VOID SetPause(BOOL Type)
     {
       IsPause = Type;
+    }
+
+    /* Set pause method
+     *   ARGUMENTS: none.
+     *   RETURNS  : none.
+     */
+    VOID SetPhysPause(BOOL Type)
+    {
+        IsPhysicPause = Type;
     }
   
     /* Toggle pause method

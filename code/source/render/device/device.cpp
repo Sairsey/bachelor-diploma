@@ -8,6 +8,8 @@ if ((a) != nullptr)\
     (a) = nullptr;\
 }
 
+//#define TOO_MANY_SYNCS
+
 // Default constructor
 gdr::device::device() : 
   IsInited(false),
@@ -98,13 +100,13 @@ bool gdr::device::InitD3D12Device(bool DebugDevice)
   bool strictDebug = false;
 
   HRESULT hr = CreateDXGIFactory(__uuidof(IDXGIFactory), (void**)&DxgiFactory);
-  assert(SUCCEEDED(hr));
+  GDR_ASSERT(SUCCEEDED(hr));
 
   if (IsDebugDevice)
   {
     ID3D12Debug1* pDebug = nullptr;
     HRESULT hr = D3D12GetDebugInterface(__uuidof(ID3D12Debug1), (void**)&pDebug);
-    assert(SUCCEEDED(hr));
+    GDR_ASSERT(SUCCEEDED(hr));
 
     pDebug->EnableDebugLayer();
     {
@@ -294,7 +296,7 @@ bool gdr::device::InitSwapchain(int Count, HWND hWnd)
   desc.OutputWindow = hWnd;
   desc.Windowed = TRUE;
   desc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
-  desc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING;
+  desc.Flags = 0;
   desc.SampleDesc.Count = 1;
   desc.SampleDesc.Quality = 0;
 
@@ -560,6 +562,7 @@ bool gdr::device::BeginRenderCommandList(ID3D12GraphicsCommandList** ppCommandLi
 {
   CurrentBackBufferIdx = (CurrentBackBufferIdx + 1) % BackBufferCount;
 
+  // Open command list
   UINT64 finishedFenceValue = NoneValue;
 
   HRESULT hr = PresentQueue->OpenCommandList(ppCommandList, finishedFenceValue);
@@ -586,47 +589,26 @@ bool gdr::device::CloseSubmitAndPresentRenderCommandList(bool vsync)
   // Close command list
   HRESULT hr = S_OK;
 
-  // Submit update command list, if needed
+#ifdef TOO_MANY_SYNCS
+  // Wait for upload CL-s
   UINT64 uploadFenceValue = NoneValue;
-  D3D_CHECK(UploadQueue->SubmitCommandList(&uploadFenceValue));
-
-  // while upload buffer has fences to submit
+  UploadQueue->WaitIdle(uploadFenceValue);
   if (uploadFenceValue != NoneValue)
   {
-    // Add fence to pending
-    UploadBuffer->AddPendingFence(uploadFenceValue);
-    // if we have barrier
-    if (!UploadBarriers.empty())
-    {
-      // Sync fence
-      ID3D12GraphicsCommandList* pBarrierCmdList = nullptr;
-      D3D_CHECK(UploadStateTransitionQueue->GetQueue()->Wait(UploadQueue->GetCurrentCommandList()->GetFence(), uploadFenceValue));
+    UploadBuffer->FlashFenceValue(uploadFenceValue);
 
-      // Open command list
-      UINT64 finishedFenceValue = NoneValue;
-      D3D_CHECK(UploadStateTransitionQueue->OpenCommandList(&pBarrierCmdList, finishedFenceValue));
-
-      // change state of all objects to Common
-      for (auto barrier : UploadBarriers)
-      {
-        if (barrier.stateAfter != D3D12_RESOURCE_STATE_COMMON)
-        {
-          TransitResourceState(pBarrierCmdList, barrier.pResource, D3D12_RESOURCE_STATE_COMMON, barrier.stateAfter);
-        }
-      }
-      UploadBarriers.clear();
-
-      D3D_CHECK(UploadStateTransitionQueue->CloseAndSubmitCommandList(&uploadFenceValue));
-
-      // sync this state transition queue
-      D3D_CHECK(PresentQueue->GetQueue()->Wait(UploadStateTransitionQueue->GetCurrentCommandList()->GetFence(), uploadFenceValue));
-    }
-    else
-    {
-      // sync just command list
-      D3D_CHECK(PresentQueue->GetQueue()->Wait(UploadQueue->GetCurrentCommandList()->GetFence(), uploadFenceValue));
-    }
+    // sync present queue with our fence
+    D3D_CHECK(PresentQueue->GetQueue()->Wait(UploadQueue->GetCurrentCommandList()->GetFence(), uploadFenceValue));
   }
+#else
+  // instead of waiting present CL, lets just Sync it 
+  UINT64 uploadFenceValue = UploadQueue->GetCurrentCommandList()->GetSubmittedFenceValue();
+  if (uploadFenceValue != NoneValue)
+  {
+    // sync update queue with our fence
+    D3D_CHECK(PresentQueue->GetQueue()->Wait(UploadQueue->GetCurrentCommandList()->GetFence(), uploadFenceValue));
+  }
+#endif
 
   // Set Vsync
   PresentQueue->SetVSync(vsync);
@@ -648,14 +630,14 @@ bool gdr::device::CloseSubmitAndPresentRenderCommandList(bool vsync)
 
 bool gdr::device::BeginUploadCommandList(ID3D12GraphicsCommandList** ppCommandList)
 {
-  // Wait for previous commit completion
   HRESULT hr = S_OK;
 
   UINT64 finishedFenceValue = NoneValue;
+  // Open and wait for previous commit completion
   D3D_CHECK(UploadQueue->OpenCommandList(ppCommandList, finishedFenceValue));
   if (finishedFenceValue != NoneValue)
   {
-    UploadBuffer->FlashFenceValue(finishedFenceValue);
+    UploadBuffer->FlashFenceValue(finishedFenceValue); // mark in Upload buffer that we already waited for finishedFenceValue.
   }
 
   CurrentUploadCmdList = *ppCommandList;
@@ -665,7 +647,7 @@ bool gdr::device::BeginUploadCommandList(ID3D12GraphicsCommandList** ppCommandLi
 
 bool gdr::device::AllocateRenderTargetView(D3D12_CPU_DESCRIPTOR_HANDLE& cpuHandle, UINT count)
 {
-  assert(CurrentRTView < MaxRTViews && RenderTargetViews != nullptr);
+  GDR_ASSERT(CurrentRTView < MaxRTViews && RenderTargetViews != nullptr);
 
   if (CurrentRTView < MaxRTViews)
   {
@@ -682,7 +664,7 @@ bool gdr::device::AllocateRenderTargetView(D3D12_CPU_DESCRIPTOR_HANDLE& cpuHandl
 
 bool gdr::device::AllocateStaticDescriptors(UINT count, D3D12_CPU_DESCRIPTOR_HANDLE& cpuStartHandle, D3D12_GPU_DESCRIPTOR_HANDLE& gpuStartHandle)
 {
-  assert(CurrentStaticDescIndex + count <= StaticDescCount);
+  GDR_ASSERT(CurrentStaticDescIndex + count <= StaticDescCount);
 
   cpuStartHandle = D3DDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
   cpuStartHandle.ptr += (CurrentStaticDescIndex + DynamicDescCount) * SrvDescSize;
@@ -699,16 +681,16 @@ HRESULT gdr::device::UpdateBuffer(ID3D12GraphicsCommandList* pCommandList, ID3D1
 {
 #ifdef _DEBUG
   D3D12_RESOURCE_DESC desc = pBuffer->GetDesc();
-  assert(desc.Dimension == D3D12_RESOURCE_DIMENSION_BUFFER);
-  assert(desc.Width >= dataSize);
+  GDR_ASSERT(desc.Dimension == D3D12_RESOURCE_DIMENSION_BUFFER);
+  GDR_ASSERT(desc.Width >= dataSize);
 #endif
 
-  assert(CurrentUploadCmdList == pCommandList);
+  GDR_ASSERT(CurrentUploadCmdList == pCommandList);
 
   UINT64 allocStartOffset = 0;
   UINT8* pAlloc = nullptr;
   auto allocRes = UploadBuffer->Alloc(dataSize, allocStartOffset, pAlloc, D3D12_CONSTANT_BUFFER_DATA_PLACEMENT_ALIGNMENT);
-  assert(allocRes == ring_buffer_result::Ok);
+  GDR_ASSERT(allocRes == ring_buffer_result::Ok);
   if (allocRes == ring_buffer_result::Ok)
   {
     memcpy(pAlloc, pData, dataSize);
@@ -725,16 +707,16 @@ HRESULT gdr::device::UpdateBufferOffset(ID3D12GraphicsCommandList* pCommandList,
 {
 #ifdef _DEBUG
   D3D12_RESOURCE_DESC desc = pBuffer->GetDesc();
-  assert(desc.Dimension == D3D12_RESOURCE_DIMENSION_BUFFER);
-  assert(desc.Width >= dataSize + bufferOffset);
+  GDR_ASSERT(desc.Dimension == D3D12_RESOURCE_DIMENSION_BUFFER);
+  GDR_ASSERT(desc.Width >= dataSize + bufferOffset);
 #endif
 
-  assert(CurrentUploadCmdList == pCommandList);
+  GDR_ASSERT(CurrentUploadCmdList == pCommandList);
 
   UINT64 allocStartOffset = 0;
   UINT8* pAlloc = nullptr;
   auto allocRes = UploadBuffer->Alloc(dataSize, allocStartOffset, pAlloc, D3D12_CONSTANT_BUFFER_DATA_PLACEMENT_ALIGNMENT);
-  assert(allocRes == ring_buffer_result::Ok);
+  GDR_ASSERT(allocRes == ring_buffer_result::Ok);
   if (allocRes == ring_buffer_result::Ok)
   {
     memcpy(pAlloc, pData, dataSize);
@@ -747,22 +729,21 @@ HRESULT gdr::device::UpdateBufferOffset(ID3D12GraphicsCommandList* pCommandList,
   return E_FAIL;
 }
 
-
 // In case we need huge data to be copied
 void gdr::device::WaitAllUploadLists(void)
 {
-  for (int i = 0; i < UploadQueue->GetCommandListCount(); i++)
+  UINT64 finishedFenceValue = NoneValue;
+  UploadQueue->WaitIdle(finishedFenceValue);
+  if (finishedFenceValue != NoneValue)
   {
-    ID3D12GraphicsCommandList* pCommandList;
-    BeginUploadCommandList(&pCommandList);
-    CloseUploadCommandList();
+    UploadBuffer->FlashFenceValue(finishedFenceValue);
   }
 }
 
 HRESULT gdr::device::UpdateTexture(ID3D12GraphicsCommandList* pCommandList, ID3D12Resource* pTexture, const void* pData, size_t dataSize)
 {
   D3D12_RESOURCE_DESC desc = pTexture->GetDesc();
-  assert(desc.Dimension == D3D12_RESOURCE_DIMENSION_TEXTURE2D);
+  GDR_ASSERT(desc.Dimension == D3D12_RESOURCE_DIMENSION_TEXTURE2D);
 
   UINT64 total = 0;
   std::vector<UINT> numRows(desc.MipLevels * desc.DepthOrArraySize);
@@ -771,7 +752,7 @@ HRESULT gdr::device::UpdateTexture(ID3D12GraphicsCommandList* pCommandList, ID3D
 
   D3DDevice->GetCopyableFootprints(&desc, 0, desc.MipLevels * desc.DepthOrArraySize, 0, placedFootprint.data(), numRows.data(), rowSize.data(), &total);
 
-  assert(CurrentUploadCmdList == pCommandList);
+  GDR_ASSERT(CurrentUploadCmdList == pCommandList);
 
   UINT64 width = desc.Width;
   UINT64 height = desc.Height;
@@ -781,7 +762,7 @@ HRESULT gdr::device::UpdateTexture(ID3D12GraphicsCommandList* pCommandList, ID3D
 
   UINT8* pAlloc = nullptr;
   auto allocRes = UploadBuffer->Alloc(total, allocStartOffset, pAlloc, D3D12_TEXTURE_DATA_PLACEMENT_ALIGNMENT);
-  assert(allocRes == ring_buffer_result::Ok);
+  GDR_ASSERT(allocRes == ring_buffer_result::Ok);
   if (allocRes != ring_buffer_result::Ok)
   {
     return E_FAIL;
@@ -792,9 +773,10 @@ HRESULT gdr::device::UpdateTexture(ID3D12GraphicsCommandList* pCommandList, ID3D
   {
   case DXGI_FORMAT_R8G8B8A8_UNORM:
   case DXGI_FORMAT_R8G8B8A8_UNORM_SRGB:
+  case DXGI_FORMAT_R32_UINT:
     pixelSize = 4;
     break;
-
+  
   case DXGI_FORMAT_A8_UNORM:
     pixelSize = 1;
     break;
@@ -808,7 +790,7 @@ HRESULT gdr::device::UpdateTexture(ID3D12GraphicsCommandList* pCommandList, ID3D
     break;
 
   default:
-    assert(0); // Unknown format
+    GDR_FAILED("Unknown format"); // Unknown format
     break;
   }
 
@@ -853,23 +835,39 @@ void gdr::device::CloseUploadCommandList()
   // Close command list
   HRESULT hr = S_OK;
 
+#ifdef TOO_MANY_SYNCS
+  // Wait for present CL-s
+  UINT64 presentFenceValue = NoneValue;
+  PresentQueue->WaitIdle(presentFenceValue);
+  if (presentFenceValue != NoneValue)
+  {
+    DynamicBuffer->FlashFenceValue(presentFenceValue);
+    DynamicDescBuffer->FlashFenceValue(presentFenceValue);
+    QueryBuffer->FlashFenceValue(presentFenceValue);
+
+    // sync update queue with our fence
+    D3D_CHECK(UploadQueue->GetQueue()->Wait(PresentQueue->GetCurrentCommandList()->GetFence(), presentFenceValue));
+  }
+#else
+  // instead of waiting present CL, lets just Sync it 
+  UINT64 presentFenceValue = PresentQueue->GetCurrentCommandList()->GetSubmittedFenceValue();
+  if (presentFenceValue != NoneValue)
+  {
+    // sync update queue with our fence
+    D3D_CHECK(UploadQueue->GetQueue()->Wait(PresentQueue->GetCurrentCommandList()->GetFence(), presentFenceValue));
+  }
+#endif
+
   // Submit updated command list, if needed
   UINT64 uploadFenceValue = NoneValue;
   D3D_CHECK(UploadQueue->CloseAndSubmitCommandList(&uploadFenceValue));
 
-  // while upload buffer has fences to submit
-  if (uploadFenceValue != NoneValue)
+  if (uploadFenceValue != NoneValue) // if we have some updates. 
   {
     // Add fence to pending
     UploadBuffer->AddPendingFence(uploadFenceValue);
   }
 
-  CurrentUploadCmdList = nullptr;
-}
-
-void gdr::device::CloseUploadCommandListBeforeRenderCommandList()
-{
-  UploadQueue->CloseCommandList();
   CurrentUploadCmdList = nullptr;
 }
 
@@ -912,7 +910,7 @@ bool gdr::device::CreateGPUResource(const D3D12_RESOURCE_DESC& desc, D3D12_RESOU
   }
   else
   {
-    assert(CurrentUploadCmdList != nullptr);
+    GDR_ASSERT(CurrentUploadCmdList != nullptr);
 
     D3D_CHECK(D3DGPUMemAllocator->CreateResource(&allocDesc, &desc, D3D12_RESOURCE_STATE_COMMON, pOptimizedClearValue, &resource.Allocation, __uuidof(ID3D12Resource), (void**)&resource.Resource));
     switch (desc.Dimension)
@@ -992,7 +990,7 @@ bool gdr::device::CompileShader(LPCTSTR srcFilename, const std::vector<LPCSTR>& 
       }
       D3D_RELEASE(pErrMsg);
     }
-    assert(SUCCEEDED(hr));
+    GDR_ASSERT(SUCCEEDED(hr));
 
     res = SUCCEEDED(hr);
 
@@ -1064,7 +1062,7 @@ bool gdr::device::ResizeSwapchain(UINT width, UINT height)
 
     TermBackBuffers();
 
-    D3D_CHECK(Swapchain->ResizeBuffers(count, width, height, DXGI_FORMAT_R8G8B8A8_UNORM, DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING));
+    D3D_CHECK(Swapchain->ResizeBuffers(count, width, height, DXGI_FORMAT_R8G8B8A8_UNORM, 0));
     D3D_CHECK(CreateBackBuffers(count));
   }
 
@@ -1077,7 +1075,7 @@ bool gdr::device::QueryTimestamp(ID3D12GraphicsCommandList* pCommandList, const 
   UINT query = -1;
   std::function<void(UINT64)> queryCB;
   ring_buffer_result allocRes = QueryBuffer->Alloc(1, id, queryCB, 1);
-  assert(allocRes == ring_buffer_result::Ok);
+  GDR_ASSERT(allocRes == ring_buffer_result::Ok);
   if (allocRes == ring_buffer_result::Ok)
   {
     QueryBuffer->At(id) = cb;
@@ -1107,5 +1105,6 @@ void gdr::device::WaitGPUIdle()
   {
     DynamicBuffer->FlashFenceValue(finishedFenceValue);
     DynamicDescBuffer->FlashFenceValue(finishedFenceValue);
+    QueryBuffer->FlashFenceValue(finishedFenceValue);
   }
 }

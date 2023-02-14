@@ -52,6 +52,14 @@ namespace gdr
       {
       }
 
+      /* Response function which will be called on every PHYSICS_TICK.
+       * ARGUMENTS: None.
+       * RETURNS: None.
+       */
+      virtual void ResponsePhys(void)
+      {
+      }
+
       /* Destructor */
       virtual ~unit_base(void)
       {

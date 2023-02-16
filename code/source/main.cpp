@@ -40,6 +40,14 @@
 #include "units/cameras/unit_first_person_camera.h"
 
 
+#include "utils/editor/editors_modules_list.h"
+
+#define GDR_BLUEPRINT_NODE(type, filter, name, number_of_input_args, number_of_output_args, input_args_types, output_args_types, input_args_names, output_args_names) std::string(filter) + std::string(":") + std::string(name),
+
+std::string AllFunctions[] = { 
+  GDR_BLUEPRINT_LIST
+};
+
 // Notes:
 // 1) Error checking
 // 2) times profiling on CPU too
@@ -157,7 +165,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
   //Engine.AddUnit(new unit_frame_times());
   //Engine.AddUnit(new unit_resource_viewier());
   //Engine.AddUnit(new unit_render_params());
-
+  for (int i = 0; i < sizeof(AllFunctions) / sizeof(AllFunctions[0]); i++)
+    OutputDebugStringA((AllFunctions[i] + "\n").c_str());
   // math smoke test
   mth::vec3f V1(1, 0, 0);
   mth::vec3f V2(0, 1, 0);

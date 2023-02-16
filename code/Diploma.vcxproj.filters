@@ -151,6 +151,9 @@
     <Filter Include="Source Files\Units\Ocean">
       <UniqueIdentifier>{a4d45991-71cb-4ff1-91a0-862563997118}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Utils\Editor">
+      <UniqueIdentifier>{03e74e1a-b2b6-4663-9555-13a1158360a1}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\main.cpp">
@@ -583,6 +586,9 @@
     </ClInclude>
     <ClInclude Include="source\units\stats\unit_log_time.h">
       <Filter>Source Files\Units\Stats</Filter>
+    </ClInclude>
+    <ClInclude Include="source\utils\editor\editors_modules_list.h">
+      <Filter>Source Files\Utils\Editor</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

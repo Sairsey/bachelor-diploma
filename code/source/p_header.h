@@ -23,6 +23,7 @@
 #include "render/subsystems/texture_subsystem.h"
 #include "render/subsystems/cube_texture_subsystem.h"
 #include "render/subsystems/materials_subsystem.h"
+#include "render/subsystems/shadow_maps_subsystem.h"
 #include "render/subsystems/lights_subsystem.h"
 #include "render/subsystems/luminance_subsystem.h"
 #include "render/subsystems/enviroment_subsystem.h"
@@ -39,6 +40,7 @@
   #include "render/passes/visibility_frustum_pass.h"
   #include "render/passes/visibility_hier_depth_pass.h"
   #include "render/passes/visibility_occlusion_pass.h"
+  #include "render/passes/shadow_map_pass.h"
 
 /// Main Pass
   #include "render/passes/albedo_pass.h"

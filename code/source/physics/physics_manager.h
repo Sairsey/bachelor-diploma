@@ -5,7 +5,7 @@ class ContactReportCallback;
 
 namespace gdr
 {
-  const float PHYSICS_TICK = 1 / 30.0;
+  const float PHYSICS_TICK = 1 / 30.0f;
   struct physic_material
   {
     float StaticFriction;

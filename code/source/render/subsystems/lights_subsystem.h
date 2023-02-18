@@ -9,13 +9,39 @@ namespace gdr
   class lights_subsystem : public resource_pool_subsystem<GDRGPULightSource, 16 * sizeof(GDRGPULightSource)>
   {
   protected: 
-    // 
+    void BeforeUpdateJob(ID3D12GraphicsCommandList* pCommandList) override
+    {
+      for (int index = 0; index < AllocatedSize(); index++)
+        if (IsExist(index) && Get(index).ShadowMapIndex != NONE_INDEX && Get(index).ObjectTransformIndex != NONE_INDEX)
+        {
+          if (Get(index).LightSourceType == LIGHT_SOURCE_TYPE_SPOT)
+          {
+            mth::vec3f loc = Render->ObjectTransformsSystem->Get(Get(index).ObjectTransformIndex).Transform * mth::vec3f(0, 0, 0);
+            mth::vec3f lookat = Render->ObjectTransformsSystem->Get(Get(index).ObjectTransformIndex).Transform * mth::vec3f(0, -1, 0);
+            float Fov = Get(index).AngleInnerCone;
+            float Top = Render->PlayerCamera.GetNear() * std::tan(Fov);
+            float Bottom = -Top;
+            float Left = -Top;
+            float Right = Top;
+
+            // update VP and InvVP
+            GetEditable(index).VP = mth::matr4f::View(loc, lookat, {0, 1, 0}) * mth::matr4f::Frustum(Left, Right, Bottom, Top, Render->PlayerCamera.GetNear(), Render->PlayerCamera.GetFar());
+            GetEditable(index).InvVP = Get(index).VP.Inversed();
+          }
+        }
+    }
+
     void BeforeRemoveJob(gdr_index index) override
     {
-      if (IsExist(index) && GetEditable(index).ObjectTransformIndex != NONE_INDEX)
+      if (IsExist(index) && Get(index).ObjectTransformIndex != NONE_INDEX)
       {
-        Render->ObjectTransformsSystem->Remove(GetEditable(index).ObjectTransformIndex);
+        Render->ObjectTransformsSystem->Remove(Get(index).ObjectTransformIndex);
         GetEditable(index).ObjectTransformIndex = NONE_INDEX;
+      }
+      if (IsExist(index) && Get(index).ShadowMapIndex != NONE_INDEX)
+      {
+        Render->ShadowMapsSystem->Remove(Get(index).ShadowMapIndex);
+        GetEditable(index).ShadowMapIndex = NONE_INDEX;
       }
     }
   public:
@@ -39,6 +65,7 @@ namespace gdr
       light.AngleInnerCone = MTH_D2R * 45.0f / 2.0f;
       light.AngleOuterCone = MTH_D2R * 60.0f / 2.0f;
       light.ObjectTransformIndex = NONE_INDEX;
+      light.ShadowMapIndex = NONE_INDEX;
       return Result;
     }
 

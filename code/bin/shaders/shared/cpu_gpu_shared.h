@@ -194,17 +194,20 @@ struct GDRGPULightSource
 {
 	UINT LightSourceType;      // type of lightsource to use
 	UINT ObjectTransformIndex; // index of ObjectTransform
-	float3 Color;              // Color of lightsource
-
+	UINT ShadowMapIndex;       // NONE if no shadow. Valid number overwise
 	// Attenuation params
 	float ConstantAttenuation;
+	
 	float LinearAttenuation;
 	float QuadricAttenuation;
-
 	// Spot light params
 	float AngleInnerCone;              // for Spot - angle in radians
 	float AngleOuterCone;              // for Spot - angle in radians
-
+	
+	float4x4 VP;               // ViewProj matrix of light source
+	float4x4 InvVP;            // InverseViewProj matrix of light source
+	float3 Color;              // Color of lightsource
+	UINT pad[1];
 };
 
 /// <summary>

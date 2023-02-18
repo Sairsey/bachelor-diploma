@@ -13,7 +13,7 @@ private:
 public:
   void Initialize(void)
   {
-    SpecialistImportData = gdr::ImportModelFromAssimp("bin/models/specialist/specialist2.glb");
+    SpecialistImportData = gdr::ImportModelFromAssimp("bin/models/Zombie/Zombie.glb");
     Animation = Engine->AnimationManager->Add(SpecialistImportData);
 
     auto light_import_data = gdr::ImportModelFromAssimp("bin/models/light_meshes/cone.obj");
@@ -31,8 +31,9 @@ public:
     Engine->LightsSystem->GetEditable(Light).ConstantAttenuation = 1.0f;
     Engine->LightsSystem->GetEditable(Light).LinearAttenuation = 0.09f;
     Engine->LightsSystem->GetEditable(Light).QuadricAttenuation = 0.032f;
-    Engine->LightsSystem->GetEditable(Light).AngleInnerCone = 45;
-    Engine->LightsSystem->GetEditable(Light).AngleOuterCone = 60;
+    Engine->LightsSystem->GetEditable(Light).AngleInnerCone = 45 * MTH_D2R;
+    Engine->LightsSystem->GetEditable(Light).AngleOuterCone = 60 * MTH_D2R;
+    Engine->LightsSystem->GetEditable(Light).ShadowMapIndex = Engine->ShadowMapsSystem->Add(256, 256);
     Engine->ObjectTransformsSystem->GetEditable(Engine->LightsSystem->GetEditable(Light).ObjectTransformIndex).Transform = mth::matr4f::RotateX(-30) * mth::matr4f::RotateY(45) * mth::matr4f::Translate({-10, 10, 0});
     Engine->ObjectTransformsSystem->IncreaseReferenceCount(Engine->ModelsManager->Get(LightModel).Render.RootTransform);
     DeltaSize = 50;

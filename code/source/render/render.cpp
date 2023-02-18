@@ -55,7 +55,7 @@ bool gdr::render::Init(engine* Eng)
   if (localIsInited)
   {
     D3D12_DESCRIPTOR_HEAP_DESC dsvDesc = {};
-    dsvDesc.NumDescriptors = 1;
+    dsvDesc.NumDescriptors = 1 + CreationParams.MaxShadowMapsAmount;
     dsvDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_DSV;
 
     HRESULT hr = S_OK;
@@ -81,6 +81,7 @@ bool gdr::render::Init(engine* Eng)
       EnviromentSystem = new enviroment_subsystem(this);
       BoneMappingSystem = new bone_mapping_subsystem(this);
       OITTransparencySystem = new oit_transparency_subsystem(this);
+      ShadowMapsSystem = new shadow_maps_subsystem(this);
   }
 
   // init passes
@@ -90,7 +91,8 @@ bool gdr::render::Init(engine* Eng)
     Passes.push_back(new visibility_frustum_pass());
     Passes.push_back(new visibility_hier_depth_pass());
     Passes.push_back(new visibility_occlusion_pass());
-    
+    Passes.push_back(new shadow_map_pass());
+
     // Main pass
     Passes.push_back(new albedo_pass());
     Passes.push_back(new skybox_pass());
@@ -115,6 +117,9 @@ bool gdr::render::Init(engine* Eng)
       pass->Initialize();
     }
   }
+
+  D3D12_CPU_DESCRIPTOR_HANDLE handle = DSVHeap->GetCPUDescriptorHandleForHeapStart();
+  RenderTargetsSystem->SaveDepthStencilBuffer(&handle);
 
   IsInited = localIsInited;
 
@@ -241,6 +246,11 @@ void gdr::render::DrawFrame(void)
           PROFILE_END(uploadCommandList);
       }
       {
+          PROFILE_BEGIN(uploadCommandList, "Update Shadow maps");
+          ShadowMapsSystem->UpdateGPUData(uploadCommandList);
+          PROFILE_END(uploadCommandList);
+      }
+      {
           PROFILE_BEGIN(uploadCommandList, "Update Cube textures");
           CubeTexturesSystem->UpdateGPUData(uploadCommandList);
           PROFILE_END(uploadCommandList);
@@ -314,7 +324,6 @@ void gdr::render::DrawFrame(void)
       Device.TransitResourceState(pCommandList, pBackBuffer, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_COMMON);
 
       // Save DepthStencil and Display buffers
-      RenderTargetsSystem->SaveDepthStencilBuffer(&dsvHandle);
       RenderTargetsSystem->SaveDisplayBuffer(&rtvHandle, pBackBuffer);
       
       // Clear them
@@ -403,6 +412,7 @@ void gdr::render::Term(void)
       delete EnviromentSystem;
       delete BoneMappingSystem;
       delete OITTransparencySystem;
+      delete ShadowMapsSystem;
   }
 
   for (auto& pass : Passes)

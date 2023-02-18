@@ -44,7 +44,7 @@ namespace gdr
     void DeleteTextures();
   public:
 
-    D3D12_CPU_DESCRIPTOR_HANDLE DepthStencilView;
+    D3D12_CPU_DESCRIPTOR_HANDLE DepthStencilView; // first element in pool. after him we can find depth for shadow maps
 
     // Formats for each render target view
     render_target_params TargetParams[(long)render_targets_enum::target_count] = {

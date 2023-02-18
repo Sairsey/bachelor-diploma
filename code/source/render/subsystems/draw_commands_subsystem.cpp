@@ -115,8 +115,6 @@ void gdr::draw_commands_subsystem::AfterUpdateJob(ID3D12GraphicsCommandList* pCo
       Render->GetDevice().GetDXDevice()->CreateUnorderedAccessView(CommandsBuffer[i].Resource, CommandsBuffer[i].Resource, &uavDesc, CommandsCPUDescriptor[i]);
 
       DirectCommandPools[i].clear();
-      // Also 
-
     }
   }
 

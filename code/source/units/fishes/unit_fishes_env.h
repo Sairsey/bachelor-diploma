@@ -46,8 +46,8 @@ public:
       Engine->LightsSystem->GetEditable(LightIndex).ConstantAttenuation = 1.0f;
       Engine->LightsSystem->GetEditable(LightIndex).LinearAttenuation = 0.09f;
       Engine->LightsSystem->GetEditable(LightIndex).QuadricAttenuation = 0.032f;
-      Engine->LightsSystem->GetEditable(LightIndex).AngleInnerCone = 45;
-      Engine->LightsSystem->GetEditable(LightIndex).AngleOuterCone = 60;
+      Engine->LightsSystem->GetEditable(LightIndex).AngleInnerCone = 45 * MTH_D2R;
+      Engine->LightsSystem->GetEditable(LightIndex).AngleOuterCone = 60 * MTH_D2R;
 
       // Set light position
       Engine->LightsSystem->GetEditable(LightIndex).ObjectTransformIndex = Engine->ObjectTransformsSystem->Add();

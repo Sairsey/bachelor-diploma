@@ -47,6 +47,7 @@
     <ClInclude Include="source\render\passes\luminance_pass.h" />
     <ClInclude Include="source\render\passes\oit_color_pass.h" />
     <ClInclude Include="source\render\passes\oit_compose_pass.h" />
+    <ClInclude Include="source\render\passes\shadow_map_pass.h" />
     <ClInclude Include="source\render\passes\skybox_pass.h" />
     <ClInclude Include="source\render\passes\tonemap_pass.h" />
     <ClInclude Include="source\render\passes\visibility_frustum_pass.h" />
@@ -66,6 +67,7 @@
     <ClInclude Include="source\render\subsystems\oit_transparency_subsystem.h" />
     <ClInclude Include="source\render\subsystems\render_target_subsystem.h" />
     <ClInclude Include="source\render\subsystems\object_transforms_subsystem.h" />
+    <ClInclude Include="source\render\subsystems\shadow_maps_subsystem.h" />
     <ClInclude Include="source\render\subsystems\texture_subsystem.h" />
     <ClInclude Include="source\timer\timer.h" />
     <ClInclude Include="source\units\cameras\unit_first_person_camera.h" />
@@ -143,6 +145,7 @@
     <ClCompile Include="source\render\passes\luminance_pass.cpp" />
     <ClCompile Include="source\render\passes\oit_color_pass.cpp" />
     <ClCompile Include="source\render\passes\oit_compose_pass.cpp" />
+    <ClCompile Include="source\render\passes\shadow_map_pass.cpp" />
     <ClCompile Include="source\render\passes\skybox_pass.cpp" />
     <ClCompile Include="source\render\passes\tonemap_pass.cpp" />
     <ClCompile Include="source\render\passes\visibility_frustum_pass.cpp" />
@@ -158,6 +161,7 @@
     <ClCompile Include="source\render\subsystems\node_transforms_subsystem.cpp" />
     <ClCompile Include="source\render\subsystems\oit_transparency_subsystem.cpp" />
     <ClCompile Include="source\render\subsystems\render_target_subsystem.cpp" />
+    <ClCompile Include="source\render\subsystems\shadow_maps_subsystem.cpp" />
     <ClCompile Include="source\render\subsystems\texture_subsystem.cpp" />
     <ClCompile Include="source\units\examples\unit_triangle.cpp" />
     <ClCompile Include="source\utils\D3D12MemAlloc.cpp" />

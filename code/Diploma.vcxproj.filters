@@ -154,6 +154,12 @@
     <Filter Include="Source Files\Utils\Editor">
       <UniqueIdentifier>{03e74e1a-b2b6-4663-9555-13a1158360a1}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Render\SubSystems\ShadowMaps">
+      <UniqueIdentifier>{158681e1-5d0a-4be4-be81-737369d354a0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Render\Passes\shadows">
+      <UniqueIdentifier>{bb963254-79f5-428e-bc4f-a5965a477605}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\main.cpp">
@@ -287,6 +293,12 @@
     </ClCompile>
     <ClCompile Include="source\render\passes\fxaa_pass.cpp">
       <Filter>Source Files\Render\Passes\fxaa</Filter>
+    </ClCompile>
+    <ClCompile Include="source\render\subsystems\shadow_maps_subsystem.cpp">
+      <Filter>Source Files\Render\SubSystems\ShadowMaps</Filter>
+    </ClCompile>
+    <ClCompile Include="source\render\passes\shadow_map_pass.cpp">
+      <Filter>Source Files\Render\Passes\shadows</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -589,6 +601,12 @@
     </ClInclude>
     <ClInclude Include="source\utils\editor\editors_modules_list.h">
       <Filter>Source Files\Utils\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="source\render\subsystems\shadow_maps_subsystem.h">
+      <Filter>Source Files\Render\SubSystems\ShadowMaps</Filter>
+    </ClInclude>
+    <ClInclude Include="source\render\passes\shadow_map_pass.h">
+      <Filter>Source Files\Render\Passes\shadows</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -160,6 +160,9 @@
     <Filter Include="Source Files\Render\Passes\shadows">
       <UniqueIdentifier>{bb963254-79f5-428e-bc4f-a5965a477605}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Units\Editor">
+      <UniqueIdentifier>{eb7d8b75-4214-4965-96ca-c872e54e7c38}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\main.cpp">
@@ -607,6 +610,9 @@
     </ClInclude>
     <ClInclude Include="source\render\passes\shadow_map_pass.h">
       <Filter>Source Files\Render\Passes\shadows</Filter>
+    </ClInclude>
+    <ClInclude Include="source\units\editor\unit_editor.h">
+      <Filter>Source Files\Units\Editor</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

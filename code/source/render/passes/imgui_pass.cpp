@@ -3,13 +3,18 @@
 #include "imgui/imgui.h"
 #include "imgui/imgui_impl_win32.h"
 #include "imgui/imgui_impl_dx12.h"
+#include "imgui/imnodes.h"
 
 void gdr::imgui_pass::Initialize(void)
 {
   IMGUI_CHECKVERSION();
   ImGui::CreateContext();
   ImGuiIO& io = ImGui::GetIO();
+  ImNodes::CreateContext();
+
+  // Setup style
   ImGui::StyleColorsDark();
+  ImNodes::StyleColorsDark();
 
   Render->GetDevice().AllocateStaticDescriptors(1, CPUDescriptor, GPUDescriptor);
 
@@ -39,6 +44,7 @@ void gdr::imgui_pass::CallDirectDraw(ID3D12GraphicsCommandList* currentCommandLi
 
 gdr::imgui_pass::~imgui_pass(void)
 {
+  ImNodes::DestroyContext();
   ImGui_ImplDX12_Shutdown();
   ImGui_ImplWin32_Shutdown();
   ImGui::DestroyContext();

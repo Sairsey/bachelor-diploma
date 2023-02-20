@@ -72,6 +72,7 @@
     <ClInclude Include="source\timer\timer.h" />
     <ClInclude Include="source\units\cameras\unit_first_person_camera.h" />
     <ClInclude Include="source\units\cameras\unit_flying_camera.h" />
+    <ClInclude Include="source\units\editor\unit_editor.h" />
     <ClInclude Include="source\units\enviroment\unit_alex_apt.h" />
     <ClInclude Include="source\units\enviroment\unit_yokohama.h" />
     <ClInclude Include="source\units\examples\unit_choose.h" />

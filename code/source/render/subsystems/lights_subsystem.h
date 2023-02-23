@@ -24,8 +24,12 @@ namespace gdr
             float Left = -Top;
             float Right = Top;
 
+            mth::vec3f up = {0, 1, 0};
+            if (abs((lookat - loc).Normalized() dot up) == 1)
+              up = {1, 0, 0};
+
             // update VP and InvVP
-            GetEditable(index).VP = mth::matr4f::View(loc, lookat, {0, 1, 0}) * mth::matr4f::Frustum(Left, Right, Bottom, Top, Render->PlayerCamera.GetNear(), Render->PlayerCamera.GetFar());
+            GetEditable(index).VP = mth::matr4f::View(loc, lookat, up) * mth::matr4f::Frustum(Left, Right, Bottom, Top, Render->PlayerCamera.GetNear(), Render->PlayerCamera.GetFar());
           }
         }
     }

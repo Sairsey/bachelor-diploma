@@ -13,6 +13,8 @@
 // NearestSampler - which is a sampler with linear filtering
 #ifndef __cplusplus
 
+#define EPSILON 0.001
+
 float CalcShadow(in uint LightIndex, in float3 Position)
 {
   GDRGPULightSource light = LightsPool[LightIndex];
@@ -30,31 +32,32 @@ float CalcShadow(in uint LightIndex, in float3 Position)
   float2 TextureStep = (1).xx / TextureSize;
   float res = 0;
 
-  const int aperture = 1;
+  const int aperture = 3;
 
   if (aperture == 1)
   {
     float2 PosToSample = UVInShadowMap.xy;
     float SampledDepth = ShadowMapsPool[light.ShadowMapIndex].Sample(NearestSampler, PosToSample).r;
-    res += (SampledDepth - UVInShadowMap.z >= -1e-2);
+    res += (UVInShadowMap.z - SampledDepth <= EPSILON);
+  }
+  else if (aperture == 3)
+  {
+    for (int i = -1; i <= 1; i++)
+    {
+      for (int j = -1; j <= 1; j++)
+      {
+        // Sample from texture
+        float2 PosToSample = UVInShadowMap.xy + float2(i, j) * TextureStep;
+        float SampledDepth = ShadowMapsPool[light.ShadowMapIndex].Sample(NearestSampler, PosToSample).r;
+        res += (UVInShadowMap.z - SampledDepth <= EPSILON);
+      }
+    }
+    res /= aperture * aperture;
   }
   else
   {
     res = 1;
   }
-/*
-  for (int i = 0; i < aperture; i++)
-  {
-    for (int j = 0; j < aperture; j++)
-    {
-      // Sample from texture
-      float2 PosToSample = UVInShadowMap.xy + (i - aperture / 2.0, j - aperture / 2) * TextureStep;
-      float SampledDepth = ShadowMapsPool[light.ShadowMapIndex].Sample(NearestSampler, PosToSample).r;
-      res += (SampledDepth >= UVInShadowMap.z);
-    }
-  }
-  res /= aperture * aperture;
-  */
 
   return res;
 }

@@ -19,7 +19,7 @@ private:
   std::vector<gdr::model_import_data> Fishes;
 
   mth::vec3f LeftTankBottom = { -5.5f, 1.f, -1.5f };
-  mth::vec3f RightTankBottom = { 10.5f, 1.f, -1.5f };
+  mth::vec3f RightTankBottom = { 10.3f, 1.f, -1.5f };
   float MaxHeight = 1.5;
   float MaxRadius = 0.5;
   float MaxSpeed = 1;
@@ -54,6 +54,8 @@ public:
     Engine->Params.IsOccusionCulling = false;
     Engine->Params.IsFrustumCulling = false;
     Engine->Params.IsIndirect = true;
+    Engine->Params.IsIBL = false;
+    Engine->Params.IsUploadEveryFrame = false;
     Engine->EnableFullscreen();
   }
 
@@ -94,9 +96,9 @@ public:
   {
     static size_t frameCount = 0;
     frameCount++;
-    Engine->PlayerCamera.SetView({ 7, 2, -1.5 }, { 8, 2, -1.5 }, { 0, 1, 0 });
     if (SavePerf)
     {
+        Engine->PlayerCamera.SetView({ 7, 2, -1.5 }, { 8, 2, -1.5 }, { 0, 1, 0 });
         if (frameCount % FramesToCalc == 0)
         {
             FILE* F;

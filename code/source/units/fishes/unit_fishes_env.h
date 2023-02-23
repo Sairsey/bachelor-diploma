@@ -16,8 +16,8 @@ public:
     
     // Lamps positions
     std::vector<mth::matr4f> LampTransforms;
-    LampTransforms.push_back(mth::matr4f::Translate({-5.5f, 3.9f, -1.5f}));
-    LampTransforms.push_back(mth::matr4f::Translate({ 10.5f, 3.9f, -1.5f }));
+    LampTransforms.push_back(mth::matr4f::Translate({-5.5f, 3.8f, -1.5f}));
+    LampTransforms.push_back(mth::matr4f::Translate({ 10.3f, 3.8f, -1.5f }));
 
     // Load stage
     ID3D12GraphicsCommandList* commandList;
@@ -48,6 +48,7 @@ public:
       Engine->LightsSystem->GetEditable(LightIndex).QuadricAttenuation = 0.032f;
       Engine->LightsSystem->GetEditable(LightIndex).AngleInnerCone = 45 * MTH_D2R;
       Engine->LightsSystem->GetEditable(LightIndex).AngleOuterCone = 60 * MTH_D2R;
+      Engine->LightsSystem->GetEditable(LightIndex).ShadowMapIndex = Engine->ShadowMapsSystem->Add(2048, 2048);
 
       // Set light position
       Engine->LightsSystem->GetEditable(LightIndex).ObjectTransformIndex = Engine->ObjectTransformsSystem->Add();

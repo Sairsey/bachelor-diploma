@@ -130,6 +130,13 @@ void gdr::render_targets_subsystem::CreateTextures()
 {
   for (int i = 1; i < (int)render_targets_enum::target_count; i++)
   {
+    D3D12_CLEAR_VALUE textureOptimizedClearValue = {};
+    textureOptimizedClearValue.Format = TargetParams[i].Format;
+    textureOptimizedClearValue.Color[0] = 0;
+    textureOptimizedClearValue.Color[1] = 0;
+    textureOptimizedClearValue.Color[2] = 0;
+    textureOptimizedClearValue.Color[3] = 1;
+
     D3D12_RESOURCE_FLAGS flags = D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET;
     D3D12_RESOURCE_DESC desc = 
       CD3DX12_RESOURCE_DESC::Tex2D(
@@ -141,7 +148,7 @@ void gdr::render_targets_subsystem::CreateTextures()
       1,
       0,
       flags);
-    HRESULT hr = Render->GetDevice().CreateGPUResource(desc, D3D12_RESOURCE_STATE_COMMON, NULL, Textures[i]);
+    HRESULT hr = Render->GetDevice().CreateGPUResource(desc, D3D12_RESOURCE_STATE_COMMON, &textureOptimizedClearValue, Textures[i]);
     Textures[i].Resource->SetName(L"RenderTarget");
   }
 

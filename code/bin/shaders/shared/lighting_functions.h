@@ -8,9 +8,57 @@
 // EnviromentValues - which is a constant buffer of GDRGPUEnviromentData
 // TexturePool - which is a bindless pool of 2d textures
 // CubeTexturePool - which is a bindless pool of cube textures
+// ShadowMapsPool - which is a bindless pool of shadow maps
 // LinearSampler - which is a sampler with linear filtering
 // NearestSampler - which is a sampler with linear filtering
 #ifndef __cplusplus
+
+float CalcShadow(in uint LightIndex, in float3 Position)
+{
+  GDRGPULightSource light = LightsPool[LightIndex];
+  
+  if (light.ShadowMapIndex == NONE_INDEX)
+    return 1;
+
+  float4 m = mul(light.VP, float4(Position, 1));
+  float3 UVInShadowMap = m.xyz / m.w;
+  UVInShadowMap.xy += float2(1, 1);
+  UVInShadowMap.xy /= 2;
+  UVInShadowMap.y = 1 - UVInShadowMap.y;
+  float2 TextureSize;
+  ShadowMapsPool[light.ShadowMapIndex].GetDimensions(TextureSize.x, TextureSize.y);
+  float2 TextureStep = (1).xx / TextureSize;
+  float res = 0;
+
+  const int aperture = 1;
+
+  if (aperture == 1)
+  {
+    float2 PosToSample = UVInShadowMap.xy;
+    float SampledDepth = ShadowMapsPool[light.ShadowMapIndex].Sample(NearestSampler, PosToSample).r;
+    res += (SampledDepth - UVInShadowMap.z >= -1e-2);
+  }
+  else
+  {
+    res = 1;
+  }
+/*
+  for (int i = 0; i < aperture; i++)
+  {
+    for (int j = 0; j < aperture; j++)
+    {
+      // Sample from texture
+      float2 PosToSample = UVInShadowMap.xy + (i - aperture / 2.0, j - aperture / 2) * TextureStep;
+      float SampledDepth = ShadowMapsPool[light.ShadowMapIndex].Sample(NearestSampler, PosToSample).r;
+      res += (SampledDepth >= UVInShadowMap.z);
+    }
+  }
+  res /= aperture * aperture;
+  */
+
+  return res;
+}
+
 
 bool CalcLight(in uint LightIndex, in float3 Position, out float3 DirectionToLight, out float3 LightColor)
 {
@@ -18,7 +66,12 @@ bool CalcLight(in uint LightIndex, in float3 Position, out float3 DirectionToLig
 
   if (light.ObjectTransformIndex == NONE_INDEX)
     return false;
+  
+  float shadowMultiplier = CalcShadow(LightIndex, Position);
 
+  if (shadowMultiplier == 0)
+    return false;
+  
   float attenuation = 1.0;
   if (light.LightSourceType == LIGHT_SOURCE_TYPE_DIRECTIONAL)
   {
@@ -78,7 +131,8 @@ bool CalcLight(in uint LightIndex, in float3 Position, out float3 DirectionToLig
       attenuation *= 1.0 - (cosInnerCone - cosTheta) / (cosInnerCone - cosOuterCone);
   }
 
-  LightColor = attenuation * light.Color;
+  LightColor = attenuation * light.Color * shadowMultiplier.xxx;
+
   return true;
 }
 
@@ -116,6 +170,7 @@ float4 ShadePhong(float3 Normal, float3 Position, float2 uv, GDRGPUMaterial mate
 
   float4 resultColor = float4(0, 0, 0, Kd.a);
 
+  [loop]
   for (uint i = 0; i < globals.LightsAmount; i++)
   {
     float3 L;
@@ -181,6 +236,8 @@ float4 ShadeCookTorrance(float3 Normal, float3 Position, float2 uv, GDRGPUMateri
 
     float3 F0 = Params.Specular;
     float NV = max(dot(Normal, V), 0.0);
+    
+    [loop]
     for (uint i = 0; i < globals.LightsAmount; i++)
     {
         float3 L;

@@ -19,7 +19,8 @@ StructuredBuffer<GDRGPULightSource> LightsPool : register(GDRGPULightsPoolSlot);
 Texture2D TexturePool[] : register(GDRGPUTexturePoolSlot, GDRGPUTexturePoolSpace);                      // Bindless Pool with all textures
 TextureCube CubeTexturePool[] : register(GDRGPUCubeTexturePoolSlot, GDRGPUCubeTexturePoolSpace);        // Bindless Pool with all textures
 StructuredBuffer<GDRGPUBoneMapping> BoneMappingPool : register(GDRGPUBoneMappingSlot);                  // SRV: Data with bone mappings
-globallycoherent RWTexture2D<UINT> OITTexture : register(GDRGPUOITTextureUAVSlot);                                       // UAV: Headers of lists
+Texture2D ShadowMapsPool[] : register(GDRGPUShadowMapsSRVSlot, GDRGPUShadowMapsSpace);                  // Bindless Pool with shadow maps
+globallycoherent RWTexture2D<UINT> OITTexture : register(GDRGPUOITTextureUAVSlot);                      // UAV: Headers of lists
 RWStructuredBuffer<GDRGPUOITNode> OITPool : register(GDRGPUOITPoolUAVSlot);                             // UAV: Elements of lists
 
 SamplerState LinearSampler : register(GDRGPULinearSamplerSlot);  // Linear texture sampler

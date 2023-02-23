@@ -18,6 +18,7 @@ StructuredBuffer<GDRGPUMaterial> MaterialPool : register(GDRGPUMaterialPoolSlot)
 StructuredBuffer<GDRGPULightSource> LightsPool : register(GDRGPULightsPoolSlot);                        // SRV: Data with light sources
 Texture2D TexturePool[] : register(GDRGPUTexturePoolSlot, GDRGPUTexturePoolSpace);                      // Bindless Pool with all textures
 TextureCube CubeTexturePool[] : register(GDRGPUCubeTexturePoolSlot, GDRGPUCubeTexturePoolSpace);        // Bindless Pool with all textures
+Texture2D ShadowMapsPool[] : register(GDRGPUShadowMapsSRVSlot, GDRGPUShadowMapsSpace);                  // Bindless Pool with shadow maps
 StructuredBuffer<GDRGPUBoneMapping> BoneMappingPool : register(GDRGPUBoneMappingSlot);                  // SRV: Data with bone mappings
 
 SamplerState LinearSampler : register(GDRGPULinearSamplerSlot);  // Linear texture sampler

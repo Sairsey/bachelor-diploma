@@ -55,6 +55,7 @@ using uint4 = mth::vec4<UINT>;
 #define GDRGPUBoneMappingSlot ShaderResourceSlot(9)
 #define GDRGPUOITTextureSRVSlot ShaderResourceSlot(10)
 #define GDRGPUOITPoolSRVSlot ShaderResourceSlot(11)
+#define GDRGPUShadowMapsSRVSlot ShaderResourceSlot(12)
 // slots for all uavs
 #define GDRGPUOpaqueAllCommandsPoolSlot UnorderedAccessSlot(1)
 #define GDRGPUTransparentAllCommandsPoolSlot UnorderedAccessSlot(2)
@@ -87,6 +88,7 @@ using uint4 = mth::vec4<UINT>;
 // Spaces for bindless resources
 #define GDRGPUTexturePoolSpace Space(1)
 #define GDRGPUCubeTexturePoolSpace Space(2)
+#define GDRGPUShadowMapsSpace Space(3)
 // Samplers Registers
 #define GDRGPUNearestSamplerSlot SamplerSlot(0)
 #define GDRGPULinearSamplerSlot SamplerSlot(1)
@@ -205,7 +207,6 @@ struct GDRGPULightSource
 	float AngleOuterCone;              // for Spot - angle in radians
 	
 	float4x4 VP;               // ViewProj matrix of light source
-	float4x4 InvVP;            // InverseViewProj matrix of light source
 	float3 Color;              // Color of lightsource
 	UINT pad[1];
 };

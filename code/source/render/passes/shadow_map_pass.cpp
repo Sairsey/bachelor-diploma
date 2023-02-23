@@ -232,10 +232,6 @@ void gdr::shadow_map_pass::CallIndirectDraw(ID3D12GraphicsCommandList* currentCo
 
 gdr::shadow_map_pass::~shadow_map_pass(void)
 {
-  ComputeRootSignature->Release();
-  ComputePSO->Release();
-  ComputeShader->Release();
-
   RootSignature->Release();
   PSO->Release();
   VertexShader->Release();

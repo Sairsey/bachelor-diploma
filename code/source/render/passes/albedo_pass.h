@@ -33,6 +33,7 @@ namespace gdr
 				cube_texture_pool_index,            // root parameter for buffer with textures
 				lights_pool_index,                  // root parameter for buffer with light sources
 				bone_mapping_pool_index,            // root parameter for buffer with bone mappings
+				shadow_map_pool_index,              // root parameter for buffer with shadow maps
 				total_root_parameters,
 			};
 		public:

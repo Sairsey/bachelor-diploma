@@ -132,13 +132,13 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
   //Engine.AddUnit(new unit_frustum_cull());
   //Engine.AddUnit(new unit_light_example());
   //Engine.AddUnit(new unit_occlusion_cull());
-  Engine.AddUnit(new unit_triangle());
+  //Engine.AddUnit(new unit_triangle());
   //Engine.AddUnit(new unit_runtime_add_remove());
   //Engine.AddUnit(new unit_pbr_metalness());
   //Engine.AddUnit(new unit_pbr_specular());
   //Engine.AddUnit(new unit_normal_map());
   //Engine.AddUnit(new unit_load_any());
-  //Engine.AddUnit(new unit_transparent());
+  Engine.AddUnit(new unit_transparent());
   //Engine.AddUnit(new unit_model_splitted());
   //Engine.AddUnit(new unit_specialist());
   //Engine.AddUnit(new unit_pit());
@@ -165,10 +165,11 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
   Engine.AddUnit(new unit_flying_camera());
   //Engine.AddUnit(new unit_first_person_camera());
 
-  Engine.AddUnit(new unit_editor());
-  //Engine.AddUnit(new unit_frame_times());
-  //Engine.AddUnit(new unit_resource_viewier());
-  //Engine.AddUnit(new unit_render_params());
+  //Engine.AddUnit(new unit_editor());
+  
+  Engine.AddUnit(new unit_frame_times());
+  Engine.AddUnit(new unit_resource_viewier());
+  Engine.AddUnit(new unit_render_params());
   for (int i = 0; i < sizeof(AllFunctions) / sizeof(AllFunctions[0]); i++)
     OutputDebugStringA((AllFunctions[i] + "\n").c_str());
   // math smoke test

@@ -35,6 +35,7 @@ namespace gdr
 				bone_mapping_pool_index,            // root parameter for buffer with bone mappings
 				oit_texture_index,                  // root parameter for OIT texture
 				oit_pool_index,                     // root parameter for OIT Pool
+				shadow_map_pool_index,              // root parameter for buffer with shadow maps
 				total_root_parameters,
 			};
 

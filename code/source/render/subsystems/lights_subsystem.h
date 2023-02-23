@@ -18,7 +18,7 @@ namespace gdr
           {
             mth::vec3f loc = Render->ObjectTransformsSystem->Get(Get(index).ObjectTransformIndex).Transform * mth::vec3f(0, 0, 0);
             mth::vec3f lookat = Render->ObjectTransformsSystem->Get(Get(index).ObjectTransformIndex).Transform * mth::vec3f(0, -1, 0);
-            float Fov = Get(index).AngleInnerCone;
+            float Fov = Get(index).AngleOuterCone;
             float Top = Render->PlayerCamera.GetNear() * std::tan(Fov);
             float Bottom = -Top;
             float Left = -Top;
@@ -26,7 +26,6 @@ namespace gdr
 
             // update VP and InvVP
             GetEditable(index).VP = mth::matr4f::View(loc, lookat, {0, 1, 0}) * mth::matr4f::Frustum(Left, Right, Bottom, Top, Render->PlayerCamera.GetNear(), Render->PlayerCamera.GetFar());
-            GetEditable(index).InvVP = Get(index).VP.Inversed();
           }
         }
     }

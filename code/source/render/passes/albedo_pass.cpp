@@ -12,6 +12,7 @@ void gdr::albedo_pass::Initialize(void)
         params.resize((int)root_parameters_draw_indices::total_root_parameters);
         CD3DX12_DESCRIPTOR_RANGE bindlessTexturesDesc[1];  // Textures Pool
         CD3DX12_DESCRIPTOR_RANGE cubeBindlessTexturesDesc[1];  // Cube Textures Pool
+        CD3DX12_DESCRIPTOR_RANGE shadowBindlessTexturesDesc[1];  // Shadow Maps Pool
 
         params[(int)root_parameters_draw_indices::globals_buffer_index].InitAsConstantBufferView(GDRGPUGlobalDataConstantBufferSlot);
         params[(int)root_parameters_draw_indices::enviroment_buffer_index].InitAsConstantBufferView(GDRGPUEnviromentConstantBufferSlot);
@@ -35,12 +36,22 @@ void gdr::albedo_pass::Initialize(void)
 
         {
           cubeBindlessTexturesDesc[0].BaseShaderRegister = GDRGPUCubeTexturePoolSlot;
-          cubeBindlessTexturesDesc[0].NumDescriptors = (UINT)Render->CreationParams.MaxTextureAmount;
+          cubeBindlessTexturesDesc[0].NumDescriptors = (UINT)Render->CreationParams.MaxCubeTextureAmount;
           cubeBindlessTexturesDesc[0].OffsetInDescriptorsFromTableStart = 0;
           cubeBindlessTexturesDesc[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
           cubeBindlessTexturesDesc[0].RegisterSpace = GDRGPUCubeTexturePoolSpace;
 
           params[(int)root_parameters_draw_indices::cube_texture_pool_index].InitAsDescriptorTable(1, cubeBindlessTexturesDesc);
+        }
+
+        {
+          shadowBindlessTexturesDesc[0].BaseShaderRegister = GDRGPUShadowMapsSRVSlot;
+          shadowBindlessTexturesDesc[0].NumDescriptors = (UINT)Render->CreationParams.MaxShadowMapsAmount;
+          shadowBindlessTexturesDesc[0].OffsetInDescriptorsFromTableStart = 0;
+          shadowBindlessTexturesDesc[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+          shadowBindlessTexturesDesc[0].RegisterSpace = GDRGPUShadowMapsSpace;
+
+          params[(int)root_parameters_draw_indices::shadow_map_pool_index].InitAsDescriptorTable(1, shadowBindlessTexturesDesc);
         }
 
         {
@@ -126,6 +137,9 @@ void gdr::albedo_pass::CallDirectDraw(ID3D12GraphicsCommandList* currentCommandL
             currentCommandList->SetGraphicsRootShaderResourceView(
               (int)root_parameters_draw_indices::bone_mapping_pool_index,
               Render->BoneMappingSystem->GetGPUResource().Resource->GetGPUVirtualAddress());
+            currentCommandList->SetGraphicsRootDescriptorTable(
+              (int)root_parameters_draw_indices::shadow_map_pool_index,
+              Render->ShadowMapsSystem->ShadowMapTableGPU);
         }
 
         currentCommandList->DrawIndexedInstanced(command.DrawArguments.IndexCountPerInstance, 1, 0, 0, 0);
@@ -169,6 +183,9 @@ void gdr::albedo_pass::CallIndirectDraw(ID3D12GraphicsCommandList* currentComman
   currentCommandList->SetGraphicsRootShaderResourceView(
     (int)root_parameters_draw_indices::bone_mapping_pool_index,
     Render->BoneMappingSystem->GetGPUResource().Resource->GetGPUVirtualAddress());
+  currentCommandList->SetGraphicsRootDescriptorTable(
+    (int)root_parameters_draw_indices::shadow_map_pool_index,
+    Render->ShadowMapsSystem->ShadowMapTableGPU);
 
   currentCommandList->ExecuteIndirect(
     CommandSignature,

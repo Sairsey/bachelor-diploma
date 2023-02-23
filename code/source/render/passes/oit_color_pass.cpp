@@ -14,6 +14,7 @@ void gdr::oit_color_pass::Initialize(void)
         CD3DX12_DESCRIPTOR_RANGE cubeBindlessTexturesDesc[1];  // Cube Textures Pool
         CD3DX12_DESCRIPTOR_RANGE oitTextureDesc[1];
         CD3DX12_DESCRIPTOR_RANGE oitPoolDesc[1];
+        CD3DX12_DESCRIPTOR_RANGE shadowBindlessTexturesDesc[1];  // Shadow maps Pool
 
         params[(int)root_parameters_draw_indices::globals_buffer_index].InitAsConstantBufferView(GDRGPUGlobalDataConstantBufferSlot);
         params[(int)root_parameters_draw_indices::enviroment_buffer_index].InitAsConstantBufferView(GDRGPUEnviromentConstantBufferSlot);
@@ -37,12 +38,22 @@ void gdr::oit_color_pass::Initialize(void)
 
         {
           cubeBindlessTexturesDesc[0].BaseShaderRegister = GDRGPUCubeTexturePoolSlot;
-          cubeBindlessTexturesDesc[0].NumDescriptors = (UINT)Render->CreationParams.MaxTextureAmount;
+          cubeBindlessTexturesDesc[0].NumDescriptors = (UINT)Render->CreationParams.MaxCubeTextureAmount;
           cubeBindlessTexturesDesc[0].OffsetInDescriptorsFromTableStart = 0;
           cubeBindlessTexturesDesc[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
           cubeBindlessTexturesDesc[0].RegisterSpace = GDRGPUCubeTexturePoolSpace;
 
           params[(int)root_parameters_draw_indices::cube_texture_pool_index].InitAsDescriptorTable(1, cubeBindlessTexturesDesc);
+        }
+
+        {
+          shadowBindlessTexturesDesc[0].BaseShaderRegister = GDRGPUShadowMapsSRVSlot;
+          shadowBindlessTexturesDesc[0].NumDescriptors = (UINT)Render->CreationParams.MaxShadowMapsAmount;
+          shadowBindlessTexturesDesc[0].OffsetInDescriptorsFromTableStart = 0;
+          shadowBindlessTexturesDesc[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+          shadowBindlessTexturesDesc[0].RegisterSpace = GDRGPUShadowMapsSpace;
+
+          params[(int)root_parameters_draw_indices::shadow_map_pool_index].InitAsDescriptorTable(1, shadowBindlessTexturesDesc);
         }
 
         {
@@ -138,23 +149,27 @@ void gdr::oit_color_pass::CallDirectDraw(ID3D12GraphicsCommandList* currentComma
                 (int)root_parameters_draw_indices::material_pool_index,
                 Render->MaterialsSystem->GetGPUResource().Resource->GetGPUVirtualAddress());
             currentCommandList->SetGraphicsRootShaderResourceView(
-              (int)root_parameters_draw_indices::lights_pool_index,
-              Render->LightsSystem->GetGPUResource().Resource->GetGPUVirtualAddress());
+                (int)root_parameters_draw_indices::lights_pool_index,
+                Render->LightsSystem->GetGPUResource().Resource->GetGPUVirtualAddress());
             currentCommandList->SetGraphicsRootDescriptorTable(
                 (int)root_parameters_draw_indices::texture_pool_index,
                 Render->TexturesSystem->TextureTableGPU);
             currentCommandList->SetGraphicsRootDescriptorTable(
-              (int)root_parameters_draw_indices::cube_texture_pool_index,
-              Render->CubeTexturesSystem->CubeTextureTableGPU);
+                (int)root_parameters_draw_indices::cube_texture_pool_index,
+                Render->CubeTexturesSystem->CubeTextureTableGPU);
             currentCommandList->SetGraphicsRootShaderResourceView(
-              (int)root_parameters_draw_indices::bone_mapping_pool_index,
-              Render->BoneMappingSystem->GetGPUResource().Resource->GetGPUVirtualAddress());
+                (int)root_parameters_draw_indices::bone_mapping_pool_index,
+                Render->BoneMappingSystem->GetGPUResource().Resource->GetGPUVirtualAddress());
             currentCommandList->SetGraphicsRootDescriptorTable(
-              (int)root_parameters_draw_indices::oit_texture_index,
-              Render->OITTransparencySystem->TextureUAVGPUDescriptor);
+                (int)root_parameters_draw_indices::oit_texture_index,
+                Render->OITTransparencySystem->TextureUAVGPUDescriptor);
             currentCommandList->SetGraphicsRootDescriptorTable(
-              (int)root_parameters_draw_indices::oit_pool_index,
-              Render->OITTransparencySystem->NodesPoolUAVGPUDescriptor);
+                (int)root_parameters_draw_indices::oit_pool_index,
+                Render->OITTransparencySystem->NodesPoolUAVGPUDescriptor);
+            currentCommandList->SetGraphicsRootDescriptorTable(
+                (int)root_parameters_draw_indices::shadow_map_pool_index,
+                Render->ShadowMapsSystem->ShadowMapTableGPU);
+
         }
 
         currentCommandList->DrawIndexedInstanced(command.DrawArguments.IndexCountPerInstance, 1, 0, 0, 0);
@@ -177,8 +192,8 @@ void gdr::oit_color_pass::CallIndirectDraw(ID3D12GraphicsCommandList* currentCom
     (int)root_parameters_draw_indices::globals_buffer_index,
     Render->GlobalsSystem->GetGPUResource().Resource->GetGPUVirtualAddress());
   currentCommandList->SetGraphicsRootConstantBufferView(
-      (int)root_parameters_draw_indices::enviroment_buffer_index,
-      Render->EnviromentSystem->GetGPUResource().Resource->GetGPUVirtualAddress());
+    (int)root_parameters_draw_indices::enviroment_buffer_index,
+    Render->EnviromentSystem->GetGPUResource().Resource->GetGPUVirtualAddress());
   // root_parameters_draw_indices::index_buffer_index will be set via indirect
   currentCommandList->SetGraphicsRootShaderResourceView(
     (int)root_parameters_draw_indices::object_transform_pool_index,
@@ -207,6 +222,10 @@ void gdr::oit_color_pass::CallIndirectDraw(ID3D12GraphicsCommandList* currentCom
   currentCommandList->SetGraphicsRootDescriptorTable(
     (int)root_parameters_draw_indices::oit_pool_index,
     Render->OITTransparencySystem->NodesPoolUAVGPUDescriptor);
+  currentCommandList->SetGraphicsRootDescriptorTable(
+    (int)root_parameters_draw_indices::shadow_map_pool_index,
+    Render->ShadowMapsSystem->ShadowMapTableGPU);
+
 
   currentCommandList->ExecuteIndirect(
     CommandSignature,

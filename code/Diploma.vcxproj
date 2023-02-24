@@ -73,6 +73,7 @@
     <ClInclude Include="source\units\cameras\unit_first_person_camera.h" />
     <ClInclude Include="source\units\cameras\unit_flying_camera.h" />
     <ClInclude Include="source\units\editor\unit_editor.h" />
+    <ClInclude Include="source\units\editor\unit_scripted.h" />
     <ClInclude Include="source\units\enviroment\unit_alex_apt.h" />
     <ClInclude Include="source\units\enviroment\unit_yokohama.h" />
     <ClInclude Include="source\units\examples\unit_choose.h" />
@@ -164,6 +165,7 @@
     <ClCompile Include="source\render\subsystems\render_target_subsystem.cpp" />
     <ClCompile Include="source\render\subsystems\shadow_maps_subsystem.cpp" />
     <ClCompile Include="source\render\subsystems\texture_subsystem.cpp" />
+    <ClCompile Include="source\units\editor\unit_scripted.cpp" />
     <ClCompile Include="source\units\examples\unit_triangle.cpp" />
     <ClCompile Include="source\utils\D3D12MemAlloc.cpp" />
     <ClInclude Include="source\utils\math\mth_cam.h" />

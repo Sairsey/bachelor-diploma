@@ -148,9 +148,6 @@
     <Filter Include="Source Files\Units\Fishes">
       <UniqueIdentifier>{96998b8b-f2ff-41cd-b27b-42c44599f5b3}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\Units\Ocean">
-      <UniqueIdentifier>{a4d45991-71cb-4ff1-91a0-862563997118}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source Files\Utils\Editor">
       <UniqueIdentifier>{03e74e1a-b2b6-4663-9555-13a1158360a1}</UniqueIdentifier>
     </Filter>
@@ -302,6 +299,9 @@
     </ClCompile>
     <ClCompile Include="source\render\passes\shadow_map_pass.cpp">
       <Filter>Source Files\Render\Passes\shadows</Filter>
+    </ClCompile>
+    <ClCompile Include="source\units\editor\unit_scripted.cpp">
+      <Filter>Source Files\Units\Editor</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -612,6 +612,9 @@
       <Filter>Source Files\Render\Passes\shadows</Filter>
     </ClInclude>
     <ClInclude Include="source\units\editor\unit_editor.h">
+      <Filter>Source Files\Units\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="source\units\editor\unit_scripted.h">
       <Filter>Source Files\Units\Editor</Filter>
     </ClInclude>
   </ItemGroup>

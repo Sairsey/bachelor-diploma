@@ -21,6 +21,7 @@
 #include "units/examples/unit_choose.h"
 
 #include "units/editor/unit_editor.h"
+#include "units/editor/unit_scripted.h"
 
 #include "units/thriller/unit_thriller_stage.h"
 #include "units/thriller/unit_thriller_env.h"
@@ -41,14 +42,7 @@
 #include "units/cameras/unit_flying_camera.h"
 #include "units/cameras/unit_first_person_camera.h"
 
-
 #include "utils/editor/editors_modules_list.h"
-
-#define GDR_BLUEPRINT_NODE(type, filter, name, number_of_input_args, number_of_output_args, input_args_types, output_args_types, input_args_names, output_args_names) std::string(filter) + std::string(":") + std::string(name),
-
-std::string AllFunctions[] = { 
-  GDR_BLUEPRINT_LIST
-};
 
 // Notes:
 // 1) Error checking
@@ -138,10 +132,10 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
   //Engine.AddUnit(new unit_pbr_specular());
   //Engine.AddUnit(new unit_normal_map());
   //Engine.AddUnit(new unit_load_any());
-  Engine.AddUnit(new unit_transparent());
+  //Engine.AddUnit(new unit_transparent());
   //Engine.AddUnit(new unit_model_splitted());
   //Engine.AddUnit(new unit_specialist());
-  //Engine.AddUnit(new unit_pit());
+  Engine.AddUnit(new unit_pit());
   
   //Engine.AddUnit(new unit_thriller_stage());
   //Engine.AddUnit(new unit_thriller_env());
@@ -153,6 +147,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
   //Engine.AddUnit(new unit_shooter_enemy_spawner(10));
   //Engine.AddUnit(new unit_shooter_gun());
 
+  Engine.AddUnit(new unit_scripted("Hello"));
+
   //Engine.AddUnit(new unit_fishes_env());
   //Engine.AddUnit(new unit_fishes_rotating());
   
@@ -162,16 +158,14 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
   //Engine.AddUnit(new unit_choose());
   //Engine.AddUnit(new unit_log_time());
 
-  Engine.AddUnit(new unit_flying_camera());
-  //Engine.AddUnit(new unit_first_person_camera());
+  //Engine.AddUnit(new unit_flying_camera());
+  Engine.AddUnit(new unit_first_person_camera());
 
   //Engine.AddUnit(new unit_editor());
   
   Engine.AddUnit(new unit_frame_times());
   Engine.AddUnit(new unit_resource_viewier());
   Engine.AddUnit(new unit_render_params());
-  for (int i = 0; i < sizeof(AllFunctions) / sizeof(AllFunctions[0]); i++)
-    OutputDebugStringA((AllFunctions[i] + "\n").c_str());
   // math smoke test
   mth::vec3f V1(1, 0, 0);
   mth::vec3f V2(0, 1, 0);

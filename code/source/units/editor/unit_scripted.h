@@ -362,6 +362,7 @@ public:
 
   ~unit_scripted(void)
   {
+    LocalScope = InitedLocalScope;
     PROFILE_CPU_BEGIN("Deinitialisation");
     gdr_index DeinitSciptNode = FindScriptNode(GDR_EDITOR_EVENT_DEINIT_LIBRARY_INDEX);
     RunFromScriptNode(DeinitSciptNode);

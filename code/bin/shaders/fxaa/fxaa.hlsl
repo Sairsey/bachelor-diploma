@@ -36,13 +36,27 @@ VSOut VS(VSIn input)
     return output;
 }
 
+#define EPS 0.001
+//#define SHOW_DIFF
+
 float4 PS(VSOut input) : SV_TARGET
 {
   float3 Data;
 
   FxaaTex FXAATexture = { LinearSampler, Source };
 
-  if (globals.IsFXAA)
+  bool isFXAA = globals.IsFXAA;
+
+#ifdef SHOW_DIFF
+  if (input.uv.x < 0.5-EPS)
+    isFXAA = false;
+  else if (input.uv.x > 0.5 + EPS)
+    isFXAA = true;
+  else
+    return float4(0, 0, 0, 1);
+#endif
+
+  if (isFXAA)
   {
 	  // FXAA 3_11
 	  Data = FxaaPixelShader(

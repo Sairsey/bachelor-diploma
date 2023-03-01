@@ -7,16 +7,17 @@ private:
   std::vector<gdr_index> SceneModels;
   std::vector<gdr_index> LampModels;
   std::vector<gdr_index> LampLights;
-  mth::vec3f LampColor = {10, 10, 10};
+  mth::vec3f LampColor = {-1, -1, -1};
+
 public:
   void Initialize(void)
   {
     auto SceneImportModels = gdr::ImportSplittedModelFromAssimp("bin\\models\\Thriller\\scene\\scene.glb");
     auto LightImportModel = gdr::ImportModelFromAssimp("bin\\models\\Thriller\\lamp.glb");
-    
+
     // Lamps positions
     std::vector<mth::matr4f> LampTransforms;
-    //LampTransforms.push_back(mth::matr4f::Translate({0, 10, 0}));
+    LampTransforms.push_back(mth::matr4f::Translate({35, 50, 35}));
 
     // Load stage
     ID3D12GraphicsCommandList* commandList;
@@ -51,13 +52,15 @@ public:
       Engine->LightsSystem->GetEditable(LightIndex).QuadricAttenuation = 0.032f;
       Engine->LightsSystem->GetEditable(LightIndex).AngleInnerCone = 45 * MTH_D2R;
       Engine->LightsSystem->GetEditable(LightIndex).AngleOuterCone = 60 * MTH_D2R;
+      Engine->LightsSystem->GetEditable(LightIndex).ShadowMapIndex = Engine->ShadowMapsSystem->Add(4096, 4096);
+      Engine->LightsSystem->GetEditable(LightIndex).ShadowMapOffset = 1e-5;
 
       // Bind light to Model position
       Engine->LightsSystem->GetEditable(LightIndex).ObjectTransformIndex = Engine->ModelsManager->Get(ModelIndex).Render.RootTransform;
       Engine->ObjectTransformsSystem->GetEditable(Engine->LightsSystem->GetEditable(LightIndex).ObjectTransformIndex).Transform = LampTransforms[i];
     }
     PROFILE_END(commandList);
-    Engine->GetDevice().CloseUploadCommandList();    
+    Engine->GetDevice().CloseUploadCommandList();
   }
 
   void Response(void)

@@ -64,6 +64,8 @@ gdr_index mesh_assimp_importer::ImportTreeFirstPass(aiNode* node, gdr_index Pare
   Result.HierarchyNodes[Current].NextIndex = NONE_INDEX;
   for (unsigned int i = 0; i < node->mNumChildren; i++)
   {
+    if (node->mChildren[i]->mName == aiString("rigidbodies"))
+      continue;
     gdr_index Child = ImportTreeFirstPass(node->mChildren[i], Current);
     Result.HierarchyNodes[Child].NextIndex = Result.HierarchyNodes[Current].ChildIndex;
     Result.HierarchyNodes[Current].ChildIndex = Child;
@@ -140,6 +142,8 @@ void mesh_assimp_importer::ImportTreeSecondPass(aiNode* node, gdr_index CurrentI
   gdr_index ChildIndex = Result.HierarchyNodes[CurrentIndex].ChildIndex;
   for (int i = node->mNumChildren - 1; i >=0  ; i--)
   {
+    if (node->mChildren[i]->mName == aiString("rigidbodies"))
+      continue;
     ImportTreeSecondPass(node->mChildren[i], ChildIndex, Result.HierarchyNodes[CurrentIndex].LocalTransform * Offset);
     ChildIndex = Result.HierarchyNodes[ChildIndex].NextIndex;
   }

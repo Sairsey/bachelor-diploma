@@ -31,7 +31,7 @@ void gdr::shadow_map_pass::Initialize(void)
     psoDesc.pRootSignature = RootSignature;
     psoDesc.VS = CD3DX12_SHADER_BYTECODE(VertexShader);
     psoDesc.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
-    psoDesc.RasterizerState.CullMode = D3D12_CULL_MODE_NONE;
+    psoDesc.RasterizerState.CullMode = D3D12_CULL_MODE_BACK;
     psoDesc.BlendState = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
     psoDesc.DepthStencilState.DepthEnable = TRUE;
     psoDesc.DepthStencilState.DepthFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL;
@@ -48,6 +48,57 @@ void gdr::shadow_map_pass::Initialize(void)
 
   // 4) Create Command signature
   Render->GetDevice().GetDXDevice()->CreateCommandSignature(&Render->DrawCommandsSystem->commandSignatureDesc, RootSignature, IID_PPV_ARGS(&CommandSignature));
+}
+
+static bool CullAABBFrustum(
+    float4x4 VP,
+    float4x4 transform,
+    float3 minAABB,
+    float3 maxAABB)
+{
+    // Use our min max to define eight corners
+    float3 corners[8] = {
+        float3(minAABB.X, minAABB.Y, minAABB.Z), // x y z
+        float3(maxAABB.X, minAABB.Y, minAABB.Z), // X y z
+        float3(minAABB.X, maxAABB.Y, minAABB.Z), // x Y z
+        float3(maxAABB.X, maxAABB.Y, minAABB.Z), // X Y z
+
+        float3(minAABB.X, minAABB.Y, maxAABB.Z), // x y Z
+        float3(maxAABB.X, minAABB.Y, maxAABB.Z), // X y Z
+        float3(minAABB.X, maxAABB.Y, maxAABB.Z), // x Y Z
+        float3(maxAABB.X, maxAABB.Y, maxAABB.Z) // X Y Z
+    };
+
+    float4x4 matr = transform * VP;
+    for (int corner_idx = 0; corner_idx < 8; corner_idx++)
+    {
+        if (corners[corner_idx].X * matr[0][3] + corners[corner_idx].Y * matr[1][3] + corners[corner_idx].Z * matr[2][3] + matr[3][3] > 0)
+            corners[corner_idx] = corners[corner_idx] * matr;
+        else
+            corners[corner_idx] = corners[corner_idx] * matr * -1;
+    }
+
+    bool LeftPlaneResult = true;
+    bool RightPlaneResult = true;
+    bool TopPlaneResult = true;
+    bool BottomPlaneResult = true;
+    bool FarPlaneResult = true;
+    bool NearPlaneResult = true;
+
+    for (int corner_idx = 0; corner_idx < 8; corner_idx++)
+    {
+        LeftPlaneResult = LeftPlaneResult && (corners[corner_idx].X < -1);
+        RightPlaneResult = RightPlaneResult && (corners[corner_idx].X > 1);
+
+        BottomPlaneResult = BottomPlaneResult && (corners[corner_idx].Y <= -1);
+        TopPlaneResult = TopPlaneResult && (corners[corner_idx].Y >= 1);
+
+        FarPlaneResult = FarPlaneResult && (corners[corner_idx].Z >= 1);
+        NearPlaneResult = NearPlaneResult && (corners[corner_idx].Z <= 0);
+    }
+
+    bool inside = !(LeftPlaneResult || RightPlaneResult || TopPlaneResult || BottomPlaneResult || FarPlaneResult || NearPlaneResult);
+    return inside;
 }
 
 void gdr::shadow_map_pass::CallDirectDraw(ID3D12GraphicsCommandList* currentCommandList)
@@ -104,11 +155,22 @@ void gdr::shadow_map_pass::CallDirectDraw(ID3D12GraphicsCommandList* currentComm
       currentCommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
       // just iterate for every draw call
-      for (auto& i : Render->DrawCommandsSystem->DirectCommandPools[(int)indirect_command_pools_enum::OpaqueAll])
+      for (auto& i : Render->DrawCommandsSystem->DirectCommandPools[(int)indirect_command_pools_enum::All])
       {
         if (!Render->DrawCommandsSystem->IsExist(i))
           continue;
         auto& command = Render->DrawCommandsSystem->Get(i);
+
+        bool visible = CullAABBFrustum(
+                Render->GlobalsSystem->Get().VP,
+                Render->ObjectTransformsSystem->Get(command.Indices.ObjectTransformIndex).Transform,
+                Render->ObjectTransformsSystem->Get(command.Indices.ObjectTransformIndex).minAABB,
+                Render->ObjectTransformsSystem->Get(command.Indices.ObjectTransformIndex).maxAABB);
+        bool transparent = command.Indices.ObjectParamsMask & OBJECT_PARAMETER_TRANSPARENT;
+
+        if (!visible || transparent)
+            continue;
+
         currentCommandList->IASetVertexBuffers(0, 1, &command.VertexBuffer);
         currentCommandList->IASetIndexBuffer(&command.IndexBuffer);
         {
@@ -146,6 +208,9 @@ void gdr::shadow_map_pass::CallDirectDraw(ID3D12GraphicsCommandList* currentComm
 
 void gdr::shadow_map_pass::CallIndirectDraw(ID3D12GraphicsCommandList* currentCommandList)
 {
+  CallDirectDraw(currentCommandList);
+  return;
+
   GDRGPUGlobalData saved = Render->GlobalsSystem->Get();
   Render->RenderTargetsSystem->Set(currentCommandList, render_targets_enum::target_display);
   for (gdr_index i = 0; i < Render->LightsSystem->AllocatedSize(); i++)

@@ -69,6 +69,7 @@ namespace gdr
       light.AngleOuterCone = MTH_D2R * 60.0f / 2.0f;
       light.ObjectTransformIndex = NONE_INDEX;
       light.ShadowMapIndex = NONE_INDEX;
+      light.ShadowMapOffset = 1e-4;
       return Result;
     }
 

@@ -208,7 +208,7 @@ struct GDRGPULightSource
 	
 	float4x4 VP;               // ViewProj matrix of light source
 	float3 Color;              // Color of lightsource
-	UINT pad[1];
+	float ShadowMapOffset;
 };
 
 /// <summary>

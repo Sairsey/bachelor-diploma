@@ -27,6 +27,9 @@ private:
   bool NodeTransformsWindow = false;
   size_t NodeTransformIndex = 0;
 
+  bool ShadowMapsWindow = false;
+  size_t ShadowMapIndex = 0;
+
 public:
   void Initialize()
   {
@@ -49,6 +52,7 @@ public:
         RenderTargetWindow |= ImGui::Button("Render targets");
         ObjectTransformsWindow |= ImGui::Button("Object transforms");
         NodeTransformsWindow |= ImGui::Button("Node transforms");
+        ShadowMapsWindow |= ImGui::Button("Shadow maps");
         ImGui::End();
       }
       );
@@ -388,6 +392,51 @@ public:
           ImGui::End();
         }
         );
+
+    if (ShadowMapsWindow)
+        Engine->AddLambdaForIMGUI(
+            [&]()
+            {
+                ImGui::Begin("Shadow maps Viewer", &ShadowMapsWindow, ImGuiWindowFlags_AlwaysAutoResize);
+                if (ImGui::Button("<<<"))
+                    ShadowMapIndex -= 100;
+                ImGui::SameLine();
+                if (ImGui::Button("<<"))
+                    ShadowMapIndex -= 10;
+                ImGui::SameLine();
+                if (ImGui::Button("<"))
+                    ShadowMapIndex -= 1;
+                ImGui::SameLine();
+                ImGui::Text("%d", ShadowMapIndex);
+                ImGui::SameLine();
+                if (ImGui::Button(">"))
+                    ShadowMapIndex += 1;
+                ImGui::SameLine();
+                if (ImGui::Button(">>"))
+                    ShadowMapIndex += 10;
+                ImGui::SameLine();
+                if (ImGui::Button(">>>"))
+                    ShadowMapIndex += 100;
+                ShadowMapIndex = min(max(0, ShadowMapIndex), Engine->ShadowMapsSystem->AllocatedSize() - 1);
+
+                if (Engine->ShadowMapsSystem->IsExist(ShadowMapIndex))
+                {
+                    auto& el = Engine->ShadowMapsSystem->Get(ShadowMapIndex);
+                    ImGui::Text("Width : %d", el.W);
+                    ImGui::Text("Heigth: %d", el.H);
+                    
+                    D3D12_GPU_DESCRIPTOR_HANDLE true_texture_handle = Engine->ShadowMapsSystem->ShadowMapTableGPU;
+                    true_texture_handle.ptr += ShadowMapIndex * Engine->GetDevice().GetSRVDescSize();
+                    ImGui::Image((ImTextureID)true_texture_handle.ptr, ImVec2((float)128, (float)128));
+                }
+                else
+                {
+                    ImGui::Text("Not exist");
+                }
+
+                ImGui::End();
+            }
+    );
 
     if (RenderTargetWindow)
       Engine->AddLambdaForIMGUI(

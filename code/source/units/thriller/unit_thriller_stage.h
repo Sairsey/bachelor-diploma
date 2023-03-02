@@ -53,8 +53,7 @@ public:
       Engine->LightsSystem->GetEditable(LightIndex).AngleInnerCone = 45 * MTH_D2R;
       Engine->LightsSystem->GetEditable(LightIndex).AngleOuterCone = 60 * MTH_D2R;
       Engine->LightsSystem->GetEditable(LightIndex).ShadowMapIndex = Engine->ShadowMapsSystem->Add(4096, 4096);
-      Engine->LightsSystem->GetEditable(LightIndex).ShadowMapOffset = 1e-5;
-
+      
       // Bind light to Model position
       Engine->LightsSystem->GetEditable(LightIndex).ObjectTransformIndex = Engine->ModelsManager->Get(ModelIndex).Render.RootTransform;
       Engine->ObjectTransformsSystem->GetEditable(Engine->LightsSystem->GetEditable(LightIndex).ObjectTransformIndex).Transform = LampTransforms[i];

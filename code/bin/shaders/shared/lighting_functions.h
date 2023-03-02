@@ -46,7 +46,7 @@ float CalcShadow(in uint LightIndex, in float3 Position)
   {    
     for (float i = -1.5; i <= 1.5; i += 1)
     {
-      for (int j = -1.5; j <= 1.5; j += 1)
+      for (float j = -1.5; j <= 1.5; j += 1)
       {
         // Sample from texture
         float2 PosToSample = UVInShadowMap.xy + float2(i, j) * TextureStep;
@@ -67,6 +67,7 @@ float CalcShadow(in uint LightIndex, in float3 Position)
 bool CalcLight(in uint LightIndex, in float3 Position, out float3 DirectionToLight, out float3 LightColor)
 {
   GDRGPULightSource light = LightsPool[LightIndex];
+  LightColor = float3(1, 1, 1);
 
   if (light.ObjectTransformIndex == NONE_INDEX)
     return false;
@@ -264,6 +265,7 @@ float4 ShadeCookTorrance(float3 Normal, float3 Position, float2 uv, GDRGPUMateri
         {
             IBLShadow += LColor.x;
             IBLShadowCount++;
+            continue;
         }
 
         float3 H = normalize(V + L);

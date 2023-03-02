@@ -617,5 +617,8 @@
     <ClInclude Include="source\units\editor\unit_scripted.h">
       <Filter>Source Files\Units\Editor</Filter>
     </ClInclude>
+    <ClInclude Include="source\units\stats\unit_light_editor.h">
+      <Filter>Source Files\Units\Stats</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

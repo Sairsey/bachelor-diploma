@@ -99,6 +99,7 @@
     <ClInclude Include="source\units\shooter\unit_shooter_first_person.h" />
     <ClInclude Include="source\units\shooter\unit_shooter_gun.h" />
     <ClInclude Include="source\units\stats\unit_frame_times.h" />
+    <ClInclude Include="source\units\stats\unit_light_editor.h" />
     <ClInclude Include="source\units\stats\unit_log_time.h" />
     <ClInclude Include="source\units\stats\unit_render_params.h" />
     <ClInclude Include="source\units\stats\unit_resource_viewier.h" />

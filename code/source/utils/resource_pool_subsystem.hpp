@@ -82,6 +82,8 @@ void gdr::resource_pool_subsystem<StoredType, ChunkSize>::UpdateGPUData(ID3D12Gr
 
   if (CPUData.size() > StoredSize) // if we need to reallocate -> Do it
   {
+    Render->GetDevice().WaitAllUploadLists();
+    Render->GetDevice().WaitGPUIdle();
     DeleteResource();
     CreateResource();
   }

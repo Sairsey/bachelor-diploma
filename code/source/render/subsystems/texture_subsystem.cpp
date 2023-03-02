@@ -275,7 +275,6 @@ void gdr::textures_subsystem::BeforeRemoveJob(gdr_index index)
     GetEditable(index).H = 0;
     GetEditable(index).NumOfMips = 0;
     GetEditable(index).IsTransparent = 0;
-    Render->GetDevice().ReleaseGPUResource(GetEditable(index).TextureResource);
   }
 }
 
@@ -296,6 +295,11 @@ void gdr::textures_subsystem::BeforeUpdateJob(ID3D12GraphicsCommandList* pComman
       texDesc.Texture2D.MipLevels = (UINT)Get(i).NumOfMips;
       Render->GetDevice().GetDXDevice()->CreateShaderResourceView(Get(i).TextureResource.Resource, &texDesc, TextureDescr);
       GetEditable(i).IsSrvInited = true;
+    }
+    else if (!IsExist(i) && CPUData[i].TextureResource.Resource != nullptr)
+    {
+      Render->GetDevice().ReleaseGPUResource(CPUData[i].TextureResource);
+      CPUData[i].TextureResource.Resource = nullptr;
     }
 }
 

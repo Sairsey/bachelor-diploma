@@ -259,7 +259,7 @@ namespace mth
        *   (vec3<Type>) Rotation per each axis in degrees.
        *   (vec3<Type>) Scale per each axis.
        */
-      void Decompose(vec3<Type>& Translation, vec3<Type>& RotationPerAxis, vec3<Type> &Scale)
+      void Decompose(vec3<Type>& Translation, vec3<Type>& RotationPerAxis, vec3<Type> &Scale) const
       {
         Type sx = vec3<Type>(A[0][0], A[0][1], A[0][2]).Lenght() ;
         Type sy = vec3<Type>(A[1][0], A[1][1], A[1][2]).Lenght() ;
@@ -309,7 +309,7 @@ namespace mth
        *   (vec3<Type>) Rotation per each axis in degrees.
        *   (vec3<Type>) Scale per each axis.
        */
-      void Decompose(vec3<Type>& Translation, vec4<Type>& Quaternion, vec3<Type>& Scale)
+      void Decompose(vec3<Type>& Translation, vec4<Type>& Quaternion, vec3<Type>& Scale) const
       {
         Type sx = vec3<Type>(A[0][0], A[0][1], A[0][2]).Lenght();
         Type sy = vec3<Type>(A[1][0], A[1][1], A[1][2]).Lenght();

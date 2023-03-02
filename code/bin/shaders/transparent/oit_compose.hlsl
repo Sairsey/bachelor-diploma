@@ -32,6 +32,14 @@ VSOut VS(VSIn input)
     return output;
 }
 
+bool compare(GDRGPUOITNode a, GDRGPUOITNode b)
+{
+  float delta = abs(a.Depth) - abs(b.Depth);
+  if (abs(delta) <= 1e-6)
+    return a.Depth < b.Depth;
+  return delta < 0;
+}
+
 float4 PS(VSOut input) : SV_TARGET
 {
   uint2 screen_pos = uint2(input.pos.x - 0.5, input.pos.y - 0.5);
@@ -87,7 +95,6 @@ float4 PS(VSOut input) : SV_TARGET
   // we use WBOIT color as starting color, and starting alpha
 
   // first pass -> we find nearest Opaque
-  
 
   // calculate WBOIT and sorted
   float3 WBOITColor = float3(0, 0, 0);
@@ -96,32 +103,42 @@ float4 PS(VSOut input) : SV_TARGET
 
   // fill nearests with default data
   nearest.Color = float4(0, 0, 0, 0);
-  nearest.Depth = 1.0f;
+  nearest.Depth = -1.0f;
   nearest2 = nearest;
   nearest3 = nearest;
   nearest4 = nearest;
   n = OITTexture[screen_pos];
+
   while (n != NONE_INDEX && n < OITNumNodes)
   {
-    if (OITPool[n].Depth < nearest.Depth)
+    if (OITPool[n].Color.a == 1 && compare(OITPool[n], nearest))
+      nearest = OITPool[n];
+    n = OITPool[n].NextNodeIndex;
+  }
+
+  n = OITTexture[screen_pos];
+
+  while (n != NONE_INDEX && n < OITNumNodes)
+  {
+    if (compare(OITPool[n], nearest))
     {
       nearest4 = nearest3;
       nearest3 = nearest2;
       nearest2 = nearest;
       nearest = OITPool[n];
     }
-    else if (OITPool[n].Depth < nearest2.Depth)
+    else if (compare(OITPool[n], nearest2))
     {
       nearest4 = nearest3;
       nearest3 = nearest2;
       nearest2 = OITPool[n];
     }
-    else if (OITPool[n].Depth < nearest3.Depth)
+    else if (compare(OITPool[n], nearest3))
     {
       nearest4 = nearest3;
       nearest3 = OITPool[n];
     }
-    else if (OITPool[n].Depth < nearest4.Depth)
+    else if (compare(OITPool[n], nearest4))
     {
       nearest4 = OITPool[n];
     }

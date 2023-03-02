@@ -66,7 +66,7 @@ void PS(VSOut input, bool IsFrontFace : SV_IsFrontFace)
 
 		// add element to the beginning of the list
 		OITPool[newHeadBufferValue].NextNodeIndex = previosHeadBufferValue;
-		OITPool[newHeadBufferValue].Depth = input.pos.z;
+		OITPool[newHeadBufferValue].Depth = input.pos.z * (IsFrontFace * 2 - 1) * -1;
 		OITPool[newHeadBufferValue].Color = col;
 	}
 

@@ -92,6 +92,7 @@ using uint4 = mth::vec4<UINT>;
 // Samplers Registers
 #define GDRGPUNearestSamplerSlot SamplerSlot(0)
 #define GDRGPULinearSamplerSlot SamplerSlot(1)
+#define GDRGPUShadowSamplerSlot SamplerSlot(2)
 
 
 /// <summary>

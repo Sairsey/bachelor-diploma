@@ -11,6 +11,7 @@
 // ShadowMapsPool - which is a bindless pool of shadow maps
 // LinearSampler - which is a sampler with linear filtering
 // NearestSampler - which is a sampler with linear filtering
+// ShadowSampler - which is a sampler with special filtering
 #ifndef __cplusplus
 
 float CalcShadow(in uint LightIndex, in float3 Position)
@@ -29,30 +30,30 @@ float CalcShadow(in uint LightIndex, in float3 Position)
   ShadowMapsPool[light.ShadowMapIndex].GetDimensions(TextureSize.x, TextureSize.y);
   float2 TextureStep = (1).xx / TextureSize;
   float res = 0;
-
-  const int aperture = 3;
-
+  
   float bias = light.ShadowMapOffset;
+
+  UVInShadowMap.z -= bias;
+
+  const int aperture = 4;
 
   if (aperture == 1)
   {
     float2 PosToSample = UVInShadowMap.xy;
-    float SampledDepth = ShadowMapsPool[light.ShadowMapIndex].Sample(NearestSampler, PosToSample).r;
-    res += (UVInShadowMap.z - SampledDepth <= bias);
+    res += ShadowMapsPool[light.ShadowMapIndex].SampleCmpLevelZero(ShadowSampler, PosToSample, UVInShadowMap.z );
   }
-  else if (aperture == 3)
+  else if (aperture == 4)
   {    
-    for (int i = -1; i <= 1; i++)
+    for (float i = -1.5; i <= 1.5; i += 1)
     {
-      for (int j = -1; j <= 1; j++)
+      for (int j = -1.5; j <= 1.5; j += 1)
       {
         // Sample from texture
         float2 PosToSample = UVInShadowMap.xy + float2(i, j) * TextureStep;
-        float SampledDepth = ShadowMapsPool[light.ShadowMapIndex].Sample(NearestSampler, PosToSample).r;
-        res += (UVInShadowMap.z - SampledDepth <= bias);
+        res += ShadowMapsPool[light.ShadowMapIndex].SampleCmpLevelZero(ShadowSampler, PosToSample, UVInShadowMap.z );
       }
     }
-    res /= aperture * aperture;
+    res /= 16.0;
   }
   else
   {

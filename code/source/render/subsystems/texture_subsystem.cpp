@@ -65,6 +65,11 @@ gdr::textures_subsystem::textures_subsystem(render* Rnd) : resource_pool_subsyst
 
   SamplersDescs.push_back(CD3DX12_STATIC_SAMPLER_DESC(GDRGPUNearestSamplerSlot, D3D12_FILTER_MIN_MAG_MIP_POINT));
   SamplersDescs.push_back(CD3DX12_STATIC_SAMPLER_DESC(GDRGPULinearSamplerSlot, D3D12_FILTER_MIN_MAG_MIP_LINEAR));
+  SamplersDescs.push_back(CD3DX12_STATIC_SAMPLER_DESC(
+    GDRGPUShadowSamplerSlot,
+    D3D12_FILTER_COMPARISON_MIN_MAG_MIP_LINEAR,
+    D3D12_TEXTURE_ADDRESS_MODE_MIRROR, 
+    D3D12_TEXTURE_ADDRESS_MODE_MIRROR));
 }
 
 // Load Texture

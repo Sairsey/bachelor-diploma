@@ -25,6 +25,7 @@ RWStructuredBuffer<GDRGPUOITNode> OITPool : register(GDRGPUOITPoolUAVSlot);     
 
 SamplerState LinearSampler : register(GDRGPULinearSamplerSlot);  // Linear texture sampler
 SamplerState NearestSampler : register(GDRGPUNearestSamplerSlot); // Nearest texture sampler
+SamplerComparisonState ShadowSampler : register(GDRGPUShadowSamplerSlot); // Shadow texture sampler
 
 #include "shared/vertex_process.h"
 #include "shared/lighting_functions.h"

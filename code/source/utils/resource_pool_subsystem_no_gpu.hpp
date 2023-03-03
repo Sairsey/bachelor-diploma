@@ -11,8 +11,7 @@ gdr::resource_pool_subsystem<StoredType, Type, 0>::resource_pool_subsystem(rende
 template<typename StoredType, gdr_index_types Type>
 gdr_index gdr::resource_pool_subsystem<StoredType, Type, 0>::Add()
 {
-  //gdr_index Result(NONE_INDEX, Type);
-  gdr_index Result = NONE_INDEX;
+  gdr_index Result(NONE_INDEX, Type);
 
   // Try to reuse old resources
   for (gdr_index i = 0; i < CPUData.size() && Result == NONE_INDEX; i++)
@@ -25,7 +24,7 @@ gdr_index gdr::resource_pool_subsystem<StoredType, Type, 0>::Add()
   // Otherwise we need to create new
   if (Result == NONE_INDEX)
   {
-    Result = (gdr_index)CPUData.size();
+    Result = (unsigned)CPUData.size();
     CPUData.emplace_back();
     PoolRecords.emplace_back();
     PoolRecords[Result].IsAlive = true;
@@ -72,7 +71,7 @@ void gdr::resource_pool_subsystem<StoredType, Type, 0>::Remove(gdr_index index)
 template<typename StoredType, gdr_index_types Type>
 StoredType& gdr::resource_pool_subsystem<StoredType, Type, 0>::GetEditable(gdr_index index)
 {
-  GDR_ASSERT(/*Type == index.type && */index <= CPUData.size() && index >= 0 && PoolRecords[index].IsAlive);
+  GDR_ASSERT((index.type == gdr_index_types::none || index.type == Type) && index <= CPUData.size() && index >= 0 && PoolRecords[index].IsAlive);
 
   return CPUData[index];
 }
@@ -80,7 +79,7 @@ StoredType& gdr::resource_pool_subsystem<StoredType, Type, 0>::GetEditable(gdr_i
 template<typename StoredType, gdr_index_types Type>
 const StoredType& gdr::resource_pool_subsystem<StoredType, Type, 0>::Get(gdr_index index) const
 {
-  GDR_ASSERT(/*Type == index.type && */index <= CPUData.size() && index >= 0 && PoolRecords[index].IsAlive);
+  GDR_ASSERT((index.type == gdr_index_types::none || index.type == Type) && index <= CPUData.size() && index >= 0 && PoolRecords[index].IsAlive);
   
   return CPUData[index];
 }
@@ -88,7 +87,7 @@ const StoredType& gdr::resource_pool_subsystem<StoredType, Type, 0>::Get(gdr_ind
 template<typename StoredType, gdr_index_types Type>
 bool gdr::resource_pool_subsystem<StoredType, Type, 0>::IsExist(gdr_index index) const
 {
-  return (/*Type == index.type && */ index >= 0 && index < CPUData.size() && PoolRecords[index].IsAlive);
+  return ((index.type == gdr_index_types::none || index.type == Type) && index >= 0 && index < CPUData.size() && PoolRecords[index].IsAlive);
 }
 
 template<typename StoredType, gdr_index_types Type>

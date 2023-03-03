@@ -137,7 +137,77 @@ enum struct gdr_index_types
   node_transform
 };
 
-using gdr_index = uint32_t;
+struct gdr_index
+{
+    gdr_index_types type = gdr_index_types::none;
+    unsigned value = 0;
+
+    gdr_index(unsigned v, gdr_index_types t) : value(v), type(t)
+    {
+    }
+
+    gdr_index(unsigned v = 0) : value(v), type(gdr_index_types::none)
+    {
+    }
+
+    gdr_index& operator=(unsigned v)
+    {
+        value = v;
+        return *this;
+    }
+
+    gdr_index& operator++(int v)
+    {
+        value++;
+        return *this;
+    }
+
+    gdr_index& operator--(int v)
+    {
+        value--;
+        return *this;
+    }
+
+    gdr_index& operator++()
+    {
+        ++value;
+        return *this;
+    }
+
+    gdr_index& operator--()
+    {
+        --value;
+        return *this;
+    }
+
+    gdr_index& operator=(const gdr_index &v)
+    {
+        value = v.value;
+        type = v.type;
+        return *this;
+    }
+
+    operator unsigned() const noexcept
+    {
+        return value;
+    }
+
+    
+    uint64_t pack() const
+    {
+        return uint64_t(type) << 32 + value;
+    }
+
+    void unpack(uint64_t data)
+    {
+        type = gdr_index_types(data >> 32);
+        data -= uint64_t(type) << 32;
+        value = data;
+        return;
+    }
+};
+
+//using gdr_index = uint32_t;
 
 #ifndef NONE_INDEX
 #define NONE_INDEX 0xFFFFFFFF

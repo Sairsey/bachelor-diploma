@@ -3,6 +3,7 @@
 #include "units/stats/unit_frame_times.h"
 #include "units/stats/unit_resource_viewier.h"
 #include "units/stats/unit_render_params.h"
+#include "units/stats/unit_light_editor.h"
 
 #include "units/examples/unit_triangle.h"
 #include "units/examples/unit_light_example.h"
@@ -158,11 +159,12 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
   //Engine.AddUnit(new unit_choose());
   //Engine.AddUnit(new unit_log_time());
 
-  //Engine.AddUnit(new unit_flying_camera());
-  Engine.AddUnit(new unit_first_person_camera());
+  Engine.AddUnit(new unit_flying_camera());
+  //Engine.AddUnit(new unit_first_person_camera());
 
   //Engine.AddUnit(new unit_editor());
   
+  Engine.AddUnit(new unit_light_editor());
   Engine.AddUnit(new unit_frame_times());
   Engine.AddUnit(new unit_resource_viewier());
   Engine.AddUnit(new unit_render_params());

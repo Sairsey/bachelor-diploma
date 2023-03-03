@@ -46,7 +46,7 @@ gdr_index mesh_assimp_importer::ImportTreeFirstPass(aiNode* node, gdr_index Pare
 {
   // first -> add new node in Result;
   Result.HierarchyNodes.emplace_back();
-  gdr_index Current = (gdr_index)(Result.HierarchyNodes.size() - 1);
+  gdr_index Current = (unsigned)(Result.HierarchyNodes.size() - 1);
 
   // second -> fill all its fields;
   Result.HierarchyNodes[Current].Name = node->mName.C_Str();
@@ -181,7 +181,7 @@ gdr_index mesh_assimp_importer::GetTextureFromAssimp(aiMaterial* assimpMaterial,
     fclose(F);
   }
   
-  gdr_index TextureIndex = (gdr_index)(Result.TexturesPaths.size());
+  gdr_index TextureIndex = (unsigned)(Result.TexturesPaths.size());
   for (gdr_index i = 0; i < Result.TexturesPaths.size() && TextureIndex == Result.TexturesPaths.size(); i++)
     if (Result.TexturesPaths[i] == fullpath)
       TextureIndex = i;
@@ -196,7 +196,7 @@ gdr_index mesh_assimp_importer::ImportTreeMesh(aiMesh* mesh, gdr_index ParentInd
 {
   // first -> add new node in Result;
   Result.HierarchyNodes.emplace_back();
-  gdr_index Current = (gdr_index)(Result.HierarchyNodes.size() - 1);
+  gdr_index Current = (unsigned)(Result.HierarchyNodes.size() - 1);
 
   // second -> fill all its fields;
   Result.HierarchyNodes[Current].Name = mesh->mName.C_Str();
@@ -338,7 +338,7 @@ gdr_index mesh_assimp_importer::ImportTreeMesh(aiMesh* mesh, gdr_index ParentInd
   else
   {
     Result.Materials.emplace_back();
-    Result.HierarchyNodes[Current].MaterialIndex = (gdr_index)(Result.Materials.size() - 1);
+    Result.HierarchyNodes[Current].MaterialIndex = (unsigned)(Result.Materials.size() - 1);
     GDRGPUMaterial &newMaterial = Result.Materials[Result.HierarchyNodes[Current].MaterialIndex];
     aiMaterial *assimpMaterial = scene->mMaterials[mesh->mMaterialIndex];
     

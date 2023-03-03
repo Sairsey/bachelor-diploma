@@ -319,7 +319,7 @@ private:
       PROFILE_CPU_END();
 
       // go to next node
-      ScriptNodeIndex = (result >= 0 && result < LoadedScript[ScriptNodeIndex].NextNode.size()) ? LoadedScript[ScriptNodeIndex].NextNode[result] : NONE_INDEX;
+      ScriptNodeIndex = (result >= 0 && result < LoadedScript[ScriptNodeIndex].NextNode.size()) ? LoadedScript[ScriptNodeIndex].NextNode[result] : gdr_index{ NONE_INDEX };
     }
   }
 

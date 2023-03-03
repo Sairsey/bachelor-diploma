@@ -90,8 +90,10 @@ public:
         physx::PxActor* OtherActor = pairHeader.actors[1];
         if (MyActor->userData && OtherActor->userData)
         {
-          gdr_index ObjectIndex = (gdr_index)MyActor->userData;
-          gdr_index OtherObjectIndex = (gdr_index)OtherActor->userData;
+          gdr_index ObjectIndex;
+          ObjectIndex.unpack((uint64_t)MyActor->userData);
+          gdr_index OtherObjectIndex;
+          OtherObjectIndex.unpack((uint64_t)OtherActor->userData);
           gdr::physic_body* Object = Phys->IsExist(ObjectIndex) ? &Phys->GetEditable(ObjectIndex) : nullptr;
           gdr::physic_body* OtherObject = Phys->IsExist(OtherObjectIndex)? &Phys->GetEditable(OtherObjectIndex) : nullptr;
           if (Object)
@@ -175,7 +177,7 @@ gdr_index gdr::physics_manager::AddDynamicSphere(float Radius, gdr::physic_mater
   NewBody.PhysxBody = PhysX->createRigidDynamic(physx::PxTransform(physx::PxIdentity));
   NewBody.PhysxMaterial = PhysX->createMaterial(Material.StaticFriction, Material.DynamicFriction, Material.Restitution);
   physx::PxShape* SphereShape = physx::PxRigidActorExt::createExclusiveShape(*NewBody.PhysxBody, physx::PxSphereGeometry(Radius), *NewBody.PhysxMaterial);
-  NewBody.PhysxBody->userData = (void *)NewSphereIndex;
+  NewBody.PhysxBody->userData = (void *)NewSphereIndex.pack();
   Scene->addActor(*NewBody.PhysxBody);
   NewBody.IsStatic = false;
   NewBody.ChangeDensity(1);
@@ -196,7 +198,7 @@ gdr_index gdr::physics_manager::AddDynamicCapsule(float Radius, float HalfHeight
   NewBody.PhysxBody->attachShape(*CapsuleShape);
   CapsuleShape->release();
 
-  NewBody.PhysxBody->userData = (void*)NewCapsuleIndex;
+  NewBody.PhysxBody->userData = (void*)NewCapsuleIndex.pack();
   Scene->addActor(*NewBody.PhysxBody);
   NewBody.IsStatic = false;
   NewBody.ChangeDensity(1);
@@ -252,12 +254,12 @@ gdr_index gdr::physics_manager::AddStaticMesh(model_import_data ImportModel, phy
         physx::PxTriangleMesh* Model = PhysX->createTriangleMesh(readBuffer);
         physx::PxShape* Shape = PhysX->createShape((physx::PxTriangleMeshGeometry(Model, physx::PxMeshScale(), physx::PxMeshGeometryFlag::eDOUBLE_SIDED)), *NewBody.PhysxMaterial);
         NewBody.PhysxBody->attachShape(*Shape);
-        Shape->userData = (void*)NewStaticMeshIndex;
+        Shape->userData = (void*)NewStaticMeshIndex.pack();
         Shape->release();
       }
     }
 
-  NewBody.PhysxBody->userData = (void*)NewStaticMeshIndex;
+  NewBody.PhysxBody->userData = (void*)NewStaticMeshIndex.pack();
   Scene->addActor(*NewBody.PhysxBody);
   NewBody.IsStatic = true;
   NewBody.ChangeDensity(1);
@@ -310,11 +312,11 @@ gdr_index gdr::physics_manager::AddDynamicMesh(model_import_data ImportModel, ph
 
     physx::PxShape* Shape = PhysX->createShape(physx::PxConvexMeshGeometry(Model), *NewBody.PhysxMaterial);
     NewBody.PhysxBody->attachShape(*Shape);
-    Shape->userData = (void*)NewDynamicMeshIndex;
+    Shape->userData = (void*)NewDynamicMeshIndex.pack();
     Shape->release();
   }
   
-  NewBody.PhysxBody->userData = (void*)NewDynamicMeshIndex;
+  NewBody.PhysxBody->userData = (void*)NewDynamicMeshIndex.pack();
   Scene->addActor(*NewBody.PhysxBody);
   NewBody.ChangeDensity(1);
   return NewDynamicMeshIndex;
@@ -474,7 +476,8 @@ bool gdr::physics_manager::Raycast(mth::vec3f Org, mth::vec3f Dir, float MaxLeng
     for (uint32_t i = 0; i < buf.nbTouches; i++)
       if (buf.touches[i].actor->userData)
       {
-        gdr_index ObjectIndex = (gdr_index)buf.touches[i].actor->userData;
+        gdr_index ObjectIndex;
+        ObjectIndex.unpack((uint64_t)buf.touches[i].actor->userData);
         ray_intersect A;
         A.Index = ObjectIndex;
         A.Distance = buf.touches[i].distance;

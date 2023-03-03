@@ -142,9 +142,8 @@ void gdr::resource_pool_subsystem<StoredType, Type, ChunkSize>::UpdateResourceSt
 template<typename StoredType, gdr_index_types Type, int ChunkSize>
 gdr_index gdr::resource_pool_subsystem<StoredType, Type, ChunkSize>::Add()
 {
-  //gdr_index Result(NONE_INDEX, Type);
-  gdr_index Result = NONE_INDEX;
-
+  gdr_index Result(NONE_INDEX, Type);
+  
   // Try to reuse old resources
   for (gdr_index i = 0; i < CPUData.size() && Result == NONE_INDEX; i++)
     if (!PoolRecords[i].IsAlive)
@@ -156,7 +155,7 @@ gdr_index gdr::resource_pool_subsystem<StoredType, Type, ChunkSize>::Add()
   // Otherwise we need to create new
   if (Result == NONE_INDEX)
   {
-    Result = (gdr_index)CPUData.size();
+    Result = (unsigned)CPUData.size();
     CPUData.emplace_back();
     PoolRecords.emplace_back();
     PoolRecords[Result].IsAlive = true;
@@ -193,7 +192,7 @@ void gdr::resource_pool_subsystem<StoredType, Type, ChunkSize>::Remove(gdr_index
 template<typename StoredType, gdr_index_types Type, int ChunkSize>
 StoredType& gdr::resource_pool_subsystem<StoredType, Type, ChunkSize>::GetEditable(gdr_index index)
 {
-  GDR_ASSERT(index.type == Type && index <= CPUData.size() && index >= 0 && PoolRecords[index].IsAlive);
+  GDR_ASSERT((index.type== gdr_index_types::none || index.type == Type) && index <= CPUData.size() && index >= 0 && PoolRecords[index].IsAlive);
 
   MarkChunkByElementIndex(index);
   return CPUData[index];
@@ -202,7 +201,7 @@ StoredType& gdr::resource_pool_subsystem<StoredType, Type, ChunkSize>::GetEditab
 template<typename StoredType, gdr_index_types Type, int ChunkSize>
 const StoredType& gdr::resource_pool_subsystem<StoredType, Type, ChunkSize>::Get(gdr_index index) const
 {
-  GDR_ASSERT(index.type == Type && index <= CPUData.size() && index >= 0 && PoolRecords[index].IsAlive);
+  GDR_ASSERT((index.type == gdr_index_types::none || index.type == Type) && index <= CPUData.size() && index >= 0 && PoolRecords[index].IsAlive);
 
   return CPUData[index];
 }
@@ -210,7 +209,7 @@ const StoredType& gdr::resource_pool_subsystem<StoredType, Type, ChunkSize>::Get
 template<typename StoredType, gdr_index_types Type, int ChunkSize>
 bool gdr::resource_pool_subsystem<StoredType, Type, ChunkSize>::IsExist(gdr_index index) const
 {
-  return (/*index.type == Type && */ index >= 0 && index < CPUData.size() && PoolRecords[index].IsAlive);
+  return ((index.type == gdr_index_types::none || index.type == Type) && index >= 0 && index < CPUData.size() && PoolRecords[index].IsAlive);
 }
 
 template<typename StoredType, gdr_index_types Type, int ChunkSize>

@@ -167,9 +167,9 @@ gdr_index gdr::models_manager::Add(const model_import_data& ImportData)
 				NewNodeTransform.LocalTransform = ImportData.HierarchyNodes[i].LocalTransform;
 				NewNodeTransform.BoneOffset = ImportData.HierarchyNodes[i].BoneOffset;
 				NewNodeTransform.IsNeedRecalc = true;
-				NewNodeTransform.ParentIndex = NewNode.ParentIndex == NONE_INDEX ? NONE_INDEX : NewModelRender.Hierarchy[NewNode.ParentIndex].NodeTransform;
-				NewNodeTransform.ChildIndex = NewNode.ChildIndex == NONE_INDEX ? NONE_INDEX : NewModelRender.Hierarchy[NewNode.ChildIndex].NodeTransform;
-				NewNodeTransform.NextIndex = NewNode.NextIndex == NONE_INDEX ? NONE_INDEX : NewModelRender.Hierarchy[NewNode.NextIndex].NodeTransform;
+				NewNodeTransform.ParentIndex = NewNode.ParentIndex == NONE_INDEX ? gdr_index{ NONE_INDEX } : NewModelRender.Hierarchy[NewNode.ParentIndex].NodeTransform;
+				NewNodeTransform.ChildIndex = NewNode.ChildIndex == NONE_INDEX ? gdr_index{ NONE_INDEX } : NewModelRender.Hierarchy[NewNode.ChildIndex].NodeTransform;
+				NewNodeTransform.NextIndex = NewNode.NextIndex == NONE_INDEX ? gdr_index{ NONE_INDEX } : NewModelRender.Hierarchy[NewNode.NextIndex].NodeTransform;
 			}
 			else if(NewNode.Type == gdr_hier_node_type::mesh)
 			{
@@ -265,9 +265,9 @@ void gdr::models_manager::Clone(gdr_index SrcModel, gdr_index DstModel)
 				NewNodeTransform.LocalTransform = OldNodeTransform.LocalTransform;
 				NewNodeTransform.BoneOffset = OldNodeTransform.BoneOffset;
 				NewNodeTransform.IsNeedRecalc = true;
-				NewNodeTransform.ParentIndex = NewNode.ParentIndex == NONE_INDEX ? NONE_INDEX : NewModelRender.Hierarchy[NewNode.ParentIndex].NodeTransform;
-				NewNodeTransform.ChildIndex = NewNode.ChildIndex == NONE_INDEX ? NONE_INDEX : NewModelRender.Hierarchy[NewNode.ChildIndex].NodeTransform;
-				NewNodeTransform.NextIndex = NewNode.NextIndex == NONE_INDEX ? NONE_INDEX : NewModelRender.Hierarchy[NewNode.NextIndex].NodeTransform;
+				NewNodeTransform.ParentIndex = NewNode.ParentIndex == NONE_INDEX ? gdr_index{ NONE_INDEX } : NewModelRender.Hierarchy[NewNode.ParentIndex].NodeTransform;
+				NewNodeTransform.ChildIndex = NewNode.ChildIndex == NONE_INDEX ? gdr_index{ NONE_INDEX } : NewModelRender.Hierarchy[NewNode.ChildIndex].NodeTransform;
+				NewNodeTransform.NextIndex = NewNode.NextIndex == NONE_INDEX ? gdr_index{ NONE_INDEX } : NewModelRender.Hierarchy[NewNode.NextIndex].NodeTransform;
 			}
 			else if (NewNode.Type == gdr_hier_node_type::mesh)
 			{

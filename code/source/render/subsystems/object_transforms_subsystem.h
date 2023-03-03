@@ -6,7 +6,7 @@
 namespace gdr
 {
   // Transforms data representation class
-  class object_transforms_subsystem : public resource_pool_subsystem<GDRGPUObjectTransform, 128 * sizeof(GDRGPUObjectTransform)>
+  class object_transforms_subsystem : public resource_pool_subsystem<GDRGPUObjectTransform, gdr_index_types::object_transform, 128 * sizeof(GDRGPUObjectTransform)>
   {
   public:
     // Constructor

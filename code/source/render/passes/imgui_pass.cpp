@@ -10,11 +10,23 @@ void gdr::imgui_pass::Initialize(void)
   IMGUI_CHECKVERSION();
   ImGui::CreateContext();
   ImGuiIO& io = ImGui::GetIO();
+
+  io.ConfigFlags |= ImGuiConfigFlags_::ImGuiConfigFlags_NavEnableKeyboard;       // Enable Keyboard Controls
+  io.ConfigFlags |= ImGuiConfigFlags_::ImGuiConfigFlags_DockingEnable;           // Enable Docking
+  io.ConfigFlags |= ImGuiConfigFlags_::ImGuiConfigFlags_ViewportsEnable;         // Enable Multi-Viewport / Platform Windows
+
   ImNodes::CreateContext();
 
   // Setup style
   ImGui::StyleColorsDark();
   ImNodes::StyleColorsDark();
+
+  ImGuiStyle& style = ImGui::GetStyle();
+  if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+  {
+    style.WindowRounding = 0.0f;
+    style.Colors[ImGuiCol_WindowBg].w = 1.0f;
+  }
 
   Render->GetDevice().AllocateStaticDescriptors(1, CPUDescriptor, GPUDescriptor);
 

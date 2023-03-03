@@ -2,15 +2,16 @@
 #define NONE_INDEX 0xFFFFFFFF
 #endif // !NONE_INDEX
 
-template<typename StoredType>
-gdr::resource_pool_subsystem<StoredType, 0>::resource_pool_subsystem(render* Rnd)
+template<typename StoredType, gdr_index_types Type>
+gdr::resource_pool_subsystem<StoredType, Type, 0>::resource_pool_subsystem(render* Rnd)
 {
   Render = Rnd;
 }
 
-template<typename StoredType>
-gdr_index gdr::resource_pool_subsystem<StoredType, 0>::Add()
+template<typename StoredType, gdr_index_types Type>
+gdr_index gdr::resource_pool_subsystem<StoredType, Type, 0>::Add()
 {
+  //gdr_index Result(NONE_INDEX, Type);
   gdr_index Result = NONE_INDEX;
 
   // Try to reuse old resources
@@ -33,8 +34,8 @@ gdr_index gdr::resource_pool_subsystem<StoredType, 0>::Add()
   return Result;
 }
 
-template<typename StoredType>
-void gdr::resource_pool_subsystem<StoredType, 0>::UpdateGPUData(ID3D12GraphicsCommandList* pCommandList)
+template<typename StoredType, gdr_index_types Type>
+void gdr::resource_pool_subsystem<StoredType, Type, 0>::UpdateGPUData(ID3D12GraphicsCommandList* pCommandList)
 {
   // Do anything we need to do before update
   BeforeUpdateJob(pCommandList);
@@ -43,8 +44,8 @@ void gdr::resource_pool_subsystem<StoredType, 0>::UpdateGPUData(ID3D12GraphicsCo
   AfterUpdateJob(pCommandList);
 }
 
-template<typename StoredType>
-void gdr::resource_pool_subsystem<StoredType, 0>::Remove(gdr_index index)
+template<typename StoredType, gdr_index_types Type>
+void gdr::resource_pool_subsystem<StoredType, Type, 0>::Remove(gdr_index index)
 {
   if (!IsExist(index))
     return;
@@ -68,29 +69,29 @@ void gdr::resource_pool_subsystem<StoredType, 0>::Remove(gdr_index index)
   }
 }
 
-template<typename StoredType>
-StoredType& gdr::resource_pool_subsystem<StoredType, 0>::GetEditable(gdr_index index)
+template<typename StoredType, gdr_index_types Type>
+StoredType& gdr::resource_pool_subsystem<StoredType, Type, 0>::GetEditable(gdr_index index)
 {
-  GDR_ASSERT(index <= CPUData.size() && index >= 0 && PoolRecords[index].IsAlive);
+  GDR_ASSERT(/*Type == index.type && */index <= CPUData.size() && index >= 0 && PoolRecords[index].IsAlive);
 
   return CPUData[index];
 }
 
-template<typename StoredType>
-const StoredType& gdr::resource_pool_subsystem<StoredType, 0>::Get(gdr_index index) const
+template<typename StoredType, gdr_index_types Type>
+const StoredType& gdr::resource_pool_subsystem<StoredType, Type, 0>::Get(gdr_index index) const
 {
-  GDR_ASSERT(index <= CPUData.size() && index >= 0 && PoolRecords[index].IsAlive); 
+  GDR_ASSERT(/*Type == index.type && */index <= CPUData.size() && index >= 0 && PoolRecords[index].IsAlive);
   
   return CPUData[index];
 }
 
-template<typename StoredType>
-bool gdr::resource_pool_subsystem<StoredType, 0>::IsExist(gdr_index index) const
+template<typename StoredType, gdr_index_types Type>
+bool gdr::resource_pool_subsystem<StoredType, Type, 0>::IsExist(gdr_index index) const
 {
-  return (index >= 0 && index < CPUData.size() && PoolRecords[index].IsAlive);
+  return (/*Type == index.type && */ index >= 0 && index < CPUData.size() && PoolRecords[index].IsAlive);
 }
 
-template<typename StoredType>
-gdr::resource_pool_subsystem<StoredType, 0>::~resource_pool_subsystem()
+template<typename StoredType, gdr_index_types Type>
+gdr::resource_pool_subsystem<StoredType, Type, 0>::~resource_pool_subsystem()
 {
 }

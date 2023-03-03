@@ -4,7 +4,7 @@
 namespace gdr
 {
   // Subsystem of holding StoredType in Pool on GPU and CPU
-  template<typename StoredType, int ChunkSize>
+  template<typename StoredType, gdr_index_types Type, int ChunkSize>
   class resource_pool_subsystem
   {
   protected:
@@ -97,8 +97,8 @@ namespace gdr
   };
 
   // Subsystem of holding StoredType in Pool on GPU and CPU
-  template<typename StoredType>
-  class resource_pool_subsystem<StoredType, 0>
+  template<typename StoredType, gdr_index_types Type>
+  class resource_pool_subsystem<StoredType, Type, 0>
   {
   protected:
     struct resource_pool_record

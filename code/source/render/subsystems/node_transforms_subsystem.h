@@ -6,7 +6,7 @@
 namespace gdr
 {
   // Hierarchical transforms data representation class
-  class node_transforms_subsystem : public resource_pool_subsystem<GDRGPUNodeTransform, 64 * sizeof(GDRGPUNodeTransform)>
+  class node_transforms_subsystem : public resource_pool_subsystem<GDRGPUNodeTransform, gdr_index_types::node_transform, 64 * sizeof(GDRGPUNodeTransform)>
   {
   private:
     // update all nodes if needed

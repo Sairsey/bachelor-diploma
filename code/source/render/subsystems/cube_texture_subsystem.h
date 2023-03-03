@@ -13,7 +13,7 @@ namespace gdr
   };
 
   // Cube textures data representation class
-  class cube_textures_subsystem : public resource_pool_subsystem<gdr_cube_texture, 0>
+  class cube_textures_subsystem : public resource_pool_subsystem<gdr_cube_texture, gdr_index_types::cube_texture, 0>
   {
   protected:
     void BeforeUpdateJob(ID3D12GraphicsCommandList* pCommandList) override;

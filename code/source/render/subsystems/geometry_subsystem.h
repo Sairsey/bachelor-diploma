@@ -23,7 +23,7 @@ namespace gdr
   };
 
   /* Geometry support subsystem class */
-  class geometry_subsystem : public resource_pool_subsystem<geometry, 0>
+  class geometry_subsystem : public resource_pool_subsystem<geometry, gdr_index_types::geometry, 0>
   {
     protected:
       // Remove Geometry by index

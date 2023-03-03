@@ -28,7 +28,7 @@ namespace gdr
   // 1) Store info about "draw calls" we need to execute
   // 2) Prepare indirect_command_pools_enum::All for indirect draw
   // 3) Store and clear for all other buffers used in indirect draw
-  class draw_commands_subsystem : public resource_pool_subsystem<GDRGPUIndirectCommand, sizeof(GDRGPUIndirectCommand)>
+  class draw_commands_subsystem : public resource_pool_subsystem<GDRGPUIndirectCommand, gdr_index_types::draw_command, sizeof(GDRGPUIndirectCommand)>
   {
   private:
     //CPU Descriptors of all commands

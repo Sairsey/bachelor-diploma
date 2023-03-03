@@ -2,8 +2,8 @@
 #define NONE_INDEX 0xFFFFFFFF
 #endif // !NONE_INDEX
 
-template<typename StoredType, int ChunkSize>
-gdr::resource_pool_subsystem<StoredType, ChunkSize>::resource_pool_subsystem(render* Rnd)
+template<typename StoredType, gdr_index_types Type, int ChunkSize>
+gdr::resource_pool_subsystem<StoredType, Type, ChunkSize>::resource_pool_subsystem(render* Rnd)
 {
   Render = Rnd;
   GPUData.Resource = nullptr;
@@ -11,8 +11,8 @@ gdr::resource_pool_subsystem<StoredType, ChunkSize>::resource_pool_subsystem(ren
   StoredSize = 0;
 }
 
-template<typename StoredType, int ChunkSize>
-void gdr::resource_pool_subsystem<StoredType, ChunkSize>::CreateResource()
+template<typename StoredType, gdr_index_types Type, int ChunkSize>
+void gdr::resource_pool_subsystem<StoredType, Type, ChunkSize>::CreateResource()
 {
   // allocate Descriptors for pool
   if (!DescriptorsAllocated)
@@ -50,8 +50,8 @@ void gdr::resource_pool_subsystem<StoredType, ChunkSize>::CreateResource()
   StoredSize = CPUData.size();
 }
 
-template<typename StoredType, int ChunkSize>
-void gdr::resource_pool_subsystem<StoredType, ChunkSize>::DeleteResource()
+template<typename StoredType, gdr_index_types Type, int ChunkSize>
+void gdr::resource_pool_subsystem<StoredType, Type, ChunkSize>::DeleteResource()
 {
   if (GPUData.Resource)
   {
@@ -60,8 +60,8 @@ void gdr::resource_pool_subsystem<StoredType, ChunkSize>::DeleteResource()
   }
 }
 
-template<typename StoredType, int ChunkSize>
-void gdr::resource_pool_subsystem<StoredType, ChunkSize>::UpdateGPUData(ID3D12GraphicsCommandList* pCommandList)
+template<typename StoredType, gdr_index_types Type, int ChunkSize>
+void gdr::resource_pool_subsystem<StoredType, Type, ChunkSize>::UpdateGPUData(ID3D12GraphicsCommandList* pCommandList)
 {
   // Do anything we need to do before update
   BeforeUpdateJob(pCommandList);
@@ -116,8 +116,8 @@ void gdr::resource_pool_subsystem<StoredType, ChunkSize>::UpdateGPUData(ID3D12Gr
   AfterUpdateJob(pCommandList);
 }
 
-template<typename StoredType, int ChunkSize>
-void gdr::resource_pool_subsystem<StoredType, ChunkSize>::UpdateResourceState(ID3D12GraphicsCommandList* pCommandList, bool IsRender)
+template<typename StoredType, gdr_index_types Type, int ChunkSize>
+void gdr::resource_pool_subsystem<StoredType, Type, ChunkSize>::UpdateResourceState(ID3D12GraphicsCommandList* pCommandList, bool IsRender)
 {
   if (IsRender)
   {
@@ -139,9 +139,10 @@ void gdr::resource_pool_subsystem<StoredType, ChunkSize>::UpdateResourceState(ID
   AfterResourceStateUpdateJob(pCommandList, IsRender);
 }
 
-template<typename StoredType, int ChunkSize>
-gdr_index gdr::resource_pool_subsystem<StoredType, ChunkSize>::Add()
+template<typename StoredType, gdr_index_types Type, int ChunkSize>
+gdr_index gdr::resource_pool_subsystem<StoredType, Type, ChunkSize>::Add()
 {
+  //gdr_index Result(NONE_INDEX, Type);
   gdr_index Result = NONE_INDEX;
 
   // Try to reuse old resources
@@ -164,8 +165,8 @@ gdr_index gdr::resource_pool_subsystem<StoredType, ChunkSize>::Add()
   return Result;
 }
 
-template<typename StoredType, int ChunkSize>
-void gdr::resource_pool_subsystem<StoredType, ChunkSize>::Remove(gdr_index index)
+template<typename StoredType, gdr_index_types Type, int ChunkSize>
+void gdr::resource_pool_subsystem<StoredType, Type, ChunkSize>::Remove(gdr_index index)
 {
   if (!IsExist(index))
     return;
@@ -189,39 +190,39 @@ void gdr::resource_pool_subsystem<StoredType, ChunkSize>::Remove(gdr_index index
   }
 }
 
-template<typename StoredType, int ChunkSize>
-StoredType& gdr::resource_pool_subsystem<StoredType, ChunkSize>::GetEditable(gdr_index index)
+template<typename StoredType, gdr_index_types Type, int ChunkSize>
+StoredType& gdr::resource_pool_subsystem<StoredType, Type, ChunkSize>::GetEditable(gdr_index index)
 {
-  GDR_ASSERT(index <= CPUData.size() && index >= 0 && PoolRecords[index].IsAlive);
+  GDR_ASSERT(index.type == Type && index <= CPUData.size() && index >= 0 && PoolRecords[index].IsAlive);
 
   MarkChunkByElementIndex(index);
   return CPUData[index];
 }
 
-template<typename StoredType, int ChunkSize>
-const StoredType& gdr::resource_pool_subsystem<StoredType, ChunkSize>::Get(gdr_index index) const
+template<typename StoredType, gdr_index_types Type, int ChunkSize>
+const StoredType& gdr::resource_pool_subsystem<StoredType, Type, ChunkSize>::Get(gdr_index index) const
 {
-  GDR_ASSERT(index <= CPUData.size() && index >= 0 && PoolRecords[index].IsAlive);
+  GDR_ASSERT(index.type == Type && index <= CPUData.size() && index >= 0 && PoolRecords[index].IsAlive);
 
   return CPUData[index];
 }
 
-template<typename StoredType, int ChunkSize>
-bool gdr::resource_pool_subsystem<StoredType, ChunkSize>::IsExist(gdr_index index) const
+template<typename StoredType, gdr_index_types Type, int ChunkSize>
+bool gdr::resource_pool_subsystem<StoredType, Type, ChunkSize>::IsExist(gdr_index index) const
 {
-  return (index >= 0 && index < CPUData.size() && PoolRecords[index].IsAlive);
+  return (/*index.type == Type && */ index >= 0 && index < CPUData.size() && PoolRecords[index].IsAlive);
 }
 
-template<typename StoredType, int ChunkSize>
-void gdr::resource_pool_subsystem<StoredType, ChunkSize>::MarkChunkByElementIndex(gdr_index index)
+template<typename StoredType, gdr_index_types Type, int ChunkSize>
+void gdr::resource_pool_subsystem<StoredType, Type, ChunkSize>::MarkChunkByElementIndex(gdr_index index)
 {
   size_t chunk_index = (size_t)floor(1.0 * ((byte*)&CPUData[index] - (byte*)&CPUData[0]) / CHUNK_SIZE);
   if (chunk_index < ChunkMarkings.size() && chunk_index >= 0 && PoolRecords[index].IsAlive)
     ChunkMarkings[chunk_index] = true;
 }
 
-template<typename StoredType, int ChunkSize>
-gdr::resource_pool_subsystem<StoredType, ChunkSize>::~resource_pool_subsystem()
+template<typename StoredType, gdr_index_types Type, int ChunkSize>
+gdr::resource_pool_subsystem<StoredType, Type, ChunkSize>::~resource_pool_subsystem()
 {
   DeleteResource();
 }

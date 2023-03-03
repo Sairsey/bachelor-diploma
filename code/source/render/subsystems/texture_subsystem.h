@@ -17,7 +17,7 @@ namespace gdr
   };
 
   // Transforms data representation class
-  class textures_subsystem : public resource_pool_subsystem<gdr_texture, 0>
+  class textures_subsystem : public resource_pool_subsystem<gdr_texture, gdr_index_types::texture, 0>
   {
   protected:
     void BeforeUpdateJob(ID3D12GraphicsCommandList* pCommandList) override;

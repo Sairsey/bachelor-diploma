@@ -127,7 +127,7 @@ void mesh_assimp_importer::ImportTreeSecondPass(aiNode* node, gdr_index CurrentI
         Result.HierarchyNodes[CurrentIndex].ChildIndex = Mesh;
       else 
       {
-        gdr_index *Place = &Result.HierarchyNodes[Result.HierarchyNodes[CurrentIndex].ChildIndex].NextIndex;
+        unsigned *Place = &Result.HierarchyNodes[Result.HierarchyNodes[CurrentIndex].ChildIndex].NextIndex;
         while (*Place != NONE_INDEX)
           Place = &Result.HierarchyNodes[*Place].NextIndex;
         *Place = Mesh;

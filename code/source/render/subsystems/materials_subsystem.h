@@ -6,7 +6,7 @@
 namespace gdr
 {
   // Material pool representation class
-  class materials_subsystem : public resource_pool_subsystem<GDRGPUMaterial, 128 * sizeof(GDRGPUMaterial)>
+  class materials_subsystem : public resource_pool_subsystem<GDRGPUMaterial, gdr_index_types::material, 128 * sizeof(GDRGPUMaterial)>
   {
   protected:
     void BeforeRemoveJob(gdr_index index) override

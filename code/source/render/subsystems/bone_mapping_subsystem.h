@@ -6,7 +6,7 @@
 namespace gdr
 {
   // Maps BoneIndex from GDRVertex to NodeTransform 
-  class bone_mapping_subsystem : public resource_pool_subsystem<GDRGPUBoneMapping, 1 * sizeof(GDRGPUBoneMapping)>
+  class bone_mapping_subsystem : public resource_pool_subsystem<GDRGPUBoneMapping, gdr_index_types::bone_mapping, 1 * sizeof(GDRGPUBoneMapping)>
   {
   protected:
     void BeforeRemoveJob(gdr_index index) override

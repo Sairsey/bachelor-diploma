@@ -27,7 +27,7 @@ namespace gdr
 		std::vector<animation_node> Hierarchy;
 	};
 
-	class animation_manager : public resource_pool_subsystem<animation, 0>
+	class animation_manager : public resource_pool_subsystem<animation, gdr_index_types::animation, 0>
 	{
 		protected:
 			void BeforeRemoveJob(gdr_index index) override;

@@ -6,7 +6,7 @@
 namespace gdr
 {
   // Light sources pool representation class
-  class lights_subsystem : public resource_pool_subsystem<GDRGPULightSource, 16 * sizeof(GDRGPULightSource)>
+  class lights_subsystem : public resource_pool_subsystem<GDRGPULightSource, gdr_index_types::light, 16 * sizeof(GDRGPULightSource)>
   {
   protected: 
     void BeforeUpdateJob(ID3D12GraphicsCommandList* pCommandList) override

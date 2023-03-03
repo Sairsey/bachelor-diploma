@@ -374,6 +374,12 @@ void gdr::render::DrawFrame(void)
     OITTransparencySystem->UpdateResourceState(pCommandList, false);
     PROFILE_END(pCommandList);
 
+    // Update and Render additional Platform Windows
+    {
+      ImGui::UpdatePlatformWindows();
+      ImGui::RenderPlatformWindowsDefault(NULL, (void*)pCommandList);
+    }
+
     Device.CloseSubmitAndPresentRenderCommandList(false);
     auto renderEnd = std::chrono::system_clock::now();
     CPUDrawFrameTime = std::chrono::duration_cast<std::chrono::nanoseconds>(renderEnd - renderStart).count();

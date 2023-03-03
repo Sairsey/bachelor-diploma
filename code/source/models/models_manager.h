@@ -12,7 +12,7 @@ namespace gdr
 		render_model Render;
 	};
 
-	class models_manager : public resource_pool_subsystem<model, 0>
+	class models_manager : public resource_pool_subsystem<model, gdr_index_types::model, 0>
 	{
 		protected:
 			void BeforeRemoveJob(gdr_index index) override;

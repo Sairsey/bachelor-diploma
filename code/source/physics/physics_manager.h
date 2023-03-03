@@ -79,7 +79,7 @@ namespace gdr
       void SetCollideCallback(std::function<void(gdr_index Me, gdr_index Other)> Callback);
   };
 
-  class physics_manager : public resource_pool_subsystem<physic_body, 0>
+  class physics_manager : public resource_pool_subsystem<physic_body, gdr_index_types::physic_body, 0>
   {
     private:
       void BeforeRemoveJob(gdr_index index) override;

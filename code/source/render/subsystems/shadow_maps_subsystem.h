@@ -15,7 +15,7 @@ namespace gdr
   };
 
   // Transforms data representation class
-  class shadow_maps_subsystem : public resource_pool_subsystem<gdr_shadow_map, 0>
+  class shadow_maps_subsystem : public resource_pool_subsystem<gdr_shadow_map, gdr_index_types::shadow_map, 0>
   {
   protected:
     void BeforeUpdateJob(ID3D12GraphicsCommandList* pCommandList) override;

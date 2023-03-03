@@ -164,11 +164,11 @@
     <ClInclude Include="..\..\include\imgui\imgui_impl_dx12.h" />
     <ClInclude Include="..\..\include\imgui\imgui_impl_win32.h" />
     <ClInclude Include="..\..\include\imgui\imgui_internal.h" />
+    <ClInclude Include="..\..\include\imgui\imnodes.h" />
+    <ClInclude Include="..\..\include\imgui\imnodes_internal.h" />
     <ClInclude Include="..\..\include\imgui\imstb_rectpack.h" />
     <ClInclude Include="..\..\include\imgui\imstb_textedit.h" />
     <ClInclude Include="..\..\include\imgui\imstb_truetype.h" />
-    <ClInclude Include="imnodes.h" />
-    <ClInclude Include="imnodes_internal.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

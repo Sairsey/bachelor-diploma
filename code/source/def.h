@@ -113,17 +113,36 @@ inline std::wstring charToWString(const char* text)
   return wstr;
 }
 
+enum struct gdr_hier_node_type
+{
+    node,
+    mesh
+};
+
+enum struct gdr_index_types
+{
+  none,
+  model,
+  animation,
+  physic_body,
+  bone_mapping,
+  draw_command,
+  geometry,
+  light,
+  material,
+  shadow_map,
+  texture,
+  cube_texture,
+  object_transform,
+  node_transform
+};
+
 using gdr_index = uint32_t;
 
 #ifndef NONE_INDEX
 #define NONE_INDEX 0xFFFFFFFF
 #endif // !NONE_INDEX
 
-enum struct gdr_hier_node_type
-{
-    node,
-    mesh
-};
 
 inline UINT NearestPowerOf2(UINT val)
 {

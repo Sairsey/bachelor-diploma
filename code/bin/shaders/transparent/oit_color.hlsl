@@ -37,12 +37,12 @@ VSOut VS(VSIn input)
 }
 
 [earlydepthstencil]
-void PS(VSOut input, bool IsFrontFace : SV_IsFrontFace)
+void PS(VSOut input, bool IsBackFace : SV_IsFrontFace)  // due to opengl matrices, CULL_MODE_FRONT and CULL_MODE_BACK are swapped
 {
-	if (indices.ObjectParamsMask & OBJECT_PARAMETER_FRONT_FACE_CULL && IsFrontFace)
+	if (indices.ObjectParamsMask & OBJECT_PARAMETER_FRONT_FACE_CULL && !IsBackFace)
 		return;
 
-	if (indices.ObjectParamsMask & OBJECT_PARAMETER_BACK_FACE_CULL && !IsFrontFace)
+	if (indices.ObjectParamsMask & OBJECT_PARAMETER_BACK_FACE_CULL && IsBackFace)
 		return;
 
 	float3 normal = CalculateNormal(input.normal.xyz, input.tangent.xyz, input.uv, indices.ObjectMaterialIndex);

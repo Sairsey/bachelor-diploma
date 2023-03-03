@@ -46,7 +46,7 @@ void gdr::skybox_pass::Initialize(void)
         psoDesc.VS = CD3DX12_SHADER_BYTECODE(VertexShader);
         psoDesc.PS = CD3DX12_SHADER_BYTECODE(PixelShader);
         psoDesc.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
-        psoDesc.RasterizerState.CullMode = D3D12_CULL_MODE_FRONT;
+        psoDesc.RasterizerState.CullMode = D3D12_CULL_MODE_FRONT; // due to opengl matrices, CULL_MODE_FRONT and CULL_MODE_BACK are swapped
         psoDesc.BlendState = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
         psoDesc.DepthStencilState.DepthEnable = TRUE;
         psoDesc.DepthStencilState.DepthFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL;

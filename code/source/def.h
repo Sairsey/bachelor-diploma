@@ -195,7 +195,7 @@ struct gdr_index
     
     uint64_t pack() const
     {
-        return uint64_t(type) << 32 + value;
+        return (uint64_t(type) << 32) + value;
     }
 
     void unpack(uint64_t data)

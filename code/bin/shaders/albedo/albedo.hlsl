@@ -35,12 +35,12 @@ VSOut VS(VSIn input)
 }
 
 
-float4 PS(VSOut input, bool IsFrontFace : SV_IsFrontFace) : SV_TARGET
+float4 PS(VSOut input, bool IsBackFace : SV_IsFrontFace) : SV_TARGET // due to opengl matrices, CULL_MODE_FRONT and CULL_MODE_BACK are swapped
 {
-	if (indices.ObjectParamsMask & OBJECT_PARAMETER_FRONT_FACE_CULL && IsFrontFace)
+	if (indices.ObjectParamsMask & OBJECT_PARAMETER_FRONT_FACE_CULL && !IsBackFace)
 		discard;
 
-	if (indices.ObjectParamsMask & OBJECT_PARAMETER_BACK_FACE_CULL && !IsFrontFace)
+	if (indices.ObjectParamsMask & OBJECT_PARAMETER_BACK_FACE_CULL && IsBackFace)
 		discard;
 	
 	float3 normal = CalculateNormal(input.normal.xyz, input.tangent.xyz, input.uv, indices.ObjectMaterialIndex);

@@ -22,7 +22,7 @@ public:
 
         Engine->DrawCommandsSystem->GetEditable(ChooseDrawCall).Indices.ObjectMaterialIndex = ChooseMaterial;
         Engine->DrawCommandsSystem->GetEditable(ChooseDrawCall).Indices.ObjectTransformIndex = ChooseTransform;
-        Engine->DrawCommandsSystem->GetEditable(ChooseDrawCall).Indices.ObjectParamsMask = OBJECT_PARAMETER_BACK_FACE_CULL;
+        Engine->DrawCommandsSystem->GetEditable(ChooseDrawCall).Indices.ObjectParamsMask = OBJECT_PARAMETER_FRONT_FACE_CULL;
     }
 
     void Response(void)

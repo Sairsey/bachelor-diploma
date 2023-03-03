@@ -21,12 +21,12 @@ VSOut VS(VSIn input)
 	return output;
 }
 
-void PS(VSOut output, bool IsFrontFace : SV_IsFrontFace)
+void PS(VSOut output, bool IsBackFace : SV_IsFrontFace) // due to opengl matrices, CULL_MODE_FRONT and CULL_MODE_BACK are swapped
 {
-	if (indices.ObjectParamsMask & OBJECT_PARAMETER_FRONT_FACE_CULL && IsFrontFace)
+	if (indices.ObjectParamsMask & OBJECT_PARAMETER_FRONT_FACE_CULL && !IsBackFace)
 		discard;
 
-	if (indices.ObjectParamsMask & OBJECT_PARAMETER_BACK_FACE_CULL && !IsFrontFace)
+	if (indices.ObjectParamsMask & OBJECT_PARAMETER_BACK_FACE_CULL && IsBackFace)
 		discard;
 	return;
 }

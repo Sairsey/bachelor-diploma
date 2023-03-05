@@ -40,6 +40,7 @@
     <ClInclude Include="source\render\device\gpu_ring_buffer.h" />
     <ClInclude Include="source\render\passes\albedo_pass.h" />
     <ClInclude Include="source\render\passes\base_pass.h" />
+    <ClInclude Include="source\render\passes\copy_pass.h" />
     <ClInclude Include="source\render\passes\debug_aabb_pass.h" />
     <ClInclude Include="source\render\passes\debug_hier_pass.h" />
     <ClInclude Include="source\render\passes\fxaa_pass.h" />
@@ -72,6 +73,7 @@
     <ClInclude Include="source\timer\timer.h" />
     <ClInclude Include="source\units\cameras\unit_first_person_camera.h" />
     <ClInclude Include="source\units\cameras\unit_flying_camera.h" />
+    <ClInclude Include="source\units\editor\unit_blueprint_editor.h" />
     <ClInclude Include="source\units\editor\unit_editor.h" />
     <ClInclude Include="source\units\editor\unit_scripted.h" />
     <ClInclude Include="source\units\enviroment\unit_alex_apt.h" />
@@ -141,6 +143,7 @@
     <ClCompile Include="source\render\device\device.cpp" />
     <ClCompile Include="source\render\device\device_time_query.cpp" />
     <ClCompile Include="source\render\passes\albedo_pass.cpp" />
+    <ClCompile Include="source\render\passes\copy_pass.cpp" />
     <ClCompile Include="source\render\passes\debug_aabb_pass.cpp" />
     <ClCompile Include="source\render\passes\debug_hier_pass.cpp" />
     <ClCompile Include="source\render\passes\fxaa_pass.cpp" />

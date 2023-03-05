@@ -54,7 +54,7 @@ void gdr::fxaa_pass::Initialize(void)
     psoDesc.SampleMask = UINT_MAX;
     psoDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
     psoDesc.NumRenderTargets = 1;
-    psoDesc.RTVFormats[0] = Render->RenderTargetsSystem->TargetParams[(int)render_targets_enum::target_display].Format;
+    psoDesc.RTVFormats[0] = Render->RenderTargetsSystem->TargetParams[(int)render_targets_enum::target_frame_final].Format;
     psoDesc.DSVFormat = Render->DepthBuffer.Resource->GetDesc().Format;
     psoDesc.SampleDesc.Count = 1;
 
@@ -100,7 +100,7 @@ void gdr::fxaa_pass::Initialize(void)
 
 void gdr::fxaa_pass::CallDirectDraw(ID3D12GraphicsCommandList* currentCommandList)
 {
-  Render->RenderTargetsSystem->Set(currentCommandList, render_targets_enum::target_display);
+  Render->RenderTargetsSystem->Set(currentCommandList, render_targets_enum::target_frame_final);
 
   // set common params
   currentCommandList->SetPipelineState(PSO);
@@ -115,7 +115,7 @@ void gdr::fxaa_pass::CallDirectDraw(ID3D12GraphicsCommandList* currentCommandLis
       Render->GlobalsSystem->GetGPUResource().Resource->GetGPUVirtualAddress());
 
     D3D12_GPU_DESCRIPTOR_HANDLE tmp_descr = Render->RenderTargetsSystem->ShaderResourceViewsGPU;
-    tmp_descr.ptr += (int)render_targets_enum::target_tmp_display * Render->GetDevice().GetSRVDescSize();
+    tmp_descr.ptr += (int)render_targets_enum::target_frame_tonemap * Render->GetDevice().GetSRVDescSize();
     currentCommandList->SetGraphicsRootDescriptorTable(
       (int)root_parameters_draw_indices::input_texture_index, tmp_descr);
   }

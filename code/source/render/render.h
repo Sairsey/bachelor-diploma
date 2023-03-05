@@ -56,7 +56,7 @@ namespace gdr
   {
     private:
       // Create Depth-stencil buffer
-      bool CreateDepthStencil(void);
+      bool CreateDepthStencil(int W, int H);
 
       // Current Engine 
       engine *Engine;
@@ -90,7 +90,7 @@ namespace gdr
        *          (UINT) h
        * RETURNS: None
        */
-      void Resize(UINT w, UINT h);
+      void Resize(UINT w, UINT h, bool IsImgui);
 
       void EnableFullscreen();
 
@@ -140,6 +140,13 @@ namespace gdr
       bone_mapping_subsystem* BoneMappingSystem;           // System to store mapping between GDRVertex-s BoneIndex field and NoteTransformsSystem
       oit_transparency_subsystem* OITTransparencySystem;   // System to store info for Order Independent Transparency
       shadow_maps_subsystem* ShadowMapsSystem;             // System to store shadow maps
+
+      int RenderWidth = 100;
+      int RenderHeight = 100;
+
+      int FrameWidth = 100;
+      int FrameHeight = 100;
+
 #if 0
       screenshot_support* ScreenshotsSystem; //System to store and generate Hierarhical Depth Texture
 #endif

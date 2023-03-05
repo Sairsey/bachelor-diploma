@@ -64,7 +64,12 @@ VOID gdr::engine::Init(VOID)
  */
 VOID gdr::engine::Resize(VOID)
 {
-  render::Resize(win::Width, win::Height);
+  render::Resize(win::Width, win::Height, false);
+}
+
+VOID gdr::engine::ResizeImgui(int W, int H)
+{
+  render::Resize(W, H, true);
 }
 
 /* Erase background handle function.

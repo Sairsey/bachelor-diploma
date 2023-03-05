@@ -205,7 +205,7 @@ void gdr::luminance_pass::CallDirectDraw(ID3D12GraphicsCommandList* currentComma
     PROFILE_END(currentCommandList);
   }
 
-  Render->RenderTargetsSystem->Set(currentCommandList, render_targets_enum::target_display);
+  Render->RenderTargetsSystem->Set(currentCommandList, render_targets_enum::target_frame_tonemap);
 
   {
     PROFILE_BEGIN(currentCommandList, "Final luminance");

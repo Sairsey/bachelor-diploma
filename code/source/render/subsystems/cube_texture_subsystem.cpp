@@ -264,6 +264,7 @@ void gdr::cube_textures_subsystem::BeforeRemoveJob(gdr_index index)
   {
     GetEditable(index).IsSrvInited = false;
     GetEditable(index).Name = "GDR_EMPTY";
+    Render->GetDevice().ReleaseGPUResource(GetEditable(index).TextureResource);
   }
 }
 
@@ -286,11 +287,6 @@ void gdr::cube_textures_subsystem::BeforeUpdateJob(ID3D12GraphicsCommandList* pC
       texDesc.TextureCube.ResourceMinLODClamp = 0.0f;
       Render->GetDevice().GetDXDevice()->CreateShaderResourceView(Get(i).TextureResource.Resource, &texDesc, TextureDescr);
       GetEditable(i).IsSrvInited = true;
-    }
-    else if (!IsExist(i) && CPUData[i].TextureResource.Resource != nullptr)
-    {
-      Render->GetDevice().ReleaseGPUResource(CPUData[i].TextureResource);
-      CPUData[i].TextureResource.Resource = nullptr;
     }
 }
 

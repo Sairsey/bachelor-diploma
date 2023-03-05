@@ -59,6 +59,7 @@ void gdr::shadow_maps_subsystem::BeforeRemoveJob(gdr_index index)
     GetEditable(index).IsDSVInited = false;
     GetEditable(index).W = 0;
     GetEditable(index).H = 0;
+    Render->GetDevice().ReleaseGPUResource(GetEditable(index).TextureResource);
   }
 }
 
@@ -92,11 +93,6 @@ void gdr::shadow_maps_subsystem::BeforeUpdateJob(ID3D12GraphicsCommandList* pCom
       dsvView.Flags = D3D12_DSV_FLAG_NONE;
       Render->GetDevice().GetDXDevice()->CreateDepthStencilView(Get(i).TextureResource.Resource, &dsvView, DepthDescr);
       GetEditable(i).IsDSVInited = true;
-    }
-    else if (!IsExist(i) && CPUData[i].TextureResource.Resource != nullptr)
-    {
-      Render->GetDevice().ReleaseGPUResource(CPUData[i].TextureResource);
-      CPUData[i].TextureResource.Resource = nullptr;
     }
 }
 

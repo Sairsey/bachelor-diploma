@@ -44,7 +44,7 @@ void gdr::debug_hier_pass::Initialize(void)
         psoDesc.SampleMask = UINT_MAX;
         psoDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_LINE;
         psoDesc.NumRenderTargets = 1;
-        psoDesc.RTVFormats[0] = Render->RenderTargetsSystem->TargetParams[(int)render_targets_enum::target_display].Format;
+        psoDesc.RTVFormats[0] = Render->RenderTargetsSystem->TargetParams[(int)render_targets_enum::target_frame_final].Format;
         psoDesc.DSVFormat = Render->DepthBuffer.Resource->GetDesc().Format;
         psoDesc.SampleDesc.Count = 1;
 
@@ -138,7 +138,7 @@ void gdr::debug_hier_pass::CallDirectDraw(ID3D12GraphicsCommandList* currentComm
     if (!Render->Params.IsShowHier)
       return;
 
-    Render->RenderTargetsSystem->Set(currentCommandList, render_targets_enum::target_display);
+    Render->RenderTargetsSystem->Set(currentCommandList, render_targets_enum::target_frame_final);
 
     // set common params
     currentCommandList->SetPipelineState(PSO);

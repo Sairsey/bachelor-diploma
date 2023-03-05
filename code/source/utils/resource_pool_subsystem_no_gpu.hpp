@@ -19,6 +19,7 @@ gdr_index gdr::resource_pool_subsystem<StoredType, Type, 0>::Add()
     {
       Result = i;
       PoolRecords[Result].IsAlive = true;
+      PoolRecords[Result].IsNeedToBeDeleted = false;
     }
 
   // Otherwise we need to create new
@@ -28,6 +29,7 @@ gdr_index gdr::resource_pool_subsystem<StoredType, Type, 0>::Add()
     CPUData.emplace_back();
     PoolRecords.emplace_back();
     PoolRecords[Result].IsAlive = true;
+    PoolRecords[Result].IsNeedToBeDeleted = false;
   }
 
   return Result;
@@ -36,6 +38,24 @@ gdr_index gdr::resource_pool_subsystem<StoredType, Type, 0>::Add()
 template<typename StoredType, gdr_index_types Type>
 void gdr::resource_pool_subsystem<StoredType, Type, 0>::UpdateGPUData(ID3D12GraphicsCommandList* pCommandList)
 {
+  // iterate all resources that needed deletion
+  for (int i = 0; i < CPUData.size(); i++)
+    if (PoolRecords[i].IsNeedToBeDeleted)
+    {
+      PoolRecords[i].IsNeedToBeDeleted = false;
+      Render->GetDevice().WaitAllUploadLists();
+      Render->GetDevice().WaitGPUIdle();
+
+      BeforeRemoveJob(i);
+    }
+
+  // little defragmentation
+  while (PoolRecords.size() > 0 && !PoolRecords[PoolRecords.size() - 1].IsAlive)
+  {
+    PoolRecords.pop_back();
+    CPUData.pop_back();
+  }
+
   // Do anything we need to do before update
   BeforeUpdateJob(pCommandList);
 
@@ -56,15 +76,8 @@ void gdr::resource_pool_subsystem<StoredType, Type, 0>::Remove(gdr_index index)
   
   if (PoolRecords[index].ReferenceCount == 0)
   {
-    BeforeRemoveJob(index);
     PoolRecords[index].IsAlive = false;
-
-    // little defragmentation
-    while (PoolRecords.size() > 0 && !PoolRecords[PoolRecords.size() - 1].IsAlive)
-    {
-      PoolRecords.pop_back();
-      CPUData.pop_back();
-    }
+    PoolRecords[index].IsNeedToBeDeleted = true;
   }
 }
 

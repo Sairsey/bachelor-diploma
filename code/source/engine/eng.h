@@ -56,6 +56,8 @@ namespace gdr
        */
       VOID Resize(VOID) override;
 
+      VOID ResizeImgui(int W, int H);
+
       /* Erase background handle function.
        * ARGUMENTS:
        *   - device context of client area:

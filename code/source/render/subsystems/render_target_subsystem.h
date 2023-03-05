@@ -15,7 +15,8 @@ namespace gdr
     target_frame_lum_8,
     target_frame_lum_16,
     target_frame_lum_final,
-    target_tmp_display,     // for fxaa 
+    target_frame_tonemap,     // for fxaa
+    target_frame_final, 
     target_count,
   };
 
@@ -56,7 +57,8 @@ namespace gdr
       {DXGI_FORMAT_R32_FLOAT, true, mth::vec2f(0.125)},             // target_frame_lum 1/8
       {DXGI_FORMAT_R32_FLOAT, true, mth::vec2f(0.0625)},            // target_frame_lum 1/16
       {DXGI_FORMAT_R32_FLOAT, true, mth::vec2f(0.03125)},           // target_frame_lum_final 1/32
-      {DXGI_FORMAT_R8G8B8A8_UNORM, true, mth::vec2f(1.0)},          // target_display
+      {DXGI_FORMAT_R8G8B8A8_UNORM, true, mth::vec2f(1.0)},          // target_frame_tonemap
+      {DXGI_FORMAT_R8G8B8A8_UNORM, true, mth::vec2f(1.0)},          // target_frame_final
     };
 
     // Textures

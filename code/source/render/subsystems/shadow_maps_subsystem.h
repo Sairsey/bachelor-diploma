@@ -20,6 +20,8 @@ namespace gdr
   protected:
     void BeforeUpdateJob(ID3D12GraphicsCommandList* pCommandList) override;
     void BeforeRemoveJob(gdr_index index) override;
+
+    std::vector<GPUResource> ToClear;
   public:
     // Constructor
     shadow_maps_subsystem(render* Rnd);

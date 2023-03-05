@@ -6,7 +6,7 @@ gdr::render::render() : IsInited(false), PlayerCamera(mth::vec3f(0, 0, 1), mth::
 }
 
 // Create Depth-stencil buffer
-bool gdr::render::CreateDepthStencil(void)
+bool gdr::render::CreateDepthStencil(int W, int H)
 {
   D3D12_CLEAR_VALUE depthOptimizedClearValue = {};
   depthOptimizedClearValue.Format = DXGI_FORMAT_D32_FLOAT;
@@ -14,7 +14,7 @@ bool gdr::render::CreateDepthStencil(void)
   depthOptimizedClearValue.DepthStencil.Stencil = 0;
 
   bool res = Device.CreateGPUResource(
-    CD3DX12_RESOURCE_DESC::Tex2D(DXGI_FORMAT_D32_FLOAT, Engine->Width, Engine->Height, 1, 0, 1, 0, D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL),
+    CD3DX12_RESOURCE_DESC::Tex2D(DXGI_FORMAT_D32_FLOAT, W, H, 1, 0, 1, 0, D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL),
     D3D12_RESOURCE_STATE_DEPTH_WRITE,
     &depthOptimizedClearValue,
     DepthBuffer
@@ -61,7 +61,7 @@ bool gdr::render::Init(engine* Eng)
     HRESULT hr = S_OK;
     D3D_CHECK(Device.GetDXDevice()->CreateDescriptorHeap(&dsvDesc, __uuidof(ID3D12DescriptorHeap), (void**)&DSVHeap));
     localIsInited = SUCCEEDED(hr);
-    localIsInited = localIsInited && CreateDepthStencil();
+    localIsInited = localIsInited && CreateDepthStencil(Engine->Width, Engine->Height);
   }
 
   // init subsystems
@@ -107,6 +107,7 @@ bool gdr::render::Init(engine* Eng)
     // debug passes
     Passes.push_back(new debug_aabb_pass());
     Passes.push_back(new debug_hier_pass());
+    Passes.push_back(new copy_pass());
 
     // postprocess
     Passes.push_back(new imgui_pass());
@@ -163,25 +164,65 @@ void gdr::render::EnableFullscreen()
  *          (UINT) h
  * RETURNS: None
  */
-void gdr::render::Resize(UINT w, UINT h)
+void gdr::render::Resize(UINT w, UINT h, bool IsImgui)
 {
-  Device.ResizeSwapchain(w, h);
-  
-  PlayerCamera.Resize(w, h);
+  FrameWidth = Engine->Width;
+  FrameHeight = Engine->Height;
 
-  if (DepthBuffer.Resource != nullptr)
+  if (IsImgui && w == -1 && h == -1)
   {
-    D3D12_RESOURCE_DESC desc = DepthBuffer.Resource->GetDesc();
-    if (desc.Width != w || desc.Height != h)
-    {
-      Device.ReleaseGPUResource(DepthBuffer);
-
-      CreateDepthStencil();
-    }
+    RenderHeight = h;
+    RenderWidth = w;
+    IsImgui = false;
   }
 
-  // Hier Depth texture needs update
-  RenderTargetsSystem->Resize(w, h);
+  if (IsImgui)
+  {
+    if (w != RenderWidth || h != RenderHeight)
+    {
+      Device.WaitGPUIdle();
+      Device.WaitAllUploadLists();
+      RenderHeight = h;
+      RenderWidth = w;
+      PlayerCamera.Resize(w, h);
+
+      if (DepthBuffer.Resource != nullptr)
+      {
+        D3D12_RESOURCE_DESC desc = DepthBuffer.Resource->GetDesc();
+        if (desc.Width != w || desc.Height != h)
+        {
+          Device.ReleaseGPUResource(DepthBuffer);
+
+          CreateDepthStencil(w, h);
+        }
+      }
+
+      // Hier Depth texture needs update
+      RenderTargetsSystem->Resize(w, h);
+    }
+  }
+  else
+  {
+    RenderWidth = FrameWidth;
+    RenderHeight = FrameHeight;
+    Device.ResizeSwapchain(w, h);
+    
+    PlayerCamera.Resize(w, h);
+
+    if (DepthBuffer.Resource != nullptr)
+    {
+      D3D12_RESOURCE_DESC desc = DepthBuffer.Resource->GetDesc();
+      if (desc.Width != w || desc.Height != h)
+      {
+        Device.ReleaseGPUResource(DepthBuffer);
+
+        CreateDepthStencil(w, h);
+      }
+    }
+
+    // Hier Depth texture needs update
+    RenderTargetsSystem->Resize(w, h);
+  }
 }
 
 /* Draw frame function */
@@ -189,6 +230,12 @@ void gdr::render::DrawFrame(void)
 {
   if (!IsInited || DrawCommandsSystem->AllocatedSize() == 0)
     return;
+
+  HRESULT res = Device.GetDXDevice()->GetDeviceRemovedReason();
+  if (res != S_OK)
+  {
+    OutputDebugStringA((std::string("DEVICE REMOVE REASON ") + std::to_string(res)).c_str());
+  }
 
   auto updateAllSystems = [&](ID3D12GraphicsCommandList* uploadCommandList) {
       {
@@ -198,13 +245,13 @@ void gdr::render::DrawFrame(void)
           GlobalsSystem->GetEditable().Time = Engine->GetGlobalTime(); // Time in seconds
 
           GlobalsSystem->GetEditable().DeltaTime = Engine->GetDeltaTime(); // Delta time in seconds	
-          GlobalsSystem->GetEditable().Width = Engine->Width;  // Screen size 
-          GlobalsSystem->GetEditable().Height = Engine->Height; // Screen size 
+          GlobalsSystem->GetEditable().Width = RenderWidth;  // Screen size 
+          GlobalsSystem->GetEditable().Height = RenderHeight; // Screen size 
           GlobalsSystem->GetEditable().LightsAmount = (UINT)Engine->LightsSystem->AllocatedSize();
           GlobalsSystem->GetEditable().IsTonemap = Params.IsTonemapping;
           GlobalsSystem->GetEditable().SceneExposure = Params.SceneExposure;
           GlobalsSystem->GetEditable().IsIBL = Params.IsIBL;
-          GlobalsSystem->GetEditable().MaximumOITPoolSize = Engine->Width * Engine->Height * CreationParams.MaxTransparentDepth;
+          GlobalsSystem->GetEditable().MaximumOITPoolSize = RenderWidth * RenderHeight * CreationParams.MaxTransparentDepth;
           GlobalsSystem->GetEditable().DebugOIT = Params.IsDebugOIT;
           GlobalsSystem->GetEditable().IsFXAA = Params.IsFXAA;
           GlobalsSystem->UpdateGPUData(uploadCommandList);
@@ -318,8 +365,8 @@ void gdr::render::DrawFrame(void)
       D3D12_RECT Rect;
       Rect.left = 0;
       Rect.top = 0;
-      Rect.bottom = Engine->Height;
-      Rect.right = Engine->Width;
+      Rect.bottom = RenderHeight;
+      Rect.right = RenderWidth;
 
       Device.TransitResourceState(pCommandList, pBackBuffer, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_COMMON);
 
@@ -327,19 +374,22 @@ void gdr::render::DrawFrame(void)
       RenderTargetsSystem->SaveDisplayBuffer(&rtvHandle, pBackBuffer);
       
       // Clear them
-      RenderTargetsSystem->Set(pCommandList, render_targets_enum::target_display);
-      pCommandList->ClearRenderTargetView(rtvHandle, clearColor, 1, &Rect);
-
       RenderTargetsSystem->Set(pCommandList, render_targets_enum::target_frame_hdr);
       pCommandList->ClearRenderTargetView(RenderTargetsSystem->GetHDRRenderTargetView(), clearColor, 1, &Rect);
 
       pCommandList->ClearDepthStencilView(dsvHandle, D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.0f, 0, 1, &Rect);
 
+      Rect.bottom = FrameHeight;
+      Rect.right = FrameWidth;
+
+      RenderTargetsSystem->Set(pCommandList, render_targets_enum::target_display);
+      pCommandList->ClearRenderTargetView(rtvHandle, clearColor, 1, &Rect);
+
       ID3D12DescriptorHeap* pDescriptorHeaps = GetDevice().GetDescriptorHeap();
       pCommandList->SetDescriptorHeaps(1, &pDescriptorHeaps);
 
       // Set display as current RT
-      RenderTargetsSystem->Set(pCommandList, render_targets_enum::target_display);
+      RenderTargetsSystem->Set(pCommandList, render_targets_enum::target_frame_hdr);
 
       for (int i = 0; i < Passes.size(); i++)
       {
@@ -375,10 +425,10 @@ void gdr::render::DrawFrame(void)
     PROFILE_END(pCommandList);
 
     // Update and Render additional Platform Windows
-    {
+    /* {
       ImGui::UpdatePlatformWindows();
       ImGui::RenderPlatformWindowsDefault(NULL, (void*)pCommandList);
-    }
+    }*/
 
     Device.CloseSubmitAndPresentRenderCommandList(false);
     auto renderEnd = std::chrono::system_clock::now();

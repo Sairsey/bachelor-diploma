@@ -34,10 +34,10 @@ gdr::oit_transparency_subsystem::oit_transparency_subsystem(render* Rnd)
 
 void gdr::oit_transparency_subsystem::UpdateGPUData(ID3D12GraphicsCommandList* pCommandList)
 {
-  if (Render->GlobalsSystem->Get().Width != W || Render->GlobalsSystem->Get().Height != H)
+  if (Render->RenderWidth != W || Render->RenderHeight != H)
   {
-    W = Render->GlobalsSystem->Get().Width;
-    H = Render->GlobalsSystem->Get().Height;
+    W = Render->RenderWidth;
+    H = Render->RenderHeight;
     if (OITNodesPoolGPUData.Resource != nullptr)
     {
       Render->GetDevice().ReleaseGPUResource(OITNodesPoolGPUData);

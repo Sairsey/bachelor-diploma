@@ -47,17 +47,26 @@ void gdr::render_targets_subsystem::Set(ID3D12GraphicsCommandList* CommandList, 
   // Scissor rect
   D3D12_RECT Rect;
 
+  int H = Render->RenderHeight;
+  int W = Render->RenderWidth;
+
+  if (ResultTarget == render_targets_enum::target_display)
+  {
+    W = Render->FrameWidth;
+    H = Render->FrameHeight;
+  }
+
   Viewport.TopLeftX = 0.0f;
   Viewport.TopLeftY = 0.0f;
   Viewport.Height = 
     (FLOAT)(
       TargetParams[(int)CurrentRT].IsFullscreen ?
-      Render->GetEngine()->Height * TargetParams[(int)CurrentRT].scale.Y :
+      H * TargetParams[(int)CurrentRT].scale.Y :
       TargetParams[(int)CurrentRT].size.Y);
   Viewport.Width = 
     (FLOAT)(
       TargetParams[(int)CurrentRT].IsFullscreen ?
-      Render->GetEngine()->Width * TargetParams[(int)CurrentRT].scale.X :
+      W * TargetParams[(int)CurrentRT].scale.X :
       TargetParams[(int)CurrentRT].size.X);
   Viewport.MinDepth = 0.0f;
   Viewport.MaxDepth = 1.0f;
@@ -70,12 +79,12 @@ void gdr::render_targets_subsystem::Set(ID3D12GraphicsCommandList* CommandList, 
   Rect.bottom =
     (LONG)(
       TargetParams[(int)CurrentRT].IsFullscreen ?
-      Render->GetEngine()->Height * TargetParams[(int)CurrentRT].scale.Y :
+      H * TargetParams[(int)CurrentRT].scale.Y :
       TargetParams[(int)CurrentRT].size.Y);
   Rect.right = 
     (LONG)(
       TargetParams[(int)CurrentRT].IsFullscreen ?
-      Render->GetEngine()->Width * TargetParams[(int)CurrentRT].scale.X :
+      W * TargetParams[(int)CurrentRT].scale.X :
       TargetParams[(int)CurrentRT].size.X);
 
   Rect.bottom = max(Rect.bottom, 1);
@@ -84,7 +93,14 @@ void gdr::render_targets_subsystem::Set(ID3D12GraphicsCommandList* CommandList, 
   CommandList->RSSetViewports(1, &Viewport);
   CommandList->RSSetScissorRects(1, &Rect);
 
-  CommandList->OMSetRenderTargets(1, &RenderTargetViews[(int)CurrentRT], TRUE, &DepthStencilView);
+  if (ResultTarget == render_targets_enum::target_display)
+  {
+    CommandList->OMSetRenderTargets(1, &RenderTargetViews[(int)CurrentRT], TRUE, NULL);
+  }
+  else
+  {
+    CommandList->OMSetRenderTargets(1, &RenderTargetViews[(int)CurrentRT], TRUE, &DepthStencilView);
+  }
 }
 
 // Function to store display buffer rtv
@@ -141,8 +157,8 @@ void gdr::render_targets_subsystem::CreateTextures()
     D3D12_RESOURCE_DESC desc = 
       CD3DX12_RESOURCE_DESC::Tex2D(
       TargetParams[i].Format,
-      TargetParams[i].IsFullscreen ? (UINT)max(Render->GetEngine()->Width * TargetParams[i].scale.X, 1) : TargetParams[i].size.X,
-      TargetParams[i].IsFullscreen ? (UINT)max(Render->GetEngine()->Height * TargetParams[i].scale.Y, 1) : TargetParams[i].size.Y,
+      TargetParams[i].IsFullscreen ? (UINT)max(Render->RenderWidth * TargetParams[i].scale.X, 1) : TargetParams[i].size.X,
+      TargetParams[i].IsFullscreen ? (UINT)max(Render->RenderHeight * TargetParams[i].scale.Y, 1) : TargetParams[i].size.Y,
       1,
       1,
       1,

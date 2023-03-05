@@ -1,10 +1,8 @@
 #ifndef __mth_vec_h_
 #define __mth_vec_h_
 
-#include <assert.h>
 #include <iostream>
 #include <sstream>
-
 
 /* Math namespace */
 namespace mth
@@ -192,7 +190,7 @@ namespace mth
        */
       inline vec2<Type> & operator/=( const vec2<Type> &Vec )
       {
-        assert(Vec.X != 0 && Vec.Y != 0);
+        GDR_ASSERT(Vec.X != 0 && Vec.Y != 0);
         X /= Vec.X;
         Y /= Vec.Y;
         return *this;
@@ -207,7 +205,7 @@ namespace mth
        */
       inline vec2<Type> operator/( const vec2<Type> &Vec ) const
       {
-        assert(Vec.X != 0 && Vec.Y != 0);
+        GDR_ASSERT(Vec.X != 0 && Vec.Y != 0);
         return vec2<Type>(X / Vec.X, Y / Vec.Y);
       } /* End of 'operator/' function */
     
@@ -298,7 +296,7 @@ namespace mth
        */
       inline vec2<Type> & operator/=( Type Num )
       {
-        assert(Num != 0);
+        GDR_ASSERT(Num != 0);
         X /= Num;
         Y /= Num;
         return *this;
@@ -313,7 +311,7 @@ namespace mth
        */
       inline vec2<Type> operator/( Type Num ) const
       {
-        assert(Num != 0);
+        GDR_ASSERT(Num != 0);
         return vec2<Type>(X / Num, Y / Num);
       } /* End of 'operator/' function */
     
@@ -336,7 +334,7 @@ namespace mth
        */
       inline Type & operator[]( UINT Index )
       {
-        assert(Index >= 0 && Index <= 1);
+        GDR_ASSERT(Index >= 0 && Index <= 1);
         switch (Index)
         {
         case 0:
@@ -562,7 +560,7 @@ namespace mth
        */
       inline vec4<Type> & operator/=( const vec4<Type> &Vec )
       {
-        assert(Vec.X != 0 && Vec.Y != 0 && Vec.Z != 0 && Vec.W != 0);
+        GDR_ASSERT(Vec.X != 0 && Vec.Y != 0 && Vec.Z != 0 && Vec.W != 0);
         X /= Vec.X;
         Y /= Vec.Y;
         Z /= Vec.Z;
@@ -579,7 +577,7 @@ namespace mth
        */
       inline vec4<Type> operator/( const vec4<Type> &Vec ) const
       {
-        assert(Vec.X != 0 && Vec.Y != 0 && Vec.Z != 0 && Vec.W != 0);
+        GDR_ASSERT(Vec.X != 0 && Vec.Y != 0 && Vec.Z != 0 && Vec.W != 0);
         return vec4<Type>(X / Vec.X, Y / Vec.Y, Z / Vec.Z, W / Vec.W);
       } /* End of 'operator/' function */
 
@@ -676,7 +674,7 @@ namespace mth
        */
       inline vec4<Type> & operator/=( Type Num )
       {
-        assert(Num != 0);
+        GDR_ASSERT(Num != 0);
         X /= Num;
         Y /= Num;
         Z /= Num;
@@ -693,7 +691,7 @@ namespace mth
        */
       inline vec4<Type> operator/( Type Num ) const
       {
-        assert(Num != 0);
+        GDR_ASSERT(Num != 0);
         return vec4<Type>(X / Num, Y / Num, Z / Num, W / Num);
       } /* End of 'operator/' function */
 
@@ -716,7 +714,7 @@ namespace mth
        */
       inline Type & operator[]( UINT Index )
       {
-        assert(Index >= 0 && Index <= 3);
+        GDR_ASSERT(Index >= 0 && Index <= 3);
         switch (Index)
         {
         case 0:
@@ -1083,7 +1081,7 @@ namespace mth
        */
       inline vec3<Type> & operator/=( const vec3<Type> &Vec )
       {
-        assert(Vec.X != 0 && Vec.Y != 0 && Vec.Z != 0);
+        GDR_ASSERT(Vec.X != 0 && Vec.Y != 0 && Vec.Z != 0);
         X /= Vec.X;
         Y /= Vec.Y;
         Z /= Vec.Z;
@@ -1099,7 +1097,7 @@ namespace mth
        */
       inline vec3<Type> operator/( const vec3<Type> &Vec ) const
       {
-        assert(Vec.X != 0 && Vec.Y != 0 && Vec.Z != 0);
+        GDR_ASSERT(Vec.X != 0 && Vec.Y != 0 && Vec.Z != 0);
         return vec3<Type>(X / Vec.X, Y / Vec.Y, Z / Vec.Z);
       } /* End of 'operator/' function */
    
@@ -1193,7 +1191,7 @@ namespace mth
        */
       inline vec3<Type> & operator/=( Type Num )
       {
-        assert(Num != 0);
+        GDR_ASSERT(Num != 0);
         X /= Num;
         Y /= Num;
         Z /= Num;
@@ -1209,7 +1207,7 @@ namespace mth
        */
       inline vec3<Type> operator/( Type Num ) const
       {
-        assert(Num != 0);
+        GDR_ASSERT(Num != 0);
         return vec3<Type>(X / Num, Y / Num, Z / Num);
       } /* End of 'operator/' function */
    
@@ -1232,7 +1230,7 @@ namespace mth
        */
       inline Type & operator[]( UINT Index )
       {
-        assert(Index >= 0 && Index <= 2);
+        GDR_ASSERT(Index >= 0 && Index <= 2);
         switch (Index)
         {
         case 0:

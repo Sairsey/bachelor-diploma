@@ -52,6 +52,7 @@
   #include "render/passes/luminance_pass.h"
   #include "render/passes/tonemap_pass.h"
   #include "render/passes/fxaa_pass.h"
+  #include "render/passes/copy_pass.h"
   // ui
   #include "render/passes/debug_hier_pass.h"
   #include "render/passes/debug_aabb_pass.h"

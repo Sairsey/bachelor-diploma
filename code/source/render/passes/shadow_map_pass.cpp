@@ -74,6 +74,8 @@ static bool CullAABBFrustum(
     {
         if (corners[corner_idx].X * matr[0][3] + corners[corner_idx].Y * matr[1][3] + corners[corner_idx].Z * matr[2][3] + matr[3][3] > 0)
             corners[corner_idx] = corners[corner_idx] * matr;
+        else if (corners[corner_idx].X * matr[0][3] + corners[corner_idx].Y * matr[1][3] + corners[corner_idx].Z * matr[2][3] + matr[3][3] == 0)
+            corners[corner_idx] = {0, 0, 0};
         else
             corners[corner_idx] = corners[corner_idx] * matr * -1;
     }
@@ -105,7 +107,7 @@ void gdr::shadow_map_pass::CallDirectDraw(ID3D12GraphicsCommandList* currentComm
 {
   // saved globals
   GDRGPUGlobalData saved = Render->GlobalsSystem->Get();
-  Render->RenderTargetsSystem->Set(currentCommandList, render_targets_enum::target_display);
+  Render->RenderTargetsSystem->Set(currentCommandList, render_targets_enum::target_frame_final);
   for (gdr_index i = 0; i < Render->LightsSystem->AllocatedSize(); i++)
   {
     if (Render->LightsSystem->IsExist(i) && Render->LightsSystem->Get(i).ShadowMapIndex != NONE_INDEX)
@@ -212,7 +214,7 @@ void gdr::shadow_map_pass::CallIndirectDraw(ID3D12GraphicsCommandList* currentCo
   return;
 
   GDRGPUGlobalData saved = Render->GlobalsSystem->Get();
-  Render->RenderTargetsSystem->Set(currentCommandList, render_targets_enum::target_display);
+  Render->RenderTargetsSystem->Set(currentCommandList, render_targets_enum::target_frame_tonemap);
   for (gdr_index i = 0; i < Render->LightsSystem->AllocatedSize(); i++)
   {
     if (Render->LightsSystem->IsExist(i) && Render->LightsSystem->Get(i).ShadowMapIndex != NONE_INDEX)

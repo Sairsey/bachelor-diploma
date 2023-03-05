@@ -160,6 +160,9 @@
     <Filter Include="Source Files\Units\Editor">
       <UniqueIdentifier>{eb7d8b75-4214-4965-96ca-c872e54e7c38}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Render\Passes\copy">
+      <UniqueIdentifier>{f64ae08c-4ddc-4e8f-bbd5-58ace5c67430}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\main.cpp">
@@ -302,6 +305,9 @@
     </ClCompile>
     <ClCompile Include="source\units\editor\unit_scripted.cpp">
       <Filter>Source Files\Units\Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="source\render\passes\copy_pass.cpp">
+      <Filter>Source Files\Render\Passes\copy</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -611,7 +617,7 @@
     <ClInclude Include="source\render\passes\shadow_map_pass.h">
       <Filter>Source Files\Render\Passes\shadows</Filter>
     </ClInclude>
-    <ClInclude Include="source\units\editor\unit_editor.h">
+    <ClInclude Include="source\units\editor\unit_blueprint_editor.h">
       <Filter>Source Files\Units\Editor</Filter>
     </ClInclude>
     <ClInclude Include="source\units\editor\unit_scripted.h">
@@ -619,6 +625,12 @@
     </ClInclude>
     <ClInclude Include="source\units\stats\unit_light_editor.h">
       <Filter>Source Files\Units\Stats</Filter>
+    </ClInclude>
+    <ClInclude Include="source\units\editor\unit_editor.h">
+      <Filter>Source Files\Units\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="source\render\passes\copy_pass.h">
+      <Filter>Source Files\Render\Passes\copy</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

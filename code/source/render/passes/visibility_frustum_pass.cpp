@@ -71,6 +71,8 @@ static bool CullAABBFrustum(
   {
     if (corners[corner_idx].X * matr[0][3] + corners[corner_idx].Y * matr[1][3] + corners[corner_idx].Z * matr[2][3] + matr[3][3] > 0)
       corners[corner_idx] = corners[corner_idx] * matr;
+    else if (corners[corner_idx].X * matr[0][3] + corners[corner_idx].Y * matr[1][3] + corners[corner_idx].Z * matr[2][3] + matr[3][3] == 0)
+      corners[corner_idx] = {0, 0, 0};
     else
       corners[corner_idx] = corners[corner_idx] * matr * -1;
   }

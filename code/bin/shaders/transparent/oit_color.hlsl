@@ -66,7 +66,7 @@ void PS(VSOut input, bool IsBackFace : SV_IsFrontFace)  // due to opengl matrice
 
 		// add element to the beginning of the list
 		OITPool[newHeadBufferValue].NextNodeIndex = previosHeadBufferValue;
-		OITPool[newHeadBufferValue].Depth = input.pos.z * (IsFrontFace * 2 - 1) * -1;
+		OITPool[newHeadBufferValue].Depth = input.pos.z * (IsBackFace * 2 - 1);
 		OITPool[newHeadBufferValue].Color = col;
 	}
 

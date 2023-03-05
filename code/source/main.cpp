@@ -22,6 +22,7 @@
 #include "units/examples/unit_choose.h"
 
 #include "units/editor/unit_editor.h"
+#include "units/editor/unit_blueprint_editor.h"
 #include "units/editor/unit_scripted.h"
 
 #include "units/thriller/unit_thriller_stage.h"
@@ -149,6 +150,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
   //Engine.AddUnit(new unit_shooter_gun());
 
   Engine.AddUnit(new unit_scripted("Hello"));
+  //Engine.AddUnit(new unit_editor());
+  //Engine.AddUnit(new unit_blueprint_editor());
 
   //Engine.AddUnit(new unit_fishes_env());
   //Engine.AddUnit(new unit_fishes_rotating());
@@ -156,7 +159,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
   //Engine.AddUnit(new unit_yokohama());
   Engine.AddUnit(new unit_alex_apt());
   
-  //Engine.AddUnit(new unit_choose());
+  Engine.AddUnit(new unit_choose());
   //Engine.AddUnit(new unit_log_time());
 
   Engine.AddUnit(new unit_flying_camera());
@@ -164,10 +167,10 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
   //Engine.AddUnit(new unit_editor());
   
-  Engine.AddUnit(new unit_light_editor());
-  Engine.AddUnit(new unit_frame_times());
-  Engine.AddUnit(new unit_resource_viewier());
-  Engine.AddUnit(new unit_render_params());
+  //Engine.AddUnit(new unit_light_editor());
+  //Engine.AddUnit(new unit_frame_times());
+  //Engine.AddUnit(new unit_resource_viewier());
+  //Engine.AddUnit(new unit_render_params());
   // math smoke test
   mth::vec3f V1(1, 0, 0);
   mth::vec3f V2(0, 1, 0);

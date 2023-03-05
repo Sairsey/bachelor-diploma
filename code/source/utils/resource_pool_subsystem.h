@@ -11,6 +11,7 @@ namespace gdr
     struct resource_pool_record
     {
       bool IsAlive;           // if False -> this resource was deleted
+      bool IsNeedToBeDeleted; // if True -> We should delete on next frame
       int ReferenceCount = 0;
     };
 
@@ -30,7 +31,6 @@ namespace gdr
     size_t StoredSize;
     const int CHUNK_SIZE = ChunkSize;
     std::vector<bool> ChunkMarkings;
-
 
     /// INIT PARAMS
     // Value for debuggers to identify this pool
@@ -104,6 +104,7 @@ namespace gdr
     struct resource_pool_record
     {
       bool IsAlive;           // if False -> this resource was deleted
+      bool IsNeedToBeDeleted; // if True -> We should delete on next frame
       int ReferenceCount = 0;
     };
 

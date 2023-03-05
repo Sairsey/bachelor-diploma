@@ -16,10 +16,10 @@ namespace gdr
   {
     private:
       /* Vector of all units we will draw */
-      std::vector<unit_base*> Units;
       std::vector<unit_base*> ToAdd;
       std::vector<unit_base*> ToRemove;
     public:
+      std::vector<unit_base*> Units;
       // Default constructor
       engine();
 

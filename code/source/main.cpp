@@ -150,7 +150,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
   //Engine.AddUnit(new unit_shooter_gun());
 
   Engine.AddUnit(new unit_scripted("Hello"));
-  //Engine.AddUnit(new unit_editor());
+  Engine.AddUnit(new unit_editor());
   //Engine.AddUnit(new unit_blueprint_editor());
 
   //Engine.AddUnit(new unit_fishes_env());

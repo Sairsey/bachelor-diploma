@@ -68,12 +68,14 @@ private:
   gdr_index PointLightObject;
   gdr_index DirLightObject;
   gdr_index SpotLightObject;
+  gdr_index AxisObject;
 public:
   void Initialize(void)
   {
     auto import_data_sphere = gdr::ImportModelFromAssimp("bin/models/light_meshes/sphere.obj");
     auto import_data_dir = gdr::ImportModelFromAssimp("bin/models/light_meshes/dir.obj");
     auto import_data_cone = gdr::ImportModelFromAssimp("bin/models/light_meshes/cone.obj");
+    auto import_data_axis = gdr::ImportModelFromAssimp("bin/models/light_meshes/axis.obj");
 
     ID3D12GraphicsCommandList* commandList;
     Engine->GetDevice().BeginUploadCommandList(&commandList);
@@ -81,6 +83,7 @@ public:
     PointLightObject = Engine->ModelsManager->Add(import_data_sphere);
     DirLightObject = Engine->ModelsManager->Add(import_data_dir);
     SpotLightObject = Engine->ModelsManager->Add(import_data_cone);
+    AxisObject = Engine->ModelsManager->Add(import_data_axis);
     PROFILE_END(commandList);
     Engine->GetDevice().CloseUploadCommandList();
   }
@@ -759,6 +762,52 @@ public:
     }
   }
 
+  void ShowEditResourceModel(void)
+  {
+      ImGui::Text("Model Editor");
+      if (Engine->ModelsManager->IsExist(ChoosedElement))
+      {
+          ImGui::Text("Name: %s", Engine->ModelsManager->Get(ChoosedElement).Name.c_str());
+          ImGui::Text("Root Transform index: %d", Engine->ModelsManager->Get(ChoosedElement).Render.RootTransform);
+          if (Engine->ModelsManager->Get(ChoosedElement).Render.RootTransform != NONE_INDEX)
+          {
+              if (ImGui::Button("Go to Transform"))
+              {
+                  ChoosedElement = Engine->ModelsManager->Get(ChoosedElement).Render.RootTransform;
+                  ChoosedElement.type = gdr_index_types::object_transform;
+              }
+          }
+
+          ImGui::BeginTable("Materials", 2, ImGuiTableFlags_Borders);
+          ImGui::TableNextColumn();
+          ImGui::Text("Index");
+          ImGui::TableNextColumn();
+          ImGui::Text("Button to go");
+          ImGui::TableNextRow();
+
+          for (int i = 0; i < Engine->ModelsManager->Get(ChoosedElement).Render.Materials.size(); i++)
+          {
+              ImGui::TableNextColumn();
+              ImGui::Text("%d", Engine->ModelsManager->Get(ChoosedElement).Render.Materials[i].value);
+              ImGui::TableNextColumn();
+              if (Engine->ModelsManager->Get(ChoosedElement).Render.Materials[i].value != NONE_INDEX)
+              {
+                  if (ImGui::Button("Go to material"))
+                  {
+                      ChoosedElement = Engine->ModelsManager->Get(ChoosedElement).Render.Materials[i];
+                      ChoosedElement.type = gdr_index_types::material;
+                  }
+              }
+              ImGui::TableNextRow();
+          }
+          ImGui::EndTable();
+      }
+      else
+      {
+          ImGui::Text("Not Alive");
+      }
+  }
+
   void ShowEditResource(void)
   {
     ImGui::Text("Resource Editor");
@@ -789,6 +838,8 @@ public:
       ShowEditResourceMaterial();
       break;
     case gdr_index_types::model:
+      ShowEditResourceModel();
+      break;
     case gdr_index_types::animation:
     case gdr_index_types::physic_body:
     case gdr_index_types::draw_command:
@@ -846,6 +897,8 @@ public:
       Engine->ModelsManager->Get(DirLightObject).Render.RootTransform).Transform = mth::matr4f::Scale(0);
     Engine->ObjectTransformsSystem->GetEditable(
       Engine->ModelsManager->Get(SpotLightObject).Render.RootTransform).Transform = mth::matr4f::Scale(0);
+    Engine->ObjectTransformsSystem->GetEditable(
+        Engine->ModelsManager->Get(AxisObject).Render.RootTransform).Transform = mth::matr4f::Scale(0);
 
     // Visualize choosed light object
     if (TypeOfEditor == resource_index &&
@@ -865,6 +918,16 @@ public:
       Engine->ObjectTransformsSystem->GetEditable(
         Engine->ModelsManager->Get(ObjectType).Render.RootTransform).Transform =
         Engine->ObjectTransformsSystem->Get(Engine->LightsSystem->Get(ChoosedElement).ObjectTransformIndex).Transform;
+    }
+
+    if (TypeOfEditor == resource_index &&
+        ChoosedElement.type == gdr_index_types::model &&
+        Engine->ModelsManager->IsExist(ChoosedElement) &&
+        Engine->ModelsManager->Get(ChoosedElement).Render.RootTransform != NONE_INDEX)
+    {
+
+        Engine->ObjectTransformsSystem->GetEditable(Engine->ModelsManager->Get(AxisObject).Render.RootTransform).Transform =
+            Engine->ObjectTransformsSystem->Get(Engine->ModelsManager->Get(ChoosedElement).Render.RootTransform).Transform;
     }
 
     Engine->AddLambdaForIMGUI([&]()
@@ -921,5 +984,6 @@ public:
      Engine->ModelsManager->Remove(PointLightObject);
      Engine->ModelsManager->Remove(SpotLightObject);
      Engine->ModelsManager->Remove(DirLightObject);
+     Engine->ModelsManager->Remove(AxisObject);
   }
 };

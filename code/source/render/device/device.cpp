@@ -571,6 +571,7 @@ bool gdr::device::BeginRenderCommandList(ID3D12GraphicsCommandList** ppCommandLi
     DynamicBuffer->FlashFenceValue(finishedFenceValue);
     DynamicDescBuffer->FlashFenceValue(finishedFenceValue);
     QueryBuffer->FlashFenceValue(finishedFenceValue);
+    UploadBuffer->FlashFenceValue(finishedFenceValue); // mark in Upload buffer that we already waited for finishedFenceValue.
   }
   if (SUCCEEDED(hr))
   {
@@ -623,6 +624,7 @@ bool gdr::device::CloseSubmitAndPresentRenderCommandList(bool vsync)
     DynamicBuffer->AddPendingFence(presentFenceValue);
     DynamicDescBuffer->AddPendingFence(presentFenceValue);
     QueryBuffer->AddPendingFence(presentFenceValue);
+    UploadBuffer->AddPendingFence(presentFenceValue);
   }
 
   return SUCCEEDED(hr);

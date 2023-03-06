@@ -924,6 +924,14 @@ void mesh_assimp_importer::ImportSplitted()
             tmp.RootTransform.minAABB[component_index] = min(tmp.RootTransform.minAABB[component_index], MeshNode.Vertices[vertex_id].Pos[component_index]);
           }
 
+        mth::vec3f center = (tmp.RootTransform.maxAABB + tmp.RootTransform.minAABB) / 2.0;
+
+        for (int vertex_id = 0; vertex_id < MeshNode.Vertices.size(); vertex_id++)
+            MeshNode.Vertices[vertex_id].Pos -= center;
+
+        tmp.RootTransform.maxAABB -= center;
+        tmp.RootTransform.minAABB -= center;
+
         GDR_ASSERT(Result.HierarchyNodes[mesh_index].BonesMapping.size() <= 1);
         gdr_index node_to_mulipty = Result.HierarchyNodes[mesh_index].BonesMapping[0];
         while (node_to_mulipty != NONE_INDEX)
@@ -931,6 +939,7 @@ void mesh_assimp_importer::ImportSplitted()
           tmp.RootTransform.Transform = tmp.RootTransform.Transform * Result.HierarchyNodes[node_to_mulipty].LocalTransform;
           node_to_mulipty = Result.HierarchyNodes[node_to_mulipty].ParentIndex;
         }
+        tmp.RootTransform.Transform = mth::matr4f::Translate(center) * tmp.RootTransform.Transform;
       }
 
       // Copy Mesh

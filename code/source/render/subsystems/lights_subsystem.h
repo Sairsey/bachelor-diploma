@@ -31,6 +31,22 @@ namespace gdr
             // update VP and InvVP
             GetEditable(index).VP = mth::matr4f::View(loc, lookat, up) * mth::matr4f::Frustum(Left, Right, Bottom, Top, Render->PlayerCamera.GetNear(), Render->PlayerCamera.GetFar());
           }
+          else if (Get(index).LightSourceType == LIGHT_SOURCE_TYPE_DIRECTIONAL)
+          {
+            mth::vec3f loc = Render->ObjectTransformsSystem->Get(Get(index).ObjectTransformIndex).Transform * mth::vec3f(0, 0, 0);
+            mth::vec3f lookat = Render->ObjectTransformsSystem->Get(Get(index).ObjectTransformIndex).Transform * mth::vec3f(0, -1, 0);
+            float Top = Render->PlayerCamera.GetNear();
+            float Bottom = -Top;
+            float Left = -Top;
+            float Right = Top;
+
+            mth::vec3f up = { 0, 1, 0 };
+            if (abs((lookat - loc).Normalized() dot up) == 1)
+              up = { 1, 0, 0 };
+
+            // update VP and InvVP
+            GetEditable(index).VP = mth::matr4f::View(loc, lookat, up) * mth::matr4f::Ortho(Left, Right, Bottom, Top, Render->PlayerCamera.GetNear(), Render->PlayerCamera.GetFar());
+          }
         }
     }
 
@@ -53,7 +69,18 @@ namespace gdr
     {
       ResourceName = L"Light Sources pool";
       UsedResourceState = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
-      Add(); // Add one, so pool became valid and we can use it
+
+      GDRGPULightSource& light = GetEditable(0);
+      light.Color = mth::vec3f(1, 1, 1);
+      light.LightSourceType = LIGHT_SOURCE_TYPE_DIRECTIONAL;
+      light.ConstantAttenuation = 1.0f;
+      light.LinearAttenuation = 0.09f;
+      light.QuadricAttenuation = 0.032f;
+      light.AngleInnerCone = MTH_D2R * 45.0f / 2.0f;
+      light.AngleOuterCone = MTH_D2R * 60.0f / 2.0f;
+      light.ObjectTransformIndex = NONE_INDEX;
+      light.ShadowMapIndex = NONE_INDEX;
+      light.ShadowMapOffset = 0.0f;
     };
 
     gdr_index Add()

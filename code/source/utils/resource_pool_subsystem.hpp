@@ -9,6 +9,8 @@ gdr::resource_pool_subsystem<StoredType, Type, ChunkSize>::resource_pool_subsyst
   GPUData.Resource = nullptr;
   ChunkMarkings.resize(0);
   StoredSize = 0;
+  // added first one so we have at least one resource
+  Add();
 }
 
 template<typename StoredType, gdr_index_types Type, int ChunkSize>

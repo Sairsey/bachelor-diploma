@@ -148,7 +148,7 @@ void gdr::debug_hier_pass::CallDirectDraw(ID3D12GraphicsCommandList* currentComm
     currentCommandList->IASetIndexBuffer(&IndexBufferView);
 
     // just iterate for every draw call
-    for (int i = 0; i < Render->DrawCommandsSystem->AllocatedSize(); i++)
+    for (int i = 1; i < Render->DrawCommandsSystem->AllocatedSize(); i++)
     {
         if (!Render->DrawCommandsSystem->IsExist(i))
           continue;

@@ -19,7 +19,6 @@ namespace gdr
     node_transforms_subsystem(render* Rnd) : resource_pool_subsystem(Rnd)
     {
       ResourceName = L"Node transforms pool";
-      Add(); // Add one debug
     };
 
     // Custom Add mechanism

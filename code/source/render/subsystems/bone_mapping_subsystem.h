@@ -23,7 +23,6 @@ namespace gdr
     bone_mapping_subsystem(render* Rnd) : resource_pool_subsystem(Rnd)
     {
       ResourceName = L"Bone Mapping System";
-      Add(); // Add one debug
     };
 
     gdr_index Add()

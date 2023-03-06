@@ -283,7 +283,6 @@ struct GDRGPUMaterial
 #define GDRGPUMaterialCookTorranceGetSpecular(Material) Material.VecParam1                            // Specular
 #define GDRGPUMaterialCookTorranceGetGlossiness(Material) Material.FloatParam0                        // Glossiness
 #define GDRGPUMaterialCookTorranceGetSpecularGlossinessMapIndex(Material) Material.UintParam3         // Specular(rgb) + Glossiness(a)
-#define GDRGPUMaterialCookTorranceGetOpacity(Material) Material.FloatParam2                           // Opacity
 
 #define ERROR_COLOR float4(1, 0, 1, 1);
 

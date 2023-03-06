@@ -171,9 +171,11 @@ void gdr::render::Resize(UINT w, UINT h, bool IsImgui)
 
   if (IsImgui && w == -1 && h == -1)
   {
-    RenderHeight = h;
-    RenderWidth = w;
+    RenderHeight = FrameHeight;
+    RenderWidth = FrameWidth;
     IsImgui = false;
+    w = RenderWidth;
+    h = RenderHeight;
   }
 
   if (IsImgui)
@@ -238,6 +240,7 @@ void gdr::render::DrawFrame(void)
   }
 
   auto updateAllSystems = [&](ID3D12GraphicsCommandList* uploadCommandList) {
+      OutputDebugString(L"Frame start\n");
       {
           PROFILE_BEGIN(uploadCommandList, "Update Globals");
           GlobalsSystem->GetEditable().VP = PlayerCamera.GetVP(); // camera view-proj

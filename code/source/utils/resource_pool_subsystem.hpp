@@ -108,6 +108,7 @@ void gdr::resource_pool_subsystem<StoredType, Type, ChunkSize>::UpdateGPUData(ID
   }
   else // otherwise we can just update right chunks
   {
+    int updatedChunks = 0;
     // update chunks
     for (int i = 0; i < ChunkMarkings.size(); i++)
     {
@@ -117,6 +118,8 @@ void gdr::resource_pool_subsystem<StoredType, Type, ChunkSize>::UpdateGPUData(ID
         int chunk_amount = 1;
         while (i + chunk_amount < ChunkMarkings.size() && ChunkMarkings[i + chunk_amount])
           chunk_amount++;
+
+        updatedChunks += chunk_amount;
 
         // update chunks in one call if they are stored one after another
         int source_offset = i * CHUNK_SIZE;
@@ -129,6 +132,7 @@ void gdr::resource_pool_subsystem<StoredType, Type, ChunkSize>::UpdateGPUData(ID
           ChunkMarkings[i + j] = false;
       }
     }
+    OutputDebugString((L"Updated " + std::to_wstring(updatedChunks * sizeof(StoredType)) + L"bytes\n").c_str());
   }
 
   // Do anything we need to do before update

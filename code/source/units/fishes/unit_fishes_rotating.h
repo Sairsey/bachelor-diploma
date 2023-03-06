@@ -25,9 +25,12 @@ private:
   float MaxSpeed = 1;
 
   bool SavePerf = false;
+  bool IsVisualise = true;
 
-  size_t StartFishesAmount = 1000;
-  size_t FishesStep = 100;
+  size_t StartFishesAmount = 10;
+  size_t FishesStep = 0;
+  int EditableFishesStep = 10;
+
   size_t MaxFishesAmount = 5000;
   int FramesToCalc = 400;
   double SumEngTime = 0;
@@ -51,11 +54,13 @@ public:
         Fishes[i] = FishesPack3[i - FishesPack1.size() - FishesPack2.size()];
     AddFishes(StartFishesAmount);
 
+    /*
     Engine->Params.IsOccusionCulling = false;
     Engine->Params.IsFrustumCulling = false;
     Engine->Params.IsIndirect = true;
     Engine->Params.IsIBL = false;
     Engine->Params.IsUploadEveryFrame = false;
+    */
     Engine->EnableFullscreen();
   }
 
@@ -122,6 +127,52 @@ public:
             SumCPUTime += Engine->CPUDrawFrameTime;
         }
     }
+
+    if (IsVisualise)
+    {
+        Engine->AddLambdaForIMGUI([&](){
+            static float fps = 100;
+            static float cpu = 1;
+            static float gpu = 1;
+
+            ImGui::GetIO().FontGlobalScale = 2;
+
+            ImGui::Begin("FISH EXAMPLE");
+            ImGui::Text("FPS: %f", fps);
+            ImGui::Text("CPU TIME: %f ms", cpu);
+            ImGui::Text("GPU TIME: %f ms", gpu);
+            ImGui::Text("FISH AMOUNT: %d", RightTank.size());
+            ImGui::DragInt("DELTA FISHES", &EditableFishesStep);
+
+            if (FishesStep == 0 && ImGui::Button("Start"))
+                FishesStep = EditableFishesStep;
+            else
+            {
+                ImGui::Checkbox("Indirect", &Engine->Params.IsIndirect);
+                ImGui::Checkbox("Frustum culling", &Engine->Params.IsFrustumCulling);
+                if (ImGui::Button("Stop"))
+                    FishesStep = 0;
+            }
+
+            if (frameCount % 20 == 0)
+            {
+                fps = 1000000000.0 / Engine->EngineClock;
+                cpu = Engine->CPUDrawFrameTime / 1000000.0;
+                gpu = Engine->DeviceFrameCounter.GetUSec() / 1000.0;
+            }
+
+            ImGui::End();
+
+            ImGui::GetIO().FontGlobalScale = 1;
+        });
+
+        if (frameCount % FramesToCalc == 0)
+        {
+            AddFishes(FishesStep);
+        }
+    }
+
+
 
     for (int i = 0; i < LeftTank.size(); i++)
     {

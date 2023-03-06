@@ -42,6 +42,8 @@ class unit_editor : public gdr::unit_base
 private:
   ImVec2 GameWindowSize;
 
+  bool ShowEditor = true;
+
   bool IsGameWindow = true;
   bool IsHierarchyWindow = true;
   bool IsDemoWindow = false;
@@ -825,6 +827,16 @@ public:
 
   void Response(void)
   {
+    if (!ShowEditor)
+    {
+      Engine->ResizeImgui(-1, -1);
+      if (Engine->KeysClick[VK_ESCAPE])
+      {
+          ShowEditor = true;
+      }
+      return;
+    }
+
     Engine->ResizeImgui(max(GameWindowSize.x, 128), max(GameWindowSize.y, 128));
    
     // Disable all light objects
@@ -871,6 +883,18 @@ public:
         // show main menu
         if (ImGui::BeginMainMenuBar()) 
         {
+          if (ImGui::BeginMenu("Main"))
+          {
+            if (ImGui::Button("Play"))
+            {
+                ShowEditor = false;
+            }
+            if (ImGui::Button("Exit"))
+            {
+                exit(0);
+            }
+            ImGui::EndMenu();
+          }
           if (ImGui::BeginMenu("View"))
           {
             ImGui::Checkbox("Game", &IsGameWindow);

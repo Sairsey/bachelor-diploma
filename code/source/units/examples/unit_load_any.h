@@ -70,9 +70,11 @@ public:
     if (Asked != "")
     {
       Engine->GetDevice().WaitAllUploadLists();
+      Engine->GetDevice().WaitGPUIdle();
       Engine->GetDevice().ResizeUpdateBuffer(false);
       LoadModel(Asked);
       Engine->GetDevice().WaitAllUploadLists();
+      Engine->GetDevice().WaitGPUIdle();
       Engine->GetDevice().ResizeUpdateBuffer(true);
       Asked = "";
     }

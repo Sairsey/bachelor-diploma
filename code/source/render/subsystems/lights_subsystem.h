@@ -35,10 +35,10 @@ namespace gdr
           {
             mth::vec3f loc = Render->ObjectTransformsSystem->Get(Get(index).ObjectTransformIndex).Transform * mth::vec3f(0, 0, 0);
             mth::vec3f lookat = Render->ObjectTransformsSystem->Get(Get(index).ObjectTransformIndex).Transform * mth::vec3f(0, -1, 0);
-            float Top = Render->PlayerCamera.GetNear();
-            float Bottom = -Top;
-            float Left = -Top;
-            float Right = Top;
+            float Top = -Get(index).AngleInnerCone;
+            float Bottom = Get(index).AngleInnerCone;
+            float Left = -Get(index).AngleInnerCone;
+            float Right = Get(index).AngleInnerCone;
 
             mth::vec3f up = { 0, 1, 0 };
             if (abs((lookat - loc).Normalized() dot up) == 1)

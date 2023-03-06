@@ -333,6 +333,7 @@ void gdr::render::DrawFrame(void)
   D3D12_CPU_DESCRIPTOR_HANDLE rtvHandle;
   if (Device.BeginRenderCommandList(&pCommandList, &pBackBuffer, &rtvHandle))
   {
+    pBackBuffer->SetName(L"BackBuffer");
     if (!Params.IsUploadEveryFrame)
     {
         Device.SetCommandListAsUpload(pCommandList);

@@ -469,10 +469,10 @@ namespace mth
        */
       inline static matr4<Type> Ortho( Type Left, Type Right, Type Bottom, Type Top, Type Near, Type Far )
       {
-        return matr4<Type>(              2 / (Right - Left),                                0,                            0, 0,
-                                                          0,               2 / (Top - Bottom),                            0, 0,
-                                                          0,                                0,            1 / (Far - Near), 0,
-                           -(Right + Left) / (Right - Left), -(Top + Bottom) / (Top - Bottom), 0, 1);
+        return matr4<Type>((Type)2.0   / (Right - Left),                                      (Type)0,                          (Type)0, (Type)0,
+                                                (Type)0,                   (Type)2.0 / (Top - Bottom),                          (Type)0, (Type)0,
+                                                (Type)0,                                      (Type)0,         (Type)1.0 / (Far - Near), (Type)0,
+           (Type)-1.0 * (Right + Left) / (Right - Left), (Type)-1.0 * (Top + Bottom) / (Top - Bottom), (Type)-1.0 * Near / (Far - Near), (Type)1);
       } /* End of 'Ortho' function */
 
       /* Frustum transformation matrix initializing function.
@@ -489,7 +489,7 @@ namespace mth
       {
         return matr4<Type>((Type)2.0 * Near / (Right - Left),                           (Type)0,                   (Type)0, (Type)0,
                                                      (Type)0, (Type)2.0 * Near / (Top - Bottom),                   (Type)0, (Type)0,
-                                                     (Type)0,   (Top + Bottom) / (Top - Bottom),        Far / (Far - Near), (Type)1,
+                       (Type)(Right + Left) / (Right - Left),   (Top + Bottom) / (Top - Bottom),        Far / (Far - Near), (Type)1,
                                                      (Type)0,                           (Type)0, Far * Near / (Near - Far), (Type)0);
       } /* End of 'Frustum' function */
 

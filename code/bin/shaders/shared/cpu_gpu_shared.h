@@ -65,6 +65,7 @@ using uint4 = mth::vec4<UINT>;
 #define GDRGPULuminanceUnorderedAccessBufferSlot UnorderedAccessSlot(6)
 #define GDRGPUOITTextureUAVSlot UnorderedAccessSlot(7)
 #define GDRGPUOITPoolUAVSlot UnorderedAccessSlot(8)
+#define GDRGPUShadowMapCommandsPoolSlot UnorderedAccessSlot(9)
 
 // Parameters for any shit we might need, but do not want to map
 #define GDRGPUUserConstantBuffer1Slot ConstantBufferSlot(20)
@@ -204,7 +205,7 @@ struct GDRGPULightSource
 	float LinearAttenuation;
 	float QuadricAttenuation;
 	// Spot light params
-	float AngleInnerCone;              // for Spot - angle in radians
+	float AngleInnerCone;              // for Spot - angle in radians, For Directional -> Size
 	float AngleOuterCone;              // for Spot - angle in radians
 	
 	float4x4 VP;               // ViewProj matrix of light source

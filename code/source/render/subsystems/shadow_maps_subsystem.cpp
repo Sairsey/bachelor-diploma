@@ -41,6 +41,7 @@ gdr_index gdr::shadow_maps_subsystem::Add(int W, int H)
       GetEditable(NewShadowmapIndex).H = H;
       GetEditable(NewShadowmapIndex).IsDSVInited = false;
       GetEditable(NewShadowmapIndex).IsSrvInited = false;
+      GetEditable(NewShadowmapIndex).TextureResource.Resource->SetName(L"Shadow map");
     }
     else
     {

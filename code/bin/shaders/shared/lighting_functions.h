@@ -26,6 +26,10 @@ float CalcShadow(in uint LightIndex, in float3 Position)
   UVInShadowMap.xy += float2(1, 1);
   UVInShadowMap.xy /= 2;
   UVInShadowMap.y = 1 - UVInShadowMap.y;
+
+  if (UVInShadowMap.x > 1 || UVInShadowMap.y > 1 || UVInShadowMap.y < 0 || UVInShadowMap.x < 0)
+    return 1;
+
   float2 TextureSize;
   ShadowMapsPool[light.ShadowMapIndex].GetDimensions(TextureSize.x, TextureSize.y);
   float2 TextureStep = (1).xx / TextureSize;

@@ -9,7 +9,6 @@ namespace gdr
   {
   private:
     ID3DBlob* ComputeShader; // Compute Shader to create draw calls 
-
     ID3DBlob* VertexShader;  // Only vertex shader used to draw
 
     // Root signature
@@ -34,6 +33,15 @@ namespace gdr
       node_transform_pool_index,          // root parameter for buffer with nodes transforms
       bone_mapping_pool_index,            // root parameter for buffer with bone mappings
       total_root_parameters,
+    };
+
+    enum struct root_parameters_compute_indices
+    {
+        compute_globals_index = 0,             // root parameter for albedo_compute_params
+        object_transform_pool_index,          // root parameter for buffer with per object transforms
+        all_commands_pool_index,              // root parameter for SRV buffer with indirect commands
+        shadow_map_commands_pool_index,       // root parameter for UAV buffer with indirect commands for all opaque objects
+        total_root_parameters,
     };
 
   public:

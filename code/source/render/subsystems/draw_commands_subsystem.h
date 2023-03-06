@@ -21,6 +21,7 @@ namespace gdr
     OpaqueFrustrumCulled,                 // UAV with frustum culled commands
     OpaqueCulled,                         // UAV with frustum and occusion culled Opaque commands
     TransparentsCulled,                   // UAV with frustum and occusion culled Transparents
+    Shadow,                               // UAV with shadowmap frustum culled commands
     TotalBuffers,
   }; // Total amount of UAVs
 

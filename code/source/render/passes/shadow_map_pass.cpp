@@ -4,6 +4,7 @@ void gdr::shadow_map_pass::Initialize(void)
 {
   // 1) Compile our shader
   Render->GetDevice().CompileShader(_T("bin/shaders/visibility/depth_draw.hlsl"), {}, shader_stage::Vertex, &VertexShader);
+  Render->GetDevice().CompileShader(_T("bin/shaders/visibility/shadow_map_frustum.hlsl"), {}, shader_stage::Compute, &ComputeShader);
 
   // 2) Create root signature for draw depth
   {
@@ -48,6 +49,39 @@ void gdr::shadow_map_pass::Initialize(void)
 
   // 4) Create Command signature
   Render->GetDevice().GetDXDevice()->CreateCommandSignature(&Render->DrawCommandsSystem->commandSignatureDesc, RootSignature, IID_PPV_ARGS(&CommandSignature));
+
+  // 5) Create root signature for calculate frustum depth
+  {
+      std::vector<CD3DX12_ROOT_PARAMETER> params;
+      params.resize((int)root_parameters_compute_indices::total_root_parameters);
+
+      params[(int)root_parameters_compute_indices::compute_globals_index].InitAsConstants(sizeof(GDRGPUComputeGlobals) / sizeof(int32_t), GDRGPUComputeGlobalDataConstantBufferSlot);
+      params[(int)root_parameters_compute_indices::object_transform_pool_index].InitAsShaderResourceView(GDRGPUObjectTransformPoolSlot);
+      params[(int)root_parameters_compute_indices::all_commands_pool_index].InitAsShaderResourceView(GDRGPUAllCommandsPoolSlot);
+
+      CD3DX12_DESCRIPTOR_RANGE descr[1] = {};
+
+      {
+          descr[0].Init(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 1, GDRGPUShadowMapCommandsPoolSlot);
+          params[(int)root_parameters_compute_indices::shadow_map_commands_pool_index].InitAsDescriptorTable(1, &descr[0]);
+      }
+
+      {
+          CD3DX12_ROOT_SIGNATURE_DESC rootSignatureDesc;
+          rootSignatureDesc.Init((UINT)params.size(), &params[0], 0, nullptr, D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
+          Render->GetDevice().CreateRootSignature(rootSignatureDesc, &ComputeRootSignature);
+      }
+  }
+
+  // 3) Create PSO for calculate frustum depth
+  {
+      // Describe and create the compute pipeline state object (PSO).
+      D3D12_COMPUTE_PIPELINE_STATE_DESC computePsoDesc = {};
+      computePsoDesc.pRootSignature = ComputeRootSignature;
+      computePsoDesc.CS = CD3DX12_SHADER_BYTECODE(ComputeShader);
+
+      Render->GetDevice().CreateComputePSO(computePsoDesc, &ComputePSO);
+  }
 }
 
 static bool CullAABBFrustum(
@@ -206,88 +240,169 @@ void gdr::shadow_map_pass::CallDirectDraw(ID3D12GraphicsCommandList* currentComm
   Render->GlobalsSystem->UpdateGPUData(currentCommandList);
   Render->GetDevice().ClearUploadListReference();
   Render->RenderTargetsSystem->Set(currentCommandList, render_targets_enum::target_frame_hdr);
+
+  // Transit resource state of valid buffers to INDIRECT_ARGUMENT.
+  Render->GetDevice().TransitResourceState(
+      currentCommandList,
+      Render->DrawCommandsSystem->CommandsBuffer[(int)indirect_command_pools_enum::Shadow].Resource,
+      D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_INDIRECT_ARGUMENT);
 }
 
 void gdr::shadow_map_pass::CallIndirectDraw(ID3D12GraphicsCommandList* currentCommandList)
 {
-  CallDirectDraw(currentCommandList);
-  return;
+  // Transit resource state of valid buffers to INDIRECT_ARGUMENT.
+  Render->GetDevice().TransitResourceState(
+      currentCommandList,
+      Render->DrawCommandsSystem->CommandsBuffer[(int)indirect_command_pools_enum::Shadow].Resource,
+      D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_INDIRECT_ARGUMENT);
 
   GDRGPUGlobalData saved = Render->GlobalsSystem->Get();
   Render->RenderTargetsSystem->Set(currentCommandList, render_targets_enum::target_frame_tonemap);
   for (gdr_index i = 0; i < Render->LightsSystem->AllocatedSize(); i++)
   {
     if (Render->LightsSystem->IsExist(i) && Render->LightsSystem->Get(i).ShadowMapIndex != NONE_INDEX)
-    {
+    {      
       gdr_index ShadowMap = Render->LightsSystem->Get(i).ShadowMapIndex;
       gdr_index LightIndex = i;
 
-      Render->GetDevice().TransitResourceState(currentCommandList, Render->ShadowMapsSystem->Get(ShadowMap).TextureResource.Resource,
-        D3D12_RESOURCE_STATE_COMMON, D3D12_RESOURCE_STATE_DEPTH_WRITE);
+      /*
+       * Free UAV
+       */
+      {
+        Render->GetDevice().TransitResourceState(
+          currentCommandList,
+          Render->DrawCommandsSystem->CommandsBuffer[(int)indirect_command_pools_enum::Shadow].Resource,
+          D3D12_RESOURCE_STATE_INDIRECT_ARGUMENT, D3D12_RESOURCE_STATE_COPY_DEST);
 
-      D3D12_CPU_DESCRIPTOR_HANDLE DSV = Render->RenderTargetsSystem->DepthStencilView;
-      DSV.ptr += Render->GetDevice().GetDSVDescSize() * (ShadowMap + 1);
+        currentCommandList->CopyBufferRegion(
+            Render->DrawCommandsSystem->CommandsBuffer[(int)indirect_command_pools_enum::Shadow].Resource,
+            Render->DrawCommandsSystem->CounterOffset,
+            Render->DrawCommandsSystem->CommandsUAVReset.Resource,
+            0,
+            sizeof(UINT));
 
-      // Scissor rect
-      D3D12_RECT Rect;
-      Rect.left = 0;
-      Rect.top = 0;
-      Rect.bottom = Render->ShadowMapsSystem->Get(ShadowMap).H;
-      Rect.right = Render->ShadowMapsSystem->Get(ShadowMap).W;
-      currentCommandList->ClearDepthStencilView(DSV, D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.0f, 0, 1, &Rect);
+        Render->GetDevice().TransitResourceState(
+            currentCommandList,
+            Render->DrawCommandsSystem->CommandsBuffer[(int)indirect_command_pools_enum::Shadow].Resource,
+            D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+      }
 
-      Render->GetDevice().SetCommandListAsUpload(currentCommandList);
-      Render->GlobalsSystem->GetEditable().VP = Render->LightsSystem->Get(LightIndex).VP;
-      mth::matr4f transform = Render->ObjectTransformsSystem->Get(Render->LightsSystem->Get(LightIndex).ObjectTransformIndex).Transform;
-      Render->GlobalsSystem->GetEditable().CameraPos = {transform[3][0], transform[3][1], transform[3][2]};
-      Render->GlobalsSystem->UpdateGPUData(currentCommandList);
-      Render->GetDevice().ClearUploadListReference();
+      /*
+       * Calculate Frustum
+       */
+      {
+          currentCommandList->SetPipelineState(ComputePSO);
 
-      D3D12_VIEWPORT Viewport;
-      Viewport.TopLeftX = 0.0f;
-      Viewport.TopLeftY = 0.0f;
-      Viewport.Height = Rect.bottom - Rect.top;
-      Viewport.Width = Rect.right - Rect.left;
-      Viewport.MinDepth = 0.0f;
-      Viewport.MaxDepth = 1.0f;
+          ID3D12DescriptorHeap* pDescriptorHeaps = Render->GetDevice().GetDescriptorHeap();
+          currentCommandList->SetDescriptorHeaps(1, &pDescriptorHeaps);
+          currentCommandList->SetComputeRootSignature(ComputeRootSignature);
 
-      Viewport.Height = max(Viewport.Height, 1);
-      Viewport.Width = max(Viewport.Width, 1);
+          GDRGPUComputeGlobals ComputeGlobals;
 
-      currentCommandList->RSSetViewports(1, &Viewport);
-      currentCommandList->RSSetScissorRects(1, &Rect);
-      currentCommandList->OMSetRenderTargets(0, nullptr, false, &DSV);
+          // update ComputeGlobals
+          {
+              ComputeGlobals.VP = Render->LightsSystem->Get(LightIndex).VP;
+              ComputeGlobals.width = Render->ShadowMapsSystem->Get(ShadowMap).W;
+              ComputeGlobals.height = Render->ShadowMapsSystem->Get(ShadowMap).H;
+              ComputeGlobals.frustumCulling = true;
+              ComputeGlobals.occlusionCulling = false;
+              ComputeGlobals.commandsCount = (UINT)Render->DrawCommandsSystem->AllocatedSize();
+          }
+
+          currentCommandList->SetComputeRoot32BitConstants(
+              (int)root_parameters_compute_indices::compute_globals_index, // root parameter index
+              sizeof(GDRGPUComputeGlobals) / sizeof(int32_t),
+              &ComputeGlobals,
+              0);
+          currentCommandList->SetComputeRootShaderResourceView(
+              (int)root_parameters_compute_indices::object_transform_pool_index,
+              Render->ObjectTransformsSystem->GetGPUResource().Resource->GetGPUVirtualAddress());
+          currentCommandList->SetComputeRootShaderResourceView(
+              (int)root_parameters_compute_indices::all_commands_pool_index,
+              Render->DrawCommandsSystem->CommandsBuffer[(int)indirect_command_pools_enum::All].Resource->GetGPUVirtualAddress());
+          currentCommandList->SetComputeRootDescriptorTable(
+              (int)root_parameters_compute_indices::shadow_map_commands_pool_index,
+              Render->DrawCommandsSystem->CommandsGPUDescriptor[(int)indirect_command_pools_enum::Shadow]);
+
+          currentCommandList->Dispatch(static_cast<UINT>(ceil(ComputeGlobals.commandsCount / float(GDRGPUComputeThreadBlockSize))), 1, 1);
+
+          Render->GetDevice().TransitResourceState(
+              currentCommandList,
+              Render->DrawCommandsSystem->CommandsBuffer[(int)indirect_command_pools_enum::Shadow].Resource,
+              D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_INDIRECT_ARGUMENT);
+      }
+
+      /*
+       * Use Frustum for draw
+       */
+      {
+          Render->GetDevice().TransitResourceState(currentCommandList, Render->ShadowMapsSystem->Get(ShadowMap).TextureResource.Resource,
+              D3D12_RESOURCE_STATE_COMMON, D3D12_RESOURCE_STATE_DEPTH_WRITE);
+
+          D3D12_CPU_DESCRIPTOR_HANDLE DSV = Render->RenderTargetsSystem->DepthStencilView;
+          DSV.ptr += Render->GetDevice().GetDSVDescSize() * (ShadowMap + 1);
+
+          // Scissor rect
+          D3D12_RECT Rect;
+          Rect.left = 0;
+          Rect.top = 0;
+          Rect.bottom = Render->ShadowMapsSystem->Get(ShadowMap).H;
+          Rect.right = Render->ShadowMapsSystem->Get(ShadowMap).W;
+          currentCommandList->ClearDepthStencilView(DSV, D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.0f, 0, 1, &Rect);
+
+          Render->GetDevice().SetCommandListAsUpload(currentCommandList);
+          Render->GlobalsSystem->GetEditable().VP = Render->LightsSystem->Get(LightIndex).VP;
+          mth::matr4f transform = Render->ObjectTransformsSystem->Get(Render->LightsSystem->Get(LightIndex).ObjectTransformIndex).Transform;
+          Render->GlobalsSystem->GetEditable().CameraPos = { transform[3][0], transform[3][1], transform[3][2] };
+          Render->GlobalsSystem->UpdateGPUData(currentCommandList);
+          Render->GetDevice().ClearUploadListReference();
+
+          D3D12_VIEWPORT Viewport;
+          Viewport.TopLeftX = 0.0f;
+          Viewport.TopLeftY = 0.0f;
+          Viewport.Height = Rect.bottom - Rect.top;
+          Viewport.Width = Rect.right - Rect.left;
+          Viewport.MinDepth = 0.0f;
+          Viewport.MaxDepth = 1.0f;
+
+          Viewport.Height = max(Viewport.Height, 1);
+          Viewport.Width = max(Viewport.Width, 1);
+
+          currentCommandList->RSSetViewports(1, &Viewport);
+          currentCommandList->RSSetScissorRects(1, &Rect);
+          currentCommandList->OMSetRenderTargets(0, nullptr, false, &DSV);
 
 
-      // set common params
-      currentCommandList->SetPipelineState(PSO);
-      currentCommandList->SetGraphicsRootSignature(RootSignature);
-      currentCommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+          // set common params
+          currentCommandList->SetPipelineState(PSO);
+          currentCommandList->SetGraphicsRootSignature(RootSignature);
+          currentCommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-      currentCommandList->SetGraphicsRootConstantBufferView(
-        (int)root_parameters_draw_indices::globals_buffer_index,
-        Render->GlobalsSystem->GetGPUResource().Resource->GetGPUVirtualAddress());
-      // root_parameters_draw_indices::index_buffer_index will be set via indirect
-      currentCommandList->SetGraphicsRootShaderResourceView(
-        (int)root_parameters_draw_indices::object_transform_pool_index,
-        Render->ObjectTransformsSystem->GetGPUResource().Resource->GetGPUVirtualAddress());
-      currentCommandList->SetGraphicsRootShaderResourceView(
-        (int)root_parameters_draw_indices::node_transform_pool_index,
-        Render->NodeTransformsSystem->GetGPUResource().Resource->GetGPUVirtualAddress());
-      currentCommandList->SetGraphicsRootShaderResourceView(
-        (int)root_parameters_draw_indices::bone_mapping_pool_index,
-        Render->BoneMappingSystem->GetGPUResource().Resource->GetGPUVirtualAddress());
+          currentCommandList->SetGraphicsRootConstantBufferView(
+              (int)root_parameters_draw_indices::globals_buffer_index,
+              Render->GlobalsSystem->GetGPUResource().Resource->GetGPUVirtualAddress());
+          // root_parameters_draw_indices::index_buffer_index will be set via indirect
+          currentCommandList->SetGraphicsRootShaderResourceView(
+              (int)root_parameters_draw_indices::object_transform_pool_index,
+              Render->ObjectTransformsSystem->GetGPUResource().Resource->GetGPUVirtualAddress());
+          currentCommandList->SetGraphicsRootShaderResourceView(
+              (int)root_parameters_draw_indices::node_transform_pool_index,
+              Render->NodeTransformsSystem->GetGPUResource().Resource->GetGPUVirtualAddress());
+          currentCommandList->SetGraphicsRootShaderResourceView(
+              (int)root_parameters_draw_indices::bone_mapping_pool_index,
+              Render->BoneMappingSystem->GetGPUResource().Resource->GetGPUVirtualAddress());
 
-      currentCommandList->ExecuteIndirect(
-        CommandSignature,
-        (UINT)Render->DrawCommandsSystem->AllocatedSize(),
-        Render->DrawCommandsSystem->CommandsBuffer[(int)indirect_command_pools_enum::OpaqueAll].Resource,
-        0,
-        Render->DrawCommandsSystem->CommandsBuffer[(int)indirect_command_pools_enum::OpaqueAll].Resource,
-        Render->DrawCommandsSystem->CounterOffset); // stride to counter
+          currentCommandList->ExecuteIndirect(
+              CommandSignature,
+              (UINT)Render->DrawCommandsSystem->AllocatedSize(),
+              Render->DrawCommandsSystem->CommandsBuffer[(int)indirect_command_pools_enum::Shadow].Resource,
+              0,
+              Render->DrawCommandsSystem->CommandsBuffer[(int)indirect_command_pools_enum::Shadow].Resource,
+              Render->DrawCommandsSystem->CounterOffset); // stride to counter
 
-      Render->GetDevice().TransitResourceState(currentCommandList, Render->ShadowMapsSystem->Get(ShadowMap).TextureResource.Resource,
-        D3D12_RESOURCE_STATE_DEPTH_WRITE, D3D12_RESOURCE_STATE_COMMON);
+          Render->GetDevice().TransitResourceState(currentCommandList, Render->ShadowMapsSystem->Get(ShadowMap).TextureResource.Resource,
+              D3D12_RESOURCE_STATE_DEPTH_WRITE, D3D12_RESOURCE_STATE_COMMON);
+      }
     }
   }
   Render->GetDevice().SetCommandListAsUpload(currentCommandList);
@@ -299,6 +414,10 @@ void gdr::shadow_map_pass::CallIndirectDraw(ID3D12GraphicsCommandList* currentCo
 
 gdr::shadow_map_pass::~shadow_map_pass(void)
 {
+  ComputeRootSignature->Release();
+  ComputePSO->Release();
+  ComputeShader->Release();
+
   RootSignature->Release();
   PSO->Release();
   VertexShader->Release();

@@ -168,7 +168,20 @@ public:
       return;
 
     ImGui::Begin("Render stats", &IsRenderStats, ImGuiWindowFlags_AlwaysAutoResize);
+    ImGui::SetNextItemOpen(true, ImGuiCond_Once); 
     ImGui::Text("Average FPS = %.4g", Engine->GetFPS());
+    if (ImGui::TreeNode("Root", "Device Frame Time %f ms(%f FPS)", Engine->DeviceFrameCounter.GetMSec(), 1000 / Engine->DeviceFrameCounter.GetMSec()))
+    {
+        for (int i = 0; i < Engine->Passes.size(); i++)
+        {
+            std::string label = Engine->Passes[i]->GetName() + " " + std::to_string(Engine->Passes[i]->DeviceTimeCounter.GetMSec()) + " ms";
+            if (ImGui::TreeNode((void*)(intptr_t)i, label.c_str(), i))
+            {
+                ImGui::TreePop();
+            }
+        }
+        ImGui::TreePop();
+    }
 
     DXGI_QUERY_VIDEO_MEMORY_INFO gpu_info;
     ((IDXGIAdapter3*)Engine->GetDevice().GetAdapter())->QueryVideoMemoryInfo(0, DXGI_MEMORY_SEGMENT_GROUP_LOCAL, &gpu_info);
@@ -304,6 +317,10 @@ public:
         Engine->LightsSystem->GetEditable(ChoosedElement).AngleOuterCone = max(Engine->LightsSystem->Get(ChoosedElement).AngleInnerCone, Engine->LightsSystem->Get(ChoosedElement).AngleOuterCone);
         Engine->LightsSystem->GetEditable(ChoosedElement).AngleInnerCone *= MTH_D2R;
         Engine->LightsSystem->GetEditable(ChoosedElement).AngleOuterCone *= MTH_D2R;
+      }
+      else if (Engine->LightsSystem->Get(ChoosedElement).LightSourceType == LIGHT_SOURCE_TYPE_DIRECTIONAL)
+      {
+          ImGui::DragFloat("Shadow Map Size", &Engine->LightsSystem->GetEditable(ChoosedElement).AngleInnerCone, 0.1, 1);
       }
 
       if (Engine->LightsSystem->Get(ChoosedElement).LightSourceType != LIGHT_SOURCE_TYPE_POINT)
@@ -740,8 +757,6 @@ public:
     }
   }
 
-
-
   void ShowEditResource(void)
   {
     ImGui::Text("Resource Editor");
@@ -781,7 +796,6 @@ public:
       break;
     }
   }
-
 
   void ShowEditWindow(void)
   {

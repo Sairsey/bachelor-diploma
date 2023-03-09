@@ -7,22 +7,21 @@ private:
   struct Fish
   {
     int IsClockwise;
-    float Radius;
-    float Height;
-    float Speed;
-    float Angle;
+    float Duration;
+    mth::vec3f Points[4];
     gdr_index Model;
   };
 
   std::vector<Fish> LeftTank;
-  std::vector<Fish> RightTank;
   std::vector<gdr::model_import_data> Fishes;
 
-  mth::vec3f LeftTankBottom = { -5.5f, 1.f, -1.5f };
-  mth::vec3f RightTankBottom = { 10.3f, 1.f, -1.5f };
-  float MaxHeight = 1.5;
-  float MaxRadius = 0.5;
-  float MaxSpeed = 1;
+  //fish space
+  // from -2.5 to -8.5 by X
+  // from -1.8 to 5 by Z
+  // from 1 to 2.5
+
+  float MaxDuration = 30;
+  float BaseDuration = 30;
 
   bool SavePerf = false;
   bool IsVisualise = true;
@@ -54,14 +53,50 @@ public:
         Fishes[i] = FishesPack3[i - FishesPack1.size() - FishesPack2.size()];
     AddFishes(StartFishesAmount);
 
-    /*
-    Engine->Params.IsOccusionCulling = false;
-    Engine->Params.IsFrustumCulling = false;
-    Engine->Params.IsIndirect = true;
-    Engine->Params.IsIBL = false;
-    Engine->Params.IsUploadEveryFrame = false;
-    */
     Engine->EnableFullscreen();
+  }
+
+  mth::vec3f getRandomPointInAuarium()
+  {
+    float min_x = -8.5;
+    float max_x = -2.5;
+
+    float min_y = 1;
+    float max_y = 2.5;
+
+    float max_z = 1.8;
+    float min_z = -5;
+  
+    float x = min_x + (max_x - min_x) * rand() / RAND_MAX;
+    float z = min_z + (max_z - min_z) * rand() / RAND_MAX;
+    float y = min_y + (max_y - min_y) * rand() / RAND_MAX;
+
+    return mth::vec3f{x, y, z};
+  }
+
+  mth::vec3f CatmulRomSpline(Fish f, float t)
+  {
+    t -= int(t); // leave only frac part
+    int p1 = t * 4;
+    int p0 = (p1 - 1 + 4) % 4;
+    int p2 = (p1 + 1 + 4) % 4;
+    int p3 = (p1 + 2 + 4) % 4;
+
+    float t0 = 1.0 * p1 / 4;
+    float dt = 1.0 / 4;
+
+    t = (t - t0) / dt;
+
+    float t_2 = t * t;
+    float t_3 = t * t * t;
+
+    mth::vec3f result =
+      (f.Points[p1] * (2)) +
+      (f.Points[p0] * (-1) + f.Points[p2] * (1)) * t +
+      (f.Points[p0] * (2) + f.Points[p1] * (-5) + f.Points[p2] * (4) + f.Points[p3] * (-1)) * t_2 +
+      (f.Points[p0] * (-1) + f.Points[p1] * (3) + f.Points[p2] * (-3) + f.Points[p3] * (1)) * t_3;
+    result *= 0.5f;
+    return result;
   }
 
   void AddFishes(int count)
@@ -74,24 +109,17 @@ public:
       {
           Fish fish;
 
-          int Tank = 1;// rand() % 2;
           fish.IsClockwise = rand() % 2;
-          fish.Height = 1.0f * rand() / RAND_MAX * MaxHeight;
-          fish.Radius = 1.0f * rand() / RAND_MAX * MaxRadius;
-          fish.Speed = 1.0f * rand() / RAND_MAX * MaxSpeed;
-          fish.Angle = 1.0f * rand() / RAND_MAX * 360.0;
+          fish.Duration = 1.0f * rand() / RAND_MAX * (MaxDuration - BaseDuration) + BaseDuration;
+          fish.Points[0] = getRandomPointInAuarium();
+          fish.Points[1] = getRandomPointInAuarium();
+          fish.Points[2] = getRandomPointInAuarium();
+          fish.Points[3] = getRandomPointInAuarium();
 
           fish.Model = Engine->ModelsManager->Add(Fishes[rand() % Fishes.size()]);
           GDRGPUMaterialCookTorranceGetAlbedo(Engine->MaterialsSystem->GetEditable(Engine->ModelsManager->Get(fish.Model).Render.Materials[0])) = { 1.0f * rand() / RAND_MAX, 1.0f * rand() / RAND_MAX, 1.0f * rand() / RAND_MAX };
 
-          if (Tank == 0)
-          {
-              LeftTank.push_back(fish);
-          }
-          else
-          {
-              RightTank.push_back(fish);
-          }
+          LeftTank.push_back(fish);
       }
       PROFILE_END(commandList);
       Engine->GetDevice().CloseUploadCommandList();
@@ -109,12 +137,12 @@ public:
             FILE* F;
             fopen_s(&F, Filename.c_str(), "a");
             // fishes, Frame time, CPU Render time, GPU Render time
-            fprintf(F, "%d, %f, %f, %f\n", RightTank.size(), SumEngTime / FramesToCalc * 4.0/3.0, SumCPUTime / FramesToCalc * 4.0 / 3.0, Engine->DeviceFrameCounter.GetUSec());
+            fprintf(F, "%d, %f, %f, %f\n", LeftTank.size(), SumEngTime / FramesToCalc * 4.0/3.0, SumCPUTime / FramesToCalc * 4.0 / 3.0, Engine->DeviceFrameCounter.GetUSec());
             fclose(F);
             SumEngTime = 0;
             SumCPUTime = 0;
 
-            if (RightTank.size() >= MaxFishesAmount)
+            if (LeftTank.size() >= MaxFishesAmount)
             {
                 exit(0);
             }
@@ -135,13 +163,14 @@ public:
             static float cpu = 1;
             static float gpu = 1;
 
-            ImGui::GetIO().FontGlobalScale = 2;
+            ImGui::GetIO().FontAllowUserScaling = true;
+            ImGui::GetIO().FontGlobalScale = 4;
 
             ImGui::Begin("FISH EXAMPLE");
             ImGui::Text("FPS: %f", fps);
             ImGui::Text("CPU TIME: %f ms", cpu);
             ImGui::Text("GPU TIME: %f ms", gpu);
-            ImGui::Text("FISH AMOUNT: %d", RightTank.size());
+            ImGui::Text("FISH AMOUNT: %d", LeftTank.size());
             ImGui::DragInt("DELTA FISHES", &EditableFishesStep);
 
             if (FishesStep == 0 && ImGui::Button("Start"))
@@ -162,8 +191,6 @@ public:
             }
 
             ImGui::End();
-
-            ImGui::GetIO().FontGlobalScale = 1;
         });
 
         if (frameCount % FramesToCalc == 0)
@@ -177,28 +204,23 @@ public:
     for (int i = 0; i < LeftTank.size(); i++)
     {
       Fish& f = LeftTank[i];
-      f.Angle += f.Speed * MTH_R2D * Engine->GetDeltaTime();
       gdr_index ObjectTransform = Engine->ModelsManager->Get(f.Model).Render.RootTransform;
       mth::vec3f ModelCenter = (Engine->ObjectTransformsSystem->Get(ObjectTransform).minAABB + Engine->ObjectTransformsSystem->Get(ObjectTransform).maxAABB) / 2.0;
+
+      mth::vec3f Position = CatmulRomSpline(f, Engine->GetTime() / f.Duration);
+      mth::vec3f NextPosition = CatmulRomSpline(f, Engine->GetTime() / f.Duration + 0.1);
+      mth::vec3f Dir = (NextPosition - Position).Normalized();
+      mth::vec3f StartDir = {0, 0, 1};
+      
+      mth::vec3f Axis = StartDir cross Dir;
+      float sin = Axis.Lenght();
+      Axis /= sin;
+      float cos = StartDir dot Dir;
+
       Engine->ObjectTransformsSystem->GetEditable(ObjectTransform).Transform =
         mth::matr4f::Translate(-ModelCenter) *
-        mth::matr4f::Scale(0.03) *
-        mth::matr4f::Translate({f.Radius * (f.IsClockwise ? -1 : 1), 0, 0}) *
-        mth::matr4f::RotateY(f.Angle * (f.IsClockwise ? -1 : 1)) *
-        mth::matr4f::Translate(LeftTankBottom + mth::vec3f{0, f.Height, 0});
-    }
-    for (int i = 0; i < RightTank.size(); i++)
-    {
-      Fish& f = RightTank[i];
-      f.Angle += f.Speed * MTH_R2D * Engine->GetDeltaTime();
-      gdr_index ObjectTransform = Engine->ModelsManager->Get(f.Model).Render.RootTransform;
-      mth::vec3f ModelCenter = (Engine->ObjectTransformsSystem->Get(ObjectTransform).minAABB + Engine->ObjectTransformsSystem->Get(ObjectTransform).maxAABB) / 2.0;
-      Engine->ObjectTransformsSystem->GetEditable(ObjectTransform).Transform =
-        mth::matr4f::Translate(-ModelCenter) *
-        mth::matr4f::Scale(0.03) *
-        mth::matr4f::Translate({f.Radius * (f.IsClockwise ? -1 : 1), 0, 0}) *
-        mth::matr4f::RotateY(f.Angle * (f.IsClockwise ? -1 : 1)) *
-        mth::matr4f::Translate(RightTankBottom + mth::vec3f{ 0, f.Height, 0 });
+        mth::matr4f::Scale(0.03) * mth::matr4f::Rotate(std::atan2(sin, cos) * MTH_R2D, Axis) *
+        mth::matr4f::Translate(Position);
     }
   }
 
@@ -212,10 +234,6 @@ public:
     for (int i = 0; i < LeftTank.size(); i++)
     {
       Engine->ModelsManager->Remove(LeftTank[i].Model);
-    }
-    for (int i = 0; i < RightTank.size(); i++)
-    {
-      Engine->ModelsManager->Remove(RightTank[i].Model);
     }
   }
 };

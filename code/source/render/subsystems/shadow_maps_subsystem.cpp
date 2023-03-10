@@ -54,13 +54,13 @@ gdr_index gdr::shadow_maps_subsystem::Add(int W, int H)
 // Delete Texture
 void gdr::shadow_maps_subsystem::BeforeRemoveJob(gdr_index index)
 {
-  if (IsExist(index))
+  if (CPUData.size() > index && index >= 0)
   {
-    GetEditable(index).IsSrvInited = false;
-    GetEditable(index).IsDSVInited = false;
-    GetEditable(index).W = 0;
-    GetEditable(index).H = 0;
-    Render->GetDevice().ReleaseGPUResource(GetEditable(index).TextureResource);
+    CPUData[index].IsSrvInited = false;
+    CPUData[index].IsDSVInited = false;
+    CPUData[index].W = 0;
+    CPUData[index].H = 0;
+    Render->GetDevice().ReleaseGPUResource(CPUData[index].TextureResource);
   }
 }
 

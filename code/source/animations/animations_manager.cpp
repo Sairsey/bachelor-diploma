@@ -7,13 +7,10 @@ gdr::animation_manager::animation_manager(engine* Eng) : resource_pool_subsystem
 
 void gdr::animation_manager::BeforeRemoveJob(gdr_index index)
 {
-	if (IsExist(index))
-	{
-		animation& AnimationToDelete = GetEditable(index);
-		AnimationToDelete.Name = "GDR_ANIMATION_DELETED";
-		AnimationToDelete.Duration = 0;
-		AnimationToDelete.Hierarchy.clear();
-	}
+	animation& AnimationToDelete = CPUData[index];
+	AnimationToDelete.Name = "GDR_ANIMATION_DELETED";
+	AnimationToDelete.Duration = 0;
+	AnimationToDelete.Hierarchy.clear();
 }
 
 gdr_index gdr::animation_manager::Add(const gdr::model_import_data& ImportData)

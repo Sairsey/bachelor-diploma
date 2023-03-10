@@ -52,15 +52,15 @@ namespace gdr
 
     void BeforeRemoveJob(gdr_index index) override
     {
-      if (IsExist(index) && Get(index).ObjectTransformIndex != NONE_INDEX)
+      if (CPUData.size() > index && index >= 0 && CPUData[index].ObjectTransformIndex != NONE_INDEX)
       {
-        Render->ObjectTransformsSystem->Remove(Get(index).ObjectTransformIndex);
-        GetEditable(index).ObjectTransformIndex = NONE_INDEX;
+        Render->ObjectTransformsSystem->Remove(CPUData[index].ObjectTransformIndex);
+        CPUData[index].ObjectTransformIndex = NONE_INDEX;
       }
-      if (IsExist(index) && Get(index).ShadowMapIndex != NONE_INDEX)
+      if (CPUData.size() > index && index >= 0 && CPUData[index].ShadowMapIndex != NONE_INDEX)
       {
-        Render->ShadowMapsSystem->Remove(Get(index).ShadowMapIndex);
-        GetEditable(index).ShadowMapIndex = NONE_INDEX;
+        Render->ShadowMapsSystem->Remove(CPUData[index].ShadowMapIndex);
+        CPUData[index].ShadowMapIndex = NONE_INDEX;
       }
     }
   public:

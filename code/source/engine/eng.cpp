@@ -122,6 +122,11 @@ VOID gdr::engine::Timer(VOID)
   // update Physics
   bool IsPhysTick = PhysicsManager->Update(GetDeltaTime());
 
+  //update Models and animations
+  ModelsManager->UpdateGPUData(nullptr);
+  AnimationManager->UpdateGPUData(nullptr);
+
+
   // update Units
   if (ToAdd.size())
   {

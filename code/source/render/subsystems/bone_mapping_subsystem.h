@@ -14,8 +14,8 @@ namespace gdr
       // iterate over used bones and decrease their ref counter by 1
       for (int i = 0; i < MAX_BONE_PER_MESH; i++)
       {
-        if (Get(index).BoneMapping[i] != NONE_INDEX)
-          Render->NodeTransformsSystem->Remove(Get(index).BoneMapping[i]);
+        if (CPUData[index].BoneMapping[i] != NONE_INDEX)
+          Render->NodeTransformsSystem->Remove(CPUData[index].BoneMapping[i]);
       }
     }
   public:

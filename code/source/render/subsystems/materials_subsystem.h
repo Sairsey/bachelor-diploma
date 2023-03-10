@@ -11,32 +11,32 @@ namespace gdr
   protected:
     void BeforeRemoveJob(gdr_index index) override
     {
-      if (IsExist(index))
+      if (CPUData.size() > index && index >= 0)
       {
-        if (Get(index).ShadeType == MATERIAL_SHADER_COLOR)
+        if (CPUData[index].ShadeType == MATERIAL_SHADER_COLOR)
         {
-          Render->TexturesSystem->Remove(GDRGPUMaterialColorGetColorMapIndex(Get(index)));
+          Render->TexturesSystem->Remove(GDRGPUMaterialColorGetColorMapIndex(CPUData[index]));
         }
-        else if (Get(index).ShadeType == MATERIAL_SHADER_PHONG)
+        else if (CPUData[index].ShadeType == MATERIAL_SHADER_PHONG)
         {
-          Render->TexturesSystem->Remove(GDRGPUMaterialPhongGetAmbientMapIndex(Get(index)));
-          Render->TexturesSystem->Remove(GDRGPUMaterialPhongGetDiffuseMapIndex(Get(index)));
-          Render->TexturesSystem->Remove(GDRGPUMaterialPhongGetSpecularMapIndex(Get(index)));
-          Render->TexturesSystem->Remove(GDRGPUMaterialPhongGetNormalMapIndex(Get(index)));
+          Render->TexturesSystem->Remove(GDRGPUMaterialPhongGetAmbientMapIndex(CPUData[index]));
+          Render->TexturesSystem->Remove(GDRGPUMaterialPhongGetDiffuseMapIndex(CPUData[index]));
+          Render->TexturesSystem->Remove(GDRGPUMaterialPhongGetSpecularMapIndex(CPUData[index]));
+          Render->TexturesSystem->Remove(GDRGPUMaterialPhongGetNormalMapIndex(CPUData[index]));
         }
-        else if (Get(index).ShadeType == MATERIAL_SHADER_COOKTORRANCE_METALNESS)
+        else if (CPUData[index].ShadeType == MATERIAL_SHADER_COOKTORRANCE_METALNESS)
         {
-          Render->TexturesSystem->Remove(GDRGPUMaterialCookTorranceGetAlbedoMapIndex(Get(index)));
-          Render->TexturesSystem->Remove(GDRGPUMaterialCookTorranceGetAmbientOcclusionMapIndex(Get(index)));
-          Render->TexturesSystem->Remove(GDRGPUMaterialCookTorranceGetRoughnessMetalnessMapIndex(Get(index)));
-          Render->TexturesSystem->Remove(GDRGPUMaterialCookTorranceGetNormalMapIndex(Get(index)));
+          Render->TexturesSystem->Remove(GDRGPUMaterialCookTorranceGetAlbedoMapIndex(CPUData[index]));
+          Render->TexturesSystem->Remove(GDRGPUMaterialCookTorranceGetAmbientOcclusionMapIndex(CPUData[index]));
+          Render->TexturesSystem->Remove(GDRGPUMaterialCookTorranceGetRoughnessMetalnessMapIndex(CPUData[index]));
+          Render->TexturesSystem->Remove(GDRGPUMaterialCookTorranceGetNormalMapIndex(CPUData[index]));
         }
-        else if (Get(index).ShadeType == MATERIAL_SHADER_COOKTORRANCE_SPECULAR)
+        else if (CPUData[index].ShadeType == MATERIAL_SHADER_COOKTORRANCE_SPECULAR)
         {
-          Render->TexturesSystem->Remove(GDRGPUMaterialCookTorranceGetAlbedoMapIndex(Get(index)));
-          Render->TexturesSystem->Remove(GDRGPUMaterialCookTorranceGetAmbientOcclusionMapIndex(Get(index)));
-          Render->TexturesSystem->Remove(GDRGPUMaterialCookTorranceGetSpecularGlossinessMapIndex(Get(index)));
-          Render->TexturesSystem->Remove(GDRGPUMaterialCookTorranceGetNormalMapIndex(Get(index)));
+          Render->TexturesSystem->Remove(GDRGPUMaterialCookTorranceGetAlbedoMapIndex(CPUData[index]));
+          Render->TexturesSystem->Remove(GDRGPUMaterialCookTorranceGetAmbientOcclusionMapIndex(CPUData[index]));
+          Render->TexturesSystem->Remove(GDRGPUMaterialCookTorranceGetSpecularGlossinessMapIndex(CPUData[index]));
+          Render->TexturesSystem->Remove(GDRGPUMaterialCookTorranceGetNormalMapIndex(CPUData[index]));
         }
       }
     }

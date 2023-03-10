@@ -267,15 +267,15 @@ gdr_index gdr::textures_subsystem::Add(std::string name, bool isSrgb)
 // Delete Texture
 void gdr::textures_subsystem::BeforeRemoveJob(gdr_index index)
 {
-  if (IsExist(index))
+  if (CPUData.size() > index && index >= 0)
   {
-    GetEditable(index).IsSrvInited = false;
-    GetEditable(index).Name = "GDR_EMPTY";
-    GetEditable(index).W = 0;
-    GetEditable(index).H = 0;
-    GetEditable(index).NumOfMips = 0;
-    GetEditable(index).IsTransparent = 0;
-    Render->GetDevice().ReleaseGPUResource(GetEditable(index).TextureResource);
+    CPUData[index].IsSrvInited = false;
+    CPUData[index].Name = "GDR_EMPTY";
+    CPUData[index].W = 0;
+    CPUData[index].H = 0;
+    CPUData[index].NumOfMips = 0;
+    CPUData[index].IsTransparent = 0;
+    Render->GetDevice().ReleaseGPUResource(CPUData[index].TextureResource);
   }
 }
 

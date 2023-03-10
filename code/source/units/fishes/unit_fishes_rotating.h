@@ -164,7 +164,7 @@ public:
             static float gpu = 1;
 
             ImGui::GetIO().FontAllowUserScaling = true;
-            ImGui::GetIO().FontGlobalScale = 4;
+            ImGui::GetIO().FontGlobalScale = 2;
 
             ImGui::Begin("FISH EXAMPLE");
             ImGui::Text("FPS: %f", fps);

@@ -196,14 +196,14 @@ gdr_index gdr::draw_commands_subsystem::Add(gdr_index geometryIndex, gdr_index t
 
 void gdr::draw_commands_subsystem::BeforeRemoveJob(gdr_index index)
 {
-  if (IsExist(index))
-  {
-    GetEditable(index).IsExist = false;
-    Render->GeometrySystem->Remove(Get(index).Indices.ObjectIndex);
-    Render->MaterialsSystem->Remove(Get(index).Indices.ObjectMaterialIndex);
-    Render->BoneMappingSystem->Remove(Get(index).Indices.BoneMappingIndex);
-    Render->ObjectTransformsSystem->Remove(Get(index).Indices.ObjectTransformIndex);
-  }
+    if (CPUData.size() > index && index >= 0)
+    {
+        CPUData[index].IsExist = false;
+        Render->GeometrySystem->Remove(CPUData[index].Indices.ObjectIndex);
+        Render->MaterialsSystem->Remove(CPUData[index].Indices.ObjectMaterialIndex);
+        Render->BoneMappingSystem->Remove(CPUData[index].Indices.BoneMappingIndex);
+        Render->ObjectTransformsSystem->Remove(CPUData[index].Indices.ObjectTransformIndex);
+    }
 }
 
 gdr::draw_commands_subsystem::~draw_commands_subsystem()

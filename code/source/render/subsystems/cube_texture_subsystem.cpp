@@ -89,7 +89,7 @@ gdr_index gdr::cube_textures_subsystem::Add(
                 if (c < components)
                   pBufferFloat[i * height * width * 4 + y * width * 4 + x * 4 + c] = stb_buffer[y * width * components + x * components + c];
                 else
-                  pBufferFloat[i * height * width * 4 + y * width * 4 + x * 4 + c] = (c == 3) ? 1.0 : pBufferFloat[i * height * width * 4 + y * width * 4 + x * 4 + c - 1];
+                  pBufferFloat[i * height * width * 4 + y * width * 4 + x * 4 + c] = (c == 3) ? 1.0f : pBufferFloat[i * height * width * 4 + y * width * 4 + x * 4 + c - 1];
 
         stbi_image_free(stb_buffer);
       }
@@ -225,7 +225,7 @@ gdr_index gdr::cube_textures_subsystem::Add(std::string directory, int MipsAmoun
               if (c < components)
                 dest_buffer[y * width * 4 + x * 4 + c] = stb_buffer[y * width * components + x * components + c];
               else
-                dest_buffer[y * width * 4 + x * 4 + c] = (c == 3) ? 1.0 : dest_buffer[y * width * 4 + x * 4 + c - 1];
+                dest_buffer[y * width * 4 + x * 4 + c] = (c == 3) ? 1.0f : dest_buffer[y * width * 4 + x * 4 + c - 1];
 
       stbi_image_free(stb_buffer);
       dest_buffer += width * height * 4;
@@ -260,12 +260,9 @@ gdr_index gdr::cube_textures_subsystem::Add(std::string directory, int MipsAmoun
 // Delete Texture
 void gdr::cube_textures_subsystem::BeforeRemoveJob(gdr_index index)
 {
-  if (IsExist(index))
-  {
-    GetEditable(index).IsSrvInited = false;
-    GetEditable(index).Name = "GDR_EMPTY";
-    Render->GetDevice().ReleaseGPUResource(GetEditable(index).TextureResource);
-  }
+  CPUData[index].IsSrvInited = false;
+  CPUData[index].Name = "GDR_EMPTY";
+  Render->GetDevice().ReleaseGPUResource(CPUData[index].TextureResource);
 }
 
 // Update data on GPU in case we need it 

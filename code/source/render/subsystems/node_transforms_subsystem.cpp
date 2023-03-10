@@ -48,34 +48,34 @@ gdr_index gdr::node_transforms_subsystem::Add(gdr_index parent)
 
 void gdr::node_transforms_subsystem::BeforeRemoveJob(gdr_index node)
 {
-  gdr_index parentIndex = Get(node).ParentIndex;
+  gdr_index parentIndex = CPUData[node].ParentIndex;
   // if we have parent
   if (parentIndex != NONE_INDEX)
   {
-    gdr_index childIndex = Get(parentIndex).ChildIndex;
+    gdr_index childIndex = CPUData[parentIndex].ChildIndex;
     if (childIndex == node) // and we are the first child of that parent
     {
-      GetEditable(parentIndex).ChildIndex = Get(node).NextIndex; // set next child as first
+        CPUData[parentIndex].ChildIndex = CPUData[node].NextIndex; // set next child as first
     }
     else // if not first
     {
       // walk to previous
-      while (Get(childIndex).NextIndex != node || Get(childIndex).NextIndex != NONE_INDEX)
-        childIndex = Get(childIndex).NextIndex;
+      while (CPUData[childIndex].NextIndex != node || CPUData[childIndex].NextIndex != NONE_INDEX)
+        childIndex = CPUData[childIndex].NextIndex;
 
       // set next for previous as our next
-      if (Get(childIndex).NextIndex != NONE_INDEX)
-        GetEditable(childIndex).NextIndex = Get(node).NextIndex;
+      if (CPUData[childIndex].NextIndex != NONE_INDEX)
+        CPUData[childIndex].NextIndex = CPUData[node].NextIndex;
     }
   }
   
   // for our childs
-  gdr_index childIndex = Get(node).ChildIndex;
+  gdr_index childIndex = CPUData[node].ChildIndex;
   while (childIndex != NONE_INDEX)
   {
-    gdr_index nextChildIndex = Get(childIndex).NextIndex;
-    GetEditable(childIndex).ParentIndex = NONE_INDEX;
-    GetEditable(childIndex).NextIndex = NONE_INDEX;
+    gdr_index nextChildIndex = CPUData[childIndex].NextIndex;
+    CPUData[childIndex].ParentIndex = NONE_INDEX;
+    CPUData[childIndex].NextIndex = NONE_INDEX;
     childIndex = nextChildIndex;
   }
 

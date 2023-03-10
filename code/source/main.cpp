@@ -137,7 +137,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
   //Engine.AddUnit(new unit_transparent());
   //Engine.AddUnit(new unit_model_splitted());
   //Engine.AddUnit(new unit_specialist());
-  Engine.AddUnit(new unit_pit());
+  //Engine.AddUnit(new unit_pit());
   
   //Engine.AddUnit(new unit_thriller_stage());
   //Engine.AddUnit(new unit_thriller_env());
@@ -149,7 +149,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
   //Engine.AddUnit(new unit_shooter_enemy_spawner(10));
   //Engine.AddUnit(new unit_shooter_gun());
 
-  Engine.AddUnit(new unit_scripted("Hello"));
+  //Engine.AddUnit(new unit_scripted("Hello"));
   Engine.AddUnit(new unit_editor());
   //Engine.AddUnit(new unit_blueprint_editor());
 
@@ -159,7 +159,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
   //Engine.AddUnit(new unit_yokohama());
   Engine.AddUnit(new unit_alex_apt());
   
-  Engine.AddUnit(new unit_choose());
+  //Engine.AddUnit(new unit_choose());
   //Engine.AddUnit(new unit_log_time());
 
   Engine.AddUnit(new unit_flying_camera());

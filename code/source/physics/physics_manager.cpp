@@ -324,10 +324,7 @@ gdr_index gdr::physics_manager::AddDynamicMesh(model_import_data ImportModel, ph
 
 void gdr::physics_manager::BeforeRemoveJob(gdr_index index)
 {
-  if (IsExist(index))
-  {
     ToDelete.push_back(Get(index));
-  }
 }
 
 bool gdr::physics_manager::Update(float DeltaTime)

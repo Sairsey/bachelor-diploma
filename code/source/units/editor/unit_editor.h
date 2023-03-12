@@ -858,10 +858,11 @@ public:
               ImGui::TableNextColumn();
               if (Engine->ModelsManager->Get(ChoosedElement).Render.Materials[i].value != NONE_INDEX)
               {
-                  if (ImGui::Button("Go to material"))
+                  if (ImGui::Button((std::string("Go to material ") + std::to_string(Engine->ModelsManager->Get(ChoosedElement).Render.Materials[i].value)).c_str()))
                   {
                       ChoosedElement = Engine->ModelsManager->Get(ChoosedElement).Render.Materials[i];
                       ChoosedElement.type = gdr_index_types::material;
+                      ImGui::TableNextRow();
                       ImGui::EndTable(); 
                       return;
                   }

@@ -320,6 +320,11 @@ void gdr::render::DrawFrame(void)
         OITTransparencySystem->UpdateGPUData(uploadCommandList);
         PROFILE_END(uploadCommandList);
       }
+      {
+        PROFILE_BEGIN(uploadCommandList, "Update Geometry buffers");
+        GeometrySystem->UpdateGPUData(uploadCommandList);
+        PROFILE_END(uploadCommandList);
+      }
   };
 
 

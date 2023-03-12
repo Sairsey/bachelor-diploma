@@ -1,5 +1,8 @@
 #pragma once
 #include "../unit_base.h"
+#include <json.hpp>
+#include <fstream>
+
 
 // macro to draw a tree of specific resource
 #define ResourceTree(index_type, engine_system, string_name, string_many_name, start_index, is_add, add_lambda) \
@@ -43,6 +46,7 @@ private:
   ImVec2 GameWindowSize;
 
   bool ShowEditor = true;
+  bool ClearScene = false;
 
   bool IsGameWindow = true;
   bool IsHierarchyWindow = true;
@@ -71,10 +75,15 @@ private:
   gdr_index AxisObject;
 
   ImGui::FileBrowser modelFileDialog;
+  ImGui::FileBrowser saveSceneFileDialog = ImGui::FileBrowser(ImGuiFileBrowserFlags_EnterNewFilename | ImGuiFileBrowserFlags_CreateNewDir);
+  ImGui::FileBrowser loadSceneFileDialog;
 
   std::vector<std::pair<gdr_index, gdr_index>> Models;
+  std::vector<gdr_index> Lights;
 
   std::string AskedModel = "";
+  std::string AskedLoadScene = "";
+  std::string AskedSaveScene = "";
 public:
   void Initialize(void)
   {
@@ -95,6 +104,12 @@ public:
 
     modelFileDialog.SetTitle("Choose a model...");
     modelFileDialog.SetTypeFilters({ ".obj", ".fbx", ".glb" });
+
+    saveSceneFileDialog.SetTitle("Save scene to...");
+    saveSceneFileDialog.SetTypeFilters({".json"});
+
+    loadSceneFileDialog.SetTitle("Load scene from...");
+    loadSceneFileDialog.SetTypeFilters({ ".json" });
   }
 
   void LoadModel(std::string path)
@@ -116,6 +131,162 @@ public:
           Engine->GetDevice().WaitGPUIdle();
           Engine->GetDevice().ResizeUpdateBuffer(true);
       }
+  }
+
+  void LoadScene(std::string path)
+  {
+    std::ifstream i(path);
+    nlohmann::json data;
+    i >> data;
+
+    for (int i = 0; i < data["models"].size(); i++)
+    {
+      nlohmann::json sub_data = data["models"][i];
+
+      LoadModel(sub_data["path"]);
+      gdr_index modelIndex = Models[Models.size() - 1].first;
+
+
+      mth::vec3f pos, scale;
+      mth::vec4f rot;
+
+      pos.X = sub_data["transform"]["pos"][0];
+      pos.Y = sub_data["transform"]["pos"][1];
+      pos.Z = sub_data["transform"]["pos"][2];
+
+      rot.X = sub_data["transform"]["rot"][0];
+      rot.Y = sub_data["transform"]["rot"][1];
+      rot.Z = sub_data["transform"]["rot"][2];
+      rot.W = sub_data["transform"]["rot"][3];
+
+      scale.X = sub_data["transform"]["scale"][0];
+      scale.Y = sub_data["transform"]["scale"][1];
+      scale.Z = sub_data["transform"]["scale"][2];
+
+      Engine->ObjectTransformsSystem->GetEditable(Engine->ModelsManager->Get(modelIndex).Render.RootTransform).Transform = mth::matr4f::BuildTransform(scale,rot, pos);
+    }
+
+    for (int i = 0; i < data["lights"].size(); i++)
+    {
+      nlohmann::json sub_data = data["lights"][i];
+      gdr_index lightIndex = Engine->LightsSystem->Add();
+      Lights.push_back(lightIndex);
+
+      Engine->LightsSystem->GetEditable(lightIndex).LightSourceType = sub_data["type"];
+      Engine->LightsSystem->GetEditable(lightIndex).ConstantAttenuation = sub_data["attenuation"]["const"];
+      Engine->LightsSystem->GetEditable(lightIndex).LinearAttenuation = sub_data["attenuation"]["linear"];
+      Engine->LightsSystem->GetEditable(lightIndex).QuadricAttenuation = sub_data["attenuation"]["quad"];
+
+      Engine->LightsSystem->GetEditable(lightIndex).Color = {sub_data["color"][0], sub_data["color"][1], sub_data["color"][2]};
+
+      Engine->LightsSystem->GetEditable(lightIndex).ObjectTransformIndex = Engine->ObjectTransformsSystem->Add();
+
+
+      mth::vec3f pos = { 0, 0, 0 }, scale = { 1, 1, 1 };
+      mth::vec4f rot = { 0, 0, 0, 1 };
+
+      pos.X = sub_data["transform"]["pos"][0];
+      pos.Y = sub_data["transform"]["pos"][1];
+      pos.Z = sub_data["transform"]["pos"][2];
+
+      rot.X = sub_data["transform"]["rot"][0];
+      rot.Y = sub_data["transform"]["rot"][1];
+      rot.Z = sub_data["transform"]["rot"][2];
+      rot.W = sub_data["transform"]["rot"][3];
+
+      scale.X = sub_data["transform"]["scale"][0];
+      scale.Y = sub_data["transform"]["scale"][1];
+      scale.Z = sub_data["transform"]["scale"][2];
+
+      Engine->ObjectTransformsSystem->GetEditable(Engine->LightsSystem->Get(lightIndex).ObjectTransformIndex).Transform = mth::matr4f::BuildTransform(scale, rot, pos);
+
+      Engine->LightsSystem->GetEditable(lightIndex).AngleInnerCone = sub_data["inner_cone"];
+      Engine->LightsSystem->GetEditable(lightIndex).AngleOuterCone = sub_data["outer_cone"];
+      Engine->LightsSystem->GetEditable(lightIndex).ShadowMapOffset = sub_data["shadow_offset"];
+
+      if (sub_data["is_shadow"].get<bool>())
+      {
+        Engine->LightsSystem->GetEditable(lightIndex).ShadowMapIndex = Engine->ShadowMapsSystem->Add(sub_data["shadow_size"]["w"], sub_data["shadow_size"]["h"]);
+      }
+    }
+  }
+
+  void SaveScene(std::string path)
+  {
+    if (path.substr(max(0, path.length() - 5)) != ".json")
+      path+= ".json";
+
+    nlohmann::json data;
+    data["models"] = {};
+    for (int i = 0; i < Models.size(); i++)
+    {
+      nlohmann::json sub_data;
+
+      sub_data["path"] = Engine->ModelsManager->Get(Models[i].first).Name;
+
+      mth::vec3f pos, scale;
+      mth::vec4f rot;
+
+      Engine->ObjectTransformsSystem->Get(Engine->ModelsManager->Get(Models[i].first).Render.RootTransform).Transform.Decompose(pos, rot, scale);
+
+      sub_data["transform"] = {{"pos", {pos.X, pos.Y, pos.Z}}, {"rot", {rot.X, rot.Y, rot.Z, rot.W}}, {"scale", {scale.X, scale.Y, scale.Z}}};
+
+      data["models"].push_back(sub_data);
+    }
+
+    data["lights"] = {};
+    for (int i = 0; i < Lights.size(); i++)
+    {
+      nlohmann::json sub_data;
+
+      sub_data["type"] = Engine->LightsSystem->Get(Lights[i]).LightSourceType;
+      sub_data["attenuation"] = {
+        {"const", Engine->LightsSystem->Get(Lights[i]).ConstantAttenuation},
+        {"linear", Engine->LightsSystem->Get(Lights[i]).LinearAttenuation},
+        {"quad", Engine->LightsSystem->Get(Lights[i]).QuadricAttenuation}
+        };
+
+      sub_data["color"] = { Engine->LightsSystem->Get(Lights[i]).Color.R, Engine->LightsSystem->Get(Lights[i]).Color.G, Engine->LightsSystem->Get(Lights[i]).Color.B};
+
+      mth::vec3f pos = {0, 0, 0}, scale = {1, 1, 1};
+      mth::vec4f rot = {0, 0, 0, 1};
+
+      if (Engine->LightsSystem->Get(Lights[i]).ObjectTransformIndex != NONE_INDEX)
+        Engine->ObjectTransformsSystem->Get(Engine->LightsSystem->Get(Lights[i]).ObjectTransformIndex).Transform.Decompose(pos, rot, scale);
+
+      sub_data["transform"] = { {"pos", {pos.X, pos.Y, pos.Z}}, {"rot", {rot.X, rot.Y, rot.Z, rot.W}}, {"scale", {scale.X, scale.Y, scale.Z}} };
+
+      sub_data["inner_cone"] = Engine->LightsSystem->Get(Lights[i]).AngleInnerCone;
+      sub_data["outer_cone"] = Engine->LightsSystem->Get(Lights[i]).AngleOuterCone;
+
+      sub_data["shadow_offset"] = Engine->LightsSystem->Get(Lights[i]).ShadowMapOffset;
+
+      sub_data["is_shadow"] = Engine->LightsSystem->Get(Lights[i]).ShadowMapIndex != NONE_INDEX;
+      if (Engine->LightsSystem->Get(Lights[i]).ShadowMapIndex != NONE_INDEX)
+        sub_data["shadow_size"] = {
+          {"w",  Engine->ShadowMapsSystem->Get(Engine->LightsSystem->Get(Lights[i]).ShadowMapIndex).W},
+          {"h", Engine->ShadowMapsSystem->Get(Engine->LightsSystem->Get(Lights[i]).ShadowMapIndex).H}};
+
+      data["lights"].push_back(sub_data);
+    }
+
+    std::ofstream o(path);
+    o << std::setw(4) << data << std::endl;
+  }
+
+  void Clear(void)
+  {
+    for (int i = 0; i < Models.size(); i++)
+    {
+      Engine->ModelsManager->Remove(Models[i].first);
+      Engine->AnimationManager->Remove(Models[i].second);
+    }
+    for (int i = 0; i < Lights.size(); i++)
+    {
+      Engine->LightsSystem->Remove(Lights[i]);
+    }
+    Models.clear();
+    Lights.clear();
   }
 
   void ShowGameWindow(void)
@@ -183,7 +354,7 @@ public:
       ResourceTree(gdr_index_types::bone_mapping, Engine->BoneMappingSystem, "Mapping", "Bone mappings", 1, false, [&]() {});
       ResourceTree(gdr_index_types::draw_command, Engine->DrawCommandsSystem, "Command", "Draw commands", 1, false, [&]() {});
       ResourceTree(gdr_index_types::geometry, Engine->GeometrySystem, "Geometry", "Geometries", 0, false, [&]() {});
-      ResourceTree(gdr_index_types::light, Engine->LightsSystem, "Light", "Lights", 1, true, [&]() { Engine->LightsSystem->Add(); });
+      ResourceTree(gdr_index_types::light, Engine->LightsSystem, "Light", "Lights", 1, true, [&]() { Lights.push_back(Engine->LightsSystem->Add()); });
       ResourceTree(gdr_index_types::material, Engine->MaterialsSystem, "Material", "Materials", 1, false, [&]() {});
       ResourceTree(gdr_index_types::shadow_map, Engine->ShadowMapsSystem, "Shadow Map", "Shadow Maps", 0, false, [&]() {});
       ResourceTree(gdr_index_types::texture, Engine->TexturesSystem, "Texture", "Textures", 0, false, [&]() {});
@@ -1010,8 +1181,26 @@ public:
 
     if (AskedModel != "")
     {
-        LoadModel(AskedModel);
-        AskedModel = "";
+      LoadModel(AskedModel);
+      AskedModel = "";
+    }
+
+    if (AskedSaveScene != "")
+    {
+      SaveScene(AskedSaveScene);
+      AskedSaveScene = "";
+    }
+
+    if (AskedLoadScene != "")
+    {
+      LoadScene(AskedLoadScene);
+      AskedLoadScene = "";
+    }
+
+    if (ClearScene)
+    {
+      ClearScene = false;
+      Clear();
     }
 
     Engine->AddLambdaForIMGUI([&]()
@@ -1024,6 +1213,22 @@ public:
         {
             AskedModel = modelFileDialog.GetSelected().string();
             modelFileDialog.ClearSelected();
+        }
+
+        saveSceneFileDialog.Display();
+
+        if (saveSceneFileDialog.HasSelected())
+        {
+          AskedSaveScene = saveSceneFileDialog.GetSelected().string();
+          saveSceneFileDialog.ClearSelected();
+        }
+
+        loadSceneFileDialog.Display();
+
+        if (loadSceneFileDialog.HasSelected())
+        {
+          AskedLoadScene = loadSceneFileDialog.GetSelected().string();
+          loadSceneFileDialog.ClearSelected();
         }
 
         //Show All widows
@@ -1044,10 +1249,23 @@ public:
             {
                 ShowEditor = false;
             }
+            if (ImGui::Button("Save"))
+            {
+              saveSceneFileDialog.Open();
+            }
+            if (ImGui::Button("Load"))
+            {
+              loadSceneFileDialog.Open();
+            }
+            if (ImGui::Button("Clear"))
+            {
+              ClearScene = true;
+            }
             if (ImGui::Button("Exit"))
             {
                 exit(0);
             }
+
             ImGui::EndMenu();
           }
           if (ImGui::BeginMenu("View"))
@@ -1077,10 +1295,6 @@ public:
      Engine->ModelsManager->Remove(SpotLightObject);
      Engine->ModelsManager->Remove(DirLightObject);
      Engine->ModelsManager->Remove(AxisObject);
-     for (int i = 0; i < Models.size(); i++)
-     {
-         Engine->ModelsManager->Remove(Models[i].first);
-         Engine->AnimationManager->Remove(Models[i].second);
-     }
+     Clear();
   }
 };

@@ -261,6 +261,16 @@ void gdr::render::DrawFrame(void)
           PROFILE_END(uploadCommandList);
       }
       {
+          PROFILE_BEGIN(uploadCommandList, "Update Indirect buffers");
+          DrawCommandsSystem->UpdateGPUData(uploadCommandList);
+          PROFILE_END(uploadCommandList);
+      }
+      {
+          PROFILE_BEGIN(uploadCommandList, "Update Geometry buffers");
+          GeometrySystem->UpdateGPUData(uploadCommandList);
+          PROFILE_END(uploadCommandList);
+      }
+      {
           PROFILE_BEGIN(uploadCommandList, "Update Enviroment");
           EnviromentSystem->UpdateGPUData(uploadCommandList);
           PROFILE_END(uploadCommandList);
@@ -306,11 +316,6 @@ void gdr::render::DrawFrame(void)
           PROFILE_END(uploadCommandList);
       }
       {
-          PROFILE_BEGIN(uploadCommandList, "Update Indirect buffers");
-          DrawCommandsSystem->UpdateGPUData(uploadCommandList);
-          PROFILE_END(uploadCommandList);
-      }
-      {
           PROFILE_BEGIN(uploadCommandList, "Update Luminance buffer");
           LuminanceSystem->UpdateGPUData(uploadCommandList);
           PROFILE_END(uploadCommandList);
@@ -320,11 +325,7 @@ void gdr::render::DrawFrame(void)
         OITTransparencySystem->UpdateGPUData(uploadCommandList);
         PROFILE_END(uploadCommandList);
       }
-      {
-        PROFILE_BEGIN(uploadCommandList, "Update Geometry buffers");
-        GeometrySystem->UpdateGPUData(uploadCommandList);
-        PROFILE_END(uploadCommandList);
-      }
+
   };
 
 

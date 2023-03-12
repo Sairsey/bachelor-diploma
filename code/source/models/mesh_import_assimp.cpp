@@ -88,10 +88,7 @@ void mesh_assimp_importer::CalculateAABB(gdr_index MyIndex, gdr_index KeyframeIn
           gdr_index boneIndex = Result.HierarchyNodes[MyIndex].BonesMapping[Vert.BonesIndices[i]];
           mth::matr4f globalTransform = (KeyframeIndex == NONE_INDEX) ?
             Result.HierarchyNodes[boneIndex].GlobalTransform :
-            mth::matr4f::BuildTransform(
-              Result.HierarchyNodes[boneIndex].GlobalKeyframes[KeyframeIndex].scale,
-              Result.HierarchyNodes[boneIndex].GlobalKeyframes[KeyframeIndex].rotationQuat,
-              Result.HierarchyNodes[boneIndex].GlobalKeyframes[KeyframeIndex].pos);
+            Result.HierarchyNodes[boneIndex].ComputedGlobalKeyframes[KeyframeIndex];
           pos += (Result.HierarchyNodes[boneIndex].BoneOffset * globalTransform) * Vert.Pos * Vert.BonesWeights[i];
         }
       }
@@ -558,11 +555,18 @@ void mesh_assimp_importer::CalculateGlobalKeyframes(gdr_index MyIndex)
   if (Me.ParentIndex == NONE_INDEX)
   {
     Me.GlobalKeyframes = Me.LocalKeyframes;
+    Me.ComputedGlobalKeyframes.resize(Me.GlobalKeyframes.size());
+    for (int i = 0; i < Me.GlobalKeyframes.size(); i++)
+    {
+      mth::matr4f localTransform = mth::matr4f::BuildTransform(Me.LocalKeyframes[i].scale, Me.LocalKeyframes[i].rotationQuat, Me.LocalKeyframes[i].pos);
+      Me.ComputedGlobalKeyframes[i] = localTransform;
+    }
   }
   else
   {
     gdr::import_model_node& Parent = Result.HierarchyNodes[Me.ParentIndex];
     Me.GlobalKeyframes.resize(Me.LocalKeyframes.size());
+    Me.ComputedGlobalKeyframes.resize(Me.GlobalKeyframes.size());
     for (int i = 0; i < Parent.GlobalKeyframes.size(); i++)
     {
       mth::matr4f parentGlobalTransform = mth::matr4f::BuildTransform(Parent.GlobalKeyframes[i].scale, Parent.GlobalKeyframes[i].rotationQuat, Parent.GlobalKeyframes[i].pos);
@@ -573,6 +577,7 @@ void mesh_assimp_importer::CalculateGlobalKeyframes(gdr_index MyIndex)
       mth::vec4f GlobalRot;
       globalTransform.Decompose(GlobalPos, GlobalRot, GlobalScale);
 
+      Me.ComputedGlobalKeyframes[i] = globalTransform;
       Me.GlobalKeyframes[i].time = Parent.GlobalKeyframes[i].time;
       Me.GlobalKeyframes[i].pos = GlobalPos;
       Me.GlobalKeyframes[i].rotationQuat = GlobalRot;

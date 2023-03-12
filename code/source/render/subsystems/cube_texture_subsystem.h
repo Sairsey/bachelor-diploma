@@ -18,6 +18,9 @@ namespace gdr
   protected:
     void BeforeUpdateJob(ID3D12GraphicsCommandList* pCommandList) override;
     void BeforeRemoveJob(gdr_index index) override;
+
+    const int FramesToWait = 10;
+    std::vector<std::pair<GPUResource, int>> ResourceToDelete;
   public:
     // Constructor
     cube_textures_subsystem(render* Rnd);

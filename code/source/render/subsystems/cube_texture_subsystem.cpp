@@ -262,12 +262,27 @@ void gdr::cube_textures_subsystem::BeforeRemoveJob(gdr_index index)
 {
   CPUData[index].IsSrvInited = false;
   CPUData[index].Name = "GDR_EMPTY";
-  Render->GetDevice().ReleaseGPUResource(CPUData[index].TextureResource);
+  ResourceToDelete.push_back(std::make_pair(CPUData[index].TextureResource, FramesToWait));
 }
 
 // Update data on GPU in case we need it 
 void gdr::cube_textures_subsystem::BeforeUpdateJob(ID3D12GraphicsCommandList* pCommandList)
 {
+  bool Someone = true;
+  for (int i = 0; i < ResourceToDelete.size(); i++)
+    if (ResourceToDelete[i].second > 0)
+    {
+      ResourceToDelete[i].second--;
+      Someone = false;
+    }
+    else if (ResourceToDelete[i].second == 0)
+    {
+      Render->GetDevice().ReleaseGPUResource(ResourceToDelete[i].first);
+      ResourceToDelete[i].second = -1;
+    }
+  if (Someone)
+    ResourceToDelete.clear();
+
   for (int i = 0; i < AllocatedSize(); i++)
     if (IsExist(i) && !Get(i).IsSrvInited)
     {

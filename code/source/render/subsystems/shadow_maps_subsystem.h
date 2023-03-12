@@ -21,7 +21,8 @@ namespace gdr
     void BeforeUpdateJob(ID3D12GraphicsCommandList* pCommandList) override;
     void BeforeRemoveJob(gdr_index index) override;
 
-    std::vector<GPUResource> ToClear;
+    const int FramesToWait = 10;
+    std::vector<std::pair<GPUResource, int>> ResourceToDelete;
   public:
     // Constructor
     shadow_maps_subsystem(render* Rnd);

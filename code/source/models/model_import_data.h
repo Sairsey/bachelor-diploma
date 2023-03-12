@@ -19,6 +19,7 @@ namespace gdr
 		mth::matr4f GlobalTransform;
 		mth::matr4f BoneOffset;
 		std::vector<gdr::animation_keyframe> GlobalKeyframes;
+		std::vector<mth::matr4f> ComputedGlobalKeyframes;
 		std::vector<gdr::animation_keyframe> LocalKeyframes;
 
 		// Mesh

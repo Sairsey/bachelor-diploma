@@ -69,6 +69,12 @@ private:
   gdr_index DirLightObject;
   gdr_index SpotLightObject;
   gdr_index AxisObject;
+
+  ImGui::FileBrowser modelFileDialog;
+
+  std::vector<std::pair<gdr_index, gdr_index>> Models;
+
+  std::string AskedModel = "";
 public:
   void Initialize(void)
   {
@@ -86,6 +92,30 @@ public:
     AxisObject = Engine->ModelsManager->Add(import_data_axis);
     PROFILE_END(commandList);
     Engine->GetDevice().CloseUploadCommandList();
+
+    modelFileDialog.SetTitle("Choose a model...");
+    modelFileDialog.SetTypeFilters({ ".obj", ".fbx", ".glb" });
+  }
+
+  void LoadModel(std::string path)
+  {
+      auto import_data = gdr::ImportModelFromAssimp(path);
+
+      if (!import_data.IsEmpty())
+      {
+          Engine->GetDevice().WaitAllUploadLists();
+          Engine->GetDevice().WaitGPUIdle();
+          Engine->GetDevice().ResizeUpdateBuffer(false);
+          ID3D12GraphicsCommandList* commandList;
+          Engine->GetDevice().BeginUploadCommandList(&commandList);
+          PROFILE_BEGIN(commandList, charToWString(path.c_str()).c_str());
+          Models.push_back(std::make_pair(Engine->ModelsManager->Add(import_data), Engine->AnimationManager->Add(import_data)));
+          PROFILE_END(commandList);
+          Engine->GetDevice().CloseUploadCommandList();
+          Engine->GetDevice().WaitAllUploadLists();
+          Engine->GetDevice().WaitGPUIdle();
+          Engine->GetDevice().ResizeUpdateBuffer(true);
+      }
   }
 
   void ShowGameWindow(void)
@@ -137,7 +167,7 @@ public:
     }
 
     ImGui::End();
-  }                                                                                                         
+  }
 
   void ShowResourcesWindow(void)
   {
@@ -147,7 +177,7 @@ public:
     ImGui::Begin("Resources", &IsResourcesWindow);
     if (ImGui::TreeNodeEx("GDR", ImGuiTreeNodeFlags_DefaultOpen))
     {
-      ResourceTree(gdr_index_types::model, Engine->ModelsManager, "Model", "Models", 0, false, [&](){});
+      ResourceTree(gdr_index_types::model, Engine->ModelsManager, "Model", "Models", 0, true, [&]() {modelFileDialog.Open(); });
       ResourceTree(gdr_index_types::animation, Engine->AnimationManager, "Animation", "Animations", 0, false, [&]() {});
       ResourceTree(gdr_index_types::physic_body, Engine->PhysicsManager, "Body", "Physics", 1, false, [&]() {});
       ResourceTree(gdr_index_types::bone_mapping, Engine->BoneMappingSystem, "Mapping", "Bone mappings", 1, false, [&]() {});
@@ -422,7 +452,10 @@ public:
       {
         ImGui::SameLine();
         if (ImGui::Button("Go to parent"))
-          ChoosedElement = Engine->NodeTransformsSystem->Get(ChoosedElement).ParentIndex;
+        {
+            ChoosedElement = Engine->NodeTransformsSystem->Get(ChoosedElement).ParentIndex;
+            return;
+        }
       }
 
       ImGui::Text("First Child index %d", Engine->NodeTransformsSystem->Get(ChoosedElement).ChildIndex);
@@ -430,7 +463,10 @@ public:
       {
         ImGui::SameLine();
         if (ImGui::Button("Go to first children"))
-          ChoosedElement = Engine->NodeTransformsSystem->Get(ChoosedElement).ChildIndex;
+        {
+            ChoosedElement = Engine->NodeTransformsSystem->Get(ChoosedElement).ChildIndex;
+            return;
+        }
       }
 
       ImGui::Text("Next sibling index %d", Engine->NodeTransformsSystem->Get(ChoosedElement).NextIndex);
@@ -438,7 +474,10 @@ public:
       {
         ImGui::SameLine();
         if (ImGui::Button("Go to next sibling"))
-          ChoosedElement = Engine->NodeTransformsSystem->Get(ChoosedElement).NextIndex;
+        {
+            ChoosedElement = Engine->NodeTransformsSystem->Get(ChoosedElement).NextIndex;
+            return;
+        }
       }
 
       ImGui::Text("Local Transform");
@@ -591,6 +630,7 @@ public:
           {
             ChoosedElement = GDRGPUMaterialColorGetColorMapIndex(el);
             ChoosedElement.type = gdr_index_types::texture;
+            return;
           }
         }
       }
@@ -607,6 +647,7 @@ public:
           {
             ChoosedElement = GDRGPUMaterialPhongGetAmbientMapIndex(el);
             ChoosedElement.type = gdr_index_types::texture;
+            return;
           }
         }
 
@@ -619,6 +660,7 @@ public:
           {
             ChoosedElement = GDRGPUMaterialPhongGetDiffuseMapIndex(el);
             ChoosedElement.type = gdr_index_types::texture;
+            return;
           }
         }
 
@@ -631,6 +673,7 @@ public:
           {
             ChoosedElement = GDRGPUMaterialPhongGetSpecularMapIndex(el);
             ChoosedElement.type = gdr_index_types::texture;
+            return;
           }
         }
 
@@ -644,6 +687,7 @@ public:
           {
             ChoosedElement = GDRGPUMaterialPhongGetNormalMapIndex(el);
             ChoosedElement.type = gdr_index_types::texture;
+            return;
           }
         }
       }
@@ -659,6 +703,7 @@ public:
           {
             ChoosedElement = GDRGPUMaterialCookTorranceGetAmbientOcclusionMapIndex(el);
             ChoosedElement.type = gdr_index_types::texture;
+            return;
           }
         }
 
@@ -671,6 +716,7 @@ public:
           {
             ChoosedElement = GDRGPUMaterialCookTorranceGetAlbedoMapIndex(el);
             ChoosedElement.type = gdr_index_types::texture;
+            return;
           }
         }
 
@@ -682,6 +728,7 @@ public:
           {
             ChoosedElement = GDRGPUMaterialCookTorranceGetNormalMapIndex(el);
             ChoosedElement.type = gdr_index_types::texture;
+            return;
           }
         }
 
@@ -698,6 +745,7 @@ public:
           {
             ChoosedElement = GDRGPUMaterialCookTorranceGetRoughnessMetalnessMapIndex(el);
             ChoosedElement.type = gdr_index_types::texture;
+            return;
           }
         }
       }
@@ -713,6 +761,7 @@ public:
           {
             ChoosedElement = GDRGPUMaterialCookTorranceGetAmbientOcclusionMapIndex(el);
             ChoosedElement.type = gdr_index_types::texture;
+            return;
           }
         }
 
@@ -725,6 +774,7 @@ public:
           {
             ChoosedElement = GDRGPUMaterialCookTorranceGetAlbedoMapIndex(el);
             ChoosedElement.type = gdr_index_types::texture;
+            return;
           }
         }
 
@@ -736,6 +786,7 @@ public:
           {
             ChoosedElement = GDRGPUMaterialCookTorranceGetNormalMapIndex(el);
             ChoosedElement.type = gdr_index_types::texture;
+            return;
           }
         }
 
@@ -752,6 +803,7 @@ public:
           {
             ChoosedElement = GDRGPUMaterialCookTorranceGetSpecularGlossinessMapIndex(el);
             ChoosedElement.type = gdr_index_types::texture;
+            return;
           }
         }
       }
@@ -767,6 +819,19 @@ public:
       ImGui::Text("Model Editor");
       if (Engine->ModelsManager->IsExist(ChoosedElement))
       {
+          if (ImGui::Button("Delete Model"))
+          {
+              for (int i = 0; i < Models.size(); i++)
+              {
+                  if (Models[i].first == ChoosedElement)
+                  {
+                      Engine->ModelsManager->Remove(Models[i].first);
+                      Engine->AnimationManager->Remove(Models[i].second);
+                      Models.erase(std::next(Models.begin(), i));
+                      return;
+                  }
+              }
+          }
           ImGui::Text("Name: %s", Engine->ModelsManager->Get(ChoosedElement).Name.c_str());
           ImGui::Text("Root Transform index: %d", Engine->ModelsManager->Get(ChoosedElement).Render.RootTransform);
           if (Engine->ModelsManager->Get(ChoosedElement).Render.RootTransform != NONE_INDEX)
@@ -775,6 +840,7 @@ public:
               {
                   ChoosedElement = Engine->ModelsManager->Get(ChoosedElement).Render.RootTransform;
                   ChoosedElement.type = gdr_index_types::object_transform;
+                  return;
               }
           }
 
@@ -796,6 +862,8 @@ public:
                   {
                       ChoosedElement = Engine->ModelsManager->Get(ChoosedElement).Render.Materials[i];
                       ChoosedElement.type = gdr_index_types::material;
+                      ImGui::EndTable(); 
+                      return;
                   }
               }
               ImGui::TableNextRow();
@@ -920,6 +988,15 @@ public:
         Engine->ObjectTransformsSystem->Get(Engine->LightsSystem->Get(ChoosedElement).ObjectTransformIndex).Transform;
     }
 
+    // Add animations to models
+
+    for (int i = 0; i < Models.size(); i++)
+        if (Engine->ModelsManager->IsExist(Models[i].first) && Engine->AnimationManager->IsExist(Models[i].second))
+        {
+            Engine->AnimationManager->SetAnimationTime(Models[i].first, Models[i].second, Engine->GetTime() * 1000.0);
+        }
+
+
     if (TypeOfEditor == resource_index &&
         ChoosedElement.type == gdr_index_types::model &&
         Engine->ModelsManager->IsExist(ChoosedElement) &&
@@ -930,10 +1007,24 @@ public:
             Engine->ObjectTransformsSystem->Get(Engine->ModelsManager->Get(ChoosedElement).Render.RootTransform).Transform;
     }
 
+    if (AskedModel != "")
+    {
+        LoadModel(AskedModel);
+        AskedModel = "";
+    }
+
     Engine->AddLambdaForIMGUI([&]()
     {
         ImGui::DockSpaceOverViewport(ImGui::GetMainViewport());
         
+        modelFileDialog.Display();
+
+        if (modelFileDialog.HasSelected())
+        {
+            AskedModel = modelFileDialog.GetSelected().string();
+            modelFileDialog.ClearSelected();
+        }
+
         //Show All widows
         ShowGameWindow();
         ShowHierarchyWindow();
@@ -985,5 +1076,10 @@ public:
      Engine->ModelsManager->Remove(SpotLightObject);
      Engine->ModelsManager->Remove(DirLightObject);
      Engine->ModelsManager->Remove(AxisObject);
+     for (int i = 0; i < Models.size(); i++)
+     {
+         Engine->ModelsManager->Remove(Models[i].first);
+         Engine->AnimationManager->Remove(Models[i].second);
+     }
   }
 };

@@ -27,7 +27,7 @@ namespace gdr
 				return NONE_INDEX;
 			}
 
-			gdr_index Add(const model_import_data& ImportData);
-			void Clone(gdr_index SrcModel, gdr_index DstModel);
+			gdr_index Add(const model_import_data& ImportData, bool NewNodeTransforms = true);
+			void Clone(gdr_index SrcModel, gdr_index DstModel, bool NewNodeTransforms = true);
 	};
 }

@@ -95,6 +95,7 @@
     <ClInclude Include="source\units\examples\unit_triangle.h" />
     <ClInclude Include="source\units\fishes\unit_fishes_env.h" />
     <ClInclude Include="source\units\fishes\unit_fishes_rotating.h" />
+    <ClInclude Include="source\units\funk\unit_funk.h" />
     <ClInclude Include="source\units\shooter\unit_shooter_enemy.h" />
     <ClInclude Include="source\units\shooter\unit_shooter_enemy_spawner.h" />
     <ClInclude Include="source\units\shooter\unit_shooter_enviroment.h" />

@@ -277,9 +277,9 @@ namespace mth
         Translation.Z = A[3][2];
 
         // Scale rotation part
-        Type invSX = 1.0 / sx;
-        Type invSY = 1.0 / sy;
-        Type invSZ = 1.0 / sz;
+        Type invSX = max(1.0 / sx, FLT_MIN);
+        Type invSY = max(1.0 / sy, FLT_MIN);
+        Type invSZ = max(1.0 / sz, FLT_MIN);
 
         matr4<Type> tmpMatr = *this;
 

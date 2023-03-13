@@ -84,6 +84,11 @@ private:
   std::string AskedModel = "";
   std::string AskedLoadScene = "";
   std::string AskedSaveScene = "";
+
+  gdr_index HighlightDrawCall;
+  gdr_index HighlightMaterial;
+  gdr_index HighlightTransform;
+
 public:
   void Initialize(void)
   {
@@ -110,6 +115,18 @@ public:
 
     loadSceneFileDialog.SetTitle("Load scene from...");
     loadSceneFileDialog.SetTypeFilters({ ".json" });
+
+    
+    // Higlight
+    HighlightMaterial = Engine->MaterialsSystem->Add();
+    Engine->MaterialsSystem->GetEditable(HighlightMaterial).ShadeType = MATERIAL_SHADER_COLOR;
+    GDRGPUMaterialColorGetColor(Engine->MaterialsSystem->GetEditable(HighlightMaterial)) = { 10, 0, 0 };
+    GDRGPUMaterialColorGetColorMapIndex(Engine->MaterialsSystem->GetEditable(HighlightMaterial)) = NONE_INDEX;
+
+    HighlightTransform= Engine->ObjectTransformsSystem->Add();
+
+    HighlightDrawCall = Engine->DrawCommandsSystem->Add(NONE_INDEX, HighlightTransform, HighlightMaterial);
+    Engine->DrawCommandsSystem->GetEditable(HighlightDrawCall).Indices.ObjectParamsMask = OBJECT_PARAMETER_FRONT_FACE_CULL;
   }
 
   void LoadModel(std::string path)
@@ -1168,15 +1185,54 @@ public:
             Engine->AnimationManager->SetAnimationTime(Models[i].first, Models[i].second, Engine->GetTime() * 1000.0);
         }
 
-
+    // draw axis and higlight at choosed model
     if (TypeOfEditor == resource_index &&
         ChoosedElement.type == gdr_index_types::model &&
         Engine->ModelsManager->IsExist(ChoosedElement) &&
         Engine->ModelsManager->Get(ChoosedElement).Render.RootTransform != NONE_INDEX)
     {
-
         Engine->ObjectTransformsSystem->GetEditable(Engine->ModelsManager->Get(AxisObject).Render.RootTransform).Transform =
             Engine->ObjectTransformsSystem->Get(Engine->ModelsManager->Get(ChoosedElement).Render.RootTransform).Transform;
+
+        /*
+        const gdr::model& Model = Engine->ModelsManager->Get(ChoosedElement);
+
+        const gdr::render_model_node& MeshNode = Model.Render.Hierarchy[Model.Render.Meshes[0]];
+
+        Engine->DrawCommandsSystem->GetEditable(HighlightDrawCall).Indices.BoneMappingIndex = Engine->DrawCommandsSystem->Get(MeshNode.DrawCommand).Indices.BoneMappingIndex;
+        Engine->DrawCommandsSystem->GetEditable(HighlightDrawCall).Indices.ObjectIndex = Engine->DrawCommandsSystem->Get(MeshNode.DrawCommand).Indices.ObjectIndex;
+        Engine->DrawCommandsSystem->GetEditable(HighlightDrawCall).DrawArguments = Engine->DrawCommandsSystem->Get(MeshNode.DrawCommand).DrawArguments;
+        Engine->DrawCommandsSystem->GetEditable(HighlightDrawCall).VertexBuffer = Engine->DrawCommandsSystem->Get(MeshNode.DrawCommand).VertexBuffer;
+        Engine->DrawCommandsSystem->GetEditable(HighlightDrawCall).IndexBuffer = Engine->DrawCommandsSystem->Get(MeshNode.DrawCommand).IndexBuffer;
+        Engine->DrawCommandsSystem->GetEditable(HighlightDrawCall).IsExist = true;
+
+        gdr_index OriginalMeshTransform = Engine->DrawCommandsSystem->Get(MeshNode.DrawCommand).Indices.ObjectTransformIndex;
+
+        Engine->ObjectTransformsSystem->GetEditable(HighlightTransform).minAABB = Engine->ObjectTransformsSystem->Get(OriginalMeshTransform).minAABB;
+        Engine->ObjectTransformsSystem->GetEditable(HighlightTransform).maxAABB = Engine->ObjectTransformsSystem->Get(OriginalMeshTransform).maxAABB;
+        Engine->ObjectTransformsSystem->GetEditable(HighlightTransform).Transform = Engine->ObjectTransformsSystem->Get(OriginalMeshTransform).Transform;
+
+        mth::matr4f WVP = Engine->ObjectTransformsSystem->Get(OriginalMeshTransform).Transform * Engine->PlayerCamera.GetVP();
+        mth::matr4f VP = Engine->PlayerCamera.GetVP();
+        mth::matr4f VPInverse = VP.Inversed();
+
+        // sanity check
+        mth::vec3f center = { 0, 0, 0 };
+        mth::vec3f offset = { 2, 2, 0.1 };
+        center = center * VPInverse;
+        offset = offset * VPInverse;
+
+
+        Engine->ObjectTransformsSystem->GetEditable(HighlightTransform).Transform =
+            Engine->ObjectTransformsSystem->GetEditable(HighlightTransform).Transform * mth::matr4f::Translate(offset - center);// *
+            //VP *
+            //CustomScale *
+            //VPInverse;
+        */
+    }
+    else
+    {
+        Engine->DrawCommandsSystem->GetEditable(HighlightDrawCall).IsExist = false;
     }
 
     if (AskedModel != "")
@@ -1291,6 +1347,7 @@ public:
 
   ~unit_editor(void)
   {
+     Engine->DrawCommandsSystem->Remove(HighlightDrawCall);
      Engine->ModelsManager->Remove(PointLightObject);
      Engine->ModelsManager->Remove(SpotLightObject);
      Engine->ModelsManager->Remove(DirLightObject);

@@ -163,6 +163,9 @@
     <Filter Include="Source Files\Render\Passes\copy">
       <UniqueIdentifier>{f64ae08c-4ddc-4e8f-bbd5-58ace5c67430}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Units\Funk">
+      <UniqueIdentifier>{7413b7b7-0af1-4ba2-9414-5b7967ec3bf3}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\main.cpp">
@@ -631,6 +634,9 @@
     </ClInclude>
     <ClInclude Include="source\render\passes\copy_pass.h">
       <Filter>Source Files\Render\Passes\copy</Filter>
+    </ClInclude>
+    <ClInclude Include="source\units\funk\unit_funk.h">
+      <Filter>Source Files\Units\Funk</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

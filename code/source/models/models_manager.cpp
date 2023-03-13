@@ -19,14 +19,14 @@ void gdr::models_manager::BeforeRemoveJob(gdr_index index)
 	}
 }
 
-gdr_index gdr::models_manager::Add(const model_import_data& ImportData)
+gdr_index gdr::models_manager::Add(const model_import_data& ImportData, bool NewNodeTransforms)
 {
 	gdr_index NewModelIndex = NONE_INDEX;
 	NewModelIndex = resource_pool_subsystem::Add();
 	for (gdr_index i = 0; i < AllocatedSize(); i++)
 		if (IsExist(i) && Get(i).Name == ImportData.FileName)
 		{
-			Clone(i, NewModelIndex);
+			Clone(i, NewModelIndex, NewNodeTransforms);
 			return NewModelIndex;
 		}
 
@@ -201,7 +201,7 @@ gdr_index gdr::models_manager::Add(const model_import_data& ImportData)
 	return NewModelIndex;
 }
 
-void gdr::models_manager::Clone(gdr_index SrcModel, gdr_index DstModel)
+void gdr::models_manager::Clone(gdr_index SrcModel, gdr_index DstModel, bool NewNodeTransforms)
 {
 	const model& OldModel = Get(SrcModel);
 	model& NewModel = GetEditable(DstModel);
@@ -236,7 +236,13 @@ void gdr::models_manager::Clone(gdr_index SrcModel, gdr_index DstModel)
 			NewNode.NextIndex = OldNode.NextIndex;
 			if (NewNode.Type == gdr_hier_node_type::node)
 			{
-				NewNode.NodeTransform = Engine->NodeTransformsSystem->Add();
+				if (NewNodeTransforms)
+					NewNode.NodeTransform = Engine->NodeTransformsSystem->Add();
+				else
+				{
+					NewNode.NodeTransform = OldNode.NodeTransform;
+					Engine->NodeTransformsSystem->IncreaseReferenceCount(OldNode.NodeTransform);
+				}
 			}
 			else if (NewNode.Type == gdr_hier_node_type::mesh)
 			{
@@ -256,22 +262,25 @@ void gdr::models_manager::Clone(gdr_index SrcModel, gdr_index DstModel)
 
 			if (NewNode.Type == gdr_hier_node_type::node)
 			{
-				const GDRGPUNodeTransform& OldNodeTransform = Engine->NodeTransformsSystem->Get(OldNode.NodeTransform);
-				GDRGPUNodeTransform& NewNodeTransform = Engine->NodeTransformsSystem->GetEditable(NewNode.NodeTransform);
+				if (NewNodeTransforms)
+				{
+					const GDRGPUNodeTransform& OldNodeTransform = Engine->NodeTransformsSystem->Get(OldNode.NodeTransform);
+					GDRGPUNodeTransform& NewNodeTransform = Engine->NodeTransformsSystem->GetEditable(NewNode.NodeTransform);
 
-				NewNodeTransform.LocalTransform = OldNodeTransform.LocalTransform;
-				NewNodeTransform.BoneOffset = OldNodeTransform.BoneOffset;
-				NewNodeTransform.IsNeedRecalc = true;
-				NewNodeTransform.ParentIndex = NewNode.ParentIndex == NONE_INDEX ? gdr_index{ NONE_INDEX } : NewModelRender.Hierarchy[NewNode.ParentIndex].NodeTransform;
-				NewNodeTransform.ChildIndex = NewNode.ChildIndex == NONE_INDEX ? gdr_index{ NONE_INDEX } : NewModelRender.Hierarchy[NewNode.ChildIndex].NodeTransform;
-				NewNodeTransform.NextIndex = NewNode.NextIndex == NONE_INDEX ? gdr_index{ NONE_INDEX } : NewModelRender.Hierarchy[NewNode.NextIndex].NodeTransform;
+					NewNodeTransform.LocalTransform = OldNodeTransform.LocalTransform;
+					NewNodeTransform.BoneOffset = OldNodeTransform.BoneOffset;
+					NewNodeTransform.IsNeedRecalc = true;
+					NewNodeTransform.ParentIndex = NewNode.ParentIndex == NONE_INDEX ? gdr_index{ NONE_INDEX } : NewModelRender.Hierarchy[NewNode.ParentIndex].NodeTransform;
+					NewNodeTransform.ChildIndex = NewNode.ChildIndex == NONE_INDEX ? gdr_index{ NONE_INDEX } : NewModelRender.Hierarchy[NewNode.ChildIndex].NodeTransform;
+					NewNodeTransform.NextIndex = NewNode.NextIndex == NONE_INDEX ? gdr_index{ NONE_INDEX } : NewModelRender.Hierarchy[NewNode.NextIndex].NodeTransform;
+				}
 			}
 			else if (NewNode.Type == gdr_hier_node_type::mesh)
 			{
 				const GDRGPUIndirectCommand& OldDrawCommand = Engine->DrawCommandsSystem->Get(OldNode.DrawCommand);
 				gdr_index BoneMapping = OldDrawCommand.Indices.BoneMappingIndex;
 
-				if (BoneMapping != NONE_INDEX) // fill BoneMapping with correct values
+				if (BoneMapping != NONE_INDEX && NewNodeTransforms) // fill BoneMapping with correct values
 				{
 					BoneMapping = Engine->BoneMappingSystem->Add();
 					const GDRGPUBoneMapping& OldBoneMapping = Engine->BoneMappingSystem->Get(OldDrawCommand.Indices.BoneMappingIndex);

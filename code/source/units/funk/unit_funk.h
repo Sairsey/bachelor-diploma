@@ -11,7 +11,7 @@ private:
     const int LineWidth = 10;
     float Offset = 0;
 
-    int FramesToCalc = 400;
+    int FramesToCalc = 60;
     double SumEngTime = 0;
     double SumCPUTime = 0;
 
@@ -38,6 +38,23 @@ public:
         Engine->PlayerCamera.SetDir({ -0.011, -0.603, -0.865 });
     }
 
+    float GetMedian(std::queue<float> q)
+    {
+        int size = q.size();
+        float val = 0;
+        int skip = 10;
+
+        for (int i = 0; i < skip; i++)
+            q.pop();
+        while (!q.empty())
+        {
+            val += q.front();
+            q.pop();
+        }
+
+        return val / (size - skip);
+    }
+
     void Response(void)
     {
         static size_t frameCount = 0;
@@ -57,6 +74,10 @@ public:
         }
 
         Engine->AddLambdaForIMGUI([&]() {
+            static std::queue<float> queue_fps;
+            static std::queue<float> queue_cpu;
+            static std::queue<float> queue_gpu;
+
             static float fps = 100;
             static float cpu = 1;
             static float gpu = 1;
@@ -76,11 +97,25 @@ public:
                 state = 2;
             }
 
-            if (frameCount % 20 == 0)
+            if (frameCount % FramesToCalc == 0)
             {
-                fps = 1000000000.0 / Engine->EngineClock;
-                cpu = Engine->CPUDrawFrameTime / 1000000.0;
-                gpu = Engine->DeviceFrameCounter.GetUSec() / 1000.0;
+                // grab median 
+                fps = GetMedian(queue_fps);
+                cpu = GetMedian(queue_cpu);
+                gpu = GetMedian(queue_gpu);
+            }
+            else
+            {
+                while (queue_fps.size() >= FramesToCalc)
+                    queue_fps.pop();
+                while (queue_cpu.size() >= FramesToCalc)
+                    queue_cpu.pop();
+                while (queue_gpu.size() >= FramesToCalc)
+                    queue_gpu.pop();
+
+                queue_fps.push(1000000000.0 / Engine->EngineClock);
+                queue_cpu.push(Engine->CPUDrawFrameTime / 1000000.0);
+                queue_gpu.push(Engine->DeviceFrameCounter.GetUSec() / 1000.0);
             }
 
             ImGui::End();
@@ -101,7 +136,7 @@ public:
                     pos -= (TroopersAmount / LineWidth);
                 }
 
-                Engine->ObjectTransformsSystem->GetEditable(Engine->ModelsManager->Get(SceneModels[i]).Render.RootTransform).Transform = mth::matr4f::Translate({ -265.0f + float(i % LineWidth - LineWidth / 2.0), 0, pos });
+                Engine->ObjectTransformsSystem->GetEditable(Engine->ModelsManager->Get(SceneModels[i]).Render.RootTransform).Transform = mth::matr4f::Translate({ -265.0f + float(i % LineWidth - LineWidth / 2.0), 0.1, pos });
             }
         }
     }

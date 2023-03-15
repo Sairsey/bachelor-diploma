@@ -482,6 +482,12 @@ public:
       if (ImGui::Button("Delete"))
       {
         Engine->LightsSystem->Remove(ChoosedElement);
+        int choose = NONE_INDEX;
+        for (int i = 0; i < Lights.size() && choose == NONE_INDEX; i++)
+            if (Lights[i] == ChoosedElement)
+                choose = i;
+        if (choose != NONE_INDEX)
+            Lights.erase(std::next(Lights.begin(), choose));
         return;
       }
 

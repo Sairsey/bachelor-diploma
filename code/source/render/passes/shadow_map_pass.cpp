@@ -265,6 +265,9 @@ void gdr::shadow_map_pass::CallIndirectDraw(ID3D12GraphicsCommandList* currentCo
       gdr_index ShadowMap = Render->LightsSystem->Get(i).ShadowMapIndex;
       gdr_index LightIndex = i;
 
+      PROFILE_BEGIN(currentCommandList, (std::string("Light #") + std::to_string(LightIndex) + std::string(" Shadow #") + std::to_string(ShadowMap)).c_str());
+
+      PROFILE_BEGIN(currentCommandList, "Free UAV");
       /*
        * Free UAV
        */
@@ -286,10 +289,12 @@ void gdr::shadow_map_pass::CallIndirectDraw(ID3D12GraphicsCommandList* currentCo
             Render->DrawCommandsSystem->CommandsBuffer[(int)indirect_command_pools_enum::Shadow].Resource,
             D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
       }
+      PROFILE_END(currentCommandList);
 
       /*
        * Calculate Frustum
        */
+      PROFILE_BEGIN(currentCommandList, "Frustum cull");
       {
           currentCommandList->SetPipelineState(ComputePSO);
 
@@ -331,10 +336,12 @@ void gdr::shadow_map_pass::CallIndirectDraw(ID3D12GraphicsCommandList* currentCo
               Render->DrawCommandsSystem->CommandsBuffer[(int)indirect_command_pools_enum::Shadow].Resource,
               D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_INDIRECT_ARGUMENT);
       }
+      PROFILE_END(currentCommandList);
 
       /*
        * Use Frustum for draw
        */
+      PROFILE_BEGIN(currentCommandList, "depth draw");
       {
           Render->GetDevice().TransitResourceState(currentCommandList, Render->ShadowMapsSystem->Get(ShadowMap).TextureResource.Resource,
               D3D12_RESOURCE_STATE_COMMON, D3D12_RESOURCE_STATE_DEPTH_WRITE);
@@ -403,6 +410,8 @@ void gdr::shadow_map_pass::CallIndirectDraw(ID3D12GraphicsCommandList* currentCo
           Render->GetDevice().TransitResourceState(currentCommandList, Render->ShadowMapsSystem->Get(ShadowMap).TextureResource.Resource,
               D3D12_RESOURCE_STATE_DEPTH_WRITE, D3D12_RESOURCE_STATE_COMMON);
       }
+      PROFILE_END(currentCommandList);
+      PROFILE_END(currentCommandList);
     }
   }
   Render->GetDevice().SetCommandListAsUpload(currentCommandList);

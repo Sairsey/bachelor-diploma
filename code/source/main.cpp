@@ -38,6 +38,8 @@
 #include "units/fishes/unit_fishes_env.h"
 #include "units/fishes/unit_fishes_rotating.h"
 
+#include "units/funk/unit_funk.h"
+
 #include "units/enviroment/unit_yokohama.h"
 #include "units/enviroment/unit_alex_apt.h"
 
@@ -139,8 +141,9 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
   //Engine.AddUnit(new unit_specialist());
   //Engine.AddUnit(new unit_pit());
   
+  
   //Engine.AddUnit(new unit_thriller_stage());
-  //Engine.AddUnit(new unit_thriller_env());
+  Engine.AddUnit(new unit_thriller_env());
   //Engine.AddUnit(new unit_thriller_camera());
   //Engine.AddUnit(new unit_thriller_dancers());
   
@@ -148,6 +151,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
   //Engine.AddUnit(new unit_shooter_enviroment());
   //Engine.AddUnit(new unit_shooter_enemy_spawner(10));
   //Engine.AddUnit(new unit_shooter_gun());
+
+  //Engine.AddUnit(new unit_funk());
 
   //Engine.AddUnit(new unit_scripted("Hello"));
   Engine.AddUnit(new unit_editor());

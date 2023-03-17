@@ -83,6 +83,8 @@
 #include "physics/physics_manager.h"
 #include "models/models_manager.h"
 
+#include "raycast/raycast_manager.h"
+
 #include "timer/timer.h"
 #include "input/input.h"
 

@@ -44,6 +44,7 @@ class unit_editor : public gdr::unit_base
 {
 private:
   ImVec2 GameWindowSize;
+  ImVec2 GameWindowPos;
 
   bool ShowEditor = true;
   bool ClearScene = false;
@@ -131,6 +132,10 @@ public:
 
   void LoadModel(std::string path)
   {
+      const std::filesystem::path base = std::filesystem::current_path();
+      const std::filesystem::path model_path = std::filesystem::path(path);
+      path = std::filesystem::relative(model_path, base).string();
+
       auto import_data = gdr::ImportModelFromAssimp(path);
 
       if (!import_data.IsEmpty())
@@ -318,6 +323,7 @@ public:
     ImGui::BeginChild("GameRender");
     // Get the size of the child (i.e. the whole draw size of the windows).
     GameWindowSize = ImGui::GetWindowSize();
+    GameWindowPos = ImGui::GetWindowPos();
 
     D3D12_GPU_DESCRIPTOR_HANDLE true_texture_handle = Engine->RenderTargetsSystem->ShaderResourceViewsGPU;
     true_texture_handle.ptr += (int)(gdr::render_targets_enum::target_frame_final)*Engine->GetDevice().GetSRVDescSize();
@@ -1162,6 +1168,29 @@ public:
       Engine->ModelsManager->Get(SpotLightObject).Render.RootTransform).Transform = mth::matr4f::Scale(0);
     Engine->ObjectTransformsSystem->GetEditable(
         Engine->ModelsManager->Get(AxisObject).Render.RootTransform).Transform = mth::matr4f::Scale(0);
+
+    if (ChoosedElement.type == gdr_index_types::model)
+    {
+      if (Engine->KeysClick['Z'])
+      {
+        mth::vec3f ScreenDir;
+        ScreenDir.X = 2.0f * (Engine->Mx - GameWindowPos.x) / GameWindowSize.x - 1;
+        ScreenDir.Y = -2.0f * (Engine->My - GameWindowPos.y) / GameWindowSize.y + 1;
+        ScreenDir.Z = 1;
+        mth::matr4f VP = Engine->PlayerCamera.GetVP();
+        mth::matr4f VPInverse = VP.Inversed();
+        mth::vec3f WorldOrg = Engine->PlayerCamera.GetPos();
+        mth::vec3f WorldDir = VPInverse * ScreenDir - WorldOrg;
+
+        WorldDir.Normalize();
+        std::vector<ray_intersect> Outputs;
+
+        if (Engine->RaycastManager->Raycast(WorldOrg, WorldDir, Engine->PlayerCamera.GetFar(), gdr::raycast_manager::MODELS, &Outputs))
+        {
+          ChoosedElement = Outputs[0].Index;
+        }
+      }
+    }
 
     // Visualize choosed light object
     if (TypeOfEditor == resource_index &&

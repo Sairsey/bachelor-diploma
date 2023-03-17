@@ -457,9 +457,8 @@ bool gdr::physics_manager::Update(float DeltaTime)
   return res;
 }
 
-bool gdr::physics_manager::Raycast(mth::vec3f Org, mth::vec3f Dir, float MaxLength, std::vector<gdr::ray_intersect>& Output)
+bool gdr::physics_manager::Raycast(mth::vec3f Org, mth::vec3f Dir, float MaxLength, std::vector<ray_intersect> *Output)
 {
-  std::vector<ray_intersect> Objects;
   const physx::PxU32 bufferSize = 256;        // [in] size of 'hitBuffer'
   physx::PxRaycastHit hitBuffer[bufferSize];  // [out] User provided buffer for results
   physx::PxRaycastBuffer buf(hitBuffer, bufferSize); // [out] Raycast results
@@ -475,18 +474,29 @@ bool gdr::physics_manager::Raycast(mth::vec3f Org, mth::vec3f Dir, float MaxLeng
       {
         gdr_index ObjectIndex;
         ObjectIndex.unpack((uint64_t)buf.touches[i].actor->userData);
-        ray_intersect A;
-        A.Index = ObjectIndex;
-        A.Distance = buf.touches[i].distance;
-        A.Position = { buf.touches[i].position.x, buf.touches[i].position.y, buf.touches[i].position.z };
-        Objects.push_back(A);
+        if (Output == nullptr)
+        {
+          if (ObjectIndex != NONE_INDEX)
+            return true;
+        }
+        else
+        {
+          ray_intersect A;
+          A.Index = ObjectIndex;
+          A.Distance = buf.touches[i].distance;
+          A.Position = { buf.touches[i].position.x, buf.touches[i].position.y, buf.touches[i].position.z };
+          Output->push_back(A);
+        }
       }
   }
-  std::sort(Objects.begin(), Objects.end(), [](const gdr::ray_intersect& a, const gdr::ray_intersect& b)
+  if (Output == nullptr)
+  {
+    return false;
+  }
+  std::sort(Output->begin(), Output->end(), [](const ray_intersect& a, const ray_intersect& b)
       {
           return a.Distance < b.Distance;
       });
-  Output = Objects;
   return status;
 }
 

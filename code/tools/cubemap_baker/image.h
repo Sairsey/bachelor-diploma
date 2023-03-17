@@ -3,7 +3,7 @@
 #include <stb_image.h>
 #include <stb_image_resize.h>
 #include <stb_image_write.h>
-#include "utils/math/mth.h"
+#include "def.h"
 
 struct pixel
 {
@@ -67,7 +67,7 @@ class float_image
 
     uv[0] = atan2f(-Direction.X, Direction.Z) / (2 * MTH_PI);
     uv[1] = asinf(Direction.Y) / (MTH_PI / 2); // from -1 to 1
-    uv[1] = 1.0 - (uv[1] + 1) / 2.0;
+    uv[1] = 1.0f - (uv[1] + 1.0f) / 2.0f;
 
     if (uv[0] < 0)
         uv[0] += 1;
@@ -220,7 +220,7 @@ public:
     while (uv[0] > 1)
       uv[0] -= 1;
 
-    uv[1] = 1.0 - uv[1];
+    uv[1] = 1.0f - uv[1];
 
     uv[0] *= (data[index].W - 1);
     uv[1] *= (data[index].H - 1);

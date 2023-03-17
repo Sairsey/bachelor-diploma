@@ -16,13 +16,6 @@ namespace gdr
     }
   };
   
-  struct ray_intersect
-  {
-    float Distance;
-    mth::vec3f Position;
-    gdr_index Index;
-  };
-
   struct physic_body
   {
     private:
@@ -118,7 +111,7 @@ namespace gdr
       gdr_index AddDynamicCapsule(float Radius, float HalfHeight, physic_material Material = physic_material());
       gdr_index AddDynamicMesh(model_import_data ImportModel, physic_material Material = physic_material());
       gdr_index AddStaticMesh(model_import_data ImportModel, physic_material Material = physic_material());
-      bool Raycast(mth::vec3f Org, mth::vec3f Dir, float MaxLength, std::vector<gdr::ray_intersect> &Output);
+      bool Raycast(mth::vec3f Org, mth::vec3f Dir, float MaxLength, std::vector<ray_intersect> *Output = nullptr);
       bool Update(float DeltaTime);
 
       ~physics_manager();

@@ -33,6 +33,7 @@
     <ClInclude Include="source\models\render_model.h" />
     <ClInclude Include="source\physics\physics_manager.h" />
     <ClInclude Include="source\p_header.h" />
+    <ClInclude Include="source\raycast\raycast_manager.h" />
     <ClInclude Include="source\render\device\command_queue.h" />
     <ClInclude Include="source\render\device\d3dinclude.h" />
     <ClInclude Include="source\render\device\device.h" />
@@ -139,6 +140,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="source\raycast\raycast_manager.cpp" />
     <ClCompile Include="source\render\device\command_queue.cpp" />
     <ClCompile Include="source\render\device\d3dinclude.cpp" />
     <ClCompile Include="source\render\device\device.cpp" />

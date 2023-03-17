@@ -201,7 +201,7 @@ struct gdr_index
     {
         type = gdr_index_types(data >> 32);
         data -= uint64_t(type) << 32;
-        value = data;
+        value = (uint32_t)data;
         return;
     }
 };
@@ -212,6 +212,12 @@ struct gdr_index
 #define NONE_INDEX 0xFFFFFFFF
 #endif // !NONE_INDEX
 
+struct ray_intersect
+{
+  float Distance;
+  mth::vec3f Position;
+  gdr_index Index;
+};
 
 inline UINT NearestPowerOf2(UINT val)
 {

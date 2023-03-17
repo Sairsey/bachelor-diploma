@@ -92,7 +92,7 @@ int main(void)
         float theta = -MTH_PI / 2.0f + uv[1] * MTH_PI;
         float phi = uv[0] * MTH_PI * 2.0f;
 
-        Dir.X = -1.0 * cos(theta) * sin(phi);
+        Dir.X = -1.0f * cos(theta) * sin(phi);
         Dir.Y = sin(theta);
         Dir.Z = cos(theta) * cos(phi);
 

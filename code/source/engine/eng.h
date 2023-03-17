@@ -97,6 +97,7 @@ namespace gdr
       models_manager *ModelsManager;
       animation_manager *AnimationManager;
       physics_manager *PhysicsManager;
+      raycast_manager *RaycastManager;
       double EngineClock;
   };
 }

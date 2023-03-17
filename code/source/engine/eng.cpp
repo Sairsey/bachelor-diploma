@@ -7,6 +7,7 @@ gdr::engine::engine()
   ModelsManager = new models_manager(this);
   AnimationManager = new animation_manager(this);
   PhysicsManager = new physics_manager(this);
+  RaycastManager = new raycast_manager(this);
 }
 
 /* Add new Unit function.
@@ -41,6 +42,7 @@ gdr::engine::~engine()
   delete ModelsManager;
   delete AnimationManager;
   delete PhysicsManager;
+  delete RaycastManager;
 }
 
 /* Initialization function.

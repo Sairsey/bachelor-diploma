@@ -166,6 +166,9 @@
     <Filter Include="Source Files\Units\Funk">
       <UniqueIdentifier>{7413b7b7-0af1-4ba2-9414-5b7967ec3bf3}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Raycast">
+      <UniqueIdentifier>{26bbe85f-c5a4-4cea-83ae-35b2782c4294}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\main.cpp">
@@ -311,6 +314,9 @@
     </ClCompile>
     <ClCompile Include="source\render\passes\copy_pass.cpp">
       <Filter>Source Files\Render\Passes\copy</Filter>
+    </ClCompile>
+    <ClCompile Include="source\raycast\raycast_manager.cpp">
+      <Filter>Source Files\Raycast</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -637,6 +643,9 @@
     </ClInclude>
     <ClInclude Include="source\units\funk\unit_funk.h">
       <Filter>Source Files\Units\Funk</Filter>
+    </ClInclude>
+    <ClInclude Include="source\raycast\raycast_manager.h">
+      <Filter>Source Files\Raycast</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

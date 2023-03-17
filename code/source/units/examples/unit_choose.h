@@ -38,8 +38,8 @@ public:
 
             WorldDir.Normalize();
 
-            std::vector<gdr::ray_intersect> Intersects;
-            if (Engine->PhysicsManager->Raycast(WorldOrg, WorldDir, 10000, Intersects))
+            std::vector<ray_intersect> Intersects;
+            if (Engine->PhysicsManager->Raycast(WorldOrg, WorldDir, 10000, &Intersects))
             {
                 for (int i = 0; i < Intersects.size(); i++)
                     if (Engine->PhysicsManager->IsExist(Intersects[i].Index))

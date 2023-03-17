@@ -138,8 +138,8 @@ enum struct gdr_index_types
 
 struct gdr_index
 {
-    gdr_index_types type = gdr_index_types::none;
     unsigned value = 0;
+    gdr_index_types type = gdr_index_types::none;
 
     gdr_index(unsigned v, gdr_index_types t) : value(v), type(t)
     {

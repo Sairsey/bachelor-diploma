@@ -16,16 +16,27 @@ ray_intersect gdr::raycast_manager::RayVsOBB(mth::vec3f Org, mth::vec3f Dir, mth
 	//const threshold = 0.001;
 	const float threshold = 1e-6;
 
-	mth::vec3f pos = { Transform[3][0], Transform[3][1], Transform[3][2] };
-	mth::vec3f delta = pos - Org;
+    mth::vec3f pos, scale;
+    mth::vec4f rot;
+
+    Transform.Decompose(pos, rot, scale);
+    mth::vec3f delta = pos - Org;
+
+    mth::matr4f RotationTransform = mth::matr4f::BuildTransform({ 1, 1, 1 }, rot, { 0, 0, 0 });
+    
+    mth::vec3f CenterAABB = (MinAABB + MaxAABB) / 2.0;
+    mth::vec3f SizeAABB = (MaxAABB - MinAABB);
+
+    MinAABB = CenterAABB - (SizeAABB * scale) / 2.0;
+    MaxAABB = CenterAABB + (SizeAABB * scale) / 2.0;
 
 	// Test intersection with the 2 planes perpendicular to the OBB's X axis
-  for (int axis = 0; axis < 3; axis++)
+    for (int axis = 0; axis < 3; axis++)
 	{
-		mth::vec3f vecaxis = { Transform[axis][0], Transform[axis][1], Transform[axis][2] };
+		mth::vec3f vecaxis = { RotationTransform[axis][0], RotationTransform[axis][1], RotationTransform[axis][2] };
 
-    if (vecaxis == mth::vec3f(0))
-      continue;
+        if (scale[axis] == 0 || vecaxis == mth::vec3f(0))
+	        continue;
 
 		float e = vecaxis dot delta;
 		float f = Dir dot vecaxis;

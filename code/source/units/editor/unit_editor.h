@@ -1177,17 +1177,20 @@ public:
         ScreenDir.X = 2.0f * (Engine->Mx - GameWindowPos.x) / GameWindowSize.x - 1;
         ScreenDir.Y = -2.0f * (Engine->My - GameWindowPos.y) / GameWindowSize.y + 1;
         ScreenDir.Z = 1;
-        mth::matr4f VP = Engine->PlayerCamera.GetVP();
-        mth::matr4f VPInverse = VP.Inversed();
-        mth::vec3f WorldOrg = Engine->PlayerCamera.GetPos();
-        mth::vec3f WorldDir = VPInverse * ScreenDir - WorldOrg;
-
-        WorldDir.Normalize();
-        std::vector<ray_intersect> Outputs;
-
-        if (Engine->RaycastManager->Raycast(WorldOrg, WorldDir, Engine->PlayerCamera.GetFar(), gdr::raycast_manager::MODELS, &Outputs))
+        if (fabs(ScreenDir.X) <= 1 && fabs(ScreenDir.Y) <= 1)
         {
-          ChoosedElement = Outputs[0].Index;
+            mth::matr4f VP = Engine->PlayerCamera.GetVP();
+            mth::matr4f VPInverse = VP.Inversed();
+            mth::vec3f WorldOrg = Engine->PlayerCamera.GetPos();
+            mth::vec3f WorldDir = VPInverse * ScreenDir - WorldOrg;
+
+            WorldDir.Normalize();
+            std::vector<ray_intersect> Outputs;
+
+            if (Engine->RaycastManager->Raycast(WorldOrg, WorldDir, Engine->PlayerCamera.GetFar(), gdr::raycast_manager::MODELS, &Outputs))
+            {
+                ChoosedElement = Outputs[0].Index;
+            }
         }
       }
     }

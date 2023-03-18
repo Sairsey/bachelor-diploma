@@ -73,7 +73,11 @@ private:
   gdr_index PointLightObject;
   gdr_index DirLightObject;
   gdr_index SpotLightObject;
-  gdr_index AxisObject;
+  
+  gdr_index AxisObjectDragX;
+  gdr_index AxisObjectDragY;
+  gdr_index AxisObjectDragZ;
+  gdr_index AxisObjectCenter;
 
   ImGui::FileBrowser modelFileDialog;
   ImGui::FileBrowser saveSceneFileDialog = ImGui::FileBrowser(ImGuiFileBrowserFlags_EnterNewFilename | ImGuiFileBrowserFlags_CreateNewDir);
@@ -96,7 +100,7 @@ public:
     auto import_data_sphere = gdr::ImportModelFromAssimp("bin/models/light_meshes/sphere.obj");
     auto import_data_dir = gdr::ImportModelFromAssimp("bin/models/light_meshes/dir.obj");
     auto import_data_cone = gdr::ImportModelFromAssimp("bin/models/light_meshes/cone.obj");
-    auto import_data_axis = gdr::ImportModelFromAssimp("bin/models/light_meshes/axis.obj");
+    auto import_data_axis = gdr::ImportSplittedModelFromAssimp("bin/models/light_meshes/transform_gizmo.glb");
 
     ID3D12GraphicsCommandList* commandList;
     Engine->GetDevice().BeginUploadCommandList(&commandList);
@@ -104,9 +108,23 @@ public:
     PointLightObject = Engine->ModelsManager->Add(import_data_sphere);
     DirLightObject = Engine->ModelsManager->Add(import_data_dir);
     SpotLightObject = Engine->ModelsManager->Add(import_data_cone);
-    AxisObject = Engine->ModelsManager->Add(import_data_axis);
+    AxisObjectCenter = Engine->ModelsManager->Add(import_data_axis[0]);
+    AxisObjectDragX = Engine->ModelsManager->Add(import_data_axis[3]);
+    AxisObjectDragY = Engine->ModelsManager->Add(import_data_axis[1]);
+    AxisObjectDragZ = Engine->ModelsManager->Add(import_data_axis[2]);
     PROFILE_END(commandList);
     Engine->GetDevice().CloseUploadCommandList();
+
+    gdr_index UtilityMeshes[] = { PointLightObject, DirLightObject, SpotLightObject, AxisObjectDragX, AxisObjectDragY, AxisObjectDragZ, AxisObjectCenter };
+
+    for (int i = 0; i < _countof(UtilityMeshes); i++)
+    {
+        auto meshes = Engine->ModelsManager->Get(UtilityMeshes[i]).Render.Meshes;
+        for (int j = 0; j < meshes.size(); j++)
+        {
+            Engine->DrawCommandsSystem->GetEditable(Engine->ModelsManager->Get(UtilityMeshes[i]).Render.Hierarchy[meshes[j]].DrawCommand).Indices.ObjectParamsMask |= OBJECT_PARAMETER_TOP_MOST;
+        }
+    }
 
     modelFileDialog.SetTitle("Choose a model...");
     modelFileDialog.SetTypeFilters({ ".obj", ".fbx", ".glb" });
@@ -1043,6 +1061,29 @@ public:
                   return;
               }
           }
+          if (Engine->ModelsManager->Get(ChoosedElement).Render.RootTransform != NONE_INDEX)
+          {
+              mth::vec3f Translate, Rotate, Scale;
+              Engine->ObjectTransformsSystem->Get(Engine->ModelsManager->Get(ChoosedElement).Render.RootTransform).Transform.Decompose(Translate, Rotate, Scale);
+
+              bool IsMatrChanged = false;
+
+              if (ImGui::DragFloat3("Translation", &Translate.X, 0.1))
+                  IsMatrChanged = true;
+              if (ImGui::DragFloat3("Rotation", &Rotate.X, 0.1))
+                  IsMatrChanged = true;
+              if (ImGui::DragFloat3("Scale", &Scale.X, 0.1))
+                  IsMatrChanged = true;
+
+              if (IsMatrChanged)
+              {
+                  mth::matr4f result = mth::matr4f::RotateZ(Rotate.Z) * mth::matr4f::RotateY(Rotate.Y) * mth::matr4f::RotateX(Rotate.X) * mth::matr4f::Scale(Scale) * mth::matr4f::Translate(Translate);
+                  if (!isnan(result[0][0]) && !isnan(result[1][1]) && !isnan(result[2][2]) && !isnan(result[3][3]))
+                      Engine->ObjectTransformsSystem->GetEditable(Engine->ModelsManager->Get(ChoosedElement).Render.RootTransform).Transform = result;
+                  else
+                      Engine->ObjectTransformsSystem->GetEditable(Engine->ModelsManager->Get(ChoosedElement).Render.RootTransform).Transform = mth::matr4f::Identity();
+              }
+          }
 
           ImGui::BeginTable("Materials", 2, ImGuiTableFlags_Borders);
           ImGui::TableNextColumn();
@@ -1167,31 +1208,35 @@ public:
     Engine->ObjectTransformsSystem->GetEditable(
       Engine->ModelsManager->Get(SpotLightObject).Render.RootTransform).Transform = mth::matr4f::Scale(0);
     Engine->ObjectTransformsSystem->GetEditable(
-        Engine->ModelsManager->Get(AxisObject).Render.RootTransform).Transform = mth::matr4f::Scale(0);
+        Engine->ModelsManager->Get(AxisObjectDragX).Render.RootTransform).Transform = mth::matr4f::Scale(0);
+    Engine->ObjectTransformsSystem->GetEditable(
+        Engine->ModelsManager->Get(AxisObjectDragY).Render.RootTransform).Transform = mth::matr4f::Scale(0);
+    Engine->ObjectTransformsSystem->GetEditable(
+        Engine->ModelsManager->Get(AxisObjectDragZ).Render.RootTransform).Transform = mth::matr4f::Scale(0);
+    Engine->ObjectTransformsSystem->GetEditable(
+        Engine->ModelsManager->Get(AxisObjectCenter).Render.RootTransform).Transform = mth::matr4f::Scale(0);
 
-    if (ChoosedElement.type == gdr_index_types::model)
+    if (Engine->KeysClick[VK_LBUTTON])
     {
-      if (Engine->KeysClick['Z'])
+      mth::vec3f ScreenDir;
+      ScreenDir.X = 2.0f * (Engine->Mx - GameWindowPos.x) / GameWindowSize.x - 1;
+      ScreenDir.Y = -2.0f * (Engine->My - GameWindowPos.y) / GameWindowSize.y + 1;
+      ScreenDir.Z = 1;
+      if (fabs(ScreenDir.X) <= 1 && fabs(ScreenDir.Y) <= 1)
       {
-        mth::vec3f ScreenDir;
-        ScreenDir.X = 2.0f * (Engine->Mx - GameWindowPos.x) / GameWindowSize.x - 1;
-        ScreenDir.Y = -2.0f * (Engine->My - GameWindowPos.y) / GameWindowSize.y + 1;
-        ScreenDir.Z = 1;
-        if (fabs(ScreenDir.X) <= 1 && fabs(ScreenDir.Y) <= 1)
-        {
-            mth::matr4f VP = Engine->PlayerCamera.GetVP();
-            mth::matr4f VPInverse = VP.Inversed();
-            mth::vec3f WorldOrg = Engine->PlayerCamera.GetPos();
-            mth::vec3f WorldDir = VPInverse * ScreenDir - WorldOrg;
+          mth::matr4f VP = Engine->PlayerCamera.GetVP();
+          mth::matr4f VPInverse = VP.Inversed();
+          mth::vec3f WorldOrg = Engine->PlayerCamera.GetPos();
+          mth::vec3f WorldDir = VPInverse * ScreenDir - WorldOrg;
 
-            WorldDir.Normalize();
-            std::vector<ray_intersect> Outputs;
+          WorldDir.Normalize();
+          std::vector<ray_intersect> Outputs;
 
-            if (Engine->RaycastManager->Raycast(WorldOrg, WorldDir, Engine->PlayerCamera.GetFar(), gdr::raycast_manager::MODELS, &Outputs))
-            {
-                ChoosedElement = Outputs[0].Index;
-            }
-        }
+          if (Engine->RaycastManager->Raycast(WorldOrg, WorldDir, Engine->PlayerCamera.GetFar(), gdr::raycast_manager::MODELS, &Outputs))
+          {
+              ChoosedElement = Outputs[0].Index;
+              TypeOfEditor = resource_index;
+          }
       }
     }
 
@@ -1229,8 +1274,15 @@ public:
         Engine->ModelsManager->IsExist(ChoosedElement) &&
         Engine->ModelsManager->Get(ChoosedElement).Render.RootTransform != NONE_INDEX)
     {
-        Engine->ObjectTransformsSystem->GetEditable(Engine->ModelsManager->Get(AxisObject).Render.RootTransform).Transform =
-            Engine->ObjectTransformsSystem->Get(Engine->ModelsManager->Get(ChoosedElement).Render.RootTransform).Transform;
+        mth::vec3f pos, scale;
+        mth::vec4f rot;
+
+        Engine->ObjectTransformsSystem->Get(Engine->ModelsManager->Get(ChoosedElement).Render.RootTransform).Transform.Decompose(pos, rot, scale);
+
+        Engine->ObjectTransformsSystem->GetEditable(Engine->ModelsManager->Get(AxisObjectCenter).Render.RootTransform).Transform = mth::matr4f::BuildTransform(0.5, rot, pos);
+        Engine->ObjectTransformsSystem->GetEditable(Engine->ModelsManager->Get(AxisObjectDragX).Render.RootTransform).Transform = mth::matr4f::BuildTransform(0.5, rot, pos + mth::vec3f{1, 0, 0});
+        Engine->ObjectTransformsSystem->GetEditable(Engine->ModelsManager->Get(AxisObjectDragY).Render.RootTransform).Transform = mth::matr4f::BuildTransform(0.5, rot, pos + mth::vec3f{0, 1, 0});
+        Engine->ObjectTransformsSystem->GetEditable(Engine->ModelsManager->Get(AxisObjectDragZ).Render.RootTransform).Transform = mth::matr4f::BuildTransform(0.5, rot, pos + mth::vec3f{0, 0, 1});
 
         /*
         const gdr::model& Model = Engine->ModelsManager->Get(ChoosedElement);
@@ -1389,7 +1441,10 @@ public:
      Engine->ModelsManager->Remove(PointLightObject);
      Engine->ModelsManager->Remove(SpotLightObject);
      Engine->ModelsManager->Remove(DirLightObject);
-     Engine->ModelsManager->Remove(AxisObject);
+     Engine->ModelsManager->Remove(AxisObjectDragX);
+     Engine->ModelsManager->Remove(AxisObjectDragY);
+     Engine->ModelsManager->Remove(AxisObjectDragZ);
+     Engine->ModelsManager->Remove(AxisObjectCenter);
      Clear();
   }
 };

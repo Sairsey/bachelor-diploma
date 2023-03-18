@@ -98,6 +98,7 @@ bool gdr::render::Init(engine* Eng)
     Passes.push_back(new skybox_pass());
     Passes.push_back(new oit_color_pass());
     Passes.push_back(new oit_compose_pass());
+    Passes.push_back(new topmost_pass());
 
     // Postprocess
     Passes.push_back(new luminance_pass());

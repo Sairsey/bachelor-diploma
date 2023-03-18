@@ -52,6 +52,7 @@
     <ClInclude Include="source\render\passes\shadow_map_pass.h" />
     <ClInclude Include="source\render\passes\skybox_pass.h" />
     <ClInclude Include="source\render\passes\tonemap_pass.h" />
+    <ClInclude Include="source\render\passes\top_most_pass.h" />
     <ClInclude Include="source\render\passes\visibility_frustum_pass.h" />
     <ClInclude Include="source\render\passes\visibility_hier_depth_pass.h" />
     <ClInclude Include="source\render\passes\visibility_occlusion_pass.h" />
@@ -157,6 +158,7 @@
     <ClCompile Include="source\render\passes\shadow_map_pass.cpp" />
     <ClCompile Include="source\render\passes\skybox_pass.cpp" />
     <ClCompile Include="source\render\passes\tonemap_pass.cpp" />
+    <ClCompile Include="source\render\passes\top_most_pass.cpp" />
     <ClCompile Include="source\render\passes\visibility_frustum_pass.cpp" />
     <ClCompile Include="source\render\passes\visibility_hier_depth_pass.cpp" />
     <ClCompile Include="source\render\passes\visibility_occlusion_pass.cpp" />

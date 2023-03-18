@@ -143,7 +143,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
   
   
   //Engine.AddUnit(new unit_thriller_stage());
-  Engine.AddUnit(new unit_thriller_env());
+  //Engine.AddUnit(new unit_thriller_env());
   //Engine.AddUnit(new unit_thriller_camera());
   //Engine.AddUnit(new unit_thriller_dancers());
   
@@ -158,8 +158,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
   Engine.AddUnit(new unit_editor());
   //Engine.AddUnit(new unit_blueprint_editor());
 
-  //Engine.AddUnit(new unit_fishes_env());
-  //Engine.AddUnit(new unit_fishes_rotating());
+  Engine.AddUnit(new unit_fishes_env());
+  Engine.AddUnit(new unit_fishes_rotating());
   
   //Engine.AddUnit(new unit_yokohama());
   Engine.AddUnit(new unit_alex_apt());

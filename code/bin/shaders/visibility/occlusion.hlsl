@@ -135,8 +135,9 @@ void CS(uint3 groupId : SV_GroupID, uint groupIndex : SV_GroupIndex)
               ObjectTransformPool[command.Indices.ObjectTransformIndex].minAABB,
               ObjectTransformPool[command.Indices.ObjectTransformIndex].maxAABB);
           bool opaque = !(command.Indices.ObjectParamsMask & OBJECT_PARAMETER_TRANSPARENT);
+          bool topmost = command.Indices.ObjectParamsMask & OBJECT_PARAMETER_TOP_MOST;
 
-          if (visible)
+          if (!topmost && visible)
           {
             if (opaque)
               OpaqueCulledCommands.Append(command);

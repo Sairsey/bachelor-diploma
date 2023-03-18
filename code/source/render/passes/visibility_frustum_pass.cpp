@@ -125,17 +125,21 @@ void gdr::visibility_frustum_pass::CallDirectDraw(ID3D12GraphicsCommandList* cur
         ComputeGlobals.VP,
         Render->ObjectTransformsSystem->Get(command.Indices.ObjectTransformIndex).Transform,
         Render->ObjectTransformsSystem->Get(command.Indices.ObjectTransformIndex).minAABB,
-        Render->ObjectTransformsSystem->Get(command.Indices.ObjectTransformIndex).maxAABB);;
+        Render->ObjectTransformsSystem->Get(command.Indices.ObjectTransformIndex).maxAABB);
 
     bool transparent = command.Indices.ObjectParamsMask & OBJECT_PARAMETER_TRANSPARENT;
+    bool topmost = command.Indices.ObjectParamsMask & OBJECT_PARAMETER_TOP_MOST;
 
-    if (transparent)
-      Render->DrawCommandsSystem->DirectCommandPools[(int)indirect_command_pools_enum::TransparentAll].push_back(i);
-    else
-      Render->DrawCommandsSystem->DirectCommandPools[(int)indirect_command_pools_enum::OpaqueAll].push_back(i);
+    if (!topmost)
+    {
+        if (transparent)
+            Render->DrawCommandsSystem->DirectCommandPools[(int)indirect_command_pools_enum::TransparentAll].push_back(i);
+        else
+            Render->DrawCommandsSystem->DirectCommandPools[(int)indirect_command_pools_enum::OpaqueAll].push_back(i);
 
-    if (!transparent && visible)
-      Render->DrawCommandsSystem->DirectCommandPools[(int)indirect_command_pools_enum::OpaqueFrustrumCulled].push_back(i);
+        if (!transparent && visible)
+            Render->DrawCommandsSystem->DirectCommandPools[(int)indirect_command_pools_enum::OpaqueFrustrumCulled].push_back(i);
+    }
   }
 
   // Transit resource state of valid buffers to INDIRECT_ARGUMENT.

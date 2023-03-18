@@ -169,6 +169,9 @@
     <Filter Include="Source Files\Raycast">
       <UniqueIdentifier>{26bbe85f-c5a4-4cea-83ae-35b2782c4294}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Render\Passes\topmost">
+      <UniqueIdentifier>{253936ae-729f-4420-b01a-364e6d362f8b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\main.cpp">
@@ -317,6 +320,9 @@
     </ClCompile>
     <ClCompile Include="source\raycast\raycast_manager.cpp">
       <Filter>Source Files\Raycast</Filter>
+    </ClCompile>
+    <ClCompile Include="source\render\passes\top_most_pass.cpp">
+      <Filter>Source Files\Render\Passes\topmost</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -646,6 +652,9 @@
     </ClInclude>
     <ClInclude Include="source\raycast\raycast_manager.h">
       <Filter>Source Files\Raycast</Filter>
+    </ClInclude>
+    <ClInclude Include="source\render\passes\top_most_pass.h">
+      <Filter>Source Files\Render\Passes\topmost</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

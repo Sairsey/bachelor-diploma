@@ -47,6 +47,7 @@
   #include "render/passes/skybox_pass.h"
   #include "render/passes/oit_color_pass.h"
   #include "render/passes/oit_compose_pass.h"
+  #include "render/passes/top_most_pass.h"
 
 /// Postprocess
   #include "render/passes/luminance_pass.h"

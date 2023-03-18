@@ -89,14 +89,18 @@ void CS(uint3 groupId : SV_GroupID, uint groupIndex : SV_GroupIndex)
               ObjectTransformPool[command.Indices.ObjectTransformIndex].minAABB,
               ObjectTransformPool[command.Indices.ObjectTransformIndex].maxAABB);
           bool opaque = !(command.Indices.ObjectParamsMask & OBJECT_PARAMETER_TRANSPARENT);
+          bool topmost = command.Indices.ObjectParamsMask & OBJECT_PARAMETER_TOP_MOST;
 
-          if (opaque)
-            OpaqueAllCommands.Append(command);
-          else
-            TransparentAllCommands.Append(command);
-        
-          if (opaque && visible)
-            OpaqueFrustumCulledCommands.Append(command);
+          if (!topmost)
+          {
+              if (opaque)
+                  OpaqueAllCommands.Append(command);
+              else
+                  TransparentAllCommands.Append(command);
+
+              if (opaque && visible)
+                  OpaqueFrustumCulledCommands.Append(command);
+          }
         }
     }
 }

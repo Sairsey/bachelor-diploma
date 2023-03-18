@@ -203,8 +203,9 @@ void gdr::shadow_map_pass::CallDirectDraw(ID3D12GraphicsCommandList* currentComm
                 Render->ObjectTransformsSystem->Get(command.Indices.ObjectTransformIndex).minAABB,
                 Render->ObjectTransformsSystem->Get(command.Indices.ObjectTransformIndex).maxAABB);
         bool transparent = command.Indices.ObjectParamsMask & OBJECT_PARAMETER_TRANSPARENT;
+        bool topmost = command.Indices.ObjectParamsMask & OBJECT_PARAMETER_TOP_MOST;
 
-        if (!visible || transparent)
+        if (!visible || transparent || topmost)
             continue;
 
         currentCommandList->IASetVertexBuffers(0, 1, &command.VertexBuffer);

@@ -131,8 +131,9 @@ void gdr::visibility_occlusion_pass::CallDirectDraw(ID3D12GraphicsCommandList* c
         Render->ObjectTransformsSystem->Get(command.Indices.ObjectTransformIndex).maxAABB);
 
     bool transparent = command.Indices.ObjectParamsMask & OBJECT_PARAMETER_TRANSPARENT;
+    bool topmost = command.Indices.ObjectParamsMask & OBJECT_PARAMETER_TOP_MOST;
 
-    if (visible)
+    if (!topmost && visible)
     {
       if (transparent)
         Render->DrawCommandsSystem->DirectCommandPools[(int)indirect_command_pools_enum::TransparentsCulled].push_back(i);

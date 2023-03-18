@@ -80,9 +80,9 @@ void gdr::topmost_pass::Initialize(void)
         psoDesc.BlendState.RenderTarget[0].DestBlendAlpha = D3D12_BLEND_ZERO;
         psoDesc.BlendState.RenderTarget[0].BlendOpAlpha = D3D12_BLEND_OP_ADD;
 
-        psoDesc.DepthStencilState.DepthEnable = FALSE;
-        psoDesc.DepthStencilState.DepthFunc = D3D12_COMPARISON_FUNC_ALWAYS;
-        psoDesc.DepthStencilState.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ZERO;
+        psoDesc.DepthStencilState.DepthEnable = TRUE;
+        psoDesc.DepthStencilState.DepthFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL;
+        psoDesc.DepthStencilState.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ALL;
         psoDesc.DepthStencilState.StencilEnable = FALSE;
         psoDesc.SampleMask = UINT_MAX;
         psoDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
@@ -98,11 +98,21 @@ void gdr::topmost_pass::Initialize(void)
 void gdr::topmost_pass::CallDirectDraw(ID3D12GraphicsCommandList* currentCommandList)
 {
     Render->RenderTargetsSystem->Set(currentCommandList, render_targets_enum::target_frame_hdr);
+    
+    D3D12_RECT Rect;
+    Rect.left = 0;
+    Rect.top = 0;
+    Rect.bottom = Render->RenderHeight;
+    Rect.right = Render->RenderWidth;
+    currentCommandList->ClearDepthStencilView(Render->RenderTargetsSystem->DepthStencilView, D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.0f, 0, 1, &Rect);
 
     // set common params
     currentCommandList->SetPipelineState(PSO);
     currentCommandList->SetGraphicsRootSignature(RootSignature);
     currentCommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+
+    std::vector<gdr_index> commands;
 
     // just iterate for every draw call
     for (auto& i : Render->DrawCommandsSystem->DirectCommandPools[(int)indirect_command_pools_enum::All])
@@ -114,7 +124,23 @@ void gdr::topmost_pass::CallDirectDraw(ID3D12GraphicsCommandList* currentCommand
         if (!topmost)
             continue;
 
-        auto &command = Render->DrawCommandsSystem->Get(i);
+        commands.push_back(i);
+    }
+
+    std::sort(commands.begin(), commands.end(), [&](const gdr_index &a, const gdr_index& b)
+    {
+      gdr_index a_transform = Render->DrawCommandsSystem->Get(a).Indices.ObjectTransformIndex;
+      gdr_index b_transform = Render->DrawCommandsSystem->Get(b).Indices.ObjectTransformIndex;
+      mth::vec3f a_pos = (Render->ObjectTransformsSystem->Get(a_transform).maxAABB + Render->ObjectTransformsSystem->Get(a_transform).minAABB) / 2.0;
+      mth::vec3f b_pos = (Render->ObjectTransformsSystem->Get(b_transform).maxAABB + Render->ObjectTransformsSystem->Get(b_transform).minAABB) / 2.0;
+      mth::vec3f cam_pos = Render->GlobalsSystem->Get().CameraPos;
+
+      return ((a_pos - cam_pos) dot (a_pos - cam_pos)) < ((b_pos - cam_pos) dot (b_pos - cam_pos));
+    });
+
+    for (auto &i : commands)
+    {
+        auto& command = Render->DrawCommandsSystem->Get(i);
         currentCommandList->IASetVertexBuffers(0, 1, &command.VertexBuffer);
         currentCommandList->IASetIndexBuffer(&command.IndexBuffer);
         {

@@ -3,7 +3,6 @@
 #include <json.hpp>
 #include <fstream>
 
-
 // macro to draw a tree of specific resource
 #define ResourceTree(index_type, engine_system, string_name, string_many_name, start_index, is_add, add_lambda) \
   {                                                                                                        \
@@ -73,7 +72,7 @@ private:
   gdr_index PointLightObject;
   gdr_index DirLightObject;
   gdr_index SpotLightObject;
-  
+
   gdr_index AxisObjectDragX;
   gdr_index AxisObjectDragY;
   gdr_index AxisObjectDragZ;
@@ -100,7 +99,7 @@ public:
     auto import_data_sphere = gdr::ImportModelFromAssimp("bin/models/light_meshes/sphere.obj");
     auto import_data_dir = gdr::ImportModelFromAssimp("bin/models/light_meshes/dir.obj");
     auto import_data_cone = gdr::ImportModelFromAssimp("bin/models/light_meshes/cone.obj");
-    auto import_data_axis = gdr::ImportSplittedModelFromAssimp("bin/models/light_meshes/transform_gizmo.glb");
+    auto import_data_axis = gdr::ImportSplittedModelFromAssimp("bin/models/light_meshes/axis.obj");
 
     ID3D12GraphicsCommandList* commandList;
     Engine->GetDevice().BeginUploadCommandList(&commandList);
@@ -109,8 +108,8 @@ public:
     DirLightObject = Engine->ModelsManager->Add(import_data_dir);
     SpotLightObject = Engine->ModelsManager->Add(import_data_cone);
     AxisObjectCenter = Engine->ModelsManager->Add(import_data_axis[0]);
-    AxisObjectDragX = Engine->ModelsManager->Add(import_data_axis[3]);
-    AxisObjectDragY = Engine->ModelsManager->Add(import_data_axis[1]);
+    AxisObjectDragX = Engine->ModelsManager->Add(import_data_axis[1]);
+    AxisObjectDragY = Engine->ModelsManager->Add(import_data_axis[3]);
     AxisObjectDragZ = Engine->ModelsManager->Add(import_data_axis[2]);
     PROFILE_END(commandList);
     Engine->GetDevice().CloseUploadCommandList();
@@ -1208,13 +1207,13 @@ public:
     Engine->ObjectTransformsSystem->GetEditable(
       Engine->ModelsManager->Get(SpotLightObject).Render.RootTransform).Transform = mth::matr4f::Scale(0);
     Engine->ObjectTransformsSystem->GetEditable(
-        Engine->ModelsManager->Get(AxisObjectDragX).Render.RootTransform).Transform = mth::matr4f::Scale(0);
+      Engine->ModelsManager->Get(AxisObjectDragX).Render.RootTransform).Transform = mth::matr4f::Scale(0);
     Engine->ObjectTransformsSystem->GetEditable(
-        Engine->ModelsManager->Get(AxisObjectDragY).Render.RootTransform).Transform = mth::matr4f::Scale(0);
+      Engine->ModelsManager->Get(AxisObjectDragY).Render.RootTransform).Transform = mth::matr4f::Scale(0);
     Engine->ObjectTransformsSystem->GetEditable(
-        Engine->ModelsManager->Get(AxisObjectDragZ).Render.RootTransform).Transform = mth::matr4f::Scale(0);
+      Engine->ModelsManager->Get(AxisObjectDragZ).Render.RootTransform).Transform = mth::matr4f::Scale(0);
     Engine->ObjectTransformsSystem->GetEditable(
-        Engine->ModelsManager->Get(AxisObjectCenter).Render.RootTransform).Transform = mth::matr4f::Scale(0);
+      Engine->ModelsManager->Get(AxisObjectCenter).Render.RootTransform).Transform = mth::matr4f::Scale(0);
 
     if (Engine->KeysClick[VK_LBUTTON])
     {
@@ -1276,13 +1275,26 @@ public:
     {
         mth::vec3f pos, scale;
         mth::vec4f rot;
-
+        mth::matr4f matr = Engine->ObjectTransformsSystem->Get(Engine->ModelsManager->Get(ChoosedElement).Render.RootTransform).Transform;
+        matr.Decompose(pos, rot, scale);
+        
         Engine->ObjectTransformsSystem->Get(Engine->ModelsManager->Get(ChoosedElement).Render.RootTransform).Transform.Decompose(pos, rot, scale);
 
+        mth::matr4f RotationMat = mth::matr4f::BuildTransform(1, rot, 0);
+
+        mth::vec3f xAxis = {0.8, 0, 0};
+        mth::vec3f yAxis = {0, 0.8, 0};
+        mth::vec3f zAxis = {0, 0, 0.8};
+
+        xAxis = RotationMat * xAxis;
+        yAxis = RotationMat * yAxis;
+        zAxis = RotationMat * zAxis;
+
+
         Engine->ObjectTransformsSystem->GetEditable(Engine->ModelsManager->Get(AxisObjectCenter).Render.RootTransform).Transform = mth::matr4f::BuildTransform(0.5, rot, pos);
-        Engine->ObjectTransformsSystem->GetEditable(Engine->ModelsManager->Get(AxisObjectDragX).Render.RootTransform).Transform = mth::matr4f::BuildTransform(0.5, rot, pos + mth::vec3f{1, 0, 0});
-        Engine->ObjectTransformsSystem->GetEditable(Engine->ModelsManager->Get(AxisObjectDragY).Render.RootTransform).Transform = mth::matr4f::BuildTransform(0.5, rot, pos + mth::vec3f{0, 1, 0});
-        Engine->ObjectTransformsSystem->GetEditable(Engine->ModelsManager->Get(AxisObjectDragZ).Render.RootTransform).Transform = mth::matr4f::BuildTransform(0.5, rot, pos + mth::vec3f{0, 0, 1});
+        Engine->ObjectTransformsSystem->GetEditable(Engine->ModelsManager->Get(AxisObjectDragX).Render.RootTransform).Transform = mth::matr4f::BuildTransform(0.5, rot, pos + xAxis);
+        Engine->ObjectTransformsSystem->GetEditable(Engine->ModelsManager->Get(AxisObjectDragY).Render.RootTransform).Transform = mth::matr4f::BuildTransform(0.5, rot, pos + yAxis);
+        Engine->ObjectTransformsSystem->GetEditable(Engine->ModelsManager->Get(AxisObjectDragZ).Render.RootTransform).Transform = mth::matr4f::BuildTransform(0.5, rot, pos + zAxis);
 
         /*
         const gdr::model& Model = Engine->ModelsManager->Get(ChoosedElement);

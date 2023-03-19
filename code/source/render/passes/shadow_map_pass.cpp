@@ -159,15 +159,15 @@ void gdr::shadow_map_pass::CallDirectDraw(ID3D12GraphicsCommandList* currentComm
       D3D12_RECT Rect;
       Rect.left = 0;
       Rect.top = 0;
-      Rect.bottom = Render->ShadowMapsSystem->Get(ShadowMap).H;
-      Rect.right = Render->ShadowMapsSystem->Get(ShadowMap).W;
+      Rect.bottom = (LONG)Render->ShadowMapsSystem->Get(ShadowMap).H;
+      Rect.right = (LONG)Render->ShadowMapsSystem->Get(ShadowMap).W;
       currentCommandList->ClearDepthStencilView(DSV, D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.0f, 0, 1, &Rect);
 
       D3D12_VIEWPORT Viewport;
       Viewport.TopLeftX = 0.0f;
       Viewport.TopLeftY = 0.0f;
-      Viewport.Height = Rect.bottom - Rect.top;
-      Viewport.Width = Rect.right - Rect.left;
+      Viewport.Height = (FLOAT)(Rect.bottom - Rect.top);
+      Viewport.Width = (FLOAT)(Rect.right - Rect.left);
       Viewport.MinDepth = 0.0f;
       Viewport.MaxDepth = 1.0f;
 
@@ -308,8 +308,8 @@ void gdr::shadow_map_pass::CallIndirectDraw(ID3D12GraphicsCommandList* currentCo
           // update ComputeGlobals
           {
               ComputeGlobals.VP = Render->LightsSystem->Get(LightIndex).VP;
-              ComputeGlobals.width = Render->ShadowMapsSystem->Get(ShadowMap).W;
-              ComputeGlobals.height = Render->ShadowMapsSystem->Get(ShadowMap).H;
+              ComputeGlobals.width = (UINT)Render->ShadowMapsSystem->Get(ShadowMap).W;
+              ComputeGlobals.height = (UINT)Render->ShadowMapsSystem->Get(ShadowMap).H;
               ComputeGlobals.frustumCulling = true;
               ComputeGlobals.occlusionCulling = false;
               ComputeGlobals.commandsCount = (UINT)Render->DrawCommandsSystem->AllocatedSize();
@@ -354,8 +354,8 @@ void gdr::shadow_map_pass::CallIndirectDraw(ID3D12GraphicsCommandList* currentCo
           D3D12_RECT Rect;
           Rect.left = 0;
           Rect.top = 0;
-          Rect.bottom = Render->ShadowMapsSystem->Get(ShadowMap).H;
-          Rect.right = Render->ShadowMapsSystem->Get(ShadowMap).W;
+          Rect.bottom = (LONG)Render->ShadowMapsSystem->Get(ShadowMap).H;
+          Rect.right = (LONG)Render->ShadowMapsSystem->Get(ShadowMap).W;
           currentCommandList->ClearDepthStencilView(DSV, D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.0f, 0, 1, &Rect);
 
           Render->GetDevice().SetCommandListAsUpload(currentCommandList);
@@ -368,8 +368,8 @@ void gdr::shadow_map_pass::CallIndirectDraw(ID3D12GraphicsCommandList* currentCo
           D3D12_VIEWPORT Viewport;
           Viewport.TopLeftX = 0.0f;
           Viewport.TopLeftY = 0.0f;
-          Viewport.Height = Rect.bottom - Rect.top;
-          Viewport.Width = Rect.right - Rect.left;
+          Viewport.Height = (FLOAT)(Rect.bottom - Rect.top);
+          Viewport.Width = (FLOAT)(Rect.right - Rect.left);
           Viewport.MinDepth = 0.0f;
           Viewport.MaxDepth = 1.0f;
 

@@ -8,9 +8,9 @@ private:
   gdr_index EnemyModel;
   gdr_index EnemyWalkAnimation;
   gdr_index EnemyDieAnimation;
-  double EnemyHeight = 4.1; // meters
-  double EnemyWidth = 2;
-  double EnemySpeed = 2; // m/s
+  float EnemyHeight = 4.1f; // meters
+  float EnemyWidth = 2;
+  float EnemySpeed = 2; // m/s
   mth::vec3f EnemyPos;
   bool IsDeadAnimation = false;
   float IsDeadAnimationStart = 0;
@@ -18,7 +18,7 @@ public:
 
   unit_shooter_enemy(mth::vec3f Position)
   {
-    EnemyPos = Position + mth::vec3f(0, EnemyHeight / 2.0, 0);
+    EnemyPos = Position + mth::vec3f(0, EnemyHeight / 2.0f, 0);
   }
 
   void Initialize()
@@ -35,7 +35,7 @@ public:
     EnemyModel = Engine->ModelsManager->Add(enemy_model);
     Engine->GetDevice().CloseUploadCommandList();
     
-    EnemyCapsule = Engine->PhysicsManager->AddDynamicCapsule(EnemyWidth / 2.0, (EnemyHeight - EnemyWidth) / 2.0);
+    EnemyCapsule = Engine->PhysicsManager->AddDynamicCapsule(EnemyWidth / 2.0f, (EnemyHeight - EnemyWidth) / 2.0f);
     // disable rotation
     Engine->PhysicsManager->GetEditable(EnemyCapsule).SetParent(EnemyModel);
     Engine->PhysicsManager->GetEditable(EnemyCapsule).ToggleRotation();
@@ -68,7 +68,7 @@ public:
       Engine->ObjectTransformsSystem->GetEditable(Engine->ModelsManager->Get(EnemyModel).Render.RootTransform).Transform = 
         mth::matr4f::RotateY(atan2f(sina, cosa) * MTH_R2D) *
         mth::matr4f::Scale(2) *
-        mth::matr4f::Translate(Engine->PhysicsManager->Get(EnemyCapsule).GetPos() - mth::vec3f(0, EnemyHeight / 2.0, 0));
+        mth::matr4f::Translate(Engine->PhysicsManager->Get(EnemyCapsule).GetPos() - mth::vec3f(0, EnemyHeight / 2.0f, 0));
 
       // Play Animation
       Engine->AnimationManager->SetAnimationTime(EnemyModel, EnemyWalkAnimation, Engine->GetTime() * 1000);
@@ -103,7 +103,7 @@ public:
       // move towards player
       mth::vec3f DiffVelocity = Velocity - Engine->PhysicsManager->Get(EnemyCapsule).GetVel();
       mth::vec3f Accel = DiffVelocity / gdr::PHYSICS_TICK;
-      Accel *= Engine->PhysicsManager->GetEditable(EnemyCapsule).GetPhysXMaterial()->getStaticFriction() * 0.9;
+      Accel *= Engine->PhysicsManager->GetEditable(EnemyCapsule).GetPhysXMaterial()->getStaticFriction() * 0.9f;
       Accel.Y = 0;
       Engine->PhysicsManager->GetEditable(EnemyCapsule).AddForce(
         Accel *

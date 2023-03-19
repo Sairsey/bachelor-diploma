@@ -55,7 +55,7 @@ bool gdr::render::Init(engine* Eng)
   if (localIsInited)
   {
     D3D12_DESCRIPTOR_HEAP_DESC dsvDesc = {};
-    dsvDesc.NumDescriptors = 1 + CreationParams.MaxShadowMapsAmount;
+    dsvDesc.NumDescriptors = 1 + (UINT)CreationParams.MaxShadowMapsAmount;
     dsvDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_DSV;
 
     HRESULT hr = S_OK;
@@ -255,7 +255,7 @@ void gdr::render::DrawFrame(void)
           GlobalsSystem->GetEditable().IsTonemap = Params.IsTonemapping;
           GlobalsSystem->GetEditable().SceneExposure = Params.SceneExposure;
           GlobalsSystem->GetEditable().IsIBL = Params.IsIBL;
-          GlobalsSystem->GetEditable().MaximumOITPoolSize = RenderWidth * RenderHeight * CreationParams.MaxTransparentDepth;
+          GlobalsSystem->GetEditable().MaximumOITPoolSize = (UINT)(RenderWidth * RenderHeight * CreationParams.MaxTransparentDepth);
           GlobalsSystem->GetEditable().DebugOIT = Params.IsDebugOIT;
           GlobalsSystem->GetEditable().IsFXAA = Params.IsFXAA;
           GlobalsSystem->UpdateGPUData(uploadCommandList);

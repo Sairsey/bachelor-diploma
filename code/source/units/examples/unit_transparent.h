@@ -41,7 +41,7 @@ public:
   void Response(void)
   {
     gdr_index TransformIndex = Engine->ModelsManager->Get(LightMesh).Render.RootTransform;
-    Engine->ObjectTransformsSystem->GetEditable(TransformIndex).Transform = mth::matr::Scale(0.1) * mth::matr::Translate({ 0.f, 1.f, 1.f }) * mth::matr::RotateZ(Engine->GetTime() * 20);
+    Engine->ObjectTransformsSystem->GetEditable(TransformIndex).Transform = mth::matr::Scale(0.1f) * mth::matr::Translate({ 0.f, 1.f, 1.f }) * mth::matr::RotateZ(Engine->GetTime() * 20);
   }
 
   std::string GetName(void)

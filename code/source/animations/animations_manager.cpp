@@ -83,7 +83,7 @@ void gdr::animation_manager::SetAnimationTime(gdr_index ModelIndex, gdr_index An
 
 		// find left and right keys
 		int leftIndex = 0;
-		int rightIndex = RootNode.GlobalKeyframes.size() - 1;
+		int rightIndex = (int)(RootNode.GlobalKeyframes.size() - 1);
 		for (int j = 0; j < RootNode.GlobalKeyframes.size(); j++)
 		{
 			if (RootNode.GlobalKeyframes[j].time <= time)
@@ -107,12 +107,12 @@ void gdr::animation_manager::SetAnimationTime(gdr_index ModelIndex, gdr_index An
 				const render_model_node& NodeToAnimate = RenderModel.Hierarchy[i];
 				const animation_node& AnimationNode = Animation.Hierarchy[i];
 				
-				mth::vec3f localPosition = AnimationNode.LocalKeyframes[leftIndex].pos * (1.0 - alpha) + AnimationNode.LocalKeyframes[rightIndex].pos * alpha;
-				mth::vec3f localScale = AnimationNode.LocalKeyframes[leftIndex].scale * (1.0 - alpha) + AnimationNode.LocalKeyframes[rightIndex].scale * alpha;
+				mth::vec3f localPosition = AnimationNode.LocalKeyframes[leftIndex].pos * (1.0f - alpha) + AnimationNode.LocalKeyframes[rightIndex].pos * alpha;
+				mth::vec3f localScale = AnimationNode.LocalKeyframes[leftIndex].scale * (1.0f - alpha) + AnimationNode.LocalKeyframes[rightIndex].scale * alpha;
 				mth::vec4f localRotation = AnimationNode.LocalKeyframes[leftIndex].rotationQuat.slerp(AnimationNode.LocalKeyframes[rightIndex].rotationQuat, alpha);
 
-				mth::vec3f globalPosition = AnimationNode.GlobalKeyframes[leftIndex].pos * (1.0 - alpha) + AnimationNode.GlobalKeyframes[rightIndex].pos * alpha;
-				mth::vec3f globalScale = AnimationNode.GlobalKeyframes[leftIndex].scale * (1.0 - alpha) + AnimationNode.GlobalKeyframes[rightIndex].scale * alpha;
+				mth::vec3f globalPosition = AnimationNode.GlobalKeyframes[leftIndex].pos * (1.0f - alpha) + AnimationNode.GlobalKeyframes[rightIndex].pos * alpha;
+				mth::vec3f globalScale = AnimationNode.GlobalKeyframes[leftIndex].scale * (1.0f - alpha) + AnimationNode.GlobalKeyframes[rightIndex].scale * alpha;
 				mth::vec4f globalRotation = AnimationNode.GlobalKeyframes[leftIndex].rotationQuat.slerp(AnimationNode.GlobalKeyframes[rightIndex].rotationQuat, alpha);
 
 				GDRGPUNodeTransform &Node = Engine->NodeTransformsSystem->GetEditable(NodeToAnimate.NodeTransform);

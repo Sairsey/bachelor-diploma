@@ -156,7 +156,7 @@ struct my_any
 
         std::vector<std::string> splitted = split(inner_part, ", ");
 
-        Set((gdr_index)std::atoll(splitted[0].c_str()));
+        Set(gdr_index((unsigned)std::atoll(splitted[0].c_str())));
       }
       else
       {
@@ -169,7 +169,7 @@ struct my_any
     void Set(float t)
     {
       arg_float = t;
-      arg_gdr_index = t;
+      arg_gdr_index = (unsigned)t;
       arg_string = std::string("float{") + std::to_string(t) + "}";
 
       for (int i = 0; i < (int)EditorArgsTypes::editor_arg_count; i++)
@@ -230,7 +230,7 @@ struct my_any
     void Set(gdr_index t)
     {
       arg_gdr_index = t;
-      arg_float = t;
+      arg_float = (float)t.value;
       arg_string = std::string("index{") + std::to_string(t) + "}";
 
       for (int i = 0; i < (int)EditorArgsTypes::editor_arg_count; i++)

@@ -6,15 +6,15 @@ class unit_shooter_first_person : public gdr::unit_base
 private:
   gdr_index PlayerCapsule;
   gdr_index PlayerLight;
-  double PlayerHeight = 1.83; // meters
-  double PlayerWidth = 0.25 * PlayerHeight; // Leonardo da Vinchi said so
-  double PlayerSpeed = 10; // m/s
-  double JumpPower = 5; // m/s
+  float PlayerHeight = 1.83f; // meters
+  float PlayerWidth = 0.25f * PlayerHeight; // Leonardo da Vinchi said so
+  float PlayerSpeed = 10; // m/s
+  float JumpPower = 5; // m/s
   bool IsJump = false;
 public:
   void Initialize(void)
   {
-    PlayerCapsule = Engine->PhysicsManager->AddDynamicCapsule(PlayerWidth / 2.0, (PlayerHeight - PlayerWidth) / 2.0);
+    PlayerCapsule = Engine->PhysicsManager->AddDynamicCapsule(PlayerWidth / 2.0f, (PlayerHeight - PlayerWidth) / 2.0f);
     // disable rotation
     Engine->PhysicsManager->GetEditable(PlayerCapsule).ToggleRotation();
     Engine->PhysicsManager->GetEditable(PlayerCapsule).SetPos({ 0, 1, 0 });
@@ -26,7 +26,7 @@ public:
     Engine->PlayerCamera.SetView({0, 1, 0}, {1, 1, 0}, {0, 1, 0});
     PlayerLight = Engine->LightsSystem->Add();
     Engine->LightsSystem->GetEditable(PlayerLight).LightSourceType = LIGHT_SOURCE_TYPE_POINT;
-    Engine->LightsSystem->GetEditable(PlayerLight).Color = { 1, 0.5, 0 };
+    Engine->LightsSystem->GetEditable(PlayerLight).Color = { 1, 0.5f, 0 };
     Engine->LightsSystem->GetEditable(PlayerLight).ObjectTransformIndex = Engine->ObjectTransformsSystem->Add();
   }
 
@@ -71,7 +71,7 @@ public:
     mth::matr4f capsuleTransform = Engine->PhysicsManager->Get(PlayerCapsule).GetTransform();
 
     mth::vec3f capsulePosition = mth::vec3f(capsuleTransform[3][0], capsuleTransform[3][1], capsuleTransform[3][2]);
-    mth::vec3f cameraPosition = capsulePosition + mth::vec3f(0, 1, 0) * PlayerHeight / 2.0;
+    mth::vec3f cameraPosition = capsulePosition + mth::vec3f(0, 1, 0) * PlayerHeight / 2.0f;
 
     Engine->PlayerCamera.SetView(cameraPosition, cameraPosition + Engine->PlayerCamera.GetDir(), {0, 1, 0});
     
@@ -83,11 +83,11 @@ public:
       // Update input
       if (Engine->Mdx != 0)
       {
-        Engine->PlayerCamera.RotateAroundLocY(-Engine->Mdx * 0.1);
+        Engine->PlayerCamera.RotateAroundLocY(-Engine->Mdx * 0.1f);
       }
       if (Engine->Mdy != 0)
       {
-        Engine->PlayerCamera.RotateAroundLocRight(-Engine->Mdy * 0.1);
+        Engine->PlayerCamera.RotateAroundLocRight(-Engine->Mdy * 0.1f);
       }
     }
   }
@@ -113,7 +113,7 @@ public:
 
     mth::vec3f DiffVelocity = Velocity - Engine->PhysicsManager->Get(PlayerCapsule).GetVel();
     mth::vec3f Accel = DiffVelocity / gdr::PHYSICS_TICK;
-    Accel *= Engine->PhysicsManager->GetEditable(PlayerCapsule).GetPhysXMaterial()->getStaticFriction() * 0.9;
+    Accel *= Engine->PhysicsManager->GetEditable(PlayerCapsule).GetPhysXMaterial()->getStaticFriction() * 0.9f;
     Accel.Y = 0;
     Engine->PhysicsManager->GetEditable(PlayerCapsule).AddForce(
       Accel *
@@ -121,7 +121,7 @@ public:
 
     if (Engine->Keys[VK_SPACE] && !IsJump)
     {
-      Engine->PhysicsManager->GetEditable(PlayerCapsule).AddVel({ 0, sqrtf(2 * 9.81 * 1), 0 });
+      Engine->PhysicsManager->GetEditable(PlayerCapsule).AddVel({ 0, sqrtf(2 * 9.81f * 1), 0 });
       IsJump = true;
     }
   }

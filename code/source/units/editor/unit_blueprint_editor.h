@@ -83,7 +83,7 @@ public:
 
     for (int i = 0; i < functions.size(); i++)
     {
-      ImNodes::BeginNode(i + 1 + events.size());
+      ImNodes::BeginNode(i + 1 + (int)events.size());
       ImNodes::BeginNodeTitleBar();
       ImNodes::PushColorStyle(ImNodesCol_TitleBar, IM_COL32(11, 109, 191, 255));
       ImGui::TextUnformatted(functions[i].name.c_str());

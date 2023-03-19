@@ -51,20 +51,20 @@ public:
         Fishes[i] = FishesPack2[i - FishesPack1.size()];
       else
         Fishes[i] = FishesPack3[i - FishesPack1.size() - FishesPack2.size()];
-    AddFishes(StartFishesAmount);
+    AddFishes((int)StartFishesAmount);
 
-    Engine->EnableFullscreen();
+    //Engine->EnableFullscreen();
   }
 
   mth::vec3f getRandomPointInAuarium()
   {
-    float min_x = -8.5;
-    float max_x = -2.5;
+    float min_x = -8.5f;
+    float max_x = -2.5f;
 
     float min_y = 1;
-    float max_y = 2.5;
+    float max_y = 2.5f;
 
-    float max_z = 1.8;
+    float max_z = 1.8f;
     float min_z = -5;
   
     float x = min_x + (max_x - min_x) * rand() / RAND_MAX;
@@ -77,13 +77,13 @@ public:
   mth::vec3f CatmulRomSpline(Fish f, float t)
   {
     t -= int(t); // leave only frac part
-    int p1 = t * 4;
+    int p1 = int(t * 4);
     int p0 = (p1 - 1 + 4) % 4;
     int p2 = (p1 + 1 + 4) % 4;
     int p3 = (p1 + 2 + 4) % 4;
 
-    float t0 = 1.0 * p1 / 4;
-    float dt = 1.0 / 4;
+    float t0 = 1.0f * p1 / 4;
+    float dt = 1.0f / 4;
 
     t = (t - t0) / dt;
 
@@ -137,7 +137,7 @@ public:
             FILE* F;
             fopen_s(&F, Filename.c_str(), "a");
             // fishes, Frame time, CPU Render time, GPU Render time
-            fprintf(F, "%d, %f, %f, %f\n", LeftTank.size(), SumEngTime / FramesToCalc * 4.0/3.0, SumCPUTime / FramesToCalc * 4.0 / 3.0, Engine->DeviceFrameCounter.GetUSec());
+            fprintf(F, "%zd, %f, %f, %f\n", LeftTank.size(), SumEngTime / FramesToCalc * 4.0/3.0, SumCPUTime / FramesToCalc * 4.0 / 3.0, Engine->DeviceFrameCounter.GetUSec());
             fclose(F);
             SumEngTime = 0;
             SumCPUTime = 0;
@@ -147,7 +147,7 @@ public:
                 exit(0);
             }
 
-            AddFishes(FishesStep);
+            AddFishes((int)FishesStep);
         }
         else if (frameCount % FramesToCalc >= FramesToCalc / 4)
         {
@@ -164,7 +164,7 @@ public:
             static float gpu = 1;
 
             ImGui::GetIO().FontAllowUserScaling = true;
-            ImGui::GetIO().FontGlobalScale = 2;
+            //ImGui::GetIO().FontGlobalScale = 2;
 
             ImGui::Begin("FISH EXAMPLE");
             ImGui::Text("FPS: %f", fps);
@@ -185,9 +185,9 @@ public:
 
             if (frameCount % 20 == 0)
             {
-                fps = 1000000000.0 / Engine->EngineClock;
-                cpu = Engine->CPUDrawFrameTime / 1000000.0;
-                gpu = Engine->DeviceFrameCounter.GetUSec() / 1000.0;
+                fps = (float)(1000000000.0 / Engine->EngineClock);
+                cpu = (float)(Engine->CPUDrawFrameTime / 1000000.0);
+                gpu = (float)(Engine->DeviceFrameCounter.GetUSec() / 1000.0);
             }
 
             ImGui::End();
@@ -195,7 +195,7 @@ public:
 
         if (frameCount % FramesToCalc == 0)
         {
-            AddFishes(FishesStep);
+            AddFishes((int)FishesStep);
         }
     }
 
@@ -208,7 +208,7 @@ public:
       mth::vec3f ModelCenter = (Engine->ObjectTransformsSystem->Get(ObjectTransform).minAABB + Engine->ObjectTransformsSystem->Get(ObjectTransform).maxAABB) / 2.0;
 
       mth::vec3f Position = CatmulRomSpline(f, Engine->GetTime() / f.Duration);
-      mth::vec3f NextPosition = CatmulRomSpline(f, Engine->GetTime() / f.Duration + 0.1);
+      mth::vec3f NextPosition = CatmulRomSpline(f, Engine->GetTime() / f.Duration + 0.1f);
       mth::vec3f Dir = (NextPosition - Position).Normalized();
       mth::vec3f StartDir = {0, 0, 1};
       
@@ -219,7 +219,7 @@ public:
 
       Engine->ObjectTransformsSystem->GetEditable(ObjectTransform).Transform =
         mth::matr4f::Translate(-ModelCenter) *
-        mth::matr4f::Scale(0.03) * mth::matr4f::Rotate(std::atan2(sin, cos) * MTH_R2D, Axis) *
+        mth::matr4f::Scale(0.03f) * mth::matr4f::Rotate(std::atan2(sin, cos) * MTH_R2D, Axis) *
         mth::matr4f::Translate(Position);
     }
   }

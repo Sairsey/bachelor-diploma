@@ -16,9 +16,24 @@ gdr::engine::engine()
  *       engine* NewEngine
  * RETURNS: None.
  */
-void gdr::engine::AddUnit(unit_base* UnitToAdd)
+void gdr::engine::SetScene(unit_base* UnitScene)
 {
-  ToAdd.push_back(UnitToAdd);
+  if (SceneUnit != nullptr)
+    RemoveUnit(SceneUnit);
+  SceneUnit = UnitScene;
+  ToAdd.push(std::make_pair(SceneUnit, nullptr));
+}
+
+/* Add new Unit function.
+ * ARGUMENTS:
+ *   - pointer on Engine
+ *       engine* NewEngine
+ * RETURNS: None.
+ */
+void gdr::engine::AddUnit(unit_base* UnitToAdd, unit_base *ParentUnit)
+{
+  GDR_ASSERT(SceneUnit != nullptr);
+  ToAdd.push(std::make_pair(UnitToAdd, ParentUnit == nullptr ? SceneUnit : ParentUnit));
 }
 
 /* Remove Unit function.
@@ -29,16 +44,19 @@ void gdr::engine::AddUnit(unit_base* UnitToAdd)
  */
 void gdr::engine::RemoveUnit(unit_base* UnitToRemove)
 {
-  ToRemove.push_back(UnitToRemove);
+  GDR_ASSERT(SceneUnit != nullptr);
+  for (int i = 0; i < UnitToRemove->ChildUnits.size(); i++)
+    RemoveUnit(UnitToRemove->ChildUnits[i]);
+  ToRemove.push(UnitToRemove);
 }
 
 /* Destructor */
 gdr::engine::~engine()
 {
-  for (unit_base *unit : Units)
+  for (unit_base *unit : AllUnits)
     delete unit;
 
-  Units.clear();
+  AllUnits.clear();
   delete ModelsManager;
   delete AnimationManager;
   delete PhysicsManager;
@@ -51,13 +69,6 @@ gdr::engine::~engine()
  */
 VOID gdr::engine::Init(VOID)
 {
-  for (int i = 0; i < Units.size(); i++) // We can add units while initializing, so lets Initialize in for loop
-  {
-    Units[i]->Initialize();
-  }
-  render::GetDevice().WaitAllUploadLists();
-  render::GetDevice().WaitGPUIdle();
-  render::GetDevice().ResizeUpdateBuffer(true);
 }
 
 /* Change window size handle function.
@@ -105,6 +116,24 @@ VOID gdr::engine::Activate(BOOL IsActive)
   SetPause(!IsActive);
 }
 
+void gdr::engine::ResponseUnit(unit_base* Unit)
+{
+  PROFILE_CPU_BEGIN(Unit->GetName().c_str());
+  Unit->Response();
+  for (int i = 0; i < Unit->ChildUnits.size(); i++)
+    ResponseUnit(Unit->ChildUnits[i]);
+  PROFILE_CPU_END();
+}
+
+void gdr::engine::ResponsePhysUnit(unit_base* Unit)
+{
+  PROFILE_CPU_BEGIN(Unit->GetName().c_str());
+  Unit->ResponsePhys();
+  for (int i = 0; i < Unit->ChildUnits.size(); i++)
+    ResponsePhysUnit(Unit->ChildUnits[i]);
+  PROFILE_CPU_END();
+}
+
 /* Timer handle function.
  * ARGUMENTS: None.
  * RETURNS: None.
@@ -128,77 +157,89 @@ VOID gdr::engine::Timer(VOID)
   ModelsManager->UpdateGPUData(nullptr);
   AnimationManager->UpdateGPUData(nullptr);
 
-
   // update Units
-  if (ToAdd.size())
+  if (!ToAdd.empty())
   {
     render::GetDevice().WaitAllUploadLists();
     render::GetDevice().WaitGPUIdle();
     render::GetDevice().ResizeUpdateBuffer(false);
     PROFILE_CPU_BEGIN("Add new units");
-    for (int i = 0; i < ToAdd.size(); i++)
+    while (!ToAdd.empty())
     {
-      ToAdd[i]->SetEngine(this);
-      ToAdd[i]->Initialize();
-      Units.push_back(ToAdd[i]);
+      unit_base *UnitToAdd = ToAdd.front().first;
+      unit_base *ParentUnit = ToAdd.front().second;
+      UnitToAdd->ParentUnit = ParentUnit;
+      if (ParentUnit != nullptr)
+        ParentUnit->ChildUnits.push_back(UnitToAdd);
+      UnitToAdd->Engine = this;
+      UnitToAdd->Initialize();
+      AllUnits.push_back(UnitToAdd);
+      ToAdd.pop();
     }
-    ToAdd.clear();
     PROFILE_CPU_END();
     render::GetDevice().WaitAllUploadLists();
     render::GetDevice().WaitGPUIdle();
     render::GetDevice().ResizeUpdateBuffer(true);
   }
   
-  if (ToRemove.size())
+  if (!ToRemove.empty())
   {
     PROFILE_CPU_BEGIN("Remove old units");
-    for (int i = 0; i < ToRemove.size(); i++)
+    while (!ToRemove.empty())
     {
-      unit_base *unitToFind = ToRemove[i];
-      int unitIndex = NONE_INDEX;
+      unit_base* UnitToDelete = ToRemove.front();
       
-      // find unit index
-      for (int j = 0; j < Units.size() && unitIndex == NONE_INDEX; j++)
-        if (unitToFind == Units[j])
-          unitIndex = j;
+      GDR_ASSERT(UnitToDelete->ChildUnits.empty());
 
-      // if found successfully
-      if (unitIndex != NONE_INDEX)
+      // unbind it from parent
+      if (UnitToDelete->ParentUnit != nullptr)
       {
-        delete unitToFind;
-        Units.erase(Units.begin() + unitIndex);
+        UINT32 index = NONE_INDEX;
+
+        for (UINT32 i = 0; i < UnitToDelete->ParentUnit->ChildUnits.size() && index == NONE_INDEX; i++)
+          if (UnitToDelete->ParentUnit->ChildUnits[i] == UnitToDelete)
+            index = i;
+
+        if (index != NONE_INDEX)
+          UnitToDelete->ParentUnit->ChildUnits.erase(UnitToDelete->ParentUnit->ChildUnits.begin() + index);
       }
+
+      // remove it in list of all units
+      {
+        UINT32 index = NONE_INDEX;
+
+        for (UINT32 i = 0; i < AllUnits.size() && index == NONE_INDEX; i++)
+          if (AllUnits[i] == UnitToDelete)
+            index = i;
+
+        if (index != NONE_INDEX)
+          AllUnits.erase(AllUnits.begin() + index);
+      }
+
+      delete UnitToDelete;
+      ToRemove.pop();
     }
-    ToRemove.clear();
     PROFILE_CPU_END();
   }
 
   if (IsPhysTick)
   {
-    PROFILE_CPU_BEGIN("Units update tick");
-    for (auto& unit : Units)
-    {
-      PROFILE_CPU_BEGIN(unit->GetName().c_str());
-      unit->ResponsePhys();
-      PROFILE_CPU_END();
-    }
+    PROFILE_CPU_BEGIN("Units phys update tick");
+    if (SceneUnit != nullptr)
+      ResponsePhysUnit(SceneUnit);
     PROFILE_CPU_END();
   }
 
   PROFILE_CPU_BEGIN("Units update frame");
-  for (auto& unit : Units)
-  {
-    PROFILE_CPU_BEGIN(unit->GetName().c_str());
-    unit->Response();
-    PROFILE_CPU_END();
-  }
+  if (SceneUnit != nullptr)
+    ResponseUnit(SceneUnit);
   PROFILE_CPU_END();
 
   // Draw Frame
   render::DrawFrame();
   PROFILE_CPU_END();
   auto cpuEnd = std::chrono::system_clock::now();
-  EngineClock = std::chrono::duration_cast<std::chrono::nanoseconds>(cpuEnd - cpuStart).count();
+  EngineClock = (double)(std::chrono::duration_cast<std::chrono::nanoseconds>(cpuEnd - cpuStart).count());
 }
 
 /* Free CPU time handling function.

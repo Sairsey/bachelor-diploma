@@ -54,7 +54,7 @@ unit_scripted::unit_scripted(std::string Name) : UnitName(Name)
 
     // init library
     {
-      #define GDR_BLUEPRINT_NODE(type, filter, name, number_of_input_args, number_of_output_args, input_args_types, output_args_types, input_args_names, output_args_names) \
+        #define GDR_BLUEPRINT_NODE(type, filter, name, number_of_input_args, number_of_output_args, input_args_types, output_args_types, input_args_names, output_args_names) \
         { \
           BlueprintLibraryNode newNode;\
           newNode.NodeType = type;\
@@ -68,7 +68,7 @@ unit_scripted::unit_scripted(std::string Name) : UnitName(Name)
             newNode.OutputArguments.push_back(output_args[i]);\
           newNode.Function = DefaultFunction; \
           BlueprintLibrary.push_back(newNode); \
-          BlueprintLibraryMapping[filter][name] = BlueprintLibrary.size() - 1; \
+          BlueprintLibraryMapping[filter][name] = (int)(BlueprintLibrary.size() - 1); \
         };
 
       GDR_BLUEPRINT_LIST
@@ -114,7 +114,7 @@ void unit_scripted::FillBlueprintFunctions()
 
     BlueprintLibrary[BlueprintLibraryMapping["Time"]["Set pause"]].Function = [&](BlueprintScriptNode me, std::vector<my_any> input) -> int
     {
-      Engine->SetPause(input[0].Get<float>());
+      Engine->SetPause((BOOL)input[0].Get<float>());
       return 0;
     };
 

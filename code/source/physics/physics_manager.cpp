@@ -161,7 +161,8 @@ gdr::physics_manager::physics_manager(engine * Eng) : resource_pool_subsystem(En
 
   physx::PxMaterial* Material = PhysX->createMaterial(1.f, 1.f, 0.1f);
   groundPlane = PxCreatePlane(*PhysX, physx::PxPlane(0, 1, 0, 0), *Material);
-  groundPlane->userData = (void*)NONE_INDEX;
+  gdr_index plane_index = NONE_INDEX;
+  groundPlane->userData = reinterpret_cast<void *>(plane_index.pack());
   Scene->addActor(*groundPlane);
 
   Material->release();
@@ -298,7 +299,7 @@ gdr_index gdr::physics_manager::AddDynamicMesh(model_import_data ImportModel, ph
 
   {
     physx::PxConvexMeshDesc convexDesc;
-    convexDesc.points.count = Vert.size();
+    convexDesc.points.count = (unsigned)Vert.size();
     convexDesc.points.stride = sizeof(mth::vec3f);
     convexDesc.points.data = Vert.data();
     convexDesc.flags = physx::PxConvexFlag::eCOMPUTE_CONVEX;

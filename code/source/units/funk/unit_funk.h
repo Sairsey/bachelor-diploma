@@ -34,13 +34,13 @@ public:
         Engine->GetDevice().CloseUploadCommandList();
 
         Animation = Engine->AnimationManager->Add(stormtrooper);
-        Engine->PlayerCamera.SetPos({ -265.5, 3.766, 838.552 });
-        Engine->PlayerCamera.SetDir({ -0.011, -0.603, -0.865 });
+        Engine->PlayerCamera.SetPos({ -265.5f, 3.766f, 838.552f });
+        Engine->PlayerCamera.SetDir({ -0.011f, -0.603f, -0.865f });
     }
 
     float GetMedian(std::queue<float> q)
     {
-        int size = q.size();
+        int size = (int)(q.size());
         float val = 0;
         int skip = 10;
 
@@ -113,9 +113,9 @@ public:
                 while (queue_gpu.size() >= FramesToCalc)
                     queue_gpu.pop();
 
-                queue_fps.push(1000000000.0 / Engine->EngineClock);
-                queue_cpu.push(Engine->CPUDrawFrameTime / 1000000.0);
-                queue_gpu.push(Engine->DeviceFrameCounter.GetUSec() / 1000.0);
+                queue_fps.push(float(1000000000.0 / Engine->EngineClock));
+                queue_cpu.push(float(Engine->CPUDrawFrameTime / 1000000.0));
+                queue_gpu.push(float(Engine->DeviceFrameCounter.GetUSec() / 1000.0));
             }
 
             ImGui::End();
@@ -123,7 +123,7 @@ public:
 
         if (state == 3)
         {
-            float alpha = (Engine->GetTime() - Offset) * 1000.0;
+            float alpha = (Engine->GetTime() - Offset) * 1000.0f;
 
             for (int i = 0; i < SceneModels.size(); i++)
             {
@@ -136,7 +136,7 @@ public:
                     pos -= (TroopersAmount / LineWidth);
                 }
 
-                Engine->ObjectTransformsSystem->GetEditable(Engine->ModelsManager->Get(SceneModels[i]).Render.RootTransform).Transform = mth::matr4f::Translate({ -265.0f + float(i % LineWidth - LineWidth / 2.0), 0.1, pos });
+                Engine->ObjectTransformsSystem->GetEditable(Engine->ModelsManager->Get(SceneModels[i]).Render.RootTransform).Transform = mth::matr4f::Translate({ -265.0f + float(i % LineWidth - LineWidth / 2.0f), 0.1f, pos });
             }
         }
     }

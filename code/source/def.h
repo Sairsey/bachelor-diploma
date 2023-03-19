@@ -120,7 +120,7 @@ enum struct gdr_hier_node_type
 
 enum struct gdr_index_types
 {
-  none,
+  none = 0,
   model,
   animation,
   physic_body,

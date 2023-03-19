@@ -78,7 +78,7 @@ public:
           SavingTrack = false;
           FILE* dump;
           fopen_s(&dump, "Camera_log.txt", "wt");
-          fprintf_s(dump, "%d\n", Track.size());
+          fprintf_s(dump, "%zd\n", Track.size());
           for (int i = 0; i < Track.size(); i++)
             fprintf_s(dump, "%g %g %g\n", Track[i].X, Track[i].Y, Track[i].Z);
           fclose(dump);

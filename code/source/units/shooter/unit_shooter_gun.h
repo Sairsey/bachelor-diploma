@@ -16,9 +16,9 @@ private:
 
   // Some additional Data
   float BulletSpeed = 100; // m/s
-  float BulletSize = 0.1; // m
+  float BulletSize = 0.1f; // m
   const float ReloadTime = 1; // s
-  float BulletOffset = 0.5; // from Gun
+  float BulletOffset = 0.5f; // from Gun
   float StartReloadTime = -10;
 public:
   void Initialize(void)
@@ -87,7 +87,7 @@ public:
       rotation.Transpose();
 
       Engine->ObjectTransformsSystem->GetEditable(Engine->ModelsManager->Get(PlayerGun).Render.RootTransform).Transform =
-        mth::matr4f::Scale(0.1) *
+        mth::matr4f::Scale(0.1f) *
         mth::matr4f::RotateZ(-70) *
         rotation *
         mth::matr4f::Rotate(min((Engine->GetTime() - StartReloadTime) / ReloadTime, 1) * 360, Engine->PlayerCamera.GetRight()) *

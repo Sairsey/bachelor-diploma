@@ -34,70 +34,70 @@ public:
 
     // list all root transforms 
     std::vector<mth::matr4f> RootTransforms;
-    RootTransforms.push_back(mth::matr4f::RotateY(20) * mth::matr4f::Translate({-27, -1.5, 8}));
-    RootTransforms.push_back(mth::matr4f::RotateY(20) * mth::matr4f::Translate({ -30, -1.2, 2 }));
-    RootTransforms.push_back(mth::matr4f::RotateY(20) * mth::matr4f::Translate({ -17, 2, -13.5 }));
-    RootTransforms.push_back(mth::matr4f::RotateY(100) * mth::matr4f::Translate({ -8.8, -0.5, -0.3 }));
-    RootTransforms.push_back(mth::matr4f::RotateY(180) * mth::matr4f::Translate({ -6.7, -1.5, 22 }));
-    RootTransforms.push_back(mth::matr4f::RotateY(180) * mth::matr4f::Translate({ 8.9, -1.6, 22 }));
-    RootTransforms.push_back(mth::matr4f::RotateY(40) * mth::matr4f::Translate({ 28.9, -1.2, 13 }));
-    RootTransforms.push_back(mth::matr4f::RotateY(140) * mth::matr4f::Translate({ 41, -1.5, 23 }));
-    RootTransforms.push_back(mth::matr4f::RotateY(40) * mth::matr4f::Translate({ 41, -1.4, 13 }));
-    RootTransforms.push_back(mth::matr4f::RotateY(40) * mth::matr4f::Translate({ 67, 1.37, 11 }));
-    RootTransforms.push_back(mth::matr4f::RotateY(140) * mth::matr4f::Translate({ 64, 1.29, 25 }));
-    RootTransforms.push_back(mth::matr4f::RotateY(120) * mth::matr4f::Translate({ 91.8, 1.2, 26 }));
-    RootTransforms.push_back(mth::matr4f::RotateY(90) * mth::matr4f::Translate({ 112, 3.5, 22 }));
-    RootTransforms.push_back(mth::matr4f::RotateY(180) * mth::matr4f::Translate({ 98, 1.6, 33 }));
-    RootTransforms.push_back(mth::matr4f::RotateY(180) * mth::matr4f::Translate({ 110, 1.6, 43 }));
-    RootTransforms.push_back(mth::matr4f::RotateY(180) * mth::matr4f::Translate({ 105, 1.6, 55 }));
-    RootTransforms.push_back(mth::matr4f::RotateY(180) * mth::matr4f::Translate({ 110, 2.5, 71 }));
-    RootTransforms.push_back(mth::matr4f::RotateY(-90) * mth::matr4f::Translate({ 75, 1.5, 62 }));
-    RootTransforms.push_back(mth::matr4f::RotateY(-90) * mth::matr4f::Translate({ 34, -1.5, 49.2 }));
+    RootTransforms.push_back(mth::matr4f::RotateY(20) * mth::matr4f::Translate({-27, -1.5f, 8}));
+    RootTransforms.push_back(mth::matr4f::RotateY(20) * mth::matr4f::Translate({ -30, -1.2f, 2 }));
+    RootTransforms.push_back(mth::matr4f::RotateY(20) * mth::matr4f::Translate({ -17, 2, -13.5f }));
+    RootTransforms.push_back(mth::matr4f::RotateY(100) * mth::matr4f::Translate({ -8.8f, -0.5f, -0.3f }));
+    RootTransforms.push_back(mth::matr4f::RotateY(180) * mth::matr4f::Translate({ -6.7f, -1.5f, 22 }));
+    RootTransforms.push_back(mth::matr4f::RotateY(180) * mth::matr4f::Translate({ 8.9f, -1.6f, 22 }));
+    RootTransforms.push_back(mth::matr4f::RotateY(40) * mth::matr4f::Translate({ 28.9f, -1.2f, 13 }));
+    RootTransforms.push_back(mth::matr4f::RotateY(140) * mth::matr4f::Translate({ 41, -1.5f, 23 }));
+    RootTransforms.push_back(mth::matr4f::RotateY(40) * mth::matr4f::Translate({ 41, -1.4f, 13 }));
+    RootTransforms.push_back(mth::matr4f::RotateY(40) * mth::matr4f::Translate({ 67, 1.37f, 11 }));
+    RootTransforms.push_back(mth::matr4f::RotateY(140) * mth::matr4f::Translate({ 64, 1.29f, 25 }));
+    RootTransforms.push_back(mth::matr4f::RotateY(120) * mth::matr4f::Translate({ 91.8f, 1.2f, 26 }));
+    RootTransforms.push_back(mth::matr4f::RotateY(90) * mth::matr4f::Translate({ 112, 3.5f, 22 }));
+    RootTransforms.push_back(mth::matr4f::RotateY(180) * mth::matr4f::Translate({ 98, 1.6f, 33 }));
+    RootTransforms.push_back(mth::matr4f::RotateY(180) * mth::matr4f::Translate({ 110, 1.6f, 43 }));
+    RootTransforms.push_back(mth::matr4f::RotateY(180) * mth::matr4f::Translate({ 105, 1.6f, 55 }));
+    RootTransforms.push_back(mth::matr4f::RotateY(180) * mth::matr4f::Translate({ 110, 2.5f, 71 }));
+    RootTransforms.push_back(mth::matr4f::RotateY(-90) * mth::matr4f::Translate({ 75, 1.5f, 62 }));
+    RootTransforms.push_back(mth::matr4f::RotateY(-90) * mth::matr4f::Translate({ 34, -1.5f, 49.2f }));
     
     for (int i = 28; i > 12; i -= 2)
     {
-      RootTransforms.push_back(mth::matr4f::RotateY(-110) * mth::matr4f::Translate({ 1.0f * i, -1.8, 53 }));
-      RootTransforms.push_back(mth::matr4f::RotateY(-70) * mth::matr4f::Translate({ 1.0f * i, -1.8, 45 }));
-      RootTransforms.push_back(mth::matr4f::RotateY(-110) * mth::matr4f::Translate({ 1.0f * i, -1.8, 51.5 }));
-      RootTransforms.push_back(mth::matr4f::RotateY(-70) * mth::matr4f::Translate({ 1.0f * i, -1.8, 46.5 }));
+      RootTransforms.push_back(mth::matr4f::RotateY(-110) * mth::matr4f::Translate({ 1.0f * i, -1.8f, 53 }));
+      RootTransforms.push_back(mth::matr4f::RotateY(-70) * mth::matr4f::Translate({ 1.0f * i, -1.8f, 45 }));
+      RootTransforms.push_back(mth::matr4f::RotateY(-110) * mth::matr4f::Translate({ 1.0f * i, -1.8f, 51.5f }));
+      RootTransforms.push_back(mth::matr4f::RotateY(-70) * mth::matr4f::Translate({ 1.0f * i, -1.8f, 46.5f }));
       
-      RootTransforms.push_back(mth::matr4f::RotateY(-110) * mth::matr4f::Translate({ 1.0f * i - 1, -1.8, 52.25 }));
-      RootTransforms.push_back(mth::matr4f::RotateY(-70) * mth::matr4f::Translate({ 1.0f * i - 1, -1.8, 45.75 }));
+      RootTransforms.push_back(mth::matr4f::RotateY(-110) * mth::matr4f::Translate({ 1.0f * i - 1, -1.8f, 52.25f }));
+      RootTransforms.push_back(mth::matr4f::RotateY(-70) * mth::matr4f::Translate({ 1.0f * i - 1, -1.8f, 45.75f }));
     }
 
     for (int i = 12; i > 0; i -= 2)
     {
       // i == 0 -> -2.3
       // i == 12 -> -1.8
-      float height = (- 1.8) * (i / 12.0) + (-2.4) * (1 - i / 12.0);
+      float height = (- 1.8f) * (i / 12.0f) + (-2.4f) * (1 - i / 12.0f);
       RootTransforms.push_back(mth::matr4f::RotateY(-110) * mth::matr4f::Translate({ 1.0f * i, height, 53 }));
       RootTransforms.push_back(mth::matr4f::RotateY(-70) * mth::matr4f::Translate({ 1.0f * i, height, 45 }));
-      RootTransforms.push_back(mth::matr4f::RotateY(-110) * mth::matr4f::Translate({ 1.0f * i, height, 51.5 }));
-      RootTransforms.push_back(mth::matr4f::RotateY(-70) * mth::matr4f::Translate({ 1.0f * i, height, 46.5 }));
+      RootTransforms.push_back(mth::matr4f::RotateY(-110) * mth::matr4f::Translate({ 1.0f * i, height, 51.5f }));
+      RootTransforms.push_back(mth::matr4f::RotateY(-70) * mth::matr4f::Translate({ 1.0f * i, height, 46.5f }));
 
-      RootTransforms.push_back(mth::matr4f::RotateY(-110) * mth::matr4f::Translate({ 1.0f * i - 1, height, 52.25 }));
-      RootTransforms.push_back(mth::matr4f::RotateY(-70) * mth::matr4f::Translate({ 1.0f * i - 1, height, 45.75 }));
+      RootTransforms.push_back(mth::matr4f::RotateY(-110) * mth::matr4f::Translate({ 1.0f * i - 1, height, 52.25f }));
+      RootTransforms.push_back(mth::matr4f::RotateY(-70) * mth::matr4f::Translate({ 1.0f * i - 1, height, 45.75f }));
     }
     for (int i = 0; i > -30; i -= 2)
     {
       // i == 0 -> -2.4
       // i == -30 -> -5.7
-      float height = (-2.4) * (1 + i / 30.0) + (-5.7) * (-i / 30.0);
+      float height = (-2.4f) * (1 + i / 30.0f) + (-5.7f) * (-i / 30.0f);
       RootTransforms.push_back(mth::matr4f::RotateY(-110) * mth::matr4f::Translate({ 1.0f * i, height, 53 }));
       RootTransforms.push_back(mth::matr4f::RotateY(-70) * mth::matr4f::Translate({ 1.0f * i, height, 45 }));
-      RootTransforms.push_back(mth::matr4f::RotateY(-110) * mth::matr4f::Translate({ 1.0f * i, height, 51.5 }));
-      RootTransforms.push_back(mth::matr4f::RotateY(-70) * mth::matr4f::Translate({ 1.0f * i, height, 46.5 }));
+      RootTransforms.push_back(mth::matr4f::RotateY(-110) * mth::matr4f::Translate({ 1.0f * i, height, 51.5f }));
+      RootTransforms.push_back(mth::matr4f::RotateY(-70) * mth::matr4f::Translate({ 1.0f * i, height, 46.5f }));
 
       RootTransforms.push_back(mth::matr4f::RotateY(-110) * mth::matr4f::Translate({ 1.0f * i - 1, height, 52.25 }));
       RootTransforms.push_back(mth::matr4f::RotateY(-70) * mth::matr4f::Translate({ 1.0f * i - 1, height, 45.75 }));
     }
 
-    RootTransforms.push_back(mth::matr4f::RotateY(-90) * mth::matr4f::Translate({ -58, -5.5, 46 }));
-    RootTransforms.push_back(mth::matr4f::RotateY(-90) * mth::matr4f::Translate({ -62, -5.8, 53 }));
-    RootTransforms.push_back(mth::matr4f::RotateY(-90) * mth::matr4f::Translate({ -62, -5.8, 100 }));
-    RootTransforms.push_back(mth::matr4f::RotateY(0) * mth::matr4f::Translate({ -18, -0.5, 88 }));
-    RootTransforms.push_back(mth::matr4f::RotateY(0) * mth::matr4f::Translate({ -17.5, -1.5, 66 }));
-    RootTransforms.push_back(mth::matr4f::RotateY(0) * mth::matr4f::Translate({ -30, -1.5, 64 }));
+    RootTransforms.push_back(mth::matr4f::RotateY(-90) * mth::matr4f::Translate({ -58, -5.5f, 46 }));
+    RootTransforms.push_back(mth::matr4f::RotateY(-90) * mth::matr4f::Translate({ -62, -5.8f, 53 }));
+    RootTransforms.push_back(mth::matr4f::RotateY(-90) * mth::matr4f::Translate({ -62, -5.8f, 100 }));
+    RootTransforms.push_back(mth::matr4f::RotateY(0) * mth::matr4f::Translate({ -18, -0.5f, 88 }));
+    RootTransforms.push_back(mth::matr4f::RotateY(0) * mth::matr4f::Translate({ -17.5f, -1.5f, 66 }));
+    RootTransforms.push_back(mth::matr4f::RotateY(0) * mth::matr4f::Translate({ -30, -1.5f, 64 }));
 
     /// load models
     std::vector<gdr::model_import_data> ImportedModels;
@@ -114,7 +114,7 @@ public:
     {
       Engine->GetDevice().BeginUploadCommandList(&commandList);
       PROFILE_BEGIN(commandList, "unit_thriller_dancers load dancers");
-      int dancerId = 1.0 * rand() / RAND_MAX * ImportedModels.size();
+      int dancerId = int(1.0f * rand() / RAND_MAX * ImportedModels.size());
       DancersModels.push_back(std::make_pair(dancerId, Engine->ModelsManager->Add(ImportedModels[dancerId])));
 
       Engine->ObjectTransformsSystem->GetEditable(

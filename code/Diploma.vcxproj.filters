@@ -172,6 +172,9 @@
     <Filter Include="Source Files\Render\Passes\topmost">
       <UniqueIdentifier>{253936ae-729f-4420-b01a-364e6d362f8b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Units\Editor\EditorWindows">
+      <UniqueIdentifier>{01c1e7d4-004a-47ed-8eb0-03bc714e394c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\main.cpp">
@@ -655,6 +658,39 @@
     </ClInclude>
     <ClInclude Include="source\render\passes\top_most_pass.h">
       <Filter>Source Files\Render\Passes\topmost</Filter>
+    </ClInclude>
+    <ClInclude Include="source\units\unit_scene_default.h">
+      <Filter>Source Files\Units</Filter>
+    </ClInclude>
+    <ClInclude Include="source\units\thriller\unit_thriller_scene.h">
+      <Filter>Source Files\Units\Thriller</Filter>
+    </ClInclude>
+    <ClInclude Include="source\units\examples\unit_examples_scene.h">
+      <Filter>Source Files\Units\Examples</Filter>
+    </ClInclude>
+    <ClInclude Include="source\units\fishes\unit_fishes_scene.h">
+      <Filter>Source Files\Units\Fishes</Filter>
+    </ClInclude>
+    <ClInclude Include="source\units\shooter\unit_shooter_scene.h">
+      <Filter>Source Files\Units\Shooter</Filter>
+    </ClInclude>
+    <ClInclude Include="source\units\editor\unit_editor_window_game.h">
+      <Filter>Source Files\Units\Editor\EditorWindows</Filter>
+    </ClInclude>
+    <ClInclude Include="source\units\editor\unit_editor_window_hier.h">
+      <Filter>Source Files\Units\Editor\EditorWindows</Filter>
+    </ClInclude>
+    <ClInclude Include="source\units\editor\unit_editor_window_render_stats.h">
+      <Filter>Source Files\Units\Editor\EditorWindows</Filter>
+    </ClInclude>
+    <ClInclude Include="source\units\editor\unit_editor_window_render_params.h">
+      <Filter>Source Files\Units\Editor\EditorWindows</Filter>
+    </ClInclude>
+    <ClInclude Include="source\units\editor\unit_editor_window_resources.h">
+      <Filter>Source Files\Units\Editor\EditorWindows</Filter>
+    </ClInclude>
+    <ClInclude Include="source\units\editor\unit_editor_window_edit.h">
+      <Filter>Source Files\Units\Editor\EditorWindows</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

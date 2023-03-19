@@ -14,7 +14,7 @@ ray_intersect gdr::raycast_manager::RayVsOBB(mth::vec3f Org, mth::vec3f Dir, mth
 	float tMin = 0.0;
 	float tMax = FLT_MAX; //100000.0;
 	//const threshold = 0.001;
-	const float threshold = 1e-6;
+	const float threshold = 1e-6f;
 
     mth::vec3f pos, scale;
     mth::vec4f rot;

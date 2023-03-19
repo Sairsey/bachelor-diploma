@@ -19,7 +19,7 @@ public:
     GDRGPUMaterialPhongGetAmbientMapIndex(import_data.Materials[0]) = NONE_INDEX;
     GDRGPUMaterialPhongGetDiffuse(import_data.Materials[0]) = { 1, 1, 1};
     GDRGPUMaterialPhongGetDiffuseMapIndex(import_data.Materials[0]) = GDRGPUMaterialColorGetColorMapIndex(import_data.Materials[0]);
-    GDRGPUMaterialPhongGetSpecular(import_data.Materials[0]) = { 0.3, 0.3, 0.3 };
+    GDRGPUMaterialPhongGetSpecular(import_data.Materials[0]) = { 0.3f, 0.3f, 0.3f };
     GDRGPUMaterialPhongGetSpecularMapIndex(import_data.Materials[0]) = NONE_INDEX;
     GDRGPUMaterialPhongGetShiness(import_data.Materials[0]) = 30;
     GDRGPUMaterialPhongGetNormalMapIndex(import_data.Materials[0]) = NONE_INDEX;

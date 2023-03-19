@@ -4,7 +4,7 @@
 class unit_light_editor : public gdr::unit_base
 {
 private:
-  int CurrentLightToShow;
+  gdr_index CurrentLightToShow;
 
   gdr_index PointLightObject;
   gdr_index DirLightObject;
@@ -65,35 +65,35 @@ public:
         ImGui::Begin("Lights Viewer", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
         if (ImGui::Button("<<<"))
         {
-          CurrentLightToShow -= 100;
+          CurrentLightToShow.value -= 100;
         }
         ImGui::SameLine();
         if (ImGui::Button("<<"))
         {
-          CurrentLightToShow -= 10;
+          CurrentLightToShow.value -= 10;
         }
         ImGui::SameLine();
         if (ImGui::Button("<"))
         {
-          CurrentLightToShow -= 1;
+          CurrentLightToShow.value -= 1;
         }
         ImGui::SameLine();
         if (ImGui::Button(">"))
         {
-          CurrentLightToShow += 1;
+          CurrentLightToShow.value += 1;
         }
         ImGui::SameLine();
         if (ImGui::Button(">>"))
         {
-          CurrentLightToShow += 10;
+          CurrentLightToShow.value += 10;
         }
         ImGui::SameLine();
         if (ImGui::Button(">>>"))
         {
-          CurrentLightToShow += 100;
+          CurrentLightToShow.value += 100;
         }
 
-        CurrentLightToShow = min(max(0, CurrentLightToShow), Engine->LightsSystem->AllocatedSize() - 1);
+        CurrentLightToShow.value = min(max(0, CurrentLightToShow.value), (unsigned)(Engine->LightsSystem->AllocatedSize() - 1));
 
         if (ImGui::Button("New Light"))
         {
@@ -129,11 +129,11 @@ public:
 
             bool IsMatrChanged = false;
 
-            if (ImGui::DragFloat3("Translation", &Translate.X, 0.1))
+            if (ImGui::DragFloat3("Translation", &Translate.X, 0.1f))
               IsMatrChanged = true;
-            if (ImGui::DragFloat3("Rotation", &Rotate.X, 0.1))
+            if (ImGui::DragFloat3("Rotation", &Rotate.X, 0.1f))
               IsMatrChanged = true;
-            if (ImGui::DragFloat3("Scale", &Scale.X, 0.1))
+            if (ImGui::DragFloat3("Scale", &Scale.X, 0.1f))
               IsMatrChanged = true;
 
             if (IsMatrChanged)
@@ -147,16 +147,16 @@ public:
           }
 
           ImGui::ColorEdit3("Color", &Engine->LightsSystem->GetEditable(CurrentLightToShow).Color[0]);
-          ImGui::DragFloat("Red", &Engine->LightsSystem->GetEditable(CurrentLightToShow).Color[0], 0.1);
-          ImGui::DragFloat("Green", &Engine->LightsSystem->GetEditable(CurrentLightToShow).Color[1], 0.1);
-          ImGui::DragFloat("Blue", &Engine->LightsSystem->GetEditable(CurrentLightToShow).Color[2], 0.1);
+          ImGui::DragFloat("Red", &Engine->LightsSystem->GetEditable(CurrentLightToShow).Color[0], 0.1f);
+          ImGui::DragFloat("Green", &Engine->LightsSystem->GetEditable(CurrentLightToShow).Color[1], 0.1f);
+          ImGui::DragFloat("Blue", &Engine->LightsSystem->GetEditable(CurrentLightToShow).Color[2], 0.1f);
 
           if (Engine->LightsSystem->Get(CurrentLightToShow).LightSourceType != LIGHT_SOURCE_TYPE_DIRECTIONAL)
           {
             ImGui::Text("Attenuation");
-            ImGui::DragFloat("Constant part", &Engine->LightsSystem->GetEditable(CurrentLightToShow).ConstantAttenuation, 0.1);
-            ImGui::DragFloat("Linear part", &Engine->LightsSystem->GetEditable(CurrentLightToShow).LinearAttenuation, 0.1);
-            ImGui::DragFloat("Quadric part", &Engine->LightsSystem->GetEditable(CurrentLightToShow).QuadricAttenuation, 0.1);
+            ImGui::DragFloat("Constant part", &Engine->LightsSystem->GetEditable(CurrentLightToShow).ConstantAttenuation, 0.1f);
+            ImGui::DragFloat("Linear part", &Engine->LightsSystem->GetEditable(CurrentLightToShow).LinearAttenuation, 0.1f);
+            ImGui::DragFloat("Quadric part", &Engine->LightsSystem->GetEditable(CurrentLightToShow).QuadricAttenuation, 0.1f);
             Engine->LightsSystem->GetEditable(CurrentLightToShow).ConstantAttenuation = 
               max(1, Engine->LightsSystem->Get(CurrentLightToShow).ConstantAttenuation);
           }
@@ -165,8 +165,8 @@ public:
           {
             Engine->LightsSystem->GetEditable(CurrentLightToShow).AngleInnerCone *= MTH_R2D;
             Engine->LightsSystem->GetEditable(CurrentLightToShow).AngleOuterCone *= MTH_R2D;
-            ImGui::DragFloat("Inner cone angle", &Engine->LightsSystem->GetEditable(CurrentLightToShow).AngleInnerCone, 0.1, 1);
-            ImGui::DragFloat("Outer cone angle", &Engine->LightsSystem->GetEditable(CurrentLightToShow).AngleOuterCone, 0.1, Engine->LightsSystem->GetEditable(CurrentLightToShow).AngleInnerCone);
+            ImGui::DragFloat("Inner cone angle", &Engine->LightsSystem->GetEditable(CurrentLightToShow).AngleInnerCone, 0.1f, 1);
+            ImGui::DragFloat("Outer cone angle", &Engine->LightsSystem->GetEditable(CurrentLightToShow).AngleOuterCone, 0.1f, Engine->LightsSystem->GetEditable(CurrentLightToShow).AngleInnerCone);
             Engine->LightsSystem->GetEditable(CurrentLightToShow).AngleInnerCone = max(5, Engine->LightsSystem->Get(CurrentLightToShow).AngleInnerCone);
             Engine->LightsSystem->GetEditable(CurrentLightToShow).AngleOuterCone = max(Engine->LightsSystem->Get(CurrentLightToShow).AngleInnerCone, Engine->LightsSystem->Get(CurrentLightToShow).AngleOuterCone);
             Engine->LightsSystem->GetEditable(CurrentLightToShow).AngleInnerCone *= MTH_D2R;

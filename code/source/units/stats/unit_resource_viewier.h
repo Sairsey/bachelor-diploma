@@ -8,27 +8,27 @@ private:
   bool MainWindow;
   
   bool DrawCommandsWindow = false;
-  size_t DrawCommandsIndex = 0;
+  gdr_index DrawCommandsIndex = 0;
 
   bool GlobalsWindow = false;
 
   bool MaterialsWindow = false;
-  size_t MaterialsIndex = 0;
+  gdr_index MaterialsIndex = 0;
 
   bool TexturesWindow = false;
-  size_t TexturesIndex = 0;
+  gdr_index TexturesIndex = 0;
 
   bool RenderTargetWindow = false;
-  size_t RenderTargetIndex = 0;
+  gdr_index RenderTargetIndex = 0;
 
   bool ObjectTransformsWindow = false;
-  size_t ObjectTransformIndex = 0;
+  gdr_index ObjectTransformIndex = 0;
 
   bool NodeTransformsWindow = false;
-  size_t NodeTransformIndex = 0;
+  gdr_index NodeTransformIndex = 0;
 
   bool ShadowMapsWindow = false;
-  size_t ShadowMapIndex = 0;
+  gdr_index ShadowMapIndex = 0;
 
 public:
   void Initialize()
@@ -63,25 +63,25 @@ public:
         {
           ImGui::Begin("Draw commands Viewer", &DrawCommandsWindow, ImGuiWindowFlags_AlwaysAutoResize);
           if (ImGui::Button("<<<"))
-            DrawCommandsIndex -= 100;
+            DrawCommandsIndex.value -= 100;
           ImGui::SameLine();
           if (ImGui::Button("<<"))
-            DrawCommandsIndex -= 10;
+            DrawCommandsIndex.value -= 10;
           ImGui::SameLine();
           if (ImGui::Button("<"))
-            DrawCommandsIndex -= 1;
+            DrawCommandsIndex.value -= 1;
           ImGui::SameLine();
           ImGui::Text("%d", DrawCommandsIndex);
           ImGui::SameLine();
           if (ImGui::Button(">"))
-            DrawCommandsIndex += 1;
+            DrawCommandsIndex.value += 1;
           ImGui::SameLine();
           if (ImGui::Button(">>"))
-            DrawCommandsIndex += 10;
+            DrawCommandsIndex.value += 10;
           ImGui::SameLine();
           if (ImGui::Button(">>>"))
-            DrawCommandsIndex += 100;
-          DrawCommandsIndex = min(max(0, DrawCommandsIndex), Engine->DrawCommandsSystem->AllocatedSize() - 1);
+            DrawCommandsIndex.value += 100;
+          DrawCommandsIndex.value = min(max(0, DrawCommandsIndex.value), (unsigned)(Engine->DrawCommandsSystem->AllocatedSize() - 1));
 
           if (Engine->DrawCommandsSystem->IsExist(DrawCommandsIndex))
           {
@@ -146,25 +146,25 @@ public:
         {
           ImGui::Begin("Material Viewer", &MaterialsWindow, ImGuiWindowFlags_AlwaysAutoResize);
           if (ImGui::Button("<<<"))
-            MaterialsIndex -= 100;
+            MaterialsIndex.value -= 100;
           ImGui::SameLine();
           if (ImGui::Button("<<"))
-            MaterialsIndex -= 10;
+            MaterialsIndex.value -= 10;
           ImGui::SameLine();
           if (ImGui::Button("<"))
-            MaterialsIndex -= 1;
+            MaterialsIndex.value -= 1;
           ImGui::SameLine();
           ImGui::Text("%d", MaterialsIndex);
           ImGui::SameLine();
           if (ImGui::Button(">"))
-            MaterialsIndex += 1;
+            MaterialsIndex.value += 1;
           ImGui::SameLine();
           if (ImGui::Button(">>"))
-            MaterialsIndex += 10;
+            MaterialsIndex.value += 10;
           ImGui::SameLine();
           if (ImGui::Button(">>>"))
-            MaterialsIndex += 100;
-          MaterialsIndex = min(max(0, MaterialsIndex), Engine->MaterialsSystem->AllocatedSize() - 1);
+            MaterialsIndex.value += 100;
+          MaterialsIndex.value = min(max(0, MaterialsIndex.value), (unsigned)(Engine->MaterialsSystem->AllocatedSize() - 1));
 
           if (Engine->MaterialsSystem->IsExist(MaterialsIndex))
           {
@@ -350,25 +350,25 @@ public:
         {
           ImGui::Begin("Texture Viewer", &TexturesWindow, ImGuiWindowFlags_AlwaysAutoResize);
           if (ImGui::Button("<<<"))
-            TexturesIndex -= 100;
+            TexturesIndex.value -= 100;
           ImGui::SameLine();
           if (ImGui::Button("<<"))
-            TexturesIndex -= 10;
+            TexturesIndex.value -= 10;
           ImGui::SameLine();
           if (ImGui::Button("<"))
-            TexturesIndex -= 1;
+            TexturesIndex.value -= 1;
           ImGui::SameLine();
           ImGui::Text("%d", TexturesIndex);
           ImGui::SameLine();
           if (ImGui::Button(">"))
-            TexturesIndex += 1;
+            TexturesIndex.value += 1;
           ImGui::SameLine();
           if (ImGui::Button(">>"))
-            TexturesIndex += 10;
+            TexturesIndex.value += 10;
           ImGui::SameLine();
           if (ImGui::Button(">>>"))
-            TexturesIndex += 100;
-          TexturesIndex = min(max(0, TexturesIndex), Engine->TexturesSystem->AllocatedSize() - 1);
+            TexturesIndex.value += 100;
+          TexturesIndex.value = min(max(0, TexturesIndex.value), (unsigned)(Engine->TexturesSystem->AllocatedSize() - 1));
 
           if (Engine->TexturesSystem->IsExist(TexturesIndex))
           {
@@ -399,25 +399,25 @@ public:
             {
                 ImGui::Begin("Shadow maps Viewer", &ShadowMapsWindow, ImGuiWindowFlags_AlwaysAutoResize);
                 if (ImGui::Button("<<<"))
-                    ShadowMapIndex -= 100;
+                    ShadowMapIndex.value -= 100;
                 ImGui::SameLine();
                 if (ImGui::Button("<<"))
-                    ShadowMapIndex -= 10;
+                    ShadowMapIndex.value -= 10;
                 ImGui::SameLine();
                 if (ImGui::Button("<"))
-                    ShadowMapIndex -= 1;
+                    ShadowMapIndex.value -= 1;
                 ImGui::SameLine();
                 ImGui::Text("%d", ShadowMapIndex);
                 ImGui::SameLine();
                 if (ImGui::Button(">"))
-                    ShadowMapIndex += 1;
+                    ShadowMapIndex.value += 1;
                 ImGui::SameLine();
                 if (ImGui::Button(">>"))
-                    ShadowMapIndex += 10;
+                    ShadowMapIndex.value += 10;
                 ImGui::SameLine();
                 if (ImGui::Button(">>>"))
-                    ShadowMapIndex += 100;
-                ShadowMapIndex = min(max(0, ShadowMapIndex), Engine->ShadowMapsSystem->AllocatedSize() - 1);
+                    ShadowMapIndex.value += 100;
+                ShadowMapIndex.value = min(max(0, ShadowMapIndex.value), (unsigned)(Engine->ShadowMapsSystem->AllocatedSize() - 1));
 
                 if (Engine->ShadowMapsSystem->IsExist(ShadowMapIndex))
                 {
@@ -444,25 +444,25 @@ public:
         {
           ImGui::Begin("Render Targets Viewer", &RenderTargetWindow, ImGuiWindowFlags_AlwaysAutoResize);
           if (ImGui::Button("<<<"))
-            RenderTargetIndex -= 100;
+            RenderTargetIndex.value -= 100;
           ImGui::SameLine();
           if (ImGui::Button("<<"))
-            RenderTargetIndex -= 10;
+            RenderTargetIndex.value -= 10;
           ImGui::SameLine();
           if (ImGui::Button("<"))
-            RenderTargetIndex -= 1;
+            RenderTargetIndex.value -= 1;
           ImGui::SameLine();
           ImGui::Text("%d", RenderTargetIndex);
           ImGui::SameLine();
           if (ImGui::Button(">"))
-            RenderTargetIndex += 1;
+            RenderTargetIndex.value += 1;
           ImGui::SameLine();
           if (ImGui::Button(">>"))
-            RenderTargetIndex += 10;
+            RenderTargetIndex.value += 10;
           ImGui::SameLine();
           if (ImGui::Button(">>>"))
-            RenderTargetIndex += 100;
-          RenderTargetIndex = min(max(0, RenderTargetIndex), (int)gdr::render_targets_enum::target_count - 1);
+            RenderTargetIndex.value += 100;
+          RenderTargetIndex.value = min(max(0, RenderTargetIndex.value), (int)gdr::render_targets_enum::target_count - 1);
 
           auto& el = Engine->RenderTargetsSystem->Textures[RenderTargetIndex];
 
@@ -482,25 +482,25 @@ public:
         {
           ImGui::Begin("Object Transform Viewer", &ObjectTransformsWindow, ImGuiWindowFlags_AlwaysAutoResize);
           if (ImGui::Button("<<<"))
-            ObjectTransformIndex -= 100;
+            ObjectTransformIndex.value -= 100;
           ImGui::SameLine();
           if (ImGui::Button("<<"))
-            ObjectTransformIndex -= 10;
+            ObjectTransformIndex.value -= 10;
           ImGui::SameLine();
           if (ImGui::Button("<"))
-            ObjectTransformIndex -= 1;
+            ObjectTransformIndex.value -= 1;
           ImGui::SameLine();
           ImGui::Text("%d", ObjectTransformIndex);
           ImGui::SameLine();
           if (ImGui::Button(">"))
-            ObjectTransformIndex += 1;
+            ObjectTransformIndex.value += 1;
           ImGui::SameLine();
           if (ImGui::Button(">>"))
-            ObjectTransformIndex += 10;
+            ObjectTransformIndex.value += 10;
           ImGui::SameLine();
           if (ImGui::Button(">>>"))
-            ObjectTransformIndex += 100;
-          ObjectTransformIndex = min(max(0, ObjectTransformIndex), (int)Engine->ObjectTransformsSystem->AllocatedSize() - 1);
+            ObjectTransformIndex.value += 100;
+          ObjectTransformIndex.value = min(max(0, ObjectTransformIndex.value), (unsigned)Engine->ObjectTransformsSystem->AllocatedSize() - 1);
 
           if (Engine->ObjectTransformsSystem->IsExist(ObjectTransformIndex))
           {
@@ -537,25 +537,25 @@ public:
         {
           ImGui::Begin("Node Transform Viewer", &NodeTransformsWindow, ImGuiWindowFlags_AlwaysAutoResize);
           if (ImGui::Button("<<<"))
-            NodeTransformIndex -= 100;
+            NodeTransformIndex.value -= 100;
           ImGui::SameLine();
           if (ImGui::Button("<<"))
-            NodeTransformIndex -= 10;
+            NodeTransformIndex.value -= 10;
           ImGui::SameLine();
           if (ImGui::Button("<"))
-            NodeTransformIndex -= 1;
+            NodeTransformIndex.value -= 1;
           ImGui::SameLine();
           ImGui::Text("%d", NodeTransformIndex);
           ImGui::SameLine();
           if (ImGui::Button(">"))
-            NodeTransformIndex += 1;
+            NodeTransformIndex.value += 1;
           ImGui::SameLine();
           if (ImGui::Button(">>"))
-            NodeTransformIndex += 10;
+            NodeTransformIndex.value += 10;
           ImGui::SameLine();
           if (ImGui::Button(">>>"))
-            NodeTransformIndex += 100;
-          NodeTransformIndex = min(max(0, NodeTransformIndex), (int)Engine->NodeTransformsSystem->AllocatedSize() - 1);
+            NodeTransformIndex.value += 100;
+          NodeTransformIndex.value = min(max(0, NodeTransformIndex.value), (unsigned)Engine->NodeTransformsSystem->AllocatedSize() - 1);
 
           if (Engine->NodeTransformsSystem->IsExist(NodeTransformIndex))
           {

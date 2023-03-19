@@ -91,7 +91,7 @@ public:
       PopBack(-DeltaSize);
     DeltaSize = 0;
 
-    int row = max(sqrt(Models.size()), 2);
+    int row = max((int)sqrt(Models.size()), 2);
     /* single-thread computing */
     for (int i = 0; i < Models.size(); i++)
     {
@@ -104,7 +104,7 @@ public:
 
       Engine->PhysicsManager->GetEditable(PhysicBody).SetPos({ (i % row - row / 2) * dist, 0, -(i / row) * dist });
 
-      Engine->AnimationManager->SetAnimationTime(ModelIndex, Animation, Engine->GetTime() * 1000.0);
+      Engine->AnimationManager->SetAnimationTime(ModelIndex, Animation, Engine->GetTime() * 1000.0f);
     }
   }
 

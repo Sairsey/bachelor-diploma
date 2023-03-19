@@ -91,7 +91,7 @@ public:
 
                 // remove node transform
 
-                mth::vec3f Delta = mth::vec3f({ ObjectScreenSize.X , ObjectScreenSize.Y, ObjectScreenSize.Z}) * 0.05;
+                mth::vec3f Delta = mth::vec3f({ ObjectScreenSize.X , ObjectScreenSize.Y, ObjectScreenSize.Z}) * 0.05f;
                 Delta.Z += max(ObjectScreenMax.Z, ObjectScreenMin.Z);
                 Engine->ObjectTransformsSystem->GetEditable(ChooseTransform).Transform = 
                     Engine->ObjectTransformsSystem->GetEditable(ChooseTransform).Transform * 

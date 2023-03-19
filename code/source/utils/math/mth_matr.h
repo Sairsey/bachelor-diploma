@@ -277,9 +277,9 @@ namespace mth
         Translation.Z = A[3][2];
 
         // Scale rotation part
-        Type invSX = max(1.0 / sx, FLT_MIN);
-        Type invSY = max(1.0 / sy, FLT_MIN);
-        Type invSZ = max(1.0 / sz, FLT_MIN);
+        Type invSX = max((Type)1.0 / sx, FLT_MIN);
+        Type invSY = max((Type)1.0 / sy, FLT_MIN);
+        Type invSZ = max((Type)1.0 / sz, FLT_MIN);
 
         matr4<Type> tmpMatr = *this;
 
@@ -327,9 +327,9 @@ namespace mth
         Translation.Z = A[3][2];
 
         // Scale rotation part
-        Type invSX = 1.0 / max(sx, FLT_MIN);
-        Type invSY = 1.0 / max(sy, FLT_MIN);
-        Type invSZ = 1.0 / max(sz, FLT_MIN);
+        Type invSX = 1.0f / max(sx, FLT_MIN);
+        Type invSY = 1.0f / max(sy, FLT_MIN);
+        Type invSZ = 1.0f / max(sz, FLT_MIN);
 
         matr4<Type> tmpMatr = *this;
 
@@ -348,32 +348,32 @@ namespace mth
         float tr = tmpMatr.A[0][0] + tmpMatr.A[1][1] + tmpMatr.A[2][2];
 
         if (tr > 0) {
-          float S = sqrt(tr + 1.0) * 2; // S=4*qw 
-          Quaternion.W = 0.25 * S;
+          float S = sqrt(tr + 1.0f) * 2; // S=4*qw 
+          Quaternion.W = 0.25f * S;
           Quaternion.X = (tmpMatr.A[1][2] - tmpMatr.A[2][1]) / S;
           Quaternion.Y = (tmpMatr.A[2][0] - tmpMatr.A[0][2]) / S;
           Quaternion.Z = (tmpMatr.A[0][1] - tmpMatr.A[1][0]) / S;
         }
         else if ((tmpMatr.A[0][0] > tmpMatr.A[1][1]) & (tmpMatr.A[0][0] > tmpMatr.A[2][2])) {
-          float S = sqrt(1.0 + tmpMatr.A[0][0] - tmpMatr.A[1][1] - tmpMatr.A[2][2]) * 2; // S=4*qx 
+          float S = sqrt(1.0f + tmpMatr.A[0][0] - tmpMatr.A[1][1] - tmpMatr.A[2][2]) * 2; // S=4*qx 
           Quaternion.W = (tmpMatr.A[1][2] - tmpMatr.A[2][1]) / S;
-          Quaternion.X = 0.25 * S;
+          Quaternion.X = 0.25f * S;
           Quaternion.Y = (tmpMatr.A[1][0] + tmpMatr.A[0][1]) / S;
           Quaternion.Z = (tmpMatr.A[2][0] + tmpMatr.A[0][2]) / S;
         }
         else if (tmpMatr.A[1][1] > tmpMatr.A[2][2]) {
-          float S = sqrt(1.0 + tmpMatr.A[1][1] - tmpMatr.A[0][0] - tmpMatr.A[2][2]) * 2; // S=4*qy
+          float S = sqrt(1.0f + tmpMatr.A[1][1] - tmpMatr.A[0][0] - tmpMatr.A[2][2]) * 2; // S=4*qy
           Quaternion.W = (tmpMatr.A[2][0] - tmpMatr.A[0][2]) / S;
           Quaternion.X = (tmpMatr.A[1][0] + tmpMatr.A[0][1]) / S;
-          Quaternion.Y = 0.25 * S;
+          Quaternion.Y = 0.25f * S;
           Quaternion.Z = (tmpMatr.A[2][1] + tmpMatr.A[1][2]) / S;
         }
         else {
-          float S = sqrt(1.0 + tmpMatr.A[2][2] - tmpMatr.A[0][0] - tmpMatr.A[1][1]) * 2; // S=4*qz
+          float S = sqrt(1.0f + tmpMatr.A[2][2] - tmpMatr.A[0][0] - tmpMatr.A[1][1]) * 2; // S=4*qz
           Quaternion.W = (tmpMatr.A[0][1] - tmpMatr.A[1][0]) / S;
           Quaternion.X = (tmpMatr.A[2][0] + tmpMatr.A[0][2]) / S;
           Quaternion.Y = (tmpMatr.A[2][1] + tmpMatr.A[1][2]) / S;
-          Quaternion.Z = 0.25 * S;
+          Quaternion.Z = 0.25f * S;
         }
 
         Scale.X = sx;

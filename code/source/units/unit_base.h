@@ -10,10 +10,19 @@ namespace gdr
   /* Unit class declaration */
   class unit_base
   {
-    protected:
-      // Current used engine
-      engine* Engine;
     public:
+      engine* Engine; // pointer to Engine
+      unit_base *ParentUnit; // pointer on parent unit
+      std::vector<unit_base *> ChildUnits; // Child units in hierarchy
+      // Variables of this unit
+      std::unordered_map<std::string, gdr_index> IndicesVars;
+      std::unordered_map<std::string, float> FloatVars;
+      std::unordered_map<std::string, float2> Float2Vars;
+      std::unordered_map<std::string, float3> Float3Vars;
+      std::unordered_map<std::string, float4> Float4Vars;
+      std::unordered_map<std::string, mth::matr4f> MatrVars;
+      std::unordered_map<std::string, std::string> StringVars;
+
       /* default constructor */
       unit_base(void)
       {
@@ -23,17 +32,6 @@ namespace gdr
       virtual std::string GetName(void)
       {
         return "unit_base";
-      }
-
-      /* Set engine pointer function.
-       * ARGUMENTS:
-       *   - pointer on Engine
-       *       engine* NewEngine
-       * RETURNS: None.
-       */
-      void SetEngine(engine* NewEngine)
-      {
-        Engine = NewEngine;
       }
 
       /* Initialization function.

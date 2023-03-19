@@ -21,8 +21,8 @@ public:
 
   mth::vec3f GetRandomPos(void)
   {
-    float rx = 2.0 * rand() / RAND_MAX - 1;
-    float ry = 2.0 * rand() / RAND_MAX - 1;
+    float rx = 2.0f * rand() / RAND_MAX - 1;
+    float ry = 2.0f * rand() / RAND_MAX - 1;
     rx *= SpawnRadius;
     ry *= SpawnRadius;
     
@@ -34,24 +34,13 @@ public:
   void Initialize()
   {
     for (int i = 0; i < EnemyAmount; i++)
-      Enemies.push_back(new unit_shooter_enemy(GetRandomPos()));
-
-    for (int i = 0; i < Enemies.size(); i++)
-      Engine->AddUnit(Enemies[i]);
+      Engine->AddUnit(new unit_shooter_enemy(GetRandomPos()), this);
   }
 
   void Response(void)
   {
-    /*
-    if (Engine->GetTime() - PreviousTime > UpdateTime)
-    {
-      for (int i = 0; i < Enemies.size(); i++)
-        if (Enemies[i]->IsUnitDead())
-          Enemies[i]->Reinitialize(GetRandomPos());
-
-      PreviousTime = Engine->GetTime();
-    }
-    */
+    for (int i = 0; i < EnemyAmount - ChildUnits.size(); i++ )
+      Engine->AddUnit(new unit_shooter_enemy(GetRandomPos()), this);
   }
 
   std::string GetName(void)

@@ -16,10 +16,15 @@ namespace gdr
   {
     private:
       /* Vector of all units we will draw */
-      std::vector<unit_base*> ToAdd;
-      std::vector<unit_base*> ToRemove;
+      std::queue<std::pair<unit_base*, unit_base*>> ToAdd;
+      std::queue<unit_base*> ToRemove;
+      std::vector<unit_base *> AllUnits;
+
+      void ResponseUnit(unit_base *Unit);
+      void ResponsePhysUnit(unit_base* Unit);
+
     public:
-      std::vector<unit_base*> Units;
+      unit_base *SceneUnit = nullptr;
       // Default constructor
       engine();
 
@@ -29,7 +34,15 @@ namespace gdr
        *       unit_base *UnitToAdd
        * RETURNS: None.
        */
-      void AddUnit(unit_base *UnitToAdd);
+      void SetScene(unit_base* SceneUnit);
+
+      /* Add new Unit function.
+       * ARGUMENTS:
+       *   - pointer on Unit
+       *       unit_base *UnitToAdd
+       * RETURNS: None.
+       */
+      void AddUnit(unit_base *UnitToAdd, unit_base* ParentUnit = nullptr);
 
       /* Remove Unit function.
        * ARGUMENTS:

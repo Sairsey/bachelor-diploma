@@ -282,7 +282,7 @@ gdr_index mesh_assimp_importer::ImportTreeMesh(aiMesh* mesh, gdr_index ParentInd
 
     if (nodeBoneMapping == NONE_INDEX)
     {
-      nodeBoneMapping = Result.HierarchyNodes[Current].BonesMapping.size();
+      nodeBoneMapping = (unsigned)Result.HierarchyNodes[Current].BonesMapping.size();
       Result.HierarchyNodes[Current].BonesMapping.push_back(nodeIndex);
     }
 
@@ -625,7 +625,7 @@ void mesh_assimp_importer::Import()
   if (scene->HasAnimations())
   {
     aiAnimation* anim = scene->mAnimations[0];
-    Result.AnimationDuration = anim->mDuration;
+    Result.AnimationDuration = (float)anim->mDuration;
 
     struct import_animation_keyframe
     {
@@ -651,9 +651,9 @@ void mesh_assimp_importer::Import()
         GDR_FAILED("Invalid bone name in animation. Skipping\n");
         continue;
       }
-      for (int i = 0; i < anim->mChannels[k]->mNumPositionKeys; i++)
+      for (unsigned i = 0; i < anim->mChannels[k]->mNumPositionKeys; i++)
       {
-        float time = anim->mChannels[k]->mPositionKeys[i].mTime;
+        float time = (float)anim->mChannels[k]->mPositionKeys[i].mTime;
         tmpKeyframe[time][our_node_index].Key.time = time;
         tmpKeyframe[time][our_node_index].Key.pos = {
           anim->mChannels[k]->mPositionKeys[i].mValue[0],
@@ -661,9 +661,9 @@ void mesh_assimp_importer::Import()
           anim->mChannels[k]->mPositionKeys[i].mValue[2] };
         tmpKeyframe[time][our_node_index].IsPositionSet = true;
       }
-      for (int i = 0; i < anim->mChannels[k]->mNumRotationKeys; i++)
+      for (unsigned i = 0; i < anim->mChannels[k]->mNumRotationKeys; i++)
       {
-        float time = anim->mChannels[k]->mRotationKeys[i].mTime;
+        float time = (float)anim->mChannels[k]->mRotationKeys[i].mTime;
         tmpKeyframe[time][our_node_index].Key.time = time;
         tmpKeyframe[time][our_node_index].Key.rotationQuat = {
           anim->mChannels[k]->mRotationKeys[i].mValue.x,
@@ -672,9 +672,9 @@ void mesh_assimp_importer::Import()
           anim->mChannels[k]->mRotationKeys[i].mValue.w };
         tmpKeyframe[time][our_node_index].IsRotationSet = true;
       }
-      for (int i = 0; i < anim->mChannels[k]->mNumScalingKeys; i++)
+      for (unsigned i = 0; i < anim->mChannels[k]->mNumScalingKeys; i++)
       {
-        float time = anim->mChannels[k]->mScalingKeys[i].mTime;
+        float time = (float)anim->mChannels[k]->mScalingKeys[i].mTime;
         tmpKeyframe[time][our_node_index].Key.time = time;
         tmpKeyframe[time][our_node_index].Key.scale = {
            anim->mChannels[k]->mScalingKeys[i].mValue.x,

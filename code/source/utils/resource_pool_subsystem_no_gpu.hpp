@@ -82,7 +82,7 @@ void gdr::resource_pool_subsystem<StoredType, Type, 0>::Remove(gdr_index index)
 }
 
 template<typename StoredType, gdr_index_types Type>
-StoredType& gdr::resource_pool_subsystem<StoredType, Type, 0>::GetEditable(gdr_index index)
+inline StoredType& gdr::resource_pool_subsystem<StoredType, Type, 0>::GetEditable(gdr_index index)
 {
   GDR_ASSERT((index.type == gdr_index_types::none || index.type == Type) && index <= CPUData.size() && index >= 0 && PoolRecords[index].IsAlive);
 
@@ -90,7 +90,7 @@ StoredType& gdr::resource_pool_subsystem<StoredType, Type, 0>::GetEditable(gdr_i
 }
 
 template<typename StoredType, gdr_index_types Type>
-const StoredType& gdr::resource_pool_subsystem<StoredType, Type, 0>::Get(gdr_index index) const
+inline const StoredType& gdr::resource_pool_subsystem<StoredType, Type, 0>::Get(gdr_index index) const
 {
   GDR_ASSERT((index.type == gdr_index_types::none || index.type == Type) && index <= CPUData.size() && index >= 0 && PoolRecords[index].IsAlive);
   
@@ -98,7 +98,7 @@ const StoredType& gdr::resource_pool_subsystem<StoredType, Type, 0>::Get(gdr_ind
 }
 
 template<typename StoredType, gdr_index_types Type>
-bool gdr::resource_pool_subsystem<StoredType, Type, 0>::IsExist(gdr_index index) const
+inline bool gdr::resource_pool_subsystem<StoredType, Type, 0>::IsExist(gdr_index index) const
 {
   return ((index.type == gdr_index_types::none || index.type == Type) && index >= 0 && index < CPUData.size() && PoolRecords[index].IsAlive);
 }

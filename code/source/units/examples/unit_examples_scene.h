@@ -46,7 +46,7 @@ class unit_examples_scene : public gdr::unit_base
 private:
   EXAMPLES_ENUM Inited = EXAMPLES_ENUM::None;
   EXAMPLES_ENUM Asked;
-  unit_base *shown_example = nullptr;
+  gdr_index shown_example = NONE_INDEX;
 public:
   /* default constructor */
   unit_examples_scene(EXAMPLES_ENUM ask = EXAMPLES_ENUM::Triangle) : Asked(ask)
@@ -65,8 +65,8 @@ public:
    */
   void Initialize(void) override
   {
-    Engine->AddUnit(new unit_flying_camera(), this);
-    Engine->AddUnit(new unit_alex_apt(), this);
+    Engine->UnitsManager->Add(new unit_flying_camera(), Me);
+    Engine->UnitsManager->Add(new unit_alex_apt(), Me);
   }
 
   /* Response function which will be called on every frame.
@@ -77,61 +77,60 @@ public:
   {
     if (Inited != Asked)
     {
-      if (shown_example != nullptr)
-        Engine->RemoveUnit(shown_example);
+      if (shown_example != NONE_INDEX)
+        Engine->UnitsManager->Remove(shown_example);
        
       switch (Asked)
       {
       case EXAMPLES_ENUM::None:
         break;
       case EXAMPLES_ENUM::Triangle:
-        shown_example = new unit_triangle();
+        shown_example = Engine->UnitsManager->Add(new unit_triangle(), Me);
         break;
       case EXAMPLES_ENUM::Light:
-        shown_example = new unit_light_example();
+        shown_example = Engine->UnitsManager->Add(new unit_light_example(), Me);
         break;
       case EXAMPLES_ENUM::ModelLoad:
-        shown_example = new unit_model_loading();
+        shown_example = Engine->UnitsManager->Add(new unit_model_loading(), Me);
         break;
       case EXAMPLES_ENUM::FrustumCull:
-        shown_example = new unit_frustum_cull();
+        shown_example = Engine->UnitsManager->Add(new unit_frustum_cull(), Me);
         break;
       case EXAMPLES_ENUM::OcclusionCull:
-        shown_example = new unit_occlusion_cull();
+        shown_example = Engine->UnitsManager->Add(new unit_occlusion_cull(), Me);
         break;
       case EXAMPLES_ENUM::RuntimeAddRemove:
-        shown_example = new unit_runtime_add_remove();
+        shown_example = Engine->UnitsManager->Add(new unit_runtime_add_remove(), Me);
         break;
       case EXAMPLES_ENUM::PbrMetalness:
-        shown_example = new unit_pbr_metalness();
+        shown_example = Engine->UnitsManager->Add(new unit_pbr_metalness(), Me);
         break;
       case EXAMPLES_ENUM::PbrSpecular:
-        shown_example = new unit_pbr_specular();
+        shown_example = Engine->UnitsManager->Add(new unit_pbr_specular(), Me);
         break;
       case EXAMPLES_ENUM::NormalMap:
-        shown_example = new unit_normal_map();
+        shown_example = Engine->UnitsManager->Add(new unit_normal_map(), Me);
         break;
       case EXAMPLES_ENUM::LoadAny:
-        shown_example = new unit_load_any();
+        shown_example = Engine->UnitsManager->Add(new unit_load_any(), Me);
         break;
       case EXAMPLES_ENUM::Transparent:
-        shown_example = new unit_transparent();
+        shown_example = Engine->UnitsManager->Add(new unit_transparent(), Me);
         break;
       case EXAMPLES_ENUM::ModelSplitted:
-        shown_example = new unit_model_splitted();
+        shown_example = Engine->UnitsManager->Add(new unit_model_splitted(), Me);
         break;
       case EXAMPLES_ENUM::Specialist:
-        shown_example = new unit_specialist();
+        shown_example = Engine->UnitsManager->Add(new unit_specialist(), Me);
         break;
       case EXAMPLES_ENUM::Pit:
-        shown_example = new unit_pit();
+        shown_example = Engine->UnitsManager->Add(new unit_pit(), Me);
         break;
       case EXAMPLES_ENUM::COUNT:
         break;
       default:
         break;
       }
-      Engine->AddUnit(shown_example, this);
       Inited = Asked;
     }
       

@@ -91,21 +91,21 @@ public:
   void ShowEditResourceLight(void)
   {
     ImGui::Text("Light Editor");
-    if (Engine->LightsSystem->IsExist(ParentUnit->IndicesVars["ChoosedElement"]))
+    if (Engine->LightsSystem->IsExist(Engine->UnitsManager->Get(ParentUnit)->IndicesVars["ChoosedElement"]))
     {
       if (ImGui::Button("Delete"))
       {
-        ParentUnit->FloatVars["Remove"] = true;
+        Engine->UnitsManager->Get(ParentUnit)->FloatVars["Remove"] = true;
         return;
       }
       const char* items[] = { "Directional" , "Point", "Spot" };
-      ImGui::Combo("Type", (int*)&Engine->LightsSystem->Get(ParentUnit->IndicesVars["ChoosedElement"]).LightSourceType, items, IM_ARRAYSIZE(items));
-      ImGui::Text("Transform index %d", Engine->LightsSystem->Get(ParentUnit->IndicesVars["ChoosedElement"]).ObjectTransformIndex);
+      ImGui::Combo("Type", (int*)&Engine->LightsSystem->Get(Engine->UnitsManager->Get(ParentUnit)->IndicesVars["ChoosedElement"]).LightSourceType, items, IM_ARRAYSIZE(items));
+      ImGui::Text("Transform index %d", Engine->LightsSystem->Get(Engine->UnitsManager->Get(ParentUnit)->IndicesVars["ChoosedElement"]).ObjectTransformIndex);
 
-      if (Engine->LightsSystem->Get(ParentUnit->IndicesVars["ChoosedElement"]).ObjectTransformIndex != NONE_INDEX)
+      if (Engine->LightsSystem->Get(Engine->UnitsManager->Get(ParentUnit)->IndicesVars["ChoosedElement"]).ObjectTransformIndex != NONE_INDEX)
       {
         mth::vec3f Translate, Rotate, Scale;
-        Engine->ObjectTransformsSystem->Get(Engine->LightsSystem->Get(ParentUnit->IndicesVars["ChoosedElement"]).ObjectTransformIndex).Transform.Decompose(Translate, Rotate, Scale);
+        Engine->ObjectTransformsSystem->Get(Engine->LightsSystem->Get(Engine->UnitsManager->Get(ParentUnit)->IndicesVars["ChoosedElement"]).ObjectTransformIndex).Transform.Decompose(Translate, Rotate, Scale);
 
         bool IsMatrChanged = false;
 
@@ -120,71 +120,71 @@ public:
         {
           mth::matr4f result = mth::matr4f::RotateZ(Rotate.Z) * mth::matr4f::RotateY(Rotate.Y) * mth::matr4f::RotateX(Rotate.X) * mth::matr4f::Scale(Scale) * mth::matr4f::Translate(Translate);
           if (!isnan(result[0][0]) && !isnan(result[1][1]) && !isnan(result[2][2]) && !isnan(result[3][3]))
-            Engine->ObjectTransformsSystem->GetEditable(Engine->LightsSystem->Get(ParentUnit->IndicesVars["ChoosedElement"]).ObjectTransformIndex).Transform = result;
+            Engine->ObjectTransformsSystem->GetEditable(Engine->LightsSystem->Get(Engine->UnitsManager->Get(ParentUnit)->IndicesVars["ChoosedElement"]).ObjectTransformIndex).Transform = result;
           else
-            Engine->ObjectTransformsSystem->GetEditable(Engine->LightsSystem->Get(ParentUnit->IndicesVars["ChoosedElement"]).ObjectTransformIndex).Transform = mth::matr4f::Identity();
+            Engine->ObjectTransformsSystem->GetEditable(Engine->LightsSystem->Get(Engine->UnitsManager->Get(ParentUnit)->IndicesVars["ChoosedElement"]).ObjectTransformIndex).Transform = mth::matr4f::Identity();
         }
       }
       else if (ImGui::Button("Add"))
-        Engine->LightsSystem->GetEditable(ParentUnit->IndicesVars["ChoosedElement"]).ObjectTransformIndex = Engine->ObjectTransformsSystem->Add();
+        Engine->LightsSystem->GetEditable(Engine->UnitsManager->Get(ParentUnit)->IndicesVars["ChoosedElement"]).ObjectTransformIndex = Engine->ObjectTransformsSystem->Add();
 
-      ImGui::ColorEdit3("Color", &Engine->LightsSystem->GetEditable(ParentUnit->IndicesVars["ChoosedElement"]).Color[0]);
-      ImGui::DragFloat("Red", &Engine->LightsSystem->GetEditable(ParentUnit->IndicesVars["ChoosedElement"]).Color[0], 0.1f);
-      ImGui::DragFloat("Green", &Engine->LightsSystem->GetEditable(ParentUnit->IndicesVars["ChoosedElement"]).Color[1], 0.1f);
-      ImGui::DragFloat("Blue", &Engine->LightsSystem->GetEditable(ParentUnit->IndicesVars["ChoosedElement"]).Color[2], 0.1f);
+      ImGui::ColorEdit3("Color", &Engine->LightsSystem->GetEditable(Engine->UnitsManager->Get(ParentUnit)->IndicesVars["ChoosedElement"]).Color[0]);
+      ImGui::DragFloat("Red", &Engine->LightsSystem->GetEditable(Engine->UnitsManager->Get(ParentUnit)->IndicesVars["ChoosedElement"]).Color[0], 0.1f);
+      ImGui::DragFloat("Green", &Engine->LightsSystem->GetEditable(Engine->UnitsManager->Get(ParentUnit)->IndicesVars["ChoosedElement"]).Color[1], 0.1f);
+      ImGui::DragFloat("Blue", &Engine->LightsSystem->GetEditable(Engine->UnitsManager->Get(ParentUnit)->IndicesVars["ChoosedElement"]).Color[2], 0.1f);
 
-      if (Engine->LightsSystem->Get(ParentUnit->IndicesVars["ChoosedElement"]).LightSourceType != LIGHT_SOURCE_TYPE_DIRECTIONAL)
+      if (Engine->LightsSystem->Get(Engine->UnitsManager->Get(ParentUnit)->IndicesVars["ChoosedElement"]).LightSourceType != LIGHT_SOURCE_TYPE_DIRECTIONAL)
       {
         ImGui::Text("Attenuation");
-        ImGui::DragFloat("Constant part", &Engine->LightsSystem->GetEditable(ParentUnit->IndicesVars["ChoosedElement"]).ConstantAttenuation, 0.1f);
-        ImGui::DragFloat("Linear part", &Engine->LightsSystem->GetEditable(ParentUnit->IndicesVars["ChoosedElement"]).LinearAttenuation, 0.1f);
-        ImGui::DragFloat("Quadric part", &Engine->LightsSystem->GetEditable(ParentUnit->IndicesVars["ChoosedElement"]).QuadricAttenuation, 0.1f);
-        Engine->LightsSystem->GetEditable(ParentUnit->IndicesVars["ChoosedElement"]).ConstantAttenuation =
-          max(1, Engine->LightsSystem->Get(ParentUnit->IndicesVars["ChoosedElement"]).ConstantAttenuation);
+        ImGui::DragFloat("Constant part", &Engine->LightsSystem->GetEditable(Engine->UnitsManager->Get(ParentUnit)->IndicesVars["ChoosedElement"]).ConstantAttenuation, 0.1f);
+        ImGui::DragFloat("Linear part", &Engine->LightsSystem->GetEditable(Engine->UnitsManager->Get(ParentUnit)->IndicesVars["ChoosedElement"]).LinearAttenuation, 0.1f);
+        ImGui::DragFloat("Quadric part", &Engine->LightsSystem->GetEditable(Engine->UnitsManager->Get(ParentUnit)->IndicesVars["ChoosedElement"]).QuadricAttenuation, 0.1f);
+        Engine->LightsSystem->GetEditable(Engine->UnitsManager->Get(ParentUnit)->IndicesVars["ChoosedElement"]).ConstantAttenuation =
+          max(1, Engine->LightsSystem->Get(Engine->UnitsManager->Get(ParentUnit)->IndicesVars["ChoosedElement"]).ConstantAttenuation);
       }
 
-      if (Engine->LightsSystem->Get(ParentUnit->IndicesVars["ChoosedElement"]).LightSourceType == LIGHT_SOURCE_TYPE_SPOT)
+      if (Engine->LightsSystem->Get(Engine->UnitsManager->Get(ParentUnit)->IndicesVars["ChoosedElement"]).LightSourceType == LIGHT_SOURCE_TYPE_SPOT)
       {
-        Engine->LightsSystem->GetEditable(ParentUnit->IndicesVars["ChoosedElement"]).AngleInnerCone *= MTH_R2D;
-        Engine->LightsSystem->GetEditable(ParentUnit->IndicesVars["ChoosedElement"]).AngleOuterCone *= MTH_R2D;
-        ImGui::DragFloat("Inner cone angle", &Engine->LightsSystem->GetEditable(ParentUnit->IndicesVars["ChoosedElement"]).AngleInnerCone, 0.1f, 1);
-        ImGui::DragFloat("Outer cone angle", &Engine->LightsSystem->GetEditable(ParentUnit->IndicesVars["ChoosedElement"]).AngleOuterCone, 0.1f, Engine->LightsSystem->GetEditable(ParentUnit->IndicesVars["ChoosedElement"]).AngleInnerCone);
-        Engine->LightsSystem->GetEditable(ParentUnit->IndicesVars["ChoosedElement"]).AngleInnerCone = max(5, Engine->LightsSystem->Get(ParentUnit->IndicesVars["ChoosedElement"]).AngleInnerCone);
-        Engine->LightsSystem->GetEditable(ParentUnit->IndicesVars["ChoosedElement"]).AngleOuterCone = max(Engine->LightsSystem->Get(ParentUnit->IndicesVars["ChoosedElement"]).AngleInnerCone, Engine->LightsSystem->Get(ParentUnit->IndicesVars["ChoosedElement"]).AngleOuterCone);
-        Engine->LightsSystem->GetEditable(ParentUnit->IndicesVars["ChoosedElement"]).AngleInnerCone *= MTH_D2R;
-        Engine->LightsSystem->GetEditable(ParentUnit->IndicesVars["ChoosedElement"]).AngleOuterCone *= MTH_D2R;
+        Engine->LightsSystem->GetEditable(Engine->UnitsManager->Get(ParentUnit)->IndicesVars["ChoosedElement"]).AngleInnerCone *= MTH_R2D;
+        Engine->LightsSystem->GetEditable(Engine->UnitsManager->Get(ParentUnit)->IndicesVars["ChoosedElement"]).AngleOuterCone *= MTH_R2D;
+        ImGui::DragFloat("Inner cone angle", &Engine->LightsSystem->GetEditable(Engine->UnitsManager->Get(ParentUnit)->IndicesVars["ChoosedElement"]).AngleInnerCone, 0.1f, 1);
+        ImGui::DragFloat("Outer cone angle", &Engine->LightsSystem->GetEditable(Engine->UnitsManager->Get(ParentUnit)->IndicesVars["ChoosedElement"]).AngleOuterCone, 0.1f, Engine->LightsSystem->GetEditable(Engine->UnitsManager->Get(ParentUnit)->IndicesVars["ChoosedElement"]).AngleInnerCone);
+        Engine->LightsSystem->GetEditable(Engine->UnitsManager->Get(ParentUnit)->IndicesVars["ChoosedElement"]).AngleInnerCone = max(5, Engine->LightsSystem->Get(Engine->UnitsManager->Get(ParentUnit)->IndicesVars["ChoosedElement"]).AngleInnerCone);
+        Engine->LightsSystem->GetEditable(Engine->UnitsManager->Get(ParentUnit)->IndicesVars["ChoosedElement"]).AngleOuterCone = max(Engine->LightsSystem->Get(Engine->UnitsManager->Get(ParentUnit)->IndicesVars["ChoosedElement"]).AngleInnerCone, Engine->LightsSystem->Get(Engine->UnitsManager->Get(ParentUnit)->IndicesVars["ChoosedElement"]).AngleOuterCone);
+        Engine->LightsSystem->GetEditable(Engine->UnitsManager->Get(ParentUnit)->IndicesVars["ChoosedElement"]).AngleInnerCone *= MTH_D2R;
+        Engine->LightsSystem->GetEditable(Engine->UnitsManager->Get(ParentUnit)->IndicesVars["ChoosedElement"]).AngleOuterCone *= MTH_D2R;
       }
-      else if (Engine->LightsSystem->Get(ParentUnit->IndicesVars["ChoosedElement"]).LightSourceType == LIGHT_SOURCE_TYPE_DIRECTIONAL)
+      else if (Engine->LightsSystem->Get(Engine->UnitsManager->Get(ParentUnit)->IndicesVars["ChoosedElement"]).LightSourceType == LIGHT_SOURCE_TYPE_DIRECTIONAL)
       {
-        ImGui::DragFloat("Shadow Map Size", &Engine->LightsSystem->GetEditable(ParentUnit->IndicesVars["ChoosedElement"]).AngleInnerCone, 0.1f, 1);
+        ImGui::DragFloat("Shadow Map Size", &Engine->LightsSystem->GetEditable(Engine->UnitsManager->Get(ParentUnit)->IndicesVars["ChoosedElement"]).AngleInnerCone, 0.1f, 1);
       }
 
-      if (Engine->LightsSystem->Get(ParentUnit->IndicesVars["ChoosedElement"]).LightSourceType != LIGHT_SOURCE_TYPE_POINT)
+      if (Engine->LightsSystem->Get(Engine->UnitsManager->Get(ParentUnit)->IndicesVars["ChoosedElement"]).LightSourceType != LIGHT_SOURCE_TYPE_POINT)
       {
-        if (Engine->LightsSystem->Get(ParentUnit->IndicesVars["ChoosedElement"]).ShadowMapIndex == NONE_INDEX)
+        if (Engine->LightsSystem->Get(Engine->UnitsManager->Get(ParentUnit)->IndicesVars["ChoosedElement"]).ShadowMapIndex == NONE_INDEX)
         {
           static int W = 128, H = 128;
           ImGui::Text("Shadow map");
           ImGui::DragInt("W", &W);
           ImGui::DragInt("H", &H);
           if (ImGui::Button("Add"))
-            Engine->LightsSystem->GetEditable(ParentUnit->IndicesVars["ChoosedElement"]).ShadowMapIndex = Engine->ShadowMapsSystem->Add(W, H);
+            Engine->LightsSystem->GetEditable(Engine->UnitsManager->Get(ParentUnit)->IndicesVars["ChoosedElement"]).ShadowMapIndex = Engine->ShadowMapsSystem->Add(W, H);
         }
         else
         {
-          int ShadowMapIndex = Engine->LightsSystem->Get(ParentUnit->IndicesVars["ChoosedElement"]).ShadowMapIndex;
+          int ShadowMapIndex = Engine->LightsSystem->Get(Engine->UnitsManager->Get(ParentUnit)->IndicesVars["ChoosedElement"]).ShadowMapIndex;
           auto& el = Engine->ShadowMapsSystem->Get(ShadowMapIndex);
 
           ImGui::Text("Shadow map index %d", ShadowMapIndex);
           if (ImGui::Button("Delete shadow map"))
           {
             Engine->ShadowMapsSystem->Remove(ShadowMapIndex);
-            Engine->LightsSystem->GetEditable(ParentUnit->IndicesVars["ChoosedElement"]).ShadowMapIndex = NONE_INDEX;
+            Engine->LightsSystem->GetEditable(Engine->UnitsManager->Get(ParentUnit)->IndicesVars["ChoosedElement"]).ShadowMapIndex = NONE_INDEX;
           }
 
           ImGui::Text("Width : %d", el.W);
           ImGui::Text("Heigth: %d", el.H);
-          ImGui::DragFloat("Offset", &Engine->LightsSystem->GetEditable(ParentUnit->IndicesVars["ChoosedElement"]).ShadowMapOffset);
+          ImGui::DragFloat("Offset", &Engine->LightsSystem->GetEditable(Engine->UnitsManager->Get(ParentUnit)->IndicesVars["ChoosedElement"]).ShadowMapOffset);
 
           D3D12_GPU_DESCRIPTOR_HANDLE true_texture_handle = Engine->ShadowMapsSystem->ShadowMapTableGPU;
           true_texture_handle.ptr += ShadowMapIndex * Engine->GetDevice().GetSRVDescSize();
@@ -201,10 +201,10 @@ public:
   void ShowEditResourceObjectTransform(void)
   {
     ImGui::Text("Object Transform Editor");
-    if (Engine->ObjectTransformsSystem->IsExist(ParentUnit->IndicesVars["ChoosedElement"]))
+    if (Engine->ObjectTransformsSystem->IsExist(Engine->UnitsManager->Get(ParentUnit)->IndicesVars["ChoosedElement"]))
     {
       mth::vec3f Translate, Rotate, Scale;
-      Engine->ObjectTransformsSystem->Get(ParentUnit->IndicesVars["ChoosedElement"]).Transform.Decompose(Translate, Rotate, Scale);
+      Engine->ObjectTransformsSystem->Get(Engine->UnitsManager->Get(ParentUnit)->IndicesVars["ChoosedElement"]).Transform.Decompose(Translate, Rotate, Scale);
 
       bool IsMatrChanged = false;
 
@@ -219,22 +219,22 @@ public:
       {
         mth::matr4f result = mth::matr4f::RotateZ(Rotate.Z) * mth::matr4f::RotateY(Rotate.Y) * mth::matr4f::RotateX(Rotate.X) * mth::matr4f::Scale(Scale) * mth::matr4f::Translate(Translate);
         if (!isnan(result[0][0]) && !isnan(result[1][1]) && !isnan(result[2][2]) && !isnan(result[3][3]))
-          Engine->ObjectTransformsSystem->GetEditable(ParentUnit->IndicesVars["ChoosedElement"]).Transform = result;
+          Engine->ObjectTransformsSystem->GetEditable(Engine->UnitsManager->Get(ParentUnit)->IndicesVars["ChoosedElement"]).Transform = result;
         else
-          Engine->ObjectTransformsSystem->GetEditable(ParentUnit->IndicesVars["ChoosedElement"]).Transform = mth::matr4f::Identity();
+          Engine->ObjectTransformsSystem->GetEditable(Engine->UnitsManager->Get(ParentUnit)->IndicesVars["ChoosedElement"]).Transform = mth::matr4f::Identity();
       }
 
-      mth::vec3f minAABB = Engine->ObjectTransformsSystem->Get(ParentUnit->IndicesVars["ChoosedElement"]).minAABB;
-      mth::vec3f maxAABB = Engine->ObjectTransformsSystem->Get(ParentUnit->IndicesVars["ChoosedElement"]).maxAABB;
+      mth::vec3f minAABB = Engine->ObjectTransformsSystem->Get(Engine->UnitsManager->Get(ParentUnit)->IndicesVars["ChoosedElement"]).minAABB;
+      mth::vec3f maxAABB = Engine->ObjectTransformsSystem->Get(Engine->UnitsManager->Get(ParentUnit)->IndicesVars["ChoosedElement"]).maxAABB;
 
       if (ImGui::DragFloat3("minAABB", &minAABB.X, 0.1f))
       {
-        Engine->ObjectTransformsSystem->GetEditable(ParentUnit->IndicesVars["ChoosedElement"]).minAABB = minAABB;
+        Engine->ObjectTransformsSystem->GetEditable(Engine->UnitsManager->Get(ParentUnit)->IndicesVars["ChoosedElement"]).minAABB = minAABB;
       }
 
       if (ImGui::DragFloat3("maxAABB", &maxAABB.X, 0.1f))
       {
-        Engine->ObjectTransformsSystem->GetEditable(ParentUnit->IndicesVars["ChoosedElement"]).maxAABB = maxAABB;
+        Engine->ObjectTransformsSystem->GetEditable(Engine->UnitsManager->Get(ParentUnit)->IndicesVars["ChoosedElement"]).maxAABB = maxAABB;
       }
     }
     else
@@ -246,37 +246,37 @@ public:
   void ShowEditResourceNodeTransform(void)
   {
     ImGui::Text("Node Transform Editor");
-    if (Engine->NodeTransformsSystem->IsExist(ParentUnit->IndicesVars["ChoosedElement"]))
+    if (Engine->NodeTransformsSystem->IsExist(Engine->UnitsManager->Get(ParentUnit)->IndicesVars["ChoosedElement"]))
     {
-      ImGui::Text("Parent index %d", Engine->NodeTransformsSystem->Get(ParentUnit->IndicesVars["ChoosedElement"]).ParentIndex);
-      if (Engine->NodeTransformsSystem->Get(ParentUnit->IndicesVars["ChoosedElement"]).ParentIndex != NONE_INDEX)
+      ImGui::Text("Parent index %d", Engine->NodeTransformsSystem->Get(Engine->UnitsManager->Get(ParentUnit)->IndicesVars["ChoosedElement"]).ParentIndex);
+      if (Engine->NodeTransformsSystem->Get(Engine->UnitsManager->Get(ParentUnit)->IndicesVars["ChoosedElement"]).ParentIndex != NONE_INDEX)
       {
         ImGui::SameLine();
         if (ImGui::Button("Go to parent"))
         {
-          ParentUnit->IndicesVars["ChoosedElement"] = Engine->NodeTransformsSystem->Get(ParentUnit->IndicesVars["ChoosedElement"]).ParentIndex;
+          Engine->UnitsManager->Get(ParentUnit)->IndicesVars["ChoosedElement"] = Engine->NodeTransformsSystem->Get(Engine->UnitsManager->Get(ParentUnit)->IndicesVars["ChoosedElement"]).ParentIndex;
           return;
         }
       }
 
-      ImGui::Text("First Child index %d", Engine->NodeTransformsSystem->Get(ParentUnit->IndicesVars["ChoosedElement"]).ChildIndex);
-      if (Engine->NodeTransformsSystem->Get(ParentUnit->IndicesVars["ChoosedElement"]).ChildIndex != NONE_INDEX)
+      ImGui::Text("First Child index %d", Engine->NodeTransformsSystem->Get(Engine->UnitsManager->Get(ParentUnit)->IndicesVars["ChoosedElement"]).ChildIndex);
+      if (Engine->NodeTransformsSystem->Get(Engine->UnitsManager->Get(ParentUnit)->IndicesVars["ChoosedElement"]).ChildIndex != NONE_INDEX)
       {
         ImGui::SameLine();
         if (ImGui::Button("Go to first children"))
         {
-          ParentUnit->IndicesVars["ChoosedElement"] = Engine->NodeTransformsSystem->Get(ParentUnit->IndicesVars["ChoosedElement"]).ChildIndex;
+          Engine->UnitsManager->Get(ParentUnit)->IndicesVars["ChoosedElement"] = Engine->NodeTransformsSystem->Get(Engine->UnitsManager->Get(ParentUnit)->IndicesVars["ChoosedElement"]).ChildIndex;
           return;
         }
       }
 
-      ImGui::Text("Next sibling index %d", Engine->NodeTransformsSystem->Get(ParentUnit->IndicesVars["ChoosedElement"]).NextIndex);
-      if (Engine->NodeTransformsSystem->Get(ParentUnit->IndicesVars["ChoosedElement"]).NextIndex != NONE_INDEX)
+      ImGui::Text("Next sibling index %d", Engine->NodeTransformsSystem->Get(Engine->UnitsManager->Get(ParentUnit)->IndicesVars["ChoosedElement"]).NextIndex);
+      if (Engine->NodeTransformsSystem->Get(Engine->UnitsManager->Get(ParentUnit)->IndicesVars["ChoosedElement"]).NextIndex != NONE_INDEX)
       {
         ImGui::SameLine();
         if (ImGui::Button("Go to next sibling"))
         {
-          ParentUnit->IndicesVars["ChoosedElement"] = Engine->NodeTransformsSystem->Get(ParentUnit->IndicesVars["ChoosedElement"]).NextIndex;
+          Engine->UnitsManager->Get(ParentUnit)->IndicesVars["ChoosedElement"] = Engine->NodeTransformsSystem->Get(Engine->UnitsManager->Get(ParentUnit)->IndicesVars["ChoosedElement"]).NextIndex;
           return;
         }
       }
@@ -284,7 +284,7 @@ public:
       ImGui::Text("Local Transform");
 
       mth::vec3f Translate, Rotate, Scale;
-      Engine->NodeTransformsSystem->Get(ParentUnit->IndicesVars["ChoosedElement"]).LocalTransform.Decompose(Translate, Rotate, Scale);
+      Engine->NodeTransformsSystem->Get(Engine->UnitsManager->Get(ParentUnit)->IndicesVars["ChoosedElement"]).LocalTransform.Decompose(Translate, Rotate, Scale);
 
       bool IsMatrChanged = false;
 
@@ -299,20 +299,20 @@ public:
       {
         mth::matr4f result = mth::matr4f::RotateZ(Rotate.Z) * mth::matr4f::RotateY(Rotate.Y) * mth::matr4f::RotateX(Rotate.X) * mth::matr4f::Scale(Scale) * mth::matr4f::Translate(Translate);
         if (!isnan(result[0][0]) && !isnan(result[1][1]) && !isnan(result[2][2]) && !isnan(result[3][3]))
-          Engine->NodeTransformsSystem->GetEditable(ParentUnit->IndicesVars["ChoosedElement"]).LocalTransform = result;
+          Engine->NodeTransformsSystem->GetEditable(Engine->UnitsManager->Get(ParentUnit)->IndicesVars["ChoosedElement"]).LocalTransform = result;
         else
-          Engine->NodeTransformsSystem->GetEditable(ParentUnit->IndicesVars["ChoosedElement"]).LocalTransform = mth::matr4f::Identity();
+          Engine->NodeTransformsSystem->GetEditable(Engine->UnitsManager->Get(ParentUnit)->IndicesVars["ChoosedElement"]).LocalTransform = mth::matr4f::Identity();
       }
 
       ImGui::Text("Global Transform");
-      Engine->NodeTransformsSystem->Get(ParentUnit->IndicesVars["ChoosedElement"]).GlobalTransform.Decompose(Translate, Rotate, Scale);
+      Engine->NodeTransformsSystem->Get(Engine->UnitsManager->Get(ParentUnit)->IndicesVars["ChoosedElement"]).GlobalTransform.Decompose(Translate, Rotate, Scale);
 
       ImGui::Text("Translation: %f %f %f", Translate.X, Translate.Y, Translate.Z);
       ImGui::Text("Rotation: %f %f %f", Rotate.X, Rotate.Y, Rotate.Z);
       ImGui::Text("Scale: %f %f %f", Scale.X, Scale.Y, Scale.Z);
 
       ImGui::Text("Bone offset");
-      Engine->NodeTransformsSystem->Get(ParentUnit->IndicesVars["ChoosedElement"]).BoneOffset.Decompose(Translate, Rotate, Scale);
+      Engine->NodeTransformsSystem->Get(Engine->UnitsManager->Get(ParentUnit)->IndicesVars["ChoosedElement"]).BoneOffset.Decompose(Translate, Rotate, Scale);
 
       ImGui::Text("Translation: %f %f %f", Translate.X, Translate.Y, Translate.Z);
       ImGui::Text("Rotation: %f %f %f", Rotate.X, Rotate.Y, Rotate.Z);
@@ -327,18 +327,18 @@ public:
   void ShowEditResourceTexture(void)
   {
     ImGui::Text("Texture Editor");
-    if (Engine->TexturesSystem->IsExist(ParentUnit->IndicesVars["ChoosedElement"]))
+    if (Engine->TexturesSystem->IsExist(Engine->UnitsManager->Get(ParentUnit)->IndicesVars["ChoosedElement"]))
     {
-      ImGui::Text("Name: %s", Engine->TexturesSystem->Get(ParentUnit->IndicesVars["ChoosedElement"]).Name.c_str());
-      ImGui::Text("W: %d", Engine->TexturesSystem->Get(ParentUnit->IndicesVars["ChoosedElement"]).W);
-      ImGui::Text("H: %d", Engine->TexturesSystem->Get(ParentUnit->IndicesVars["ChoosedElement"]).H);
-      ImGui::Text("Mips: %d", Engine->TexturesSystem->Get(ParentUnit->IndicesVars["ChoosedElement"]).NumOfMips);
-      ImGui::Text("Transparent: %s", Engine->TexturesSystem->Get(ParentUnit->IndicesVars["ChoosedElement"]).IsTransparent ? "TRUE" : "FALSE");
+      ImGui::Text("Name: %s", Engine->TexturesSystem->Get(Engine->UnitsManager->Get(ParentUnit)->IndicesVars["ChoosedElement"]).Name.c_str());
+      ImGui::Text("W: %d", Engine->TexturesSystem->Get(Engine->UnitsManager->Get(ParentUnit)->IndicesVars["ChoosedElement"]).W);
+      ImGui::Text("H: %d", Engine->TexturesSystem->Get(Engine->UnitsManager->Get(ParentUnit)->IndicesVars["ChoosedElement"]).H);
+      ImGui::Text("Mips: %d", Engine->TexturesSystem->Get(Engine->UnitsManager->Get(ParentUnit)->IndicesVars["ChoosedElement"]).NumOfMips);
+      ImGui::Text("Transparent: %s", Engine->TexturesSystem->Get(Engine->UnitsManager->Get(ParentUnit)->IndicesVars["ChoosedElement"]).IsTransparent ? "TRUE" : "FALSE");
 
       D3D12_GPU_DESCRIPTOR_HANDLE true_texture_handle = Engine->TexturesSystem->TextureTableGPU;
-      true_texture_handle.ptr += ParentUnit->IndicesVars["ChoosedElement"] * Engine->GetDevice().GetSRVDescSize();
+      true_texture_handle.ptr += Engine->UnitsManager->Get(ParentUnit)->IndicesVars["ChoosedElement"] * Engine->GetDevice().GetSRVDescSize();
 
-      float aspect = 1.0f * Engine->TexturesSystem->Get(ParentUnit->IndicesVars["ChoosedElement"]).H / Engine->TexturesSystem->Get(ParentUnit->IndicesVars["ChoosedElement"]).W;
+      float aspect = 1.0f * Engine->TexturesSystem->Get(Engine->UnitsManager->Get(ParentUnit)->IndicesVars["ChoosedElement"]).H / Engine->TexturesSystem->Get(Engine->UnitsManager->Get(ParentUnit)->IndicesVars["ChoosedElement"]).W;
 
       ImGui::Image((ImTextureID)true_texture_handle.ptr, ImVec2(128.0f, 128.0f * aspect));
     }
@@ -351,9 +351,9 @@ public:
   void ShowEditResourceCubeTexture(void)
   {
     ImGui::Text("CubeTexture Editor");
-    if (Engine->CubeTexturesSystem->IsExist(ParentUnit->IndicesVars["ChoosedElement"]))
+    if (Engine->CubeTexturesSystem->IsExist(Engine->UnitsManager->Get(ParentUnit)->IndicesVars["ChoosedElement"]))
     {
-      ImGui::Text("Name: %s", Engine->CubeTexturesSystem->Get(ParentUnit->IndicesVars["ChoosedElement"]).Name.c_str());
+      ImGui::Text("Name: %s", Engine->CubeTexturesSystem->Get(Engine->UnitsManager->Get(ParentUnit)->IndicesVars["ChoosedElement"]).Name.c_str());
     }
     else
     {
@@ -364,15 +364,15 @@ public:
   void ShowEditResourceShadowMap(void)
   {
     ImGui::Text("Shadow Map Editor");
-    if (Engine->ShadowMapsSystem->IsExist(ParentUnit->IndicesVars["ChoosedElement"]))
+    if (Engine->ShadowMapsSystem->IsExist(Engine->UnitsManager->Get(ParentUnit)->IndicesVars["ChoosedElement"]))
     {
-      ImGui::Text("W: %d", Engine->ShadowMapsSystem->Get(ParentUnit->IndicesVars["ChoosedElement"]).W);
-      ImGui::Text("H: %d", Engine->ShadowMapsSystem->Get(ParentUnit->IndicesVars["ChoosedElement"]).H);
+      ImGui::Text("W: %d", Engine->ShadowMapsSystem->Get(Engine->UnitsManager->Get(ParentUnit)->IndicesVars["ChoosedElement"]).W);
+      ImGui::Text("H: %d", Engine->ShadowMapsSystem->Get(Engine->UnitsManager->Get(ParentUnit)->IndicesVars["ChoosedElement"]).H);
 
       D3D12_GPU_DESCRIPTOR_HANDLE true_texture_handle = Engine->ShadowMapsSystem->ShadowMapTableGPU;
-      true_texture_handle.ptr += ParentUnit->IndicesVars["ChoosedElement"] * Engine->GetDevice().GetSRVDescSize();
+      true_texture_handle.ptr += Engine->UnitsManager->Get(ParentUnit)->IndicesVars["ChoosedElement"] * Engine->GetDevice().GetSRVDescSize();
 
-      float aspect = 1.0f * Engine->ShadowMapsSystem->Get(ParentUnit->IndicesVars["ChoosedElement"]).H / Engine->ShadowMapsSystem->Get(ParentUnit->IndicesVars["ChoosedElement"]).W;
+      float aspect = 1.0f * Engine->ShadowMapsSystem->Get(Engine->UnitsManager->Get(ParentUnit)->IndicesVars["ChoosedElement"]).H / Engine->ShadowMapsSystem->Get(Engine->UnitsManager->Get(ParentUnit)->IndicesVars["ChoosedElement"]).W;
 
       ImGui::Image((ImTextureID)true_texture_handle.ptr, ImVec2(128.0f, 128.0f * aspect));
     }
@@ -385,7 +385,7 @@ public:
   void ShowEditResourceBoneMapping(void)
   {
     ImGui::Text("Bone Mapping Editor");
-    if (Engine->BoneMappingSystem->IsExist(ParentUnit->IndicesVars["ChoosedElement"]))
+    if (Engine->BoneMappingSystem->IsExist(Engine->UnitsManager->Get(ParentUnit)->IndicesVars["ChoosedElement"]))
     {
       ImGui::BeginTable("Values", 2, ImGuiTableFlags_Borders);
       ImGui::TableNextColumn();
@@ -399,7 +399,7 @@ public:
         ImGui::TableNextColumn();
         ImGui::Text("%d", i);
         ImGui::TableNextColumn();
-        ImGui::Text("%d", Engine->BoneMappingSystem->Get(ParentUnit->IndicesVars["ChoosedElement"]).BoneMapping[i]);
+        ImGui::Text("%d", Engine->BoneMappingSystem->Get(Engine->UnitsManager->Get(ParentUnit)->IndicesVars["ChoosedElement"]).BoneMapping[i]);
         ImGui::TableNextRow();
       }
       ImGui::EndTable();
@@ -413,14 +413,14 @@ public:
   void ShowEditResourceMaterial(void)
   {
     ImGui::Text("Material Editor");
-    if (Engine->MaterialsSystem->IsExist(ParentUnit->IndicesVars["ChoosedElement"]))
+    if (Engine->MaterialsSystem->IsExist(Engine->UnitsManager->Get(ParentUnit)->IndicesVars["ChoosedElement"]))
     {
       const char* items[] = { "Color" , "Phong", "PBR Metal/Rough", "PBR Shiness/Glossiness" };
-      ImGui::Combo("Type", (int*)&Engine->MaterialsSystem->Get(ParentUnit->IndicesVars["ChoosedElement"]).ShadeType, items, IM_ARRAYSIZE(items));
+      ImGui::Combo("Type", (int*)&Engine->MaterialsSystem->Get(Engine->UnitsManager->Get(ParentUnit)->IndicesVars["ChoosedElement"]).ShadeType, items, IM_ARRAYSIZE(items));
 
-      if (Engine->MaterialsSystem->Get(ParentUnit->IndicesVars["ChoosedElement"]).ShadeType == MATERIAL_SHADER_COLOR)
+      if (Engine->MaterialsSystem->Get(Engine->UnitsManager->Get(ParentUnit)->IndicesVars["ChoosedElement"]).ShadeType == MATERIAL_SHADER_COLOR)
       {
-        GDRGPUMaterial& el = Engine->MaterialsSystem->GetEditable(ParentUnit->IndicesVars["ChoosedElement"]);
+        GDRGPUMaterial& el = Engine->MaterialsSystem->GetEditable(Engine->UnitsManager->Get(ParentUnit)->IndicesVars["ChoosedElement"]);
         ImGui::ColorEdit3("Color", &GDRGPUMaterialColorGetColor(el).X);
         ImGui::Text("Opacity %g", GDRGPUMaterialColorGetOpacity(el));
         ImGui::Text("Color texture index %d", GDRGPUMaterialColorGetColorMapIndex(el));
@@ -429,16 +429,16 @@ public:
           ImGui::SameLine();
           if (ImGui::Button("Go to color texture"))
           {
-            ParentUnit->IndicesVars["ChoosedElement"] = GDRGPUMaterialColorGetColorMapIndex(el);
-            ParentUnit->IndicesVars["ChoosedElement"].type = gdr_index_types::texture;
+            Engine->UnitsManager->Get(ParentUnit)->IndicesVars["ChoosedElement"] = GDRGPUMaterialColorGetColorMapIndex(el);
+            Engine->UnitsManager->Get(ParentUnit)->IndicesVars["ChoosedElement"].type = gdr_index_types::texture;
             return;
           }
         }
       }
 
-      if (Engine->MaterialsSystem->Get(ParentUnit->IndicesVars["ChoosedElement"]).ShadeType == MATERIAL_SHADER_PHONG)
+      if (Engine->MaterialsSystem->Get(Engine->UnitsManager->Get(ParentUnit)->IndicesVars["ChoosedElement"]).ShadeType == MATERIAL_SHADER_PHONG)
       {
-        GDRGPUMaterial& el = Engine->MaterialsSystem->GetEditable(ParentUnit->IndicesVars["ChoosedElement"]);
+        GDRGPUMaterial& el = Engine->MaterialsSystem->GetEditable(Engine->UnitsManager->Get(ParentUnit)->IndicesVars["ChoosedElement"]);
         ImGui::ColorEdit3("Ambient", &GDRGPUMaterialPhongGetAmbient(el).X);
         ImGui::Text("Ambient texture index %d", GDRGPUMaterialPhongGetAmbientMapIndex(el));
         if (GDRGPUMaterialPhongGetAmbientMapIndex(el) != NONE_INDEX)
@@ -446,8 +446,8 @@ public:
           ImGui::SameLine();
           if (ImGui::Button("Go to ambient texture"))
           {
-            ParentUnit->IndicesVars["ChoosedElement"] = GDRGPUMaterialPhongGetAmbientMapIndex(el);
-            ParentUnit->IndicesVars["ChoosedElement"].type = gdr_index_types::texture;
+            Engine->UnitsManager->Get(ParentUnit)->IndicesVars["ChoosedElement"] = GDRGPUMaterialPhongGetAmbientMapIndex(el);
+            Engine->UnitsManager->Get(ParentUnit)->IndicesVars["ChoosedElement"].type = gdr_index_types::texture;
             return;
           }
         }
@@ -459,8 +459,8 @@ public:
           ImGui::SameLine();
           if (ImGui::Button("Go to diffuse texture"))
           {
-            ParentUnit->IndicesVars["ChoosedElement"] = GDRGPUMaterialPhongGetDiffuseMapIndex(el);
-            ParentUnit->IndicesVars["ChoosedElement"].type = gdr_index_types::texture;
+            Engine->UnitsManager->Get(ParentUnit)->IndicesVars["ChoosedElement"] = GDRGPUMaterialPhongGetDiffuseMapIndex(el);
+            Engine->UnitsManager->Get(ParentUnit)->IndicesVars["ChoosedElement"].type = gdr_index_types::texture;
             return;
           }
         }
@@ -472,8 +472,8 @@ public:
           ImGui::SameLine();
           if (ImGui::Button("Go to specular texture"))
           {
-            ParentUnit->IndicesVars["ChoosedElement"] = GDRGPUMaterialPhongGetSpecularMapIndex(el);
-            ParentUnit->IndicesVars["ChoosedElement"].type = gdr_index_types::texture;
+            Engine->UnitsManager->Get(ParentUnit)->IndicesVars["ChoosedElement"] = GDRGPUMaterialPhongGetSpecularMapIndex(el);
+            Engine->UnitsManager->Get(ParentUnit)->IndicesVars["ChoosedElement"].type = gdr_index_types::texture;
             return;
           }
         }
@@ -486,24 +486,24 @@ public:
           ImGui::SameLine();
           if (ImGui::Button("Go to normal map"))
           {
-            ParentUnit->IndicesVars["ChoosedElement"] = GDRGPUMaterialPhongGetNormalMapIndex(el);
-            ParentUnit->IndicesVars["ChoosedElement"].type = gdr_index_types::texture;
+            Engine->UnitsManager->Get(ParentUnit)->IndicesVars["ChoosedElement"] = GDRGPUMaterialPhongGetNormalMapIndex(el);
+            Engine->UnitsManager->Get(ParentUnit)->IndicesVars["ChoosedElement"].type = gdr_index_types::texture;
             return;
           }
         }
       }
 
-      if (Engine->MaterialsSystem->Get(ParentUnit->IndicesVars["ChoosedElement"]).ShadeType == MATERIAL_SHADER_COOKTORRANCE_METALNESS)
+      if (Engine->MaterialsSystem->Get(Engine->UnitsManager->Get(ParentUnit)->IndicesVars["ChoosedElement"]).ShadeType == MATERIAL_SHADER_COOKTORRANCE_METALNESS)
       {
-        GDRGPUMaterial& el = Engine->MaterialsSystem->GetEditable(ParentUnit->IndicesVars["ChoosedElement"]);
+        GDRGPUMaterial& el = Engine->MaterialsSystem->GetEditable(Engine->UnitsManager->Get(ParentUnit)->IndicesVars["ChoosedElement"]);
         ImGui::Text("Ambient occlusion map index %d", GDRGPUMaterialCookTorranceGetAmbientOcclusionMapIndex(el));
         if (GDRGPUMaterialCookTorranceGetAmbientOcclusionMapIndex(el) != NONE_INDEX)
         {
           ImGui::SameLine();
           if (ImGui::Button("Go to ambient texture"))
           {
-            ParentUnit->IndicesVars["ChoosedElement"] = GDRGPUMaterialCookTorranceGetAmbientOcclusionMapIndex(el);
-            ParentUnit->IndicesVars["ChoosedElement"].type = gdr_index_types::texture;
+            Engine->UnitsManager->Get(ParentUnit)->IndicesVars["ChoosedElement"] = GDRGPUMaterialCookTorranceGetAmbientOcclusionMapIndex(el);
+            Engine->UnitsManager->Get(ParentUnit)->IndicesVars["ChoosedElement"].type = gdr_index_types::texture;
             return;
           }
         }
@@ -515,8 +515,8 @@ public:
           ImGui::SameLine();
           if (ImGui::Button("Go to albedo texture"))
           {
-            ParentUnit->IndicesVars["ChoosedElement"] = GDRGPUMaterialCookTorranceGetAlbedoMapIndex(el);
-            ParentUnit->IndicesVars["ChoosedElement"].type = gdr_index_types::texture;
+            Engine->UnitsManager->Get(ParentUnit)->IndicesVars["ChoosedElement"] = GDRGPUMaterialCookTorranceGetAlbedoMapIndex(el);
+            Engine->UnitsManager->Get(ParentUnit)->IndicesVars["ChoosedElement"].type = gdr_index_types::texture;
             return;
           }
         }
@@ -527,8 +527,8 @@ public:
           ImGui::SameLine();
           if (ImGui::Button("Go to normal map"))
           {
-            ParentUnit->IndicesVars["ChoosedElement"] = GDRGPUMaterialCookTorranceGetNormalMapIndex(el);
-            ParentUnit->IndicesVars["ChoosedElement"].type = gdr_index_types::texture;
+            Engine->UnitsManager->Get(ParentUnit)->IndicesVars["ChoosedElement"] = GDRGPUMaterialCookTorranceGetNormalMapIndex(el);
+            Engine->UnitsManager->Get(ParentUnit)->IndicesVars["ChoosedElement"].type = gdr_index_types::texture;
             return;
           }
         }
@@ -544,24 +544,24 @@ public:
           ImGui::SameLine();
           if (ImGui::Button("Go to metal/rough texture"))
           {
-            ParentUnit->IndicesVars["ChoosedElement"] = GDRGPUMaterialCookTorranceGetRoughnessMetalnessMapIndex(el);
-            ParentUnit->IndicesVars["ChoosedElement"].type = gdr_index_types::texture;
+            Engine->UnitsManager->Get(ParentUnit)->IndicesVars["ChoosedElement"] = GDRGPUMaterialCookTorranceGetRoughnessMetalnessMapIndex(el);
+            Engine->UnitsManager->Get(ParentUnit)->IndicesVars["ChoosedElement"].type = gdr_index_types::texture;
             return;
           }
         }
       }
 
-      if (Engine->MaterialsSystem->Get(ParentUnit->IndicesVars["ChoosedElement"]).ShadeType == MATERIAL_SHADER_COOKTORRANCE_SPECULAR)
+      if (Engine->MaterialsSystem->Get(Engine->UnitsManager->Get(ParentUnit)->IndicesVars["ChoosedElement"]).ShadeType == MATERIAL_SHADER_COOKTORRANCE_SPECULAR)
       {
-        GDRGPUMaterial& el = Engine->MaterialsSystem->GetEditable(ParentUnit->IndicesVars["ChoosedElement"]);
+        GDRGPUMaterial& el = Engine->MaterialsSystem->GetEditable(Engine->UnitsManager->Get(ParentUnit)->IndicesVars["ChoosedElement"]);
         ImGui::Text("Ambient occlusion map index %d", GDRGPUMaterialCookTorranceGetAmbientOcclusionMapIndex(el));
         if (GDRGPUMaterialCookTorranceGetAmbientOcclusionMapIndex(el) != NONE_INDEX)
         {
           ImGui::SameLine();
           if (ImGui::Button("Go to ambient texture"))
           {
-            ParentUnit->IndicesVars["ChoosedElement"] = GDRGPUMaterialCookTorranceGetAmbientOcclusionMapIndex(el);
-            ParentUnit->IndicesVars["ChoosedElement"].type = gdr_index_types::texture;
+            Engine->UnitsManager->Get(ParentUnit)->IndicesVars["ChoosedElement"] = GDRGPUMaterialCookTorranceGetAmbientOcclusionMapIndex(el);
+            Engine->UnitsManager->Get(ParentUnit)->IndicesVars["ChoosedElement"].type = gdr_index_types::texture;
             return;
           }
         }
@@ -573,8 +573,8 @@ public:
           ImGui::SameLine();
           if (ImGui::Button("Go to albedo texture"))
           {
-            ParentUnit->IndicesVars["ChoosedElement"] = GDRGPUMaterialCookTorranceGetAlbedoMapIndex(el);
-            ParentUnit->IndicesVars["ChoosedElement"].type = gdr_index_types::texture;
+            Engine->UnitsManager->Get(ParentUnit)->IndicesVars["ChoosedElement"] = GDRGPUMaterialCookTorranceGetAlbedoMapIndex(el);
+            Engine->UnitsManager->Get(ParentUnit)->IndicesVars["ChoosedElement"].type = gdr_index_types::texture;
             return;
           }
         }
@@ -585,8 +585,8 @@ public:
           ImGui::SameLine();
           if (ImGui::Button("Go to normal map"))
           {
-            ParentUnit->IndicesVars["ChoosedElement"] = GDRGPUMaterialCookTorranceGetNormalMapIndex(el);
-            ParentUnit->IndicesVars["ChoosedElement"].type = gdr_index_types::texture;
+            Engine->UnitsManager->Get(ParentUnit)->IndicesVars["ChoosedElement"] = GDRGPUMaterialCookTorranceGetNormalMapIndex(el);
+            Engine->UnitsManager->Get(ParentUnit)->IndicesVars["ChoosedElement"].type = gdr_index_types::texture;
             return;
           }
         }
@@ -602,8 +602,8 @@ public:
           ImGui::SameLine();
           if (ImGui::Button("Go to specular/gloss texture"))
           {
-            ParentUnit->IndicesVars["ChoosedElement"] = GDRGPUMaterialCookTorranceGetSpecularGlossinessMapIndex(el);
-            ParentUnit->IndicesVars["ChoosedElement"].type = gdr_index_types::texture;
+            Engine->UnitsManager->Get(ParentUnit)->IndicesVars["ChoosedElement"] = GDRGPUMaterialCookTorranceGetSpecularGlossinessMapIndex(el);
+            Engine->UnitsManager->Get(ParentUnit)->IndicesVars["ChoosedElement"].type = gdr_index_types::texture;
             return;
           }
         }
@@ -618,27 +618,27 @@ public:
   void ShowEditResourceModel(void)
   {
     ImGui::Text("Model Editor");
-    if (Engine->ModelsManager->IsExist(ParentUnit->IndicesVars["ChoosedElement"]))
+    if (Engine->ModelsManager->IsExist(Engine->UnitsManager->Get(ParentUnit)->IndicesVars["ChoosedElement"]))
     {
       if (ImGui::Button("Delete Model"))
       {
-        ParentUnit->FloatVars["Remove"] = true;
+        Engine->UnitsManager->Get(ParentUnit)->FloatVars["Remove"] = true;
       }
-      ImGui::Text("Name: %s", Engine->ModelsManager->Get(ParentUnit->IndicesVars["ChoosedElement"]).Name.c_str());
-      ImGui::Text("Root Transform index: %d", Engine->ModelsManager->Get(ParentUnit->IndicesVars["ChoosedElement"]).Render.RootTransform);
-      if (Engine->ModelsManager->Get(ParentUnit->IndicesVars["ChoosedElement"]).Render.RootTransform != NONE_INDEX)
+      ImGui::Text("Name: %s", Engine->ModelsManager->Get(Engine->UnitsManager->Get(ParentUnit)->IndicesVars["ChoosedElement"]).Name.c_str());
+      ImGui::Text("Root Transform index: %d", Engine->ModelsManager->Get(Engine->UnitsManager->Get(ParentUnit)->IndicesVars["ChoosedElement"]).Render.RootTransform);
+      if (Engine->ModelsManager->Get(Engine->UnitsManager->Get(ParentUnit)->IndicesVars["ChoosedElement"]).Render.RootTransform != NONE_INDEX)
       {
         if (ImGui::Button("Go to Transform"))
         {
-          ParentUnit->IndicesVars["ChoosedElement"] = Engine->ModelsManager->Get(ParentUnit->IndicesVars["ChoosedElement"]).Render.RootTransform;
-          ParentUnit->IndicesVars["ChoosedElement"].type = gdr_index_types::object_transform;
+          Engine->UnitsManager->Get(ParentUnit)->IndicesVars["ChoosedElement"] = Engine->ModelsManager->Get(Engine->UnitsManager->Get(ParentUnit)->IndicesVars["ChoosedElement"]).Render.RootTransform;
+          Engine->UnitsManager->Get(ParentUnit)->IndicesVars["ChoosedElement"].type = gdr_index_types::object_transform;
           return;
         }
       }
-      if (Engine->ModelsManager->Get(ParentUnit->IndicesVars["ChoosedElement"]).Render.RootTransform != NONE_INDEX)
+      if (Engine->ModelsManager->Get(Engine->UnitsManager->Get(ParentUnit)->IndicesVars["ChoosedElement"]).Render.RootTransform != NONE_INDEX)
       {
         mth::vec3f Translate, Rotate, Scale;
-        Engine->ObjectTransformsSystem->Get(Engine->ModelsManager->Get(ParentUnit->IndicesVars["ChoosedElement"]).Render.RootTransform).Transform.Decompose(Translate, Rotate, Scale);
+        Engine->ObjectTransformsSystem->Get(Engine->ModelsManager->Get(Engine->UnitsManager->Get(ParentUnit)->IndicesVars["ChoosedElement"]).Render.RootTransform).Transform.Decompose(Translate, Rotate, Scale);
 
         bool IsMatrChanged = false;
 
@@ -653,9 +653,9 @@ public:
         {
           mth::matr4f result = mth::matr4f::RotateZ(Rotate.Z) * mth::matr4f::RotateY(Rotate.Y) * mth::matr4f::RotateX(Rotate.X) * mth::matr4f::Scale(Scale) * mth::matr4f::Translate(Translate);
           if (!isnan(result[0][0]) && !isnan(result[1][1]) && !isnan(result[2][2]) && !isnan(result[3][3]))
-            Engine->ObjectTransformsSystem->GetEditable(Engine->ModelsManager->Get(ParentUnit->IndicesVars["ChoosedElement"]).Render.RootTransform).Transform = result;
+            Engine->ObjectTransformsSystem->GetEditable(Engine->ModelsManager->Get(Engine->UnitsManager->Get(ParentUnit)->IndicesVars["ChoosedElement"]).Render.RootTransform).Transform = result;
           else
-            Engine->ObjectTransformsSystem->GetEditable(Engine->ModelsManager->Get(ParentUnit->IndicesVars["ChoosedElement"]).Render.RootTransform).Transform = mth::matr4f::Identity();
+            Engine->ObjectTransformsSystem->GetEditable(Engine->ModelsManager->Get(Engine->UnitsManager->Get(ParentUnit)->IndicesVars["ChoosedElement"]).Render.RootTransform).Transform = mth::matr4f::Identity();
         }
       }
 
@@ -666,17 +666,17 @@ public:
       ImGui::Text("Button to go");
       ImGui::TableNextRow();
 
-      for (int i = 0; i < Engine->ModelsManager->Get(ParentUnit->IndicesVars["ChoosedElement"]).Render.Materials.size(); i++)
+      for (int i = 0; i < Engine->ModelsManager->Get(Engine->UnitsManager->Get(ParentUnit)->IndicesVars["ChoosedElement"]).Render.Materials.size(); i++)
       {
         ImGui::TableNextColumn();
-        ImGui::Text("%d", Engine->ModelsManager->Get(ParentUnit->IndicesVars["ChoosedElement"]).Render.Materials[i].value);
+        ImGui::Text("%d", Engine->ModelsManager->Get(Engine->UnitsManager->Get(ParentUnit)->IndicesVars["ChoosedElement"]).Render.Materials[i].value);
         ImGui::TableNextColumn();
-        if (Engine->ModelsManager->Get(ParentUnit->IndicesVars["ChoosedElement"]).Render.Materials[i].value != NONE_INDEX)
+        if (Engine->ModelsManager->Get(Engine->UnitsManager->Get(ParentUnit)->IndicesVars["ChoosedElement"]).Render.Materials[i].value != NONE_INDEX)
         {
-          if (ImGui::Button((std::string("Go to material ") + std::to_string(Engine->ModelsManager->Get(ParentUnit->IndicesVars["ChoosedElement"]).Render.Materials[i].value)).c_str()))
+          if (ImGui::Button((std::string("Go to material ") + std::to_string(Engine->ModelsManager->Get(Engine->UnitsManager->Get(ParentUnit)->IndicesVars["ChoosedElement"]).Render.Materials[i].value)).c_str()))
           {
-            ParentUnit->IndicesVars["ChoosedElement"] = Engine->ModelsManager->Get(ParentUnit->IndicesVars["ChoosedElement"]).Render.Materials[i];
-            ParentUnit->IndicesVars["ChoosedElement"].type = gdr_index_types::material;
+            Engine->UnitsManager->Get(ParentUnit)->IndicesVars["ChoosedElement"] = Engine->ModelsManager->Get(Engine->UnitsManager->Get(ParentUnit)->IndicesVars["ChoosedElement"]).Render.Materials[i];
+            Engine->UnitsManager->Get(ParentUnit)->IndicesVars["ChoosedElement"].type = gdr_index_types::material;
             ImGui::TableNextRow();
             ImGui::EndTable();
             return;
@@ -695,7 +695,7 @@ public:
   void ShowEditorResource()
   {
     ImGui::Text("Resource Editor");
-    switch (ParentUnit->IndicesVars["ChoosedElement"].type)
+    switch (Engine->UnitsManager->Get(ParentUnit)->IndicesVars["ChoosedElement"].type)
     {
     case gdr_index_types::light:
       ShowEditResourceLight();
@@ -744,34 +744,34 @@ public:
     Engine->ObjectTransformsSystem->GetEditable(
       Engine->ModelsManager->Get(IndicesVars["ConeMesh"]).Render.RootTransform).Transform = mth::matr4f::Scale(0);
 
-    if (FloatVars["Show"] == 0 || ParentUnit->FloatVars["Show"] == 0)
+    if (FloatVars["Show"] == 0 || Engine->UnitsManager->Get(ParentUnit)->FloatVars["Show"] == 0)
       return;
 
     // Visualize choosed light object
-    if ((editor_type)ParentUnit->FloatVars["EditorType"] == editor_type::resource &&
-      ParentUnit->IndicesVars["ChoosedElement"].type == gdr_index_types::light &&
-      Engine->LightsSystem->IsExist(ParentUnit->IndicesVars["ChoosedElement"]) &&
-      Engine->LightsSystem->Get(ParentUnit->IndicesVars["ChoosedElement"]).ObjectTransformIndex != NONE_INDEX)
+    if ((editor_type)Engine->UnitsManager->Get(ParentUnit)->FloatVars["EditorType"] == editor_type::resource &&
+      Engine->UnitsManager->Get(ParentUnit)->IndicesVars["ChoosedElement"].type == gdr_index_types::light &&
+      Engine->LightsSystem->IsExist(Engine->UnitsManager->Get(ParentUnit)->IndicesVars["ChoosedElement"]) &&
+      Engine->LightsSystem->Get(Engine->UnitsManager->Get(ParentUnit)->IndicesVars["ChoosedElement"]).ObjectTransformIndex != NONE_INDEX)
     {
       // choose right mesh
       gdr_index ObjectType;
-      if (Engine->LightsSystem->Get(ParentUnit->IndicesVars["ChoosedElement"]).LightSourceType == LIGHT_SOURCE_TYPE_DIRECTIONAL)
+      if (Engine->LightsSystem->Get(Engine->UnitsManager->Get(ParentUnit)->IndicesVars["ChoosedElement"]).LightSourceType == LIGHT_SOURCE_TYPE_DIRECTIONAL)
         ObjectType = IndicesVars["DirMesh"];
-      if (Engine->LightsSystem->Get(ParentUnit->IndicesVars["ChoosedElement"]).LightSourceType == LIGHT_SOURCE_TYPE_SPOT)
+      if (Engine->LightsSystem->Get(Engine->UnitsManager->Get(ParentUnit)->IndicesVars["ChoosedElement"]).LightSourceType == LIGHT_SOURCE_TYPE_SPOT)
         ObjectType = IndicesVars["ConeMesh"];
-      if (Engine->LightsSystem->Get(ParentUnit->IndicesVars["ChoosedElement"]).LightSourceType == LIGHT_SOURCE_TYPE_POINT)
+      if (Engine->LightsSystem->Get(Engine->UnitsManager->Get(ParentUnit)->IndicesVars["ChoosedElement"]).LightSourceType == LIGHT_SOURCE_TYPE_POINT)
         ObjectType = IndicesVars["PointMesh"];
 
       Engine->ObjectTransformsSystem->GetEditable(
         Engine->ModelsManager->Get(ObjectType).Render.RootTransform).Transform =
-        Engine->ObjectTransformsSystem->Get(Engine->LightsSystem->Get(ParentUnit->IndicesVars["ChoosedElement"]).ObjectTransformIndex).Transform;
+        Engine->ObjectTransformsSystem->Get(Engine->LightsSystem->Get(Engine->UnitsManager->Get(ParentUnit)->IndicesVars["ChoosedElement"]).ObjectTransformIndex).Transform;
     }
 
     Engine->AddLambdaForIMGUI([&]() {
       bool isShow = FloatVars["Show"];
       if (ImGui::Begin("Editor", &isShow))
       {
-        editor_type type = (editor_type)ParentUnit->FloatVars["EditorType"];
+        editor_type type = (editor_type)Engine->UnitsManager->Get(ParentUnit)->FloatVars["EditorType"];
         switch (type)
         {
         case editor_type::camera:

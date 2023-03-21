@@ -208,7 +208,7 @@ void gdr::resource_pool_subsystem<StoredType, Type, ChunkSize>::Remove(gdr_index
 }
 
 template<typename StoredType, gdr_index_types Type, int ChunkSize>
-StoredType& gdr::resource_pool_subsystem<StoredType, Type, ChunkSize>::GetEditable(gdr_index index)
+inline StoredType& gdr::resource_pool_subsystem<StoredType, Type, ChunkSize>::GetEditable(gdr_index index)
 {
   GDR_ASSERT((index.type== gdr_index_types::none || index.type == Type) && index <= CPUData.size() && index >= 0 && PoolRecords[index].IsAlive);
 
@@ -217,7 +217,7 @@ StoredType& gdr::resource_pool_subsystem<StoredType, Type, ChunkSize>::GetEditab
 }
 
 template<typename StoredType, gdr_index_types Type, int ChunkSize>
-const StoredType& gdr::resource_pool_subsystem<StoredType, Type, ChunkSize>::Get(gdr_index index) const
+inline const StoredType& gdr::resource_pool_subsystem<StoredType, Type, ChunkSize>::Get(gdr_index index) const
 {
   GDR_ASSERT((index.type == gdr_index_types::none || index.type == Type) && index <= CPUData.size() && index >= 0 && PoolRecords[index].IsAlive);
 
@@ -225,13 +225,13 @@ const StoredType& gdr::resource_pool_subsystem<StoredType, Type, ChunkSize>::Get
 }
 
 template<typename StoredType, gdr_index_types Type, int ChunkSize>
-bool gdr::resource_pool_subsystem<StoredType, Type, ChunkSize>::IsExist(gdr_index index) const
+inline bool gdr::resource_pool_subsystem<StoredType, Type, ChunkSize>::IsExist(gdr_index index) const
 {
   return ((index.type == gdr_index_types::none || index.type == Type) && index >= 0 && index < CPUData.size() && PoolRecords[index].IsAlive);
 }
 
 template<typename StoredType, gdr_index_types Type, int ChunkSize>
-void gdr::resource_pool_subsystem<StoredType, Type, ChunkSize>::MarkChunkByElementIndex(gdr_index index)
+inline void gdr::resource_pool_subsystem<StoredType, Type, ChunkSize>::MarkChunkByElementIndex(gdr_index index)
 {
   size_t chunk_index = (size_t)floor(1.0 * ((byte*)&CPUData[index] - (byte*)&CPUData[0]) / CHUNK_SIZE);
   if (chunk_index < ChunkMarkings.size() && chunk_index >= 0 && PoolRecords[index].IsAlive)

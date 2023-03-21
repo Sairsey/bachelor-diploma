@@ -44,27 +44,27 @@ public:
 
   void Response(void) override
   {
-    if (FloatVars["Show"] == 0 || ParentUnit->FloatVars["Show"] == 0)
+    if (FloatVars["Show"] == 0 || Engine->UnitsManager->Get(ParentUnit)->FloatVars["Show"] == 0)
       return;
 
     // VISUALIZE GIZMO
-    if (ParentUnit->FloatVars["EditorType"] == (int)editor_type::resource &&
-      ParentUnit->IndicesVars["ChoosedElement"].type == gdr_index_types::model &&
-      Engine->ModelsManager->IsExist(ParentUnit->IndicesVars["ChoosedElement"]) &&
-      Engine->ModelsManager->Get(ParentUnit->IndicesVars["ChoosedElement"]).Render.RootTransform != NONE_INDEX)
+    if (Engine->UnitsManager->Get(ParentUnit)->FloatVars["EditorType"] == (int)editor_type::resource &&
+      Engine->UnitsManager->Get(ParentUnit)->IndicesVars["ChoosedElement"].type == gdr_index_types::model &&
+      Engine->ModelsManager->IsExist(Engine->UnitsManager->Get(ParentUnit)->IndicesVars["ChoosedElement"]) &&
+      Engine->ModelsManager->Get(Engine->UnitsManager->Get(ParentUnit)->IndicesVars["ChoosedElement"]).Render.RootTransform != NONE_INDEX)
     {
       mth::vec3f pos, scale;
       mth::vec4f rot;
-      mth::matr4f matr = Engine->ObjectTransformsSystem->Get(Engine->ModelsManager->Get(ParentUnit->IndicesVars["ChoosedElement"]).Render.RootTransform).Transform;
+      mth::matr4f matr = Engine->ObjectTransformsSystem->Get(Engine->ModelsManager->Get(Engine->UnitsManager->Get(ParentUnit)->IndicesVars["ChoosedElement"]).Render.RootTransform).Transform;
       matr.Decompose(pos, rot, scale);
 
-      Engine->ObjectTransformsSystem->Get(Engine->ModelsManager->Get(ParentUnit->IndicesVars["ChoosedElement"]).Render.RootTransform).Transform.Decompose(pos, rot, scale);
+      Engine->ObjectTransformsSystem->Get(Engine->ModelsManager->Get(Engine->UnitsManager->Get(ParentUnit)->IndicesVars["ChoosedElement"]).Render.RootTransform).Transform.Decompose(pos, rot, scale);
 
       mth::matr4f RotationMat = mth::matr4f::BuildTransform(1, rot, 0);
 
-      mth::vec3f xAxis = { 0.8, 0, 0 };
-      mth::vec3f yAxis = { 0, 0.8, 0 };
-      mth::vec3f zAxis = { 0, 0, 0.8 };
+      mth::vec3f xAxis = { 0.8f, 0, 0 };
+      mth::vec3f yAxis = { 0, 0.8f, 0 };
+      mth::vec3f zAxis = { 0, 0, 0.8f };
 
       xAxis = RotationMat * xAxis;
       yAxis = RotationMat * yAxis;
@@ -94,8 +94,10 @@ public:
     if (my_drag_state == none && MouseKeyHold)
     {
       mth::vec3f ScreenDir;
-      ScreenDir.X = 2.0f * (Engine->Mx - ParentUnit->Float2Vars["GameWindowPos"].X) / ParentUnit->Float2Vars["GameWindowSize"].X - 1;
-      ScreenDir.Y = -2.0f * (Engine->My - ParentUnit->Float2Vars["GameWindowPos"].Y) / ParentUnit->Float2Vars["GameWindowSize"].Y + 1;
+      ScreenDir.X = 2.0f * (Engine->Mx - Engine->UnitsManager->Get(ParentUnit)->Float2Vars["GameWindowPos"].X) /
+        Engine->UnitsManager->Get(ParentUnit)->Float2Vars["GameWindowSize"].X - 1;
+      ScreenDir.Y = -2.0f * (Engine->My - Engine->UnitsManager->Get(ParentUnit)->Float2Vars["GameWindowPos"].Y) /
+        Engine->UnitsManager->Get(ParentUnit)->Float2Vars["GameWindowSize"].Y + 1;
       ScreenDir.Z = 1;
       if (fabs(ScreenDir.X) <= 1 && fabs(ScreenDir.Y) <= 1)
       {
@@ -160,7 +162,7 @@ public:
 
       // 2) get axis in world space
       {
-        mth::matr4f matr = Engine->ObjectTransformsSystem->Get(Engine->ModelsManager->Get(ParentUnit->IndicesVars["ChoosedElement"]).Render.RootTransform).Transform;
+        mth::matr4f matr = Engine->ObjectTransformsSystem->Get(Engine->ModelsManager->Get(Engine->UnitsManager->Get(ParentUnit)->IndicesVars["ChoosedElement"]).Render.RootTransform).Transform;
         matr.Decompose(pos, rot, scale);
         mth::matr4f RotationMat = mth::matr4f::BuildTransform(1, rot, 0);
         axis = RotationMat * axis; 
@@ -178,7 +180,10 @@ public:
       // 4) calculate Delta
       mth::vec3f delta = 0;
       {
-        mth::vec3f mouseMove = {2.0f * Engine->Mdx / ParentUnit->Float2Vars["GameWindowSize"].X, -2.0f * Engine->Mdy / ParentUnit->Float2Vars["GameWindowSize"].Y, 0};
+        mth::vec3f mouseMove = {
+          2.0f * Engine->Mdx / Engine->UnitsManager->Get(ParentUnit)->Float2Vars["GameWindowSize"].X,
+          -2.0f * Engine->Mdy / Engine->UnitsManager->Get(ParentUnit)->Float2Vars["GameWindowSize"].Y, 
+          0};
 
         mth::matr4f VPInversed = Engine->PlayerCamera.GetVP().Inversed();
         
@@ -190,7 +195,7 @@ public:
       // 5) Apply
       if (delta != 0)
       {
-        Engine->ObjectTransformsSystem->GetEditable(Engine->ModelsManager->Get(ParentUnit->IndicesVars["ChoosedElement"]).Render.RootTransform).Transform =
+        Engine->ObjectTransformsSystem->GetEditable(Engine->ModelsManager->Get(Engine->UnitsManager->Get(ParentUnit)->IndicesVars["ChoosedElement"]).Render.RootTransform).Transform =
           mth::matr4f::BuildTransform(scale, rot, pos + delta);
       }
     }
@@ -203,8 +208,8 @@ public:
     if (my_drag_state == none && Engine->KeysClick[VK_LBUTTON])
     {
       mth::vec3f ScreenDir;
-      ScreenDir.X = 2.0f * (Engine->Mx - ParentUnit->Float2Vars["GameWindowPos"].X) / ParentUnit->Float2Vars["GameWindowSize"].X - 1;
-      ScreenDir.Y = -2.0f * (Engine->My - ParentUnit->Float2Vars["GameWindowPos"].Y) / ParentUnit->Float2Vars["GameWindowSize"].Y + 1;
+      ScreenDir.X = 2.0f * (Engine->Mx - Engine->UnitsManager->Get(ParentUnit)->Float2Vars["GameWindowPos"].X) / Engine->UnitsManager->Get(ParentUnit)->Float2Vars["GameWindowSize"].X - 1;
+      ScreenDir.Y = -2.0f * (Engine->My - Engine->UnitsManager->Get(ParentUnit)->Float2Vars["GameWindowPos"].Y) / Engine->UnitsManager->Get(ParentUnit)->Float2Vars["GameWindowSize"].Y + 1;
       ScreenDir.Z = 1;
       if (fabs(ScreenDir.X) <= 1 && fabs(ScreenDir.Y) <= 1)
       {
@@ -224,8 +229,8 @@ public:
                 Outputs[i].Index != IndicesVars["AxisObjectDragZ"] &&
                 Outputs[i].Index != IndicesVars["AxisObjectCenter"])
             {
-              ParentUnit->IndicesVars["ChoosedElement"] = Outputs[0].Index;
-              ParentUnit->FloatVars["EditorType"] = (int)editor_type::resource;
+              Engine->UnitsManager->Get(ParentUnit)->IndicesVars["ChoosedElement"] = Outputs[0].Index;
+              Engine->UnitsManager->Get(ParentUnit)->FloatVars["EditorType"] = (int)editor_type::resource;
               break;
             }
           }
@@ -241,8 +246,8 @@ public:
           // It also alows customization
           ImGui::BeginChild("GameRender");
           // Get the size of the child (i.e. the whole draw size of the windows).
-          ParentUnit->Float2Vars["GameWindowSize"] = { ImGui::GetWindowSize().x, ImGui::GetWindowSize().y };
-          ParentUnit->Float2Vars["GameWindowPos"] = { ImGui::GetWindowPos().x, ImGui::GetWindowPos().y };
+          Engine->UnitsManager->Get(ParentUnit)->Float2Vars["GameWindowSize"] = { ImGui::GetWindowSize().x, ImGui::GetWindowSize().y };
+          Engine->UnitsManager->Get(ParentUnit)->Float2Vars["GameWindowPos"] = { ImGui::GetWindowPos().x, ImGui::GetWindowPos().y };
 
           D3D12_GPU_DESCRIPTOR_HANDLE true_texture_handle = Engine->RenderTargetsSystem->ShaderResourceViewsGPU;
           true_texture_handle.ptr += (int)(gdr::render_targets_enum::target_frame_final)*Engine->GetDevice().GetSRVDescSize();

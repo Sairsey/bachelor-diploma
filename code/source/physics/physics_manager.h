@@ -76,8 +76,6 @@ namespace gdr
   {
     private:
       void BeforeRemoveJob(gdr_index index) override;
-      void UpdateGPUData(ID3D12GraphicsCommandList* pCommandList) {GDR_FAILED("Should not call this function!");};
-
       engine* Engine;
 
       physx::PxFoundation* Foundation;                     // SDK

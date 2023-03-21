@@ -35,16 +35,16 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 {
   gdr::engine Engine;
 
-  Engine.SetScene(new gdr::unit_scene_default());
-  //Engine.SetScene(new unit_examples_scene());
-  //Engine.SetScene(new unit_thriller_scene());
-  //Engine.SetScene(new unit_shooter_scene());
-  //Engine.SetScene(new unit_fishes_scene());
-  //Engine.SetScene(new unit_funk());
+  Engine.UnitsManager->Add(new gdr::unit_scene_default());
+  Engine.UnitsManager->Add(new unit_examples_scene());
+  Engine.UnitsManager->Add(new unit_thriller_scene());
+  Engine.UnitsManager->Add(new unit_shooter_scene());
+  Engine.UnitsManager->Add(new unit_fishes_scene());
+  Engine.UnitsManager->Add(new unit_funk());
 
-  Engine.AddUnit(new unit_editor());
-  Engine.AddUnit(new unit_alex_apt());
-  Engine.AddUnit(new unit_flying_camera());
+  Engine.UnitsManager->Add(new unit_editor());
+  Engine.UnitsManager->Add(new unit_alex_apt());
+  Engine.UnitsManager->Add(new unit_flying_camera());
 
   //Engine.AddUnit(new unit_scripted("Hello"));
   //Engine.AddUnit(new unit_blueprint_editor());

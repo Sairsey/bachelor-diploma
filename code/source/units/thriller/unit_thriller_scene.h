@@ -26,10 +26,10 @@ public:
    */
   void Initialize(void) override
   {
-    Engine->AddUnit(new unit_thriller_camera(), this);
-    Engine->AddUnit(new unit_thriller_stage(), this);
-    Engine->AddUnit(new unit_thriller_dancers(), this);
-    Engine->AddUnit(new unit_thriller_env(), this);
+    Engine->UnitsManager->Add(new unit_thriller_camera(), Me);
+    Engine->UnitsManager->Add(new unit_thriller_stage(), Me);
+    Engine->UnitsManager->Add(new unit_thriller_dancers(), Me);
+    Engine->UnitsManager->Add(new unit_thriller_env(), Me);
   }
 
   /* Response function which will be called on every frame.

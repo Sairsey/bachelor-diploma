@@ -34,13 +34,13 @@ public:
   void Initialize()
   {
     for (int i = 0; i < EnemyAmount; i++)
-      Engine->AddUnit(new unit_shooter_enemy(GetRandomPos()), this);
+      Engine->UnitsManager->Add(new unit_shooter_enemy(GetRandomPos()), Me);
   }
 
   void Response(void)
   {
     for (int i = 0; i < EnemyAmount - ChildUnits.size(); i++ )
-      Engine->AddUnit(new unit_shooter_enemy(GetRandomPos()), this);
+      Engine->UnitsManager->Add(new unit_shooter_enemy(GetRandomPos()), Me);
   }
 
   std::string GetName(void)

@@ -122,6 +122,7 @@
     <ClInclude Include="source\units\thriller\unit_thriller_env.h" />
     <ClInclude Include="source\units\thriller\unit_thriller_scene.h" />
     <ClInclude Include="source\units\thriller\unit_thriller_stage.h" />
+    <ClInclude Include="source\units\units_manager.h" />
     <ClInclude Include="source\units\unit_base.h" />
     <ClInclude Include="source\units\unit_scene_default.h" />
     <ClInclude Include="source\utils\editor\editors_modules_list.h" />
@@ -187,6 +188,7 @@
     <ClCompile Include="source\render\subsystems\texture_subsystem.cpp" />
     <ClCompile Include="source\units\editor\unit_scripted.cpp" />
     <ClCompile Include="source\units\examples\unit_triangle.cpp" />
+    <ClCompile Include="source\units\units_manager.cpp" />
     <ClCompile Include="source\utils\D3D12MemAlloc.cpp" />
     <ClInclude Include="source\utils\math\mth_cam.h" />
     <ClCompile Include="source\utils\read_file.cpp" />

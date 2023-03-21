@@ -327,6 +327,9 @@
     <ClCompile Include="source\render\passes\top_most_pass.cpp">
       <Filter>Source Files\Render\Passes\topmost</Filter>
     </ClCompile>
+    <ClCompile Include="source\units\units_manager.cpp">
+      <Filter>Source Files\Units</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\p_header.h">
@@ -691,6 +694,9 @@
     </ClInclude>
     <ClInclude Include="source\units\editor\unit_editor_window_edit.h">
       <Filter>Source Files\Units\Editor\EditorWindows</Filter>
+    </ClInclude>
+    <ClInclude Include="source\units\units_manager.h">
+      <Filter>Source Files\Units</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

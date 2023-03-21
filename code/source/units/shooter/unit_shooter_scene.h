@@ -26,10 +26,10 @@ public:
    */
   void Initialize(void) override
   {
-    Engine->AddUnit(new unit_shooter_enemy_spawner(10), this);
-    Engine->AddUnit(new unit_shooter_enviroment(), this);
-    Engine->AddUnit(new unit_shooter_first_person(), this);
-    Engine->AddUnit(new unit_shooter_gun(), this);
+    Engine->UnitsManager->Add(new unit_shooter_enemy_spawner(10), Me);
+    Engine->UnitsManager->Add(new unit_shooter_enviroment(), Me);
+    Engine->UnitsManager->Add(new unit_shooter_first_person(), Me);
+    Engine->UnitsManager->Add(new unit_shooter_gun(), Me);
   }
 
   /* Destructor */

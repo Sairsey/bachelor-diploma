@@ -12,7 +12,7 @@ public:
 
   void Response(void) override
   {
-    if (FloatVars["Show"] == 0 || ParentUnit->FloatVars["Show"] == 0)
+    if (FloatVars["Show"] == 0 || Engine->UnitsManager->Get(ParentUnit)->FloatVars["Show"] == 0)
       return;
 
     Engine->AddLambdaForIMGUI([&]() {

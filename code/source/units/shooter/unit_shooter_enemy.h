@@ -84,7 +84,7 @@ public:
       }
       else // and finally kill
       {
-        Engine->RemoveUnit(this);
+        Engine->UnitsManager->Remove(Me);
       }
     }   
   }

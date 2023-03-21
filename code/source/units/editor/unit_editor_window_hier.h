@@ -10,40 +10,41 @@ public:
     FloatVars["Show"] = 1;
   }
 
-  void ShowUnitsRecursive(unit_base* Unit, int &i)
+  void ShowUnitsRecursive(gdr_index Unit, int &i)
   {
-    if (ImGui::TreeNodeEx((void*)(intptr_t)i++, 0, Unit->GetName().c_str()))
+    if (ImGui::TreeNodeEx((void*)(intptr_t)i++, 0, Engine->UnitsManager->Get(Unit)->GetName().c_str()))
     {
       if (ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen())
-        ParentUnit->FloatVars["EditorType"] = (int)editor_type::unit;
+        Engine->UnitsManager->Get(ParentUnit)->FloatVars["EditorType"] = (int)editor_type::unit;
 
-      if (!Unit->IndicesVars.empty())
+      if (!Engine->UnitsManager->Get(Unit)->IndicesVars.empty())
         if (ImGui::TreeNodeEx((void*)(intptr_t)i++, 0, "Resources"))
         {
-          for (const auto& el : Unit->IndicesVars)
+          for (const auto& el : Engine->UnitsManager->Get(Unit)->IndicesVars)
           {
             ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
-            if (ParentUnit->IndicesVars["ChoosedElement"].type == el.second.type && ParentUnit->IndicesVars["ChoosedElement"].value == el.second.value)
+            if (Engine->UnitsManager->Get(ParentUnit)->IndicesVars["ChoosedElement"].type == el.second.type &&
+              Engine->UnitsManager->Get(ParentUnit)->IndicesVars["ChoosedElement"].value == el.second.value)
               flags |= ImGuiTreeNodeFlags_Selected;
             ImGui::TreeNodeEx((void*)(intptr_t)i++, flags, el.first.c_str());
             if (ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen())         
             {
-              ParentUnit->FloatVars["EditorType"] = (int)editor_type::resource;
-              ParentUnit->IndicesVars["ChoosedElement"] = el.second;
+              Engine->UnitsManager->Get(ParentUnit)->FloatVars["EditorType"] = (int)editor_type::resource;
+              Engine->UnitsManager->Get(ParentUnit)->IndicesVars["ChoosedElement"] = el.second;
             }
           }
           ImGui::TreePop();
         }
 
-      for (int j = 0; j < Unit->ChildUnits.size(); j++)
-        ShowUnitsRecursive(Unit->ChildUnits[j], i);
+      for (int j = 0; j < Engine->UnitsManager->Get(Unit)->ChildUnits.size(); j++)
+        ShowUnitsRecursive(Engine->UnitsManager->Get(Unit)->ChildUnits[j], i);
       ImGui::TreePop();
     }
   }
 
   void Response(void) override
   {
-    if (FloatVars["Show"] == 0 || ParentUnit->FloatVars["Show"] == 0)
+    if (FloatVars["Show"] == 0 || Engine->UnitsManager->Get(ParentUnit)->FloatVars["Show"] == 0)
       return;
 
     Engine->AddLambdaForIMGUI([&]() {
@@ -57,12 +58,12 @@ public:
           ImGui::TreeNodeEx("Camera", ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen);
 
           if (ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen())
-            ParentUnit->FloatVars["EditorType"] = (int)editor_type::camera;
+            Engine->UnitsManager->Get(ParentUnit)->FloatVars["EditorType"] = (int)editor_type::camera;
 
           if (ImGui::TreeNodeEx("Units", ImGuiTreeNodeFlags_DefaultOpen))
           {
             int i = 0;
-            ShowUnitsRecursive(Engine->SceneUnit, i);
+            ShowUnitsRecursive(Engine->UnitsManager->GetSceneRoot(), i);
             ImGui::TreePop();
           }
           ImGui::TreePop();

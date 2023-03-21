@@ -26,10 +26,10 @@ public:
    */
   void Initialize(void) override
   {
-    Engine->AddUnit(new unit_alex_apt(), this);
-    Engine->AddUnit(new unit_flying_camera(), this);
-    Engine->AddUnit(new unit_fishes_rotating(), this);
-    Engine->AddUnit(new unit_fishes_env(), this);
+    Engine->UnitsManager->Add(new unit_alex_apt(), Me);
+    Engine->UnitsManager->Add(new unit_flying_camera(), Me);
+    Engine->UnitsManager->Add(new unit_fishes_rotating(), Me);
+    Engine->UnitsManager->Add(new unit_fishes_env(), Me);
   }
 
   /* Response function which will be called on every frame.

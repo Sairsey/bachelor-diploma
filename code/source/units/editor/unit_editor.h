@@ -23,7 +23,6 @@ enum struct editor_type
 // 3) Finish unit editor
 // 4) All units should use new system of model storage
 // 5) Example scene should have some imgui??
-// 6) Units as resource_pool???
 
 class unit_editor : public gdr::unit_base
 {
@@ -65,7 +64,7 @@ public:
     loadSceneFileDialog.SetTypeFilters({ ".json" });
 
     for (auto &i : sub_windows)
-      Engine->AddUnit(i.second, this);
+      Engine->UnitsManager->Add(i.second, Me);
   }
 
   void LoadModel(std::string path)

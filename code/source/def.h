@@ -133,7 +133,8 @@ enum struct gdr_index_types
   texture,
   cube_texture,
   object_transform,
-  node_transform
+  node_transform,
+  unit
 };
 
 struct gdr_index

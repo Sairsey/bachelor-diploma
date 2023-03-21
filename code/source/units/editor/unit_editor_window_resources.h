@@ -6,7 +6,7 @@
 #define ResourceTree(index_type, engine_system, string_name, string_many_name, start_index, is_add, add_lambda) \
   {                                                                                                        \
     ImGuiTreeNodeFlags root_flags = ImGuiTreeNodeFlags_AllowItemOverlap;                                   \
-    if (ParentUnit->IndicesVars["ChoosedElement"].type == index_type)                                                                 \
+    if (Engine->UnitsManager->Get(ParentUnit)->IndicesVars["ChoosedElement"].type == index_type)                                                                 \
       root_flags |= ImGuiTreeNodeFlags_DefaultOpen;                                                        \
     bool is_open = ImGui::TreeNodeEx((string_many_name " (" + std::to_string(engine_system->AllocatedSize() - start_index) + ")").c_str(), root_flags);\
     if (is_add)                                                                                            \
@@ -19,7 +19,7 @@
       for (unsigned i = start_index; i < engine_system->AllocatedSize(); i++)                              \
       {                                                                                                    \
         ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;          \
-        if (ParentUnit->IndicesVars["ChoosedElement"].type == index_type && ParentUnit->IndicesVars["ChoosedElement"].value == i)                                \
+        if (Engine->UnitsManager->Get(ParentUnit)->IndicesVars["ChoosedElement"].type == index_type && Engine->UnitsManager->Get(ParentUnit)->IndicesVars["ChoosedElement"].value == i)                                \
           flags |= ImGuiTreeNodeFlags_Selected;                                                            \
         std::string name = string_name " #" + std::to_string(i) + " (";                                    \
         if (engine_system->IsExist(i))                                                                     \
@@ -29,9 +29,9 @@
           ImGui::TreeNodeEx(name.c_str(), flags);                                                          \
           if (ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen())                                       \
           {                                                                                                \
-            ParentUnit->FloatVars["EditorType"] = (int)editor_type::resource;                              \
-            ParentUnit->IndicesVars["ChoosedElement"].type = index_type;                                   \
-            ParentUnit->IndicesVars["ChoosedElement"].value = i;                                           \
+            Engine->UnitsManager->Get(ParentUnit)->FloatVars["EditorType"] = (int)editor_type::resource;                              \
+            Engine->UnitsManager->Get(ParentUnit)->IndicesVars["ChoosedElement"].type = index_type;                                   \
+            Engine->UnitsManager->Get(ParentUnit)->IndicesVars["ChoosedElement"].value = i;                                           \
           }                                                                                                \
       }                                                                                                    \
       ImGui::TreePop();                                                                                    \
@@ -48,7 +48,7 @@ public:
 
   void Response(void) override
   {
-    if (FloatVars["Show"] == 0 || ParentUnit->FloatVars["Show"] == 0)
+    if (FloatVars["Show"] == 0 || Engine->UnitsManager->Get(ParentUnit)->FloatVars["Show"] == 0)
       return;
 
     Engine->AddLambdaForIMGUI([&]() {
@@ -57,13 +57,13 @@ public:
       {
         if (ImGui::TreeNodeEx("GDR", ImGuiTreeNodeFlags_DefaultOpen))
         {
-          ResourceTree(gdr_index_types::model, Engine->ModelsManager, "Model", "Models", 0, true, [&]() {ParentUnit->FloatVars["OpenModelChoose"] = true;});
+          ResourceTree(gdr_index_types::model, Engine->ModelsManager, "Model", "Models", 0, true, [&]() {Engine->UnitsManager->Get(ParentUnit)->FloatVars["OpenModelChoose"] = true;});
           ResourceTree(gdr_index_types::animation, Engine->AnimationManager, "Animation", "Animations", 0, false, [&]() {});
           ResourceTree(gdr_index_types::physic_body, Engine->PhysicsManager, "Body", "Physics", 1, false, [&]() {});
           ResourceTree(gdr_index_types::bone_mapping, Engine->BoneMappingSystem, "Mapping", "Bone mappings", 1, false, [&]() {});
           ResourceTree(gdr_index_types::draw_command, Engine->DrawCommandsSystem, "Command", "Draw commands", 1, false, [&]() {});
           ResourceTree(gdr_index_types::geometry, Engine->GeometrySystem, "Geometry", "Geometries", 0, false, [&]() {});
-          ResourceTree(gdr_index_types::light, Engine->LightsSystem, "Light", "Lights", 1, true, [&]() {ParentUnit->FloatVars["AddLight"] = true; });
+          ResourceTree(gdr_index_types::light, Engine->LightsSystem, "Light", "Lights", 1, true, [&]() {Engine->UnitsManager->Get(ParentUnit)->FloatVars["AddLight"] = true; });
           ResourceTree(gdr_index_types::material, Engine->MaterialsSystem, "Material", "Materials", 1, false, [&]() {});
           ResourceTree(gdr_index_types::shadow_map, Engine->ShadowMapsSystem, "Shadow Map", "Shadow Maps", 0, false, [&]() {});
           ResourceTree(gdr_index_types::texture, Engine->TexturesSystem, "Texture", "Textures", 0, false, [&]() {});

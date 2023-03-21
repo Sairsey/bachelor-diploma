@@ -14,43 +14,9 @@ namespace gdr
     public timer_support,
     public input_support
   {
-    private:
-      /* Vector of all units we will draw */
-      std::queue<std::pair<unit_base*, unit_base*>> ToAdd;
-      std::queue<unit_base*> ToRemove;
-      std::vector<unit_base *> AllUnits;
-
-      void ResponseUnit(unit_base *Unit);
-      void ResponsePhysUnit(unit_base* Unit);
-
     public:
-      unit_base *SceneUnit = nullptr;
       // Default constructor
       engine();
-
-      /* Add new Unit function.
-       * ARGUMENTS:
-       *   - pointer on Unit
-       *       unit_base *UnitToAdd
-       * RETURNS: None.
-       */
-      void SetScene(unit_base* SceneUnit);
-
-      /* Add new Unit function.
-       * ARGUMENTS:
-       *   - pointer on Unit
-       *       unit_base *UnitToAdd
-       * RETURNS: None.
-       */
-      void AddUnit(unit_base *UnitToAdd, unit_base* ParentUnit = nullptr);
-
-      /* Remove Unit function.
-       * ARGUMENTS:
-       *   - pointer on Unit
-       *       unit_base* UnitToRemove
-       * RETURNS: None.
-       */
-      void RemoveUnit(unit_base* UnitToRemove);
 
       /* Destructor */
       ~engine();
@@ -111,6 +77,7 @@ namespace gdr
       animation_manager *AnimationManager;
       physics_manager *PhysicsManager;
       raycast_manager *RaycastManager;
+      units_manager *UnitsManager;
       double EngineClock;
   };
 }

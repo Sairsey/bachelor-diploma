@@ -12,8 +12,11 @@ namespace gdr
   {
     public:
       engine* Engine; // pointer to Engine
-      unit_base *ParentUnit; // pointer on parent unit
-      std::vector<unit_base *> ChildUnits; // Child units in hierarchy
+      gdr_index Me;   // index of this unit
+      gdr_index ParentUnit; // parent unit in unit manager
+      std::vector<gdr_index> ChildUnits; // Child units in hierarchy
+      bool IsInited = false;
+
       // Variables of this unit
       std::unordered_map<std::string, gdr_index> IndicesVars;
       std::unordered_map<std::string, float> FloatVars;

@@ -20,7 +20,6 @@ enum struct editor_type
 #include <fstream>
 
 // TODO 
-// 2) Restore gizmo
 // 3) Finish unit editor
 // 4) All units should use new system of model storage
 // 5) Example scene should have some imgui??
@@ -29,7 +28,6 @@ enum struct editor_type
 class unit_editor : public gdr::unit_base
 {
 private:
-  bool ShowEditor = true;
   bool ClearScene = false;
 
   std::map<std::string, unit_base *> sub_windows;
@@ -55,6 +53,7 @@ public:
     FloatVars["OpenModelChoose"] = (int)FALSE;
     FloatVars["AddLight"] = (int)FALSE;
     FloatVars["Remove"] = (int)FALSE;
+    FloatVars["Show"] = 1.0f;
 
     modelFileDialog.SetTitle("Choose a model...");
     modelFileDialog.SetTypeFilters({ ".obj", ".fbx", ".glb" });
@@ -243,10 +242,14 @@ public:
 
   void Clear()
   {
-    for (const auto& el : IndicesVars)
+    for (auto it = IndicesVars.cbegin(); it != IndicesVars.end();)
     {
+      auto el = *it;
       if (el.first == "ChoosedElement")
+      {
+        it++;
         continue;
+      }
 
       if (el.second.type == gdr_index_types::model)
         Engine->ModelsManager->Remove(el.second);
@@ -257,18 +260,19 @@ public:
       else
         GDR_FAILED("UNKNOWN ELEMENT TYPE TO DELETE");
 
-      IndicesVars.erase(el.first);
+      it = IndicesVars.erase(it);
     }
   }
 
   void Response(void)
   {
-    if (!ShowEditor)
+    if (!FloatVars["Show"])
     {
       Engine->ResizeImgui(-1, -1);
       if (Engine->KeysClick[VK_ESCAPE])
-          ShowEditor = true;
-      return;
+        FloatVars["Show"] = true;
+      else
+        return;
     }
 
     Engine->ResizeImgui((int)max(Float2Vars["GameWindowSize"].X, 128.0f), (int)max(Float2Vars["GameWindowSize"].Y, 128.0f));
@@ -381,7 +385,7 @@ public:
           {
             if (ImGui::Button("Play"))
             {
-                ShowEditor = false;
+              FloatVars["Show"] = 0;
             }
             if (ImGui::Button("Save"))
             {
@@ -405,7 +409,13 @@ public:
           if (ImGui::BeginMenu("View"))
           {
             for (const auto &i : sub_windows)
-              ImGui::Checkbox(i.first.c_str(), reinterpret_cast<bool *>(&i.second->FloatVars["Show"]));
+            {
+              bool isShow = i.second->FloatVars["Show"];
+              if (ImGui::Checkbox(i.first.c_str(), &isShow))
+              {
+                i.second->FloatVars["Show"] = isShow;
+              }
+            }
             ImGui::EndMenu();
           }
           ImGui::EndMainMenuBar();

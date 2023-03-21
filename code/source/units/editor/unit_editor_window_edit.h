@@ -744,7 +744,7 @@ public:
     Engine->ObjectTransformsSystem->GetEditable(
       Engine->ModelsManager->Get(IndicesVars["ConeMesh"]).Render.RootTransform).Transform = mth::matr4f::Scale(0);
 
-    if (FloatVars["Show"] == 0)
+    if (FloatVars["Show"] == 0 || ParentUnit->FloatVars["Show"] == 0)
       return;
 
     // Visualize choosed light object
@@ -768,25 +768,28 @@ public:
     }
 
     Engine->AddLambdaForIMGUI([&]() {
-      ImGui::Begin("Editor", reinterpret_cast<bool*>(&FloatVars["Show"]));
-      
-      editor_type type = (editor_type)ParentUnit->FloatVars["EditorType"];
-      switch (type)
+      bool isShow = FloatVars["Show"];
+      if (ImGui::Begin("Editor", &isShow))
       {
-      case editor_type::camera:
-        ShowEditorCamera();
-        break;
-      case editor_type::resource:
-        ShowEditorResource();
-        break;
-      case editor_type::unit:
-        ShowEditorUnit();
-        break;
-      case editor_type::none:
-      default:
-        break;
+        editor_type type = (editor_type)ParentUnit->FloatVars["EditorType"];
+        switch (type)
+        {
+        case editor_type::camera:
+          ShowEditorCamera();
+          break;
+        case editor_type::resource:
+          ShowEditorResource();
+          break;
+        case editor_type::unit:
+          ShowEditorUnit();
+          break;
+        case editor_type::none:
+        default:
+          break;
+        }
       }
       ImGui::End();
+      FloatVars["Show"] = isShow;
       });
   }
 

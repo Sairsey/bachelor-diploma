@@ -17,61 +17,60 @@ public:
       if (ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen())
         ParentUnit->FloatVars["EditorType"] = (int)editor_type::unit;
 
-      if (ImGui::TreeNodeEx((void*)(intptr_t)i++, 0, "Resources"))
-      {
-        for (const auto& el : Unit->IndicesVars)
+      if (!Unit->IndicesVars.empty())
+        if (ImGui::TreeNodeEx((void*)(intptr_t)i++, 0, "Resources"))
         {
-          ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
-          if (ParentUnit->IndicesVars["ChoosedElement"].type == el.second.type && ParentUnit->IndicesVars["ChoosedElement"].value == el.second.value)
-            flags |= ImGuiTreeNodeFlags_Selected;
-          ImGui::TreeNodeEx((void*)(intptr_t)i++, flags, el.first.c_str());
-          if (ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen())         
+          for (const auto& el : Unit->IndicesVars)
           {
-            ParentUnit->FloatVars["EditorType"] = (int)editor_type::resource;
-            ParentUnit->IndicesVars["ChoosedElement"] = el.second;
+            ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
+            if (ParentUnit->IndicesVars["ChoosedElement"].type == el.second.type && ParentUnit->IndicesVars["ChoosedElement"].value == el.second.value)
+              flags |= ImGuiTreeNodeFlags_Selected;
+            ImGui::TreeNodeEx((void*)(intptr_t)i++, flags, el.first.c_str());
+            if (ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen())         
+            {
+              ParentUnit->FloatVars["EditorType"] = (int)editor_type::resource;
+              ParentUnit->IndicesVars["ChoosedElement"] = el.second;
+            }
           }
+          ImGui::TreePop();
         }
-        ImGui::TreePop();
-      }
 
-      if (ImGui::TreeNodeEx((void*)(intptr_t)i++, 0, "Child Units"))
-      {
-        for (int j = 0; j < Unit->ChildUnits.size(); j++)
-          ShowUnitsRecursive(Unit->ChildUnits[j], i);
-        ImGui::TreePop();
-      }
+      for (int j = 0; j < Unit->ChildUnits.size(); j++)
+        ShowUnitsRecursive(Unit->ChildUnits[j], i);
       ImGui::TreePop();
     }
   }
 
   void Response(void) override
   {
-    if (FloatVars["Show"] == 0)
+    if (FloatVars["Show"] == 0 || ParentUnit->FloatVars["Show"] == 0)
       return;
 
     Engine->AddLambdaForIMGUI([&]() {
-      ImGui::Begin("Hierarchy", reinterpret_cast<bool*>(&FloatVars["Show"]));
+      bool isShow = FloatVars["Show"];
       
-      if (ImGui::TreeNodeEx("GDR", ImGuiTreeNodeFlags_DefaultOpen))
-      {
-        // add special nodes
-        ImGui::TreeNodeEx("Camera", ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen);
-
-        if (ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen())
-          ParentUnit->FloatVars["EditorType"] = (int)editor_type::camera;
-
-        if (ImGui::TreeNodeEx("Units", ImGuiTreeNodeFlags_DefaultOpen))
+      if (ImGui::Begin("Hierarchy", &isShow))
+      {      
+        if (ImGui::TreeNodeEx("GDR", ImGuiTreeNodeFlags_DefaultOpen))
         {
-          int i = 0;
-          ShowUnitsRecursive(Engine->SceneUnit, i);
+          // add special nodes
+          ImGui::TreeNodeEx("Camera", ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen);
+
+          if (ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen())
+            ParentUnit->FloatVars["EditorType"] = (int)editor_type::camera;
+
+          if (ImGui::TreeNodeEx("Units", ImGuiTreeNodeFlags_DefaultOpen))
+          {
+            int i = 0;
+            ShowUnitsRecursive(Engine->SceneUnit, i);
+            ImGui::TreePop();
+          }
           ImGui::TreePop();
         }
-        ImGui::TreePop();
-      }
 
+      }
       ImGui::End();
-      
-      ImGui::End();
+      FloatVars["Show"] = isShow;
       });
   }
 

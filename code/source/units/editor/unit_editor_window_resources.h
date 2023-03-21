@@ -43,36 +43,40 @@ class unit_editor_window_resources : public gdr::unit_base
 public:
   void Initialize(void)
   {
-    FloatVars["Show"] = 1;
+    FloatVars["Show"] = true;
   }
 
   void Response(void) override
   {
-    if (FloatVars["Show"] == 0)
+    if (FloatVars["Show"] == 0 || ParentUnit->FloatVars["Show"] == 0)
       return;
 
     Engine->AddLambdaForIMGUI([&]() {
-      ImGui::Begin("Resources", reinterpret_cast<bool*>(&FloatVars["Show"]));
-      if (ImGui::TreeNodeEx("GDR", ImGuiTreeNodeFlags_DefaultOpen))
+      bool isShow = FloatVars["Show"];
+      if (ImGui::Begin("Resources", &isShow))
       {
-        ResourceTree(gdr_index_types::model, Engine->ModelsManager, "Model", "Models", 0, true, [&]() {ParentUnit->FloatVars["OpenModelChoose"] = true;});
-        ResourceTree(gdr_index_types::animation, Engine->AnimationManager, "Animation", "Animations", 0, false, [&]() {});
-        ResourceTree(gdr_index_types::physic_body, Engine->PhysicsManager, "Body", "Physics", 1, false, [&]() {});
-        ResourceTree(gdr_index_types::bone_mapping, Engine->BoneMappingSystem, "Mapping", "Bone mappings", 1, false, [&]() {});
-        ResourceTree(gdr_index_types::draw_command, Engine->DrawCommandsSystem, "Command", "Draw commands", 1, false, [&]() {});
-        ResourceTree(gdr_index_types::geometry, Engine->GeometrySystem, "Geometry", "Geometries", 0, false, [&]() {});
-        ResourceTree(gdr_index_types::light, Engine->LightsSystem, "Light", "Lights", 1, true, [&]() {ParentUnit->FloatVars["AddLight"] = true; });
-        ResourceTree(gdr_index_types::material, Engine->MaterialsSystem, "Material", "Materials", 1, false, [&]() {});
-        ResourceTree(gdr_index_types::shadow_map, Engine->ShadowMapsSystem, "Shadow Map", "Shadow Maps", 0, false, [&]() {});
-        ResourceTree(gdr_index_types::texture, Engine->TexturesSystem, "Texture", "Textures", 0, false, [&]() {});
-        ResourceTree(gdr_index_types::cube_texture, Engine->CubeTexturesSystem, "Cube texture", "Cube Textures", 0, false, [&]() {});
-        ResourceTree(gdr_index_types::object_transform, Engine->ObjectTransformsSystem, "Transform", "Object Transforms", 1, false, [&]() {});
-        ResourceTree(gdr_index_types::node_transform, Engine->NodeTransformsSystem, "Transform", "Node Transforms", 1, false, [&]() {});
+        if (ImGui::TreeNodeEx("GDR", ImGuiTreeNodeFlags_DefaultOpen))
+        {
+          ResourceTree(gdr_index_types::model, Engine->ModelsManager, "Model", "Models", 0, true, [&]() {ParentUnit->FloatVars["OpenModelChoose"] = true;});
+          ResourceTree(gdr_index_types::animation, Engine->AnimationManager, "Animation", "Animations", 0, false, [&]() {});
+          ResourceTree(gdr_index_types::physic_body, Engine->PhysicsManager, "Body", "Physics", 1, false, [&]() {});
+          ResourceTree(gdr_index_types::bone_mapping, Engine->BoneMappingSystem, "Mapping", "Bone mappings", 1, false, [&]() {});
+          ResourceTree(gdr_index_types::draw_command, Engine->DrawCommandsSystem, "Command", "Draw commands", 1, false, [&]() {});
+          ResourceTree(gdr_index_types::geometry, Engine->GeometrySystem, "Geometry", "Geometries", 0, false, [&]() {});
+          ResourceTree(gdr_index_types::light, Engine->LightsSystem, "Light", "Lights", 1, true, [&]() {ParentUnit->FloatVars["AddLight"] = true; });
+          ResourceTree(gdr_index_types::material, Engine->MaterialsSystem, "Material", "Materials", 1, false, [&]() {});
+          ResourceTree(gdr_index_types::shadow_map, Engine->ShadowMapsSystem, "Shadow Map", "Shadow Maps", 0, false, [&]() {});
+          ResourceTree(gdr_index_types::texture, Engine->TexturesSystem, "Texture", "Textures", 0, false, [&]() {});
+          ResourceTree(gdr_index_types::cube_texture, Engine->CubeTexturesSystem, "Cube texture", "Cube Textures", 0, false, [&]() {});
+          ResourceTree(gdr_index_types::object_transform, Engine->ObjectTransformsSystem, "Transform", "Object Transforms", 1, false, [&]() {});
+          ResourceTree(gdr_index_types::node_transform, Engine->NodeTransformsSystem, "Transform", "Node Transforms", 1, false, [&]() {});
 
-        ImGui::TreePop();
+          ImGui::TreePop();
+        }
+
       }
-
       ImGui::End();
+      FloatVars["Show"] = isShow;
       });
   }
 

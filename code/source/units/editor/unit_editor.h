@@ -20,7 +20,6 @@ enum struct editor_type
 #include <fstream>
 
 // TODO 
-// 1) Restore animations loading
 // 2) Restore gizmo
 // 3) Finish unit editor
 // 4) All units should use new system of model storage
@@ -85,6 +84,7 @@ public:
       Engine->GetDevice().ResizeUpdateBuffer(false);
       ID3D12GraphicsCommandList* commandList;
       Engine->GetDevice().BeginUploadCommandList(&commandList);
+      IndicesVars["Animation for Resource " + std::to_string(IndicesVars.size() + 1)] = Engine->AnimationManager->Add(import_data);
       PROFILE_BEGIN(commandList, charToWString(path.c_str()).c_str());
       IndicesVars["Resource " + std::to_string(IndicesVars.size())] = Engine->ModelsManager->Add(import_data);
       PROFILE_END(commandList);
@@ -252,6 +252,8 @@ public:
         Engine->ModelsManager->Remove(el.second);
       else if (el.second.type == gdr_index_types::light)
         Engine->LightsSystem->Remove(el.second);
+      else if (el.second.type == gdr_index_types::animation)
+        Engine->AnimationManager->Remove(el.second);
       else
         GDR_FAILED("UNKNOWN ELEMENT TYPE TO DELETE");
 
@@ -271,6 +273,15 @@ public:
 
     Engine->ResizeImgui((int)max(Float2Vars["GameWindowSize"].X, 128.0f), (int)max(Float2Vars["GameWindowSize"].Y, 128.0f));
    
+    for (const auto &el : IndicesVars)
+      if (el.second.type == gdr_index_types::model)
+      {
+        if (IndicesVars.find(std::string("Animation for ") + el.first) != IndicesVars.end())
+        {
+          Engine->AnimationManager->SetAnimationTime(el.second, IndicesVars[std::string("Animation for ") + el.first], Engine->GetTime() * 1000.0f);
+        }
+      }
+
     if (FloatVars["OpenModelChoose"])
     {
       modelFileDialog.Open();
@@ -285,22 +296,30 @@ public:
 
     if (FloatVars["Remove"])
     {
-      
+      std::string EraseName = "";
       for (const auto& element : IndicesVars)
         if (element.first != "ChoosedElement" && 
           element.second.type == IndicesVars["ChoosedElement"].type &&
           element.second.value == IndicesVars["ChoosedElement"].value)
         {
-          IndicesVars.erase(element.first);
+          EraseName = element.first;
           break;
         }
 
-      if (IndicesVars["ChoosedElement"].type == gdr_index_types::model)
-        Engine->ModelsManager->Remove(IndicesVars["ChoosedElement"]);
-      else if (IndicesVars["ChoosedElement"].type == gdr_index_types::light)
-        Engine->LightsSystem->Remove(IndicesVars["ChoosedElement"]);
-      else
-        GDR_FAILED("UNKNOWN ELEMENT TYPE TO DELETE");
+      if (EraseName != "")
+      {
+        if (IndicesVars[EraseName].type == gdr_index_types::model)
+        {
+          Engine->ModelsManager->Remove(IndicesVars[EraseName]);
+          Engine->AnimationManager->Remove(IndicesVars["Animation for " + EraseName]);
+          IndicesVars.erase("Animation for " + EraseName);
+        }
+        else if (IndicesVars[EraseName].type == gdr_index_types::light)
+          Engine->LightsSystem->Remove(IndicesVars[EraseName]);
+        else
+          GDR_FAILED("UNKNOWN ELEMENT TYPE TO DELETE");
+        IndicesVars.erase(EraseName);
+      }
 
       IndicesVars["ChoosedElement"] = NONE_INDEX;
       FloatVars["Remove"] = 0;

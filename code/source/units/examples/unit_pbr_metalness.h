@@ -60,5 +60,10 @@ public:
 
     ~unit_pbr_metalness(void)
     {
+      for (int i = 0; i < Spheres.size(); i++)
+      {
+        Engine->ModelsManager->Remove(Spheres[i]);
+      }
+      Engine->LightsSystem->Remove(Light);
     }
 };

@@ -45,5 +45,7 @@ public:
 
     ~unit_pbr_specular(void)
     {
+      Engine->ModelsManager->Remove(Fiat);
+      Engine->LightsSystem->Remove(Light);
     }
 };

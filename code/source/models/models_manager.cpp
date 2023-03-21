@@ -7,7 +7,6 @@ gdr::models_manager::models_manager(engine* Eng) : resource_pool_subsystem(Eng),
 void gdr::models_manager::BeforeRemoveJob(gdr_index index)
 {
 	model& ModelToDelete = CPUData[index];
-	ModelToDelete.Name = "GDR_MODEL_DELETED";
 
 	for (int i = 0; i < ModelToDelete.Render.Hierarchy.size(); i++)
 	{
@@ -17,6 +16,8 @@ void gdr::models_manager::BeforeRemoveJob(gdr_index index)
 		if (node.Type == gdr_hier_node_type::node)
 			Engine->NodeTransformsSystem->Remove(node.NodeTransform);
 	}
+	ModelToDelete = model();
+	ModelToDelete.Name = "GDR_MODEL_DELETED";
 }
 
 gdr_index gdr::models_manager::Add(const model_import_data& ImportData, bool NewNodeTransforms)

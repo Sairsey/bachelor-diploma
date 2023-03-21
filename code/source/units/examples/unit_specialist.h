@@ -6,7 +6,6 @@ class unit_specialist : public gdr::unit_base
 private:
   gdr::model_import_data SpecialistImportData;
   std::vector<gdr_index> Models;
-  std::vector<gdr_index> PhysicBodies;
   gdr_index Light;
   gdr_index LightModel;
   gdr_index Animation;
@@ -45,11 +44,7 @@ public:
     Engine->GetDevice().BeginUploadCommandList(&commandList);
     PROFILE_BEGIN(commandList, "Load new element Init");
     for (int i = 0; i < amount; i++)
-    {
         Models.push_back(Engine->ModelsManager->Add(SpecialistImportData));
-        PhysicBodies.push_back(Engine->PhysicsManager->AddDynamicMesh(SpecialistImportData));
-        Engine->PhysicsManager->GetEditable(PhysicBodies[PhysicBodies.size() - 1]).SetParent(Models[Models.size() - 1]);
-    }
     PROFILE_END(commandList);
     Engine->GetDevice().CloseUploadCommandList();
 
@@ -62,8 +57,6 @@ public:
     {
       Engine->ModelsManager->Remove(Models[Models.size() - 1]);
       Models.pop_back();
-      Engine->PhysicsManager->Remove(PhysicBodies[PhysicBodies.size() - 1]);
-      PhysicBodies.pop_back();
     }
   }
 
@@ -97,12 +90,9 @@ public:
     {
       gdr_index ModelIndex = Models[i];
       gdr_index ModelRootTransform = Engine->ModelsManager->Get(ModelIndex).Render.RootTransform;
-      gdr_index PhysicBody = PhysicBodies[i];
       float dist = (Engine->ObjectTransformsSystem->Get(ModelRootTransform).maxAABB - Engine->ObjectTransformsSystem->Get(ModelRootTransform).minAABB).Lenght();
 
       Engine->ObjectTransformsSystem->GetEditable(ModelRootTransform).Transform = mth::matr::Translate({ (i % row - row / 2) * dist, 0, -(i / row) * dist});
-
-      Engine->PhysicsManager->GetEditable(PhysicBody).SetPos({ (i % row - row / 2) * dist, 0, -(i / row) * dist });
 
       Engine->AnimationManager->SetAnimationTime(ModelIndex, Animation, Engine->GetTime() * 1000.0f);
     }
@@ -115,5 +105,6 @@ public:
 
   ~unit_specialist(void)
   {
+    PopBack(Models.size());
   }
 };

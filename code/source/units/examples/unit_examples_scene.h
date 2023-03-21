@@ -134,6 +134,30 @@ public:
       Inited = Asked;
     }
       
+    Engine->AddLambdaForIMGUI([&]() {
+      ImGui::Begin("Examples", nullptr);
+
+      const char* Names[] = { 
+      "None",
+      "Triangle",
+      "Light",
+      "ModelLoad",
+      "FrustumCull",
+      "OcclusionCull",
+      "RuntimeAddRemove",
+      "PbrMetalness",
+      "PbrSpecular",
+      "NormalMap",
+      "LoadAny",
+      "Transparent",
+      "ModelSplitted",
+      "Specialist",
+      "Pit"};
+      
+      ImGui::Combo("Choose example", reinterpret_cast<int *>(&Asked), Names, (int)EXAMPLES_ENUM::COUNT);
+
+      ImGui::End();
+      });
   }
 
   /* Destructor */

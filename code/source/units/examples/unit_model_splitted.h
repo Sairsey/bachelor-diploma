@@ -30,5 +30,7 @@ public:
 
   ~unit_model_splitted(void)
   {
+    for (int i = 0; i < Parts.size(); i++)
+      Engine->ModelsManager->Remove(Parts[i]);
   }
 };

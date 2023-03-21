@@ -79,5 +79,11 @@ public:
 
   ~unit_light_example(void)
   {
+    Engine->ModelsManager->Remove(Frog);
+    for (int i = 0; i < LightsModels.size(); i++)
+    {
+      Engine->ModelsManager->Remove(LightsModels[i]);
+      Engine->LightsSystem->Remove(Lights[i]);
+    }
   }
 };

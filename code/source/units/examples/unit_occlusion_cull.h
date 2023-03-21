@@ -51,5 +51,7 @@ public:
 
   ~unit_occlusion_cull(void)
   {
+    for (int i = 0; i < Models.size(); i++)
+      Engine->ModelsManager->Remove(Models[i]);
   }
 };

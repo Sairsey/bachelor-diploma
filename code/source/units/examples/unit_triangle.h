@@ -20,5 +20,6 @@ public:
 
   ~unit_triangle(void)
   {
+    Engine->DrawCommandsSystem->Remove(TriangleDrawCall);
   }
 };

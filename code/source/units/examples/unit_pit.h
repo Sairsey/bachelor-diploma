@@ -101,5 +101,12 @@ public:
 
     ~unit_pit(void)
     {
+      Engine->ModelsManager->Remove(PitModel);
+      Engine->PhysicsManager->Remove(PitPhys);
+      for (int i = 0; i < SpheresModels.size(); i++)
+      {
+        Engine->ModelsManager->Remove(SpheresModels[i]);
+        Engine->PhysicsManager->Remove(SpheresPhysic[i]);
+      }
     }
 };

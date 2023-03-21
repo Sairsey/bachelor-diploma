@@ -87,5 +87,9 @@ public:
 
   ~unit_runtime_add_remove(void)
   {
+    for (int i = 0; i < Models.size(); i++)
+    {
+      Engine->ModelsManager->Remove(Models[i]);
+    }
   }
 };

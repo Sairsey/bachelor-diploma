@@ -22,7 +22,6 @@ enum struct editor_type
 // TODO 
 // 3) Finish unit editor
 // 4) All units should use new system of model storage
-// 5) Example scene should have some imgui??
 
 class unit_editor : public gdr::unit_base
 {

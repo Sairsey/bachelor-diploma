@@ -49,5 +49,8 @@ public:
 
     ~unit_normal_map(void)
     {
+      Engine->ModelsManager->Remove(Check);
+      Engine->ModelsManager->Remove(LightMesh);
+      Engine->LightsSystem->Remove(Light);
     }
 };

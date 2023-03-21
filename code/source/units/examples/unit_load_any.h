@@ -107,5 +107,6 @@ public:
 
   ~unit_load_any(void)
   {
+    LoadModel("OBVIOUSLY_INVALID_PATH");
   }
 };

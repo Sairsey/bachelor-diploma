@@ -325,7 +325,8 @@ gdr_index gdr::physics_manager::AddDynamicMesh(model_import_data ImportModel, ph
 
 void gdr::physics_manager::BeforeRemoveJob(gdr_index index)
 {
-    ToDelete.push_back(Get(index));
+  if (index <= AllocatedSize())
+    ToDelete.push_back(CPUData[index]);
 }
 
 bool gdr::physics_manager::Update(float DeltaTime)
@@ -350,8 +351,10 @@ bool gdr::physics_manager::Update(float DeltaTime)
           // delete objects then we are not simulating
           for (const auto& i : ToDelete)
           {
-              i.PhysxBody->release();
-              i.PhysxMaterial->release();
+              if (i.PhysxBody != nullptr)
+                i.PhysxBody->release();
+              if (i.PhysxMaterial != nullptr)
+                i.PhysxMaterial->release();
           }
           ToDelete.clear();
 

@@ -15,7 +15,7 @@ gdr_index gdr::resource_pool_subsystem<StoredType, Type, 0>::Add()
 
   // Try to reuse old resources
   for (gdr_index i = 0; i < CPUData.size() && Result == NONE_INDEX; i++)
-    if (!PoolRecords[i].IsAlive)
+    if (!PoolRecords[i].IsAlive && !PoolRecords[i].IsNeedToBeDeleted)
     {
       Result = i;
       PoolRecords[Result].IsAlive = true;

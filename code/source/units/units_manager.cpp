@@ -3,28 +3,12 @@
 // Custom remover
 void gdr::units_manager::BeforeRemoveJob(gdr_index index)
 {
-	if (Get(index) == nullptr)
+	if (index >= AllocatedSize() || CPUData[index] == nullptr)
 		return;
-	// unbind it from parent
-	if (IsExist(Get(index)->ParentUnit))
-	{
-		UINT32 del_index = NONE_INDEX;
-
-		for (UINT32 i = 0; i < Get(Get(index)->ParentUnit)->ChildUnits.size() && del_index == NONE_INDEX; i++)
-			if (Get(Get(index)->ParentUnit)->ChildUnits[i] == index)
-				del_index = i;
-
-		if (del_index != NONE_INDEX)
-			Get(Get(index)->ParentUnit)->ChildUnits.erase(Get(Get(index)->ParentUnit)->ChildUnits.begin() + del_index);
-	}
-	else // if we are trying to remove a scene...
-	{
-		SceneRoot = NONE_INDEX;
-	}
 
 	// delete unit
-	delete Get(index);
-	GetEditable(index) = nullptr;
+	delete CPUData[index];
+	CPUData[index] = nullptr;
 }
 
 // Initialize only when needed
@@ -58,7 +42,8 @@ void gdr::units_manager::BeforeUpdateJob(ID3D12GraphicsCommandList* pCommandList
 void gdr::units_manager::ResponseUnit(gdr_index index)
 {
 	PROFILE_CPU_BEGIN(Get(index)->GetName().c_str());
-	Get(index)->Response();
+	if (Get(index)->IsInited)
+		Get(index)->Response();
 	for (int i = 0; i < Get(index)->ChildUnits.size(); i++)
 		ResponseUnit(Get(index)->ChildUnits[i]);
 	PROFILE_CPU_END();
@@ -68,7 +53,8 @@ void gdr::units_manager::ResponseUnit(gdr_index index)
 void gdr::units_manager::ResponsePhysUnit(gdr_index index)
 {
 	PROFILE_CPU_BEGIN(Get(index)->GetName().c_str());
-	Get(index)->ResponsePhys();
+	if (Get(index)->IsInited)
+		Get(index)->ResponsePhys();
 	for (int i = 0; i < Get(index)->ChildUnits.size(); i++)
 		ResponsePhysUnit(Get(index)->ChildUnits[i]);
 	PROFILE_CPU_END();
@@ -104,8 +90,28 @@ gdr_index gdr::units_manager::Add(unit_base* Unit, gdr_index ParentUnit)
 void gdr::units_manager::Remove(gdr_index index)
 {
 	if (IsExist(index))
+	{
 		for (int i = 0; i < Get(index)->ChildUnits.size(); i++)
 			Remove(Get(index)->ChildUnits[i]);
+
+		// unbind it from parent
+		if (IsExist(Get(index)->ParentUnit))
+		{
+			UINT32 del_index = NONE_INDEX;
+
+			for (UINT32 i = 0; i < Get(Get(index)->ParentUnit)->ChildUnits.size() && del_index == NONE_INDEX; i++)
+				if (Get(Get(index)->ParentUnit)->ChildUnits[i] == index)
+					del_index = i;
+
+			if (del_index != NONE_INDEX)
+				Get(Get(index)->ParentUnit)->ChildUnits.erase(Get(Get(index)->ParentUnit)->ChildUnits.begin() + del_index);
+		}
+		else // if we are trying to remove a scene...
+		{
+			SceneRoot = NONE_INDEX;
+		}
+	}
+
 	resource_pool_subsystem::Remove(index);
 }
 

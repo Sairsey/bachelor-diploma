@@ -229,7 +229,7 @@ public:
                 Outputs[i].Index != IndicesVars["AxisObjectDragZ"] &&
                 Outputs[i].Index != IndicesVars["AxisObjectCenter"])
             {
-              Engine->UnitsManager->Get(ParentUnit)->IndicesVars["ChoosedElement"] = Outputs[0].Index;
+              Engine->UnitsManager->Get(ParentUnit)->IndicesVars["ChoosedElement"] = Outputs[i].Index;
               Engine->UnitsManager->Get(ParentUnit)->FloatVars["EditorType"] = (int)editor_type::resource;
               break;
             }

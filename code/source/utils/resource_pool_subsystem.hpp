@@ -124,6 +124,8 @@ void gdr::resource_pool_subsystem<StoredType, Type, ChunkSize>::UpdateGPUData(ID
         // update chunks in one call if they are stored one after another
         int source_offset = i * CHUNK_SIZE;
         int dataSize = min(sizeof(StoredType) * (int)CPUData.size() - source_offset, CHUNK_SIZE * chunk_amount); // Real size of chunk
+        source_offset = min(sizeof(StoredType) * StoredSize, source_offset);
+        dataSize = min(sizeof(StoredType) * StoredSize - source_offset, dataSize + source_offset);
         if (dataSize > 0)
           Render->GetDevice().UpdateBufferOffset(pCommandList, GPUData.Resource, source_offset, (byte*)&CPUData[0] + source_offset, dataSize);
 
@@ -169,7 +171,7 @@ gdr_index gdr::resource_pool_subsystem<StoredType, Type, ChunkSize>::Add()
   
   // Try to reuse old resources
   for (gdr_index i = 0; i < CPUData.size() && Result == NONE_INDEX; i++)
-    if (!PoolRecords[i].IsAlive)
+    if (!PoolRecords[i].IsAlive && !PoolRecords[i].IsNeedToBeDeleted)
     {
       Result = i;
       PoolRecords[Result].IsAlive = true;
@@ -202,6 +204,7 @@ void gdr::resource_pool_subsystem<StoredType, Type, ChunkSize>::Remove(gdr_index
 
   if (PoolRecords[index].ReferenceCount == 0)
   {
+    MarkChunkByElementIndex(index);
     PoolRecords[index].IsAlive = false;
     PoolRecords[index].IsNeedToBeDeleted = true;
   }

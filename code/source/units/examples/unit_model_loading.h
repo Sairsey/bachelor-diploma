@@ -32,5 +32,6 @@ public:
 
   ~unit_model_loading(void)
   {
+    Engine->ModelsManager->Remove(Frog);
   }
 };

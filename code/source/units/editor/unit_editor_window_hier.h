@@ -12,10 +12,18 @@ public:
 
   void ShowUnitsRecursive(gdr_index Unit, int &i)
   {
-    if (ImGui::TreeNodeEx((void*)(intptr_t)i++, 0, Engine->UnitsManager->Get(Unit)->GetName().c_str()))
+    ImGuiTreeNodeFlags flags = 0;
+    if (Engine->UnitsManager->Get(ParentUnit)->IndicesVars["ChoosedElement"].type == Unit.type &&
+      Engine->UnitsManager->Get(ParentUnit)->IndicesVars["ChoosedElement"].value == Unit.value)
+      flags |= ImGuiTreeNodeFlags_Selected;
+
+    if (ImGui::TreeNodeEx((void*)(intptr_t)i++, flags, Engine->UnitsManager->Get(Unit)->GetName().c_str()))
     {
-      if (ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen())
+      if (ImGui::IsItemClicked())
+      {
         Engine->UnitsManager->Get(ParentUnit)->FloatVars["EditorType"] = (int)editor_type::unit;
+        Engine->UnitsManager->Get(ParentUnit)->IndicesVars["ChoosedElement"] = Unit;
+      }
 
       if (!Engine->UnitsManager->Get(Unit)->IndicesVars.empty())
         if (ImGui::TreeNodeEx((void*)(intptr_t)i++, 0, "Resources"))

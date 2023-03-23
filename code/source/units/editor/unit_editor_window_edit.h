@@ -43,49 +43,91 @@ public:
       Engine->PlayerCamera.SetView(Engine->PlayerCamera.GetPos(), Engine->PlayerCamera.GetDir() + Engine->PlayerCamera.GetPos(), Engine->PlayerCamera.GetUp());
   }
 
+  template<typename T>
+  std::string ChooseFromMap(const std::string &label, const std::unordered_map<std::string, T> &Map)
+  {
+    static int index = 0;
+    std::vector<std::string> Keys;
+
+    if (index > Map.size())
+      index = 0;
+
+    // copy keys to vector
+    Keys.reserve(1 + Map.size());
+    Keys.push_back("0. ");
+    for (const auto& el : Map)
+      Keys.push_back(std::to_string(Keys.size()) + ". " + el.first);
+    
+    if (ImGui::BeginCombo(label.c_str(), Keys[index].c_str()))
+    {
+      for (int i = 0; i < Keys.size(); i++)
+        if (ImGui::Selectable(Keys[i].c_str(), index == i))
+          index = i;
+      ImGui::EndCombo();
+    }
+
+    return Keys[index].substr(3);
+  }
+
+
   void ShowEditorUnit()
   {
     ImGui::Text("Unit Editor");
+    gdr_index Unit = Engine->UnitsManager->Get(ParentUnit)->IndicesVars["ChoosedElement"];
 
-    /*
-    std::unordered_map<std::string, gdr_index> IndicesVars;
-    std::unordered_map<std::string, float> FloatVars;
-    std::unordered_map<std::string, float2> Float2Vars;
-    std::unordered_map<std::string, float3> Float3Vars;
-    std::unordered_map<std::string, float4> Float4Vars;
-    std::unordered_map<std::string, mth::matr4f> MatrVars;
-    std::unordered_map<std::string, std::string> StringVars;
-    
-    ImGui::BeginTable("Indices", 4, ImGuiTableFlags_Borders);
-    ImGui::TableNextColumn();
-    ImGui::Text("Key");
-    ImGui::TableNextColumn();
-    ImGui::Text("Type");
-    ImGui::TableNextColumn();
-    ImGui::Text("Value");
-    ImGui::TableNextColumn();
-    ImGui::Text("Goto");
-    ImGui::TableNextRow();
-    ImGui::EndTable();
-    for (int i = 0; i < Engine->SceneUnit->Get(ChoosedElement).Render.Materials.size(); i++)
+    if (!Engine->UnitsManager->IsExist(Unit))
     {
-      ImGui::TableNextColumn();
-      ImGui::Text("%d", Engine->ModelsManager->Get(ChoosedElement).Render.Materials[i].value);
-      ImGui::TableNextColumn();
-      if (Engine->ModelsManager->Get(ChoosedElement).Render.Materials[i].value != NONE_INDEX)
-      {
-        if (ImGui::Button((std::string("Go to material ") + std::to_string(Engine->ModelsManager->Get(ChoosedElement).Render.Materials[i].value)).c_str()))
-        {
-          ChoosedElement = Engine->ModelsManager->Get(ChoosedElement).Render.Materials[i];
-          ChoosedElement.type = gdr_index_types::material;
-          ImGui::TableNextRow();
-          ImGui::EndTable();
-          return;
-        }
-      }
-      ImGui::TableNextRow();
+      ImGui::Text("Not exist");
+      return;
     }
-    */
+
+    ImGui::Text(("Name: " + Engine->UnitsManager->Get(Unit)->GetName()).c_str());
+
+    static const std::string fields[] = {"Float", "Float2", "Float3", "Float4", "Matr", "String"};
+    static std::string keys[_countof(fields)];
+    std::function<std::string(void)> choosers[_countof(fields)] = {
+      [&]() -> std::string {return ChooseFromMap(fields[0], Engine->UnitsManager->Get(Unit)->FloatVars);},
+      [&]() -> std::string {return ChooseFromMap(fields[1], Engine->UnitsManager->Get(Unit)->Float2Vars); },
+      [&]() -> std::string {return ChooseFromMap(fields[2], Engine->UnitsManager->Get(Unit)->Float3Vars); },
+      [&]() -> std::string {return ChooseFromMap(fields[3], Engine->UnitsManager->Get(Unit)->Float4Vars); },
+      [&]() -> std::string {return ChooseFromMap(fields[4], Engine->UnitsManager->Get(Unit)->MatrVars); },
+      [&]() -> std::string {return ChooseFromMap(fields[5], Engine->UnitsManager->Get(Unit)->StringVars); }
+    };
+    std::function<void(std::string)> editors[_countof(fields)] = {
+      [&](std::string Key) {ImGui::InputFloat(Key.c_str(), &Engine->UnitsManager->Get(Unit)->FloatVars[Key]); },
+      [&](std::string Key) {ImGui::InputFloat2(Key.c_str(), &Engine->UnitsManager->Get(Unit)->Float2Vars[Key][0]); },
+      [&](std::string Key) {ImGui::InputFloat3(Key.c_str(), &Engine->UnitsManager->Get(Unit)->Float3Vars[Key][0]); },
+      [&](std::string Key) {ImGui::InputFloat4(Key.c_str(), &Engine->UnitsManager->Get(Unit)->Float4Vars[Key][0]); },
+      [&](std::string Key) {
+        ImGui::InputFloat4((Key + std::to_string(0)).c_str(), &Engine->UnitsManager->Get(Unit)->MatrVars[Key][0][0]);
+        ImGui::InputFloat4((Key + std::to_string(1)).c_str(), &Engine->UnitsManager->Get(Unit)->MatrVars[Key][1][0]); 
+        ImGui::InputFloat4((Key + std::to_string(2)).c_str(), &Engine->UnitsManager->Get(Unit)->MatrVars[Key][2][0]); 
+        ImGui::InputFloat4((Key + std::to_string(3)).c_str(), &Engine->UnitsManager->Get(Unit)->MatrVars[Key][3][0]);
+      },
+      [&](std::string Key) {
+        char buf[1024] = {0};
+        strncpy_s(buf, Engine->UnitsManager->Get(Unit)->StringVars[Key].c_str(), _countof(buf) - 1);
+        buf[_countof(buf) - 1] = 0;
+        ImGui::InputText(Key.c_str(), buf, _countof(buf));
+        Engine->UnitsManager->Get(Unit)->StringVars[Key] = buf;
+        }
+    };
+    static int index = 0;
+
+    if (ImGui::BeginCombo("Type", fields[index].c_str()))
+    {
+      for (int i = 0; i < _countof(fields); i++)
+        if (ImGui::Selectable(fields[i].c_str(), i == index))
+          index = i;
+      ImGui::EndCombo();
+    }
+
+    ImGui::Text((fields[index] + " variables:").c_str());
+    keys[index] = choosers[index]();
+    if (keys[index] != "")
+    {
+      editors[index](keys[index]);
+    }
   }
 
   void ShowEditResourceLight(void)

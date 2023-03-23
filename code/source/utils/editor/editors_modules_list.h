@@ -1,7 +1,7 @@
 // Max supported and min supported versions of JSONS
 #pragma once
 
-#define MAX_SUPPORTED_VERSION 1
+#define MAX_SUPPORTED_VERSION 2
 #define MIN_SUPPORTED_VERSION 1
 
 enum struct EditorArgsTypes
@@ -110,4 +110,26 @@ GDR_BLUEPRINT_NODE(EditorNodeTypes::editor_node_function, "Math", "Matr translat
 GDR_BLUEPRINT_NODE(EditorNodeTypes::editor_node_function, "Math", "Matr scale", 1, 1, P99_PROTECT({ EditorArgsTypes::editor_arg_float3 }), P99_PROTECT({ EditorArgsTypes::editor_arg_matr }), P99_PROTECT({ "Scale vector" }), P99_PROTECT({ "Result" })) \
 \
 GDR_BLUEPRINT_NODE(EditorNodeTypes::editor_node_workflow, "Workflow", "If Key pressed", 1, 1, P99_PROTECT({ EditorArgsTypes::editor_arg_string }), P99_PROTECT({ EditorArgsTypes::editor_arg_float }), P99_PROTECT({"Key"}), P99_PROTECT({"Flag"})) \
-GDR_BLUEPRINT_NODE(EditorNodeTypes::editor_node_workflow, "Workflow", "If Key clicked", 1, 1, P99_PROTECT({ EditorArgsTypes::editor_arg_string }), P99_PROTECT({ EditorArgsTypes::editor_arg_float }), P99_PROTECT({"Key"}), P99_PROTECT({"Flag"}))
+GDR_BLUEPRINT_NODE(EditorNodeTypes::editor_node_workflow, "Workflow", "If Key clicked", 1, 1, P99_PROTECT({ EditorArgsTypes::editor_arg_string }), P99_PROTECT({ EditorArgsTypes::editor_arg_float }), P99_PROTECT({"Key"}), P99_PROTECT({"Flag"})) \
+GDR_BLUEPRINT_NODE(EditorNodeTypes::editor_node_workflow, "Workflow", "If float equal", 2, 1, P99_PROTECT({ EditorArgsTypes::editor_arg_float, EditorArgsTypes::editor_arg_float }), P99_PROTECT({ EditorArgsTypes::editor_arg_float }), P99_PROTECT({"First", "Second"}), P99_PROTECT({"Flag"})) \
+GDR_BLUEPRINT_NODE(EditorNodeTypes::editor_node_workflow, "Workflow", "If float less", 2, 1, P99_PROTECT({ EditorArgsTypes::editor_arg_float, EditorArgsTypes::editor_arg_float }), P99_PROTECT({ EditorArgsTypes::editor_arg_float }), P99_PROTECT({"First", "Second"}), P99_PROTECT({"Flag"})) \
+GDR_BLUEPRINT_NODE(EditorNodeTypes::editor_node_workflow, "Workflow", "If float less equal", 2, 1, P99_PROTECT({ EditorArgsTypes::editor_arg_float, EditorArgsTypes::editor_arg_float }), P99_PROTECT({ EditorArgsTypes::editor_arg_float }), P99_PROTECT({"First", "Second"}), P99_PROTECT({"Flag"})) \
+GDR_BLUEPRINT_NODE(EditorNodeTypes::editor_node_workflow, "Workflow", "If float greater", 2, 1, P99_PROTECT({ EditorArgsTypes::editor_arg_float, EditorArgsTypes::editor_arg_float }), P99_PROTECT({ EditorArgsTypes::editor_arg_float }), P99_PROTECT({"First", "Second"}), P99_PROTECT({"Flag"})) \
+GDR_BLUEPRINT_NODE(EditorNodeTypes::editor_node_workflow, "Workflow", "If float greater equal", 2, 1, P99_PROTECT({ EditorArgsTypes::editor_arg_float, EditorArgsTypes::editor_arg_float }), P99_PROTECT({ EditorArgsTypes::editor_arg_float }), P99_PROTECT({"First", "Second"}), P99_PROTECT({"Flag"})) \
+\
+GDR_BLUEPRINT_NODE(EditorNodeTypes::editor_node_function, "Var", "Set float", 2, 0, P99_PROTECT({ EditorArgsTypes::editor_arg_string, EditorArgsTypes::editor_arg_float }), P99_PROTECT({}), P99_PROTECT({"Key", "Value"}), P99_PROTECT({})) \
+GDR_BLUEPRINT_NODE(EditorNodeTypes::editor_node_function, "Var", "Get float", 1, 1, P99_PROTECT({ EditorArgsTypes::editor_arg_string }), P99_PROTECT({ EditorArgsTypes::editor_arg_float }), P99_PROTECT({"Key"}), P99_PROTECT({ "Value" })) \
+GDR_BLUEPRINT_NODE(EditorNodeTypes::editor_node_function, "Var", "Set float2", 2, 0, P99_PROTECT({ EditorArgsTypes::editor_arg_string, EditorArgsTypes::editor_arg_float2 }), P99_PROTECT({}), P99_PROTECT({"Key", "Value"}), P99_PROTECT({})) \
+GDR_BLUEPRINT_NODE(EditorNodeTypes::editor_node_function, "Var", "Get float2", 1, 1, P99_PROTECT({ EditorArgsTypes::editor_arg_string }), P99_PROTECT({ EditorArgsTypes::editor_arg_float2 }), P99_PROTECT({"Key"}), P99_PROTECT({ "Value" })) \
+GDR_BLUEPRINT_NODE(EditorNodeTypes::editor_node_function, "Var", "Set float3", 2, 0, P99_PROTECT({ EditorArgsTypes::editor_arg_string, EditorArgsTypes::editor_arg_float3 }), P99_PROTECT({}), P99_PROTECT({"Key", "Value"}), P99_PROTECT({})) \
+GDR_BLUEPRINT_NODE(EditorNodeTypes::editor_node_function, "Var", "Get float3", 1, 1, P99_PROTECT({ EditorArgsTypes::editor_arg_string }), P99_PROTECT({ EditorArgsTypes::editor_arg_float3 }), P99_PROTECT({"Key"}), P99_PROTECT({ "Value" })) \
+GDR_BLUEPRINT_NODE(EditorNodeTypes::editor_node_function, "Var", "Set float4", 2, 0, P99_PROTECT({ EditorArgsTypes::editor_arg_string, EditorArgsTypes::editor_arg_float4 }), P99_PROTECT({}), P99_PROTECT({"Key", "Value"}), P99_PROTECT({})) \
+GDR_BLUEPRINT_NODE(EditorNodeTypes::editor_node_function, "Var", "Get float4", 1, 1, P99_PROTECT({ EditorArgsTypes::editor_arg_string }), P99_PROTECT({ EditorArgsTypes::editor_arg_float4 }), P99_PROTECT({"Key"}), P99_PROTECT({ "Value" })) \
+GDR_BLUEPRINT_NODE(EditorNodeTypes::editor_node_function, "Var", "Set matr", 2, 0, P99_PROTECT({ EditorArgsTypes::editor_arg_string, EditorArgsTypes::editor_arg_matr }), P99_PROTECT({}), P99_PROTECT({"Key", "Value"}), P99_PROTECT({})) \
+GDR_BLUEPRINT_NODE(EditorNodeTypes::editor_node_function, "Var", "Get matr", 1, 1, P99_PROTECT({ EditorArgsTypes::editor_arg_string }), P99_PROTECT({ EditorArgsTypes::editor_arg_matr }), P99_PROTECT({"Key"}), P99_PROTECT({ "Value" })) \
+GDR_BLUEPRINT_NODE(EditorNodeTypes::editor_node_function, "Var", "Set string", 2, 0, P99_PROTECT({ EditorArgsTypes::editor_arg_string, EditorArgsTypes::editor_arg_string }), P99_PROTECT({}), P99_PROTECT({"Key", "Value"}), P99_PROTECT({})) \
+GDR_BLUEPRINT_NODE(EditorNodeTypes::editor_node_function, "Var", "Get string", 1, 1, P99_PROTECT({ EditorArgsTypes::editor_arg_string }), P99_PROTECT({ EditorArgsTypes::editor_arg_string }), P99_PROTECT({"Key"}), P99_PROTECT({ "Value" })) \
+GDR_BLUEPRINT_NODE(EditorNodeTypes::editor_node_function, "Var", "Set index", 2, 0, P99_PROTECT({ EditorArgsTypes::editor_arg_string, EditorArgsTypes::editor_arg_gdr_index }), P99_PROTECT({}), P99_PROTECT({"Key", "Value"}), P99_PROTECT({})) \
+GDR_BLUEPRINT_NODE(EditorNodeTypes::editor_node_function, "Var", "Get index", 1, 1, P99_PROTECT({ EditorArgsTypes::editor_arg_string }), P99_PROTECT({ EditorArgsTypes::editor_arg_gdr_index }), P99_PROTECT({"Key"}), P99_PROTECT({ "Value" }))
+
+

@@ -604,7 +604,7 @@ void unit_scripted::FillBlueprintFunctions()
     BlueprintLibrary[BlueprintLibraryMapping["Workflow"]["If Key pressed"]].Function = [&](BlueprintScriptNode me, std::vector<my_any> input) -> int
     {
       std::string StringKey = input[0].Get<std::string>();
-      GDR_ASSERT(StringKey.size() == 0);
+      GDR_ASSERT(StringKey.size() != 0);
 
       my_any Result;
       Result.Set((float)Engine->Keys[StringKey[0]]);
@@ -619,7 +619,7 @@ void unit_scripted::FillBlueprintFunctions()
     BlueprintLibrary[BlueprintLibraryMapping["Workflow"]["If Key clicked"]].Function = [&](BlueprintScriptNode me, std::vector<my_any> input) -> int
     {
       std::string StringKey = input[0].Get<std::string>();
-      GDR_ASSERT(StringKey.size() == 0);
+      GDR_ASSERT(StringKey.size() != 0);
 
       my_any Result;
       Result.Set((float)Engine->KeysClick[StringKey[0]]);
@@ -630,5 +630,223 @@ void unit_scripted::FillBlueprintFunctions()
       else
         return 1;
     };
+
+    BlueprintLibrary[BlueprintLibraryMapping["Workflow"]["If float equal"]].Function = [&](BlueprintScriptNode me, std::vector<my_any> input) -> int
+    {
+      float first = input[0].Get<float>();
+      float second = input[1].Get<float>();
+      bool op = (first == second);
+
+      my_any Result;
+      Result.Set((float)op);
+      LocalScope.push_back(Result);
+
+      if (op)
+        return 0;
+      else
+        return 1;
+    };
+
+    BlueprintLibrary[BlueprintLibraryMapping["Workflow"]["If float less"]].Function = [&](BlueprintScriptNode me, std::vector<my_any> input) -> int
+    {
+      float first = input[0].Get<float>();
+      float second = input[1].Get<float>();
+      bool op = (first < second);
+
+      my_any Result;
+      Result.Set((float)op);
+      LocalScope.push_back(Result);
+
+      if (op)
+        return 0;
+      else
+        return 1;
+    };
+
+    BlueprintLibrary[BlueprintLibraryMapping["Workflow"]["If float less equal"]].Function = [&](BlueprintScriptNode me, std::vector<my_any> input) -> int
+    {
+      float first = input[0].Get<float>();
+      float second = input[1].Get<float>();
+      bool op = (first <= second);
+
+      my_any Result;
+      Result.Set((float)op);
+      LocalScope.push_back(Result);
+
+      if (op)
+        return 0;
+      else
+        return 1;
+    };
+
+    BlueprintLibrary[BlueprintLibraryMapping["Workflow"]["If float greater"]].Function = [&](BlueprintScriptNode me, std::vector<my_any> input) -> int
+    {
+      float first = input[0].Get<float>();
+      float second = input[1].Get<float>();
+      bool op = (first > second);
+
+      my_any Result;
+      Result.Set((float)op);
+      LocalScope.push_back(Result);
+
+      if (op)
+        return 0;
+      else
+        return 1;
+    };
+
+    BlueprintLibrary[BlueprintLibraryMapping["Workflow"]["If float greater equal"]].Function = [&](BlueprintScriptNode me, std::vector<my_any> input) -> int
+    {
+      float first = input[0].Get<float>();
+      float second = input[1].Get<float>();
+      bool op = (first >= second);
+
+      my_any Result;
+      Result.Set((float)op);
+      LocalScope.push_back(Result);
+
+      if (op)
+        return 0;
+      else
+        return 1;
+    };
   };
+
+  /**********
+   * Vars
+   ***********/
+  {
+    BlueprintLibrary[BlueprintLibraryMapping["Vars"]["Set float"]].Function = [&](BlueprintScriptNode me, std::vector<my_any> input) -> int
+    {
+      std::string StringKey = input[0].Get<std::string>();
+      float Value = input[1].Get<float>();
+      FloatVars[StringKey] = Value;
+      return 0;
+    };
+
+    BlueprintLibrary[BlueprintLibraryMapping["Vars"]["Get float"]].Function = [&](BlueprintScriptNode me, std::vector<my_any> input) -> int
+    {
+      std::string StringKey = input[0].Get<std::string>();
+
+      my_any Result;
+      Result.Set(FloatVars[StringKey]);
+      LocalScope.push_back(Result);
+
+      return 0;
+    };
+
+    BlueprintLibrary[BlueprintLibraryMapping["Vars"]["Set float2"]].Function = [&](BlueprintScriptNode me, std::vector<my_any> input) -> int
+    {
+      std::string StringKey = input[0].Get<std::string>();
+      mth::vec2f Value = input[1].Get<mth::vec2f>();
+      Float2Vars[StringKey] = Value;
+      return 0;
+    };
+
+    BlueprintLibrary[BlueprintLibraryMapping["Vars"]["Get float2"]].Function = [&](BlueprintScriptNode me, std::vector<my_any> input) -> int
+    {
+      std::string StringKey = input[0].Get<std::string>();
+
+      my_any Result;
+      Result.Set(Float2Vars[StringKey]);
+      LocalScope.push_back(Result);
+
+      return 0;
+    };
+
+    BlueprintLibrary[BlueprintLibraryMapping["Vars"]["Set float3"]].Function = [&](BlueprintScriptNode me, std::vector<my_any> input) -> int
+    {
+      std::string StringKey = input[0].Get<std::string>();
+      mth::vec3f Value = input[1].Get<mth::vec3f>();
+      Float3Vars[StringKey] = Value;
+      return 0;
+    };
+
+    BlueprintLibrary[BlueprintLibraryMapping["Vars"]["Get float3"]].Function = [&](BlueprintScriptNode me, std::vector<my_any> input) -> int
+    {
+      std::string StringKey = input[0].Get<std::string>();
+
+      my_any Result;
+      Result.Set(Float3Vars[StringKey]);
+      LocalScope.push_back(Result);
+
+      return 0;
+    };
+
+    BlueprintLibrary[BlueprintLibraryMapping["Vars"]["Set float4"]].Function = [&](BlueprintScriptNode me, std::vector<my_any> input) -> int
+    {
+      std::string StringKey = input[0].Get<std::string>();
+      mth::vec4f Value = input[1].Get<mth::vec4f>();
+      Float4Vars[StringKey] = Value;
+      return 0;
+    };
+
+    BlueprintLibrary[BlueprintLibraryMapping["Vars"]["Get float4"]].Function = [&](BlueprintScriptNode me, std::vector<my_any> input) -> int
+    {
+      std::string StringKey = input[0].Get<std::string>();
+
+      my_any Result;
+      Result.Set(Float4Vars[StringKey]);
+      LocalScope.push_back(Result);
+
+      return 0;
+    };
+
+    BlueprintLibrary[BlueprintLibraryMapping["Vars"]["Set matr"]].Function = [&](BlueprintScriptNode me, std::vector<my_any> input) -> int
+    {
+      std::string StringKey = input[0].Get<std::string>();
+      mth::matr4f Value = input[1].Get<mth::matr4f>();
+      MatrVars[StringKey] = Value;
+      return 0;
+    };
+
+    BlueprintLibrary[BlueprintLibraryMapping["Vars"]["Get matr"]].Function = [&](BlueprintScriptNode me, std::vector<my_any> input) -> int
+    {
+      std::string StringKey = input[0].Get<std::string>();
+
+      my_any Result;
+      Result.Set(MatrVars[StringKey]);
+      LocalScope.push_back(Result);
+
+      return 0;
+    };
+
+    BlueprintLibrary[BlueprintLibraryMapping["Vars"]["Set string"]].Function = [&](BlueprintScriptNode me, std::vector<my_any> input) -> int
+    {
+      std::string StringKey = input[0].Get<std::string>();
+      std::string Value = input[1].Get<std::string>();
+      StringVars[StringKey] = Value;
+      return 0;
+    };
+
+    BlueprintLibrary[BlueprintLibraryMapping["Vars"]["Get string"]].Function = [&](BlueprintScriptNode me, std::vector<my_any> input) -> int
+    {
+      std::string StringKey = input[0].Get<std::string>();
+
+      my_any Result;
+      Result.Set(StringVars[StringKey]);
+      LocalScope.push_back(Result);
+
+      return 0;
+    };
+
+    BlueprintLibrary[BlueprintLibraryMapping["Vars"]["Set index"]].Function = [&](BlueprintScriptNode me, std::vector<my_any> input) -> int
+    {
+      std::string StringKey = input[0].Get<std::string>();
+      gdr_index Value = input[1].Get<gdr_index>();
+      StringVars[StringKey] = Value;
+      return 0;
+    };
+
+    BlueprintLibrary[BlueprintLibraryMapping["Vars"]["Get index"]].Function = [&](BlueprintScriptNode me, std::vector<my_any> input) -> int
+    {
+      std::string StringKey = input[0].Get<std::string>();
+
+      my_any Result;
+      Result.Set(IndicesVars[StringKey]);
+      LocalScope.push_back(Result);
+
+      return 0;
+    };
+  }
 }

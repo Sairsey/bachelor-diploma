@@ -105,6 +105,6 @@ public:
 
   ~unit_specialist(void)
   {
-    PopBack(Models.size());
+    PopBack((int)Models.size());
   }
 };

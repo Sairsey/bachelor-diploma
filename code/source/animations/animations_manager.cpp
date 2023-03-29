@@ -20,6 +20,7 @@ gdr_index gdr::animation_manager::Add(const gdr::model_import_data& ImportData)
 		if (IsExist(i) && Get(i).Name == ImportData.FileName)
 		{
 			IncreaseReferenceCount(i);
+			i.type = gdr_index_types::animation;
 			return i;
 		}
 	NewAnimationIndex = resource_pool_subsystem::Add();

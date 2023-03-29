@@ -170,11 +170,6 @@ gdr_index gdr::draw_commands_subsystem::Add(gdr_index geometryIndex, gdr_index t
   DrawCommand.Indices.ObjectMaterialIndex = materialIndex;
   DrawCommand.Indices.BoneMappingIndex = boneMappingIndex;
 
-  Render->ObjectTransformsSystem->IncreaseReferenceCount(transformIndex);
-  Render->MaterialsSystem->IncreaseReferenceCount(materialIndex);
-  Render->BoneMappingSystem->IncreaseReferenceCount(boneMappingIndex);
-  Render->GeometrySystem->IncreaseReferenceCount(geometryIndex);
-
   if (geometryIndex != NONE_INDEX)
   {
       DrawCommand.VertexBuffer = Render->GeometrySystem->Get(geometryIndex).VertexBufferView;

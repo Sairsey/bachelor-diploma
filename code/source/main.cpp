@@ -28,6 +28,11 @@
 // 5) I cannot implement direct transparency, because I do not know position of my transparent mesh.
 // 6) Shadow frustrum culling!!!
 
+// Possible improvments
+// 1) Particles
+// 2) Clustered rendering(https://www.adriancourreges.com/blog/2016/09/09/doom-2016-graphics-study/)
+// 3) parallel loading
+
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
   _In_opt_ HINSTANCE hPrevInstance,
   _In_ LPWSTR    lpCmdLine,
@@ -36,15 +41,15 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
   gdr::engine Engine;
 
   //Engine.UnitsManager->Add(new gdr::unit_scene_default());
-  Engine.UnitsManager->Add(new unit_examples_scene());
+  //Engine.UnitsManager->Add(new unit_examples_scene());
   //Engine.UnitsManager->Add(new unit_thriller_scene());
   //Engine.UnitsManager->Add(new unit_shooter_scene());
   //Engine.UnitsManager->Add(new unit_fishes_scene());
   //Engine.UnitsManager->Add(new unit_funk());
 
   Engine.UnitsManager->Add(new unit_editor());
-  //Engine.UnitsManager->Add(new unit_alex_apt());
-  //Engine.UnitsManager->Add(new unit_flying_camera());
+  Engine.UnitsManager->Add(new unit_alex_apt());
+  Engine.UnitsManager->Add(new unit_flying_camera());
 
   //Engine.AddUnit(new unit_scripted("Hello"));
   //Engine.AddUnit(new unit_blueprint_editor());

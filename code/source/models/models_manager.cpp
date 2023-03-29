@@ -16,6 +16,12 @@ void gdr::models_manager::BeforeRemoveJob(gdr_index index)
 		if (node.Type == gdr_hier_node_type::node)
 			Engine->NodeTransformsSystem->Remove(node.NodeTransform);
 	}
+
+	Engine->ObjectTransformsSystem->Remove(ModelToDelete.Render.RootTransform);
+
+	for (int i = 0; i < ModelToDelete.Render.Materials.size(); i++)
+		Engine->ModelsManager->Remove(ModelToDelete.Render.Materials[i]);
+
 	ModelToDelete = model();
 	ModelToDelete.Name = "GDR_MODEL_DELETED";
 }
@@ -190,6 +196,8 @@ gdr_index gdr::models_manager::Add(const model_import_data& ImportData, bool New
 					NewModelRender.RootTransform,
 					NewModelRender.Materials[ImportData.HierarchyNodes[i].MaterialIndex],
 					BoneMapping);
+				Engine->ObjectTransformsSystem->IncreaseReferenceCount(NewModelRender.RootTransform);
+				Engine->MaterialsSystem->IncreaseReferenceCount(NewModelRender.Materials[ImportData.HierarchyNodes[i].MaterialIndex]);
 				Engine->DrawCommandsSystem->GetEditable(NewNode.DrawCommand).Indices.ObjectParamsMask = ImportData.HierarchyNodes[i].Params;
 			}
 			else
@@ -304,6 +312,13 @@ void gdr::models_manager::Clone(gdr_index SrcModel, gdr_index DstModel, bool New
 					NewModelRender.RootTransform,
 					OldDrawCommand.Indices.ObjectMaterialIndex,
 					BoneMapping);
+				Engine->GeometrySystem->IncreaseReferenceCount(OldDrawCommand.Indices.ObjectIndex);
+				Engine->ObjectTransformsSystem->IncreaseReferenceCount(NewModelRender.RootTransform);
+				Engine->MaterialsSystem->IncreaseReferenceCount(OldDrawCommand.Indices.ObjectMaterialIndex);
+				if (!NewNodeTransforms)
+				{
+					Engine->BoneMappingSystem->IncreaseReferenceCount(BoneMapping);
+				}
 				// because after Add we may be lost our link
 				const GDRGPUIndirectCommand& OldDrawCommand1 = Engine->DrawCommandsSystem->Get(OldNode.DrawCommand);
 				Engine->DrawCommandsSystem->GetEditable(NewNode.DrawCommand).Indices.ObjectParamsMask = OldDrawCommand1.Indices.ObjectParamsMask;

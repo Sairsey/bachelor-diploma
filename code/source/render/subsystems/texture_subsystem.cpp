@@ -76,10 +76,11 @@ gdr::textures_subsystem::textures_subsystem(render* Rnd) : resource_pool_subsyst
 gdr_index gdr::textures_subsystem::Add(std::string name, bool isSrgb)
 {
   // check if we already have this texture
-  for (int i = 0; i < AllocatedSize(); i++)
+  for (gdr_index i = 0; i < AllocatedSize(); i++)
     if (IsExist(i) && Get(i).Name == name)
     {
       IncreaseReferenceCount(i);
+      i.type = gdr_index_types::texture;
       return i;
     }
 

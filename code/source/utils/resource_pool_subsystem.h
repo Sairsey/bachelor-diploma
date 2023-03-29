@@ -12,7 +12,7 @@ namespace gdr
     {
       bool IsAlive;           // if False -> this resource was deleted
       bool IsNeedToBeDeleted; // if True -> We should delete on next frame
-      int ReferenceCount = 0;
+      int ReferenceCount = 1;
     };
 
     render* Render; // pointer on Render
@@ -105,7 +105,7 @@ namespace gdr
     {
       bool IsAlive;           // if False -> this resource was deleted
       bool IsNeedToBeDeleted; // if True -> We should delete on next frame
-      int ReferenceCount = 0;
+      int ReferenceCount = 1;
     };
 
     render* Render; // pointer on Render

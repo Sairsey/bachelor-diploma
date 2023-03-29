@@ -23,12 +23,9 @@ ray_intersect gdr::raycast_manager::RayVsOBB(mth::vec3f Org, mth::vec3f Dir, mth
     mth::vec3f delta = pos - Org;
 
     mth::matr4f RotationTransform = mth::matr4f::BuildTransform({ 1, 1, 1 }, rot, { 0, 0, 0 });
-    
-    mth::vec3f CenterAABB = (MinAABB + MaxAABB) / 2.0;
-    mth::vec3f SizeAABB = (MaxAABB - MinAABB);
 
-    MinAABB = CenterAABB - (SizeAABB * scale) / 2.0;
-    MaxAABB = CenterAABB + (SizeAABB * scale) / 2.0;
+    MinAABB *= scale;
+    MaxAABB *= scale;
 
 	// Test intersection with the 2 planes perpendicular to the OBB's X axis
     for (int axis = 0; axis < 3; axis++)

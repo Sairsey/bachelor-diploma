@@ -98,6 +98,7 @@ struct my_any
 
     void Set(std::string t)
     {
+      Type = EditorArgsTypes::editor_arg_string;
       arg_string = t;
 
       if (strncmp(arg_string.c_str(), "float{", strlen("float{")) == 0)
@@ -168,6 +169,7 @@ struct my_any
 
     void Set(float t)
     {
+      Type = EditorArgsTypes::editor_arg_float;
       arg_float = t;
       arg_gdr_index = (unsigned)t;
       arg_string = std::string("float{") + std::to_string(t) + "}";
@@ -181,6 +183,7 @@ struct my_any
 
     void Set(mth::vec2<float> t)
     {
+      Type = EditorArgsTypes::editor_arg_float2;
       arg_float2 = t;
       arg_string = std::string("float2{") + std::to_string(t[0]) + ", " + std::to_string(t[1]) + "}";
 
@@ -192,6 +195,7 @@ struct my_any
 
     void Set(mth::vec3<float> t)
     {
+      Type = EditorArgsTypes::editor_arg_float3;
       arg_float3 = t;
       arg_string = std::string("float3{") + std::to_string(t[0]) + ", " + std::to_string(t[1]) + ", " + std::to_string(t[2]) + "}";
 
@@ -203,6 +207,7 @@ struct my_any
 
     void Set(mth::vec4<float> t)
     {
+      Type = EditorArgsTypes::editor_arg_float4;
       arg_float4 = t;
       arg_string = std::string("float4{") + std::to_string(t[0]) + ", " + std::to_string(t[1]) + ", " + std::to_string(t[2]) + ", " + std::to_string(t[3]) + "}";
 
@@ -214,6 +219,7 @@ struct my_any
 
     void Set(mth::matr4<float> t)
     {
+      Type = EditorArgsTypes::editor_arg_matr;
       arg_matr = t;
       arg_string = std::string("matr{");
       for (int i = 0; i < 4; i++)
@@ -229,6 +235,7 @@ struct my_any
 
     void Set(gdr_index t)
     {
+      Type = EditorArgsTypes::editor_arg_gdr_index;
       arg_gdr_index = t;
       arg_float = (float)t.value;
       arg_string = std::string("index{") + std::to_string(t) + "}";

@@ -330,7 +330,7 @@ void unit_scripted::FillBlueprintFunctions()
 
     BlueprintLibrary[BlueprintLibraryMapping["Object Transform"]["Set"]].Function = [&](BlueprintScriptNode me, std::vector<my_any> input, std::vector<my_any>& output) -> int
     {
-      Engine->ObjectTransformsSystem->GetEditable(input[0].Get<gdr_index>()).Transform = input[0].Get<mth::matr4f>();
+      Engine->ObjectTransformsSystem->GetEditable(input[0].Get<gdr_index>()).Transform = input[1].Get<mth::matr4f>();
       return 0;
     };
 

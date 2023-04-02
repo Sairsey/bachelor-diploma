@@ -241,6 +241,8 @@ struct my_any
     }
 };
 
+// TODO: Maybe GUID for links of input-output arguments
+
 class unit_scripted : public gdr::unit_base
 {
 private:
@@ -259,7 +261,7 @@ private:
     std::string Name;                             // Name of node
     std::vector<EditorArgsTypes> InputArguments;  // vector with input arguments types 
     std::vector<EditorArgsTypes> OutputArguments; // vector with output arguments types
-    std::function<int(unit_scripted::BlueprintScriptNode, std::vector<my_any>)> Function;
+    std::function<int(unit_scripted::BlueprintScriptNode, std::vector<my_any>, std::vector<my_any>&)> Function;
   };
   static std::vector<BlueprintLibraryNode> BlueprintLibrary;
 
@@ -271,7 +273,8 @@ private:
   struct BlueprintScriptArgument
   {
     EditorArgsTypes ArgumentType; // type of argument
-    uint32_t VariableSlot;       // from 0 to NONE_INDEX-1 if we should gather variable from LocalScope. NONE_INDEX if we want to place value directly
+    std::vector<uint32_t> VariableSlot;       // array
+                                              // from 0 to NONE_INDEX-1 if we should gather variable from LocalScope. NONE_INDEX if we want to place value directly
     my_any ConstantValue;         // constant variable if needed
   };
 
@@ -279,6 +282,7 @@ private:
   {
     uint32_t LibraryNodeIndex;                          // index of node in Library
     std::vector<BlueprintScriptArgument> InputArguments; // Script input arguments
+    std::vector<uint32_t> OutputArguments;               // Script output arguments
     std::vector<uint32_t> NextNode;                     // Next nodes to run. Array, because we might want to do "if" or "switch" statements
   };
 
@@ -287,8 +291,8 @@ private:
   // Name of the unit
   std::string UnitName;
   // Local Scope. We put every output argument of function to this LocalScope so we can gather them from everythere.
-  std::vector<my_any> LocalScope;
-  std::vector<my_any> InitedLocalScope;
+  std::unordered_map<unsigned, my_any> LocalScope;
+  std::unordered_map<unsigned, my_any> InitedLocalScope;
 
   uint32_t FindScriptNode(uint32_t LibraryNodeIndex)
   {
@@ -307,16 +311,49 @@ private:
       std::vector<my_any> input;
       for (int i = 0; i < LoadedScript[ScriptNodeIndex].InputArguments.size(); i++)
       {
-        if (LoadedScript[ScriptNodeIndex].InputArguments[i].VariableSlot == NONE_INDEX)
+        if (LoadedScript[ScriptNodeIndex].InputArguments[i].VariableSlot.size() == 0)
           input.push_back(LoadedScript[ScriptNodeIndex].InputArguments[i].ConstantValue);
         else
-          input.push_back(LocalScope[LoadedScript[ScriptNodeIndex].InputArguments[i].VariableSlot]);
+        {
+          int choosedSlot = -1;
+          bool success = true;
+          for (int j = 0; j < LoadedScript[ScriptNodeIndex].InputArguments[i].VariableSlot.size(); j++)
+          {
+            if (LocalScope.find(LoadedScript[ScriptNodeIndex].InputArguments[i].VariableSlot[j]) != LocalScope.end())
+            {
+              if (choosedSlot == -1)
+                choosedSlot = j;
+              else
+              {
+                OutputDebugStringA("More then one input slot is valid. Do not know which to use");
+                success = false;
+              }
+            }
+          }
+          
+          if (choosedSlot == -1)
+          {
+            OutputDebugStringA("No input slot is valid. Do not know which to use");
+            success = false;
+          }
+
+          if (success)
+            input.push_back(LocalScope[LoadedScript[ScriptNodeIndex].InputArguments[i].VariableSlot[choosedSlot]]);
+          else
+            input.push_back(my_any());
+        } 
       }
 
+      std::vector<my_any> output;
       // call function
       PROFILE_CPU_BEGIN((std::string("Node ") + BlueprintLibrary[LoadedScript[ScriptNodeIndex].LibraryNodeIndex].Filter + ":" +BlueprintLibrary[LoadedScript[ScriptNodeIndex].LibraryNodeIndex].Name).c_str());
-      int result = BlueprintLibrary[LoadedScript[ScriptNodeIndex].LibraryNodeIndex].Function(LoadedScript[ScriptNodeIndex], input);
+      int result = BlueprintLibrary[LoadedScript[ScriptNodeIndex].LibraryNodeIndex].Function(LoadedScript[ScriptNodeIndex], input, output);
       PROFILE_CPU_END();
+
+      // work with output
+      for (int i = 0; i < LoadedScript[ScriptNodeIndex].OutputArguments.size(); i++)
+        if (LoadedScript[ScriptNodeIndex].OutputArguments[i] != NONE_INDEX)
+          LocalScope[LoadedScript[ScriptNodeIndex].OutputArguments[i]] = output[i];
 
       // go to next node
       ScriptNodeIndex = (result >= 0 && result < LoadedScript[ScriptNodeIndex].NextNode.size()) ? LoadedScript[ScriptNodeIndex].NextNode[result] : NONE_INDEX;

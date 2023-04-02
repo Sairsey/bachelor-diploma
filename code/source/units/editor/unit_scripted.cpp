@@ -915,7 +915,7 @@ void unit_scripted::FillBlueprintFunctions()
     {
       std::string StringKey = input[0].Get<std::string>();
       gdr_index Value = input[1].Get<gdr_index>();
-      StringVars[StringKey] = Value;
+      IndicesVars[StringKey] = Value;
       return 0;
     };
 

@@ -45,8 +45,17 @@ public:
   void Response(void) override
   {
     if (FloatVars["Show"] == 0 || Engine->UnitsManager->Get(ParentUnit)->FloatVars["Show"] == 0)
+    {
+      Engine->ObjectTransformsSystem->GetEditable(
+        Engine->ModelsManager->Get(IndicesVars["AxisObjectCenter"]).Render.RootTransform).Transform = mth::matr4f::Scale(0);
+      Engine->ObjectTransformsSystem->GetEditable(
+        Engine->ModelsManager->Get(IndicesVars["AxisObjectDragX"]).Render.RootTransform).Transform = mth::matr4f::Scale(0);
+      Engine->ObjectTransformsSystem->GetEditable(
+        Engine->ModelsManager->Get(IndicesVars["AxisObjectDragY"]).Render.RootTransform).Transform = mth::matr4f::Scale(0);
+      Engine->ObjectTransformsSystem->GetEditable(
+        Engine->ModelsManager->Get(IndicesVars["AxisObjectDragZ"]).Render.RootTransform).Transform = mth::matr4f::Scale(0);
       return;
-
+    }
     // VISUALIZE GIZMO
     if (Engine->UnitsManager->Get(ParentUnit)->FloatVars["EditorType"] == (int)editor_type::resource &&
       Engine->UnitsManager->Get(ParentUnit)->IndicesVars["ChoosedElement"].type == gdr_index_types::model &&

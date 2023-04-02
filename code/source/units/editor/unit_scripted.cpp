@@ -1,5 +1,7 @@
 #include "p_header.h"
 #include "unit_scripted.h"
+#include <fstream>
+#include "json.hpp"
 
 // static field initialisation
 std::vector<unit_scripted::BlueprintLibraryNode> unit_scripted::BlueprintLibrary;
@@ -81,7 +83,71 @@ unit_scripted::unit_scripted(std::string Name) : UnitName(Name)
   }
 
   // Load JSON
-  // TODO
+  {
+    std::ifstream i(UnitName);
+    
+    if (i.is_open())
+    {
+      nlohmann::json data;
+      bool result = true;
+      try
+      {
+        i >> data;
+      
+        // aquire version
+        if (MIN_SUPPORTED_VERSION > data["version"] || MAX_SUPPORTED_VERSION < data["version"])
+        {
+          OutputDebugStringA("Incorrect version!");
+          result = false;
+        }
+ 
+        // aquire name
+        if (result)
+          UnitName = data["name"];
+
+        // aquire commands
+        for (int i = 0; result && i < data["commands"].size(); i++)
+        {
+          auto command = data["commands"][i];
+
+          BlueprintScriptNode n;
+          n.LibraryNodeIndex = command["library_func_index"];
+          
+          for (int j = 0; j < command["next_nodes"].size(); j++)
+            n.NextNode.push_back(command["next_nodes"][j]);
+
+          
+          if (command["input_argument"].size() != BlueprintLibrary[n.LibraryNodeIndex].InputArguments.size())
+          {
+            OutputDebugStringA("some node has invalid amount of input arguments!");
+            result = false;
+          }
+
+          for (int j = 0; result && j < command["input_argument"].size(); j++)
+          {
+            auto argument = command["input_argument"][j];
+            BlueprintScriptArgument arg;
+
+            arg.ArgumentType = argument["type"];
+            arg.VariableSlot = argument["slot"];
+            arg.ConstantValue.Set(argument["value"].get<std::string>());
+          }
+
+          LoadedScript.push_back(n);
+        }
+      }
+      catch (nlohmann::json::parse_error& ex)
+      {
+        result = false;
+      }
+
+      if (!result)
+      {
+        OutputDebugStringA("ERROR: incorrect json");
+        LoadedScript.clear();
+      }
+    }
+  }
 };
 
 // Big function for every node function
@@ -716,7 +782,7 @@ void unit_scripted::FillBlueprintFunctions()
    * Vars
    ***********/
   {
-    BlueprintLibrary[BlueprintLibraryMapping["Vars"]["Set float"]].Function = [&](BlueprintScriptNode me, std::vector<my_any> input) -> int
+    BlueprintLibrary[BlueprintLibraryMapping["Var"]["Set float"]].Function = [&](BlueprintScriptNode me, std::vector<my_any> input) -> int
     {
       std::string StringKey = input[0].Get<std::string>();
       float Value = input[1].Get<float>();
@@ -724,7 +790,7 @@ void unit_scripted::FillBlueprintFunctions()
       return 0;
     };
 
-    BlueprintLibrary[BlueprintLibraryMapping["Vars"]["Get float"]].Function = [&](BlueprintScriptNode me, std::vector<my_any> input) -> int
+    BlueprintLibrary[BlueprintLibraryMapping["Var"]["Get float"]].Function = [&](BlueprintScriptNode me, std::vector<my_any> input) -> int
     {
       std::string StringKey = input[0].Get<std::string>();
 
@@ -735,7 +801,7 @@ void unit_scripted::FillBlueprintFunctions()
       return 0;
     };
 
-    BlueprintLibrary[BlueprintLibraryMapping["Vars"]["Set float2"]].Function = [&](BlueprintScriptNode me, std::vector<my_any> input) -> int
+    BlueprintLibrary[BlueprintLibraryMapping["Var"]["Set float2"]].Function = [&](BlueprintScriptNode me, std::vector<my_any> input) -> int
     {
       std::string StringKey = input[0].Get<std::string>();
       mth::vec2f Value = input[1].Get<mth::vec2f>();
@@ -743,7 +809,7 @@ void unit_scripted::FillBlueprintFunctions()
       return 0;
     };
 
-    BlueprintLibrary[BlueprintLibraryMapping["Vars"]["Get float2"]].Function = [&](BlueprintScriptNode me, std::vector<my_any> input) -> int
+    BlueprintLibrary[BlueprintLibraryMapping["Var"]["Get float2"]].Function = [&](BlueprintScriptNode me, std::vector<my_any> input) -> int
     {
       std::string StringKey = input[0].Get<std::string>();
 
@@ -754,7 +820,7 @@ void unit_scripted::FillBlueprintFunctions()
       return 0;
     };
 
-    BlueprintLibrary[BlueprintLibraryMapping["Vars"]["Set float3"]].Function = [&](BlueprintScriptNode me, std::vector<my_any> input) -> int
+    BlueprintLibrary[BlueprintLibraryMapping["Var"]["Set float3"]].Function = [&](BlueprintScriptNode me, std::vector<my_any> input) -> int
     {
       std::string StringKey = input[0].Get<std::string>();
       mth::vec3f Value = input[1].Get<mth::vec3f>();
@@ -762,7 +828,7 @@ void unit_scripted::FillBlueprintFunctions()
       return 0;
     };
 
-    BlueprintLibrary[BlueprintLibraryMapping["Vars"]["Get float3"]].Function = [&](BlueprintScriptNode me, std::vector<my_any> input) -> int
+    BlueprintLibrary[BlueprintLibraryMapping["Var"]["Get float3"]].Function = [&](BlueprintScriptNode me, std::vector<my_any> input) -> int
     {
       std::string StringKey = input[0].Get<std::string>();
 
@@ -773,7 +839,7 @@ void unit_scripted::FillBlueprintFunctions()
       return 0;
     };
 
-    BlueprintLibrary[BlueprintLibraryMapping["Vars"]["Set float4"]].Function = [&](BlueprintScriptNode me, std::vector<my_any> input) -> int
+    BlueprintLibrary[BlueprintLibraryMapping["Var"]["Set float4"]].Function = [&](BlueprintScriptNode me, std::vector<my_any> input) -> int
     {
       std::string StringKey = input[0].Get<std::string>();
       mth::vec4f Value = input[1].Get<mth::vec4f>();
@@ -781,7 +847,7 @@ void unit_scripted::FillBlueprintFunctions()
       return 0;
     };
 
-    BlueprintLibrary[BlueprintLibraryMapping["Vars"]["Get float4"]].Function = [&](BlueprintScriptNode me, std::vector<my_any> input) -> int
+    BlueprintLibrary[BlueprintLibraryMapping["Var"]["Get float4"]].Function = [&](BlueprintScriptNode me, std::vector<my_any> input) -> int
     {
       std::string StringKey = input[0].Get<std::string>();
 
@@ -792,7 +858,7 @@ void unit_scripted::FillBlueprintFunctions()
       return 0;
     };
 
-    BlueprintLibrary[BlueprintLibraryMapping["Vars"]["Set matr"]].Function = [&](BlueprintScriptNode me, std::vector<my_any> input) -> int
+    BlueprintLibrary[BlueprintLibraryMapping["Var"]["Set matr"]].Function = [&](BlueprintScriptNode me, std::vector<my_any> input) -> int
     {
       std::string StringKey = input[0].Get<std::string>();
       mth::matr4f Value = input[1].Get<mth::matr4f>();
@@ -800,7 +866,7 @@ void unit_scripted::FillBlueprintFunctions()
       return 0;
     };
 
-    BlueprintLibrary[BlueprintLibraryMapping["Vars"]["Get matr"]].Function = [&](BlueprintScriptNode me, std::vector<my_any> input) -> int
+    BlueprintLibrary[BlueprintLibraryMapping["Var"]["Get matr"]].Function = [&](BlueprintScriptNode me, std::vector<my_any> input) -> int
     {
       std::string StringKey = input[0].Get<std::string>();
 
@@ -811,7 +877,7 @@ void unit_scripted::FillBlueprintFunctions()
       return 0;
     };
 
-    BlueprintLibrary[BlueprintLibraryMapping["Vars"]["Set string"]].Function = [&](BlueprintScriptNode me, std::vector<my_any> input) -> int
+    BlueprintLibrary[BlueprintLibraryMapping["Var"]["Set string"]].Function = [&](BlueprintScriptNode me, std::vector<my_any> input) -> int
     {
       std::string StringKey = input[0].Get<std::string>();
       std::string Value = input[1].Get<std::string>();
@@ -819,7 +885,7 @@ void unit_scripted::FillBlueprintFunctions()
       return 0;
     };
 
-    BlueprintLibrary[BlueprintLibraryMapping["Vars"]["Get string"]].Function = [&](BlueprintScriptNode me, std::vector<my_any> input) -> int
+    BlueprintLibrary[BlueprintLibraryMapping["Var"]["Get string"]].Function = [&](BlueprintScriptNode me, std::vector<my_any> input) -> int
     {
       std::string StringKey = input[0].Get<std::string>();
 
@@ -830,7 +896,7 @@ void unit_scripted::FillBlueprintFunctions()
       return 0;
     };
 
-    BlueprintLibrary[BlueprintLibraryMapping["Vars"]["Set index"]].Function = [&](BlueprintScriptNode me, std::vector<my_any> input) -> int
+    BlueprintLibrary[BlueprintLibraryMapping["Var"]["Set index"]].Function = [&](BlueprintScriptNode me, std::vector<my_any> input) -> int
     {
       std::string StringKey = input[0].Get<std::string>();
       gdr_index Value = input[1].Get<gdr_index>();
@@ -838,7 +904,7 @@ void unit_scripted::FillBlueprintFunctions()
       return 0;
     };
 
-    BlueprintLibrary[BlueprintLibraryMapping["Vars"]["Get index"]].Function = [&](BlueprintScriptNode me, std::vector<my_any> input) -> int
+    BlueprintLibrary[BlueprintLibraryMapping["Var"]["Get index"]].Function = [&](BlueprintScriptNode me, std::vector<my_any> input) -> int
     {
       std::string StringKey = input[0].Get<std::string>();
 

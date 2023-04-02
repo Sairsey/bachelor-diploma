@@ -271,15 +271,15 @@ private:
   struct BlueprintScriptArgument
   {
     EditorArgsTypes ArgumentType; // type of argument
-    gdr_index VariableSlot;       // from 0 to NONE_INDEX-1 if we should gather variable from LocalScope. NONE_INDEX if we want to place value directly
+    uint32_t VariableSlot;       // from 0 to NONE_INDEX-1 if we should gather variable from LocalScope. NONE_INDEX if we want to place value directly
     my_any ConstantValue;         // constant variable if needed
   };
 
   struct BlueprintScriptNode
   {
-    gdr_index LibraryNodeIndex;                          // index of node in Library
+    uint32_t LibraryNodeIndex;                          // index of node in Library
     std::vector<BlueprintScriptArgument> InputArguments; // Script input arguments
-    std::vector<gdr_index> NextNode;                     // Next nodes to run. Array, because we might want to do "if" or "switch" statements
+    std::vector<uint32_t> NextNode;                     // Next nodes to run. Array, because we might want to do "if" or "switch" statements
   };
 
   // Script we loaded
@@ -290,16 +290,16 @@ private:
   std::vector<my_any> LocalScope;
   std::vector<my_any> InitedLocalScope;
 
-  gdr_index FindScriptNode(gdr_index LibraryNodeIndex)
+  uint32_t FindScriptNode(uint32_t LibraryNodeIndex)
   {
-    gdr_index ScriptNodeIndex = NONE_INDEX;
-    for (gdr_index i = 0; i < LoadedScript.size() && ScriptNodeIndex == NONE_INDEX; i++)
+    uint32_t ScriptNodeIndex = NONE_INDEX;
+    for (uint32_t i = 0; i < LoadedScript.size() && ScriptNodeIndex == NONE_INDEX; i++)
       if (LoadedScript[i].LibraryNodeIndex == LibraryNodeIndex)
         ScriptNodeIndex = i;
     return ScriptNodeIndex;
   }
 
-  void RunFromScriptNode(gdr_index ScriptNodeIndex)
+  void RunFromScriptNode(uint32_t ScriptNodeIndex)
   {
     while (ScriptNodeIndex != NONE_INDEX)
     {
@@ -319,7 +319,7 @@ private:
       PROFILE_CPU_END();
 
       // go to next node
-      ScriptNodeIndex = (result >= 0 && result < LoadedScript[ScriptNodeIndex].NextNode.size()) ? LoadedScript[ScriptNodeIndex].NextNode[result] : gdr_index{ NONE_INDEX };
+      ScriptNodeIndex = (result >= 0 && result < LoadedScript[ScriptNodeIndex].NextNode.size()) ? LoadedScript[ScriptNodeIndex].NextNode[result] : NONE_INDEX;
     }
   }
 
@@ -331,7 +331,7 @@ public:
   void Initialize(void)
   {
     PROFILE_CPU_BEGIN("Initialize");
-    gdr_index InitSciptNode = FindScriptNode(GDR_EDITOR_EVENT_INIT_LIBRARY_INDEX);
+    uint32_t InitSciptNode = FindScriptNode(GDR_EDITOR_EVENT_INIT_LIBRARY_INDEX);
     RunFromScriptNode(InitSciptNode);
     PROFILE_CPU_END();
     InitedLocalScope = LocalScope;
@@ -341,7 +341,7 @@ public:
   {
     LocalScope = InitedLocalScope;
     PROFILE_CPU_BEGIN("Response");
-    gdr_index ResponseSciptNode = FindScriptNode(GDR_EDITOR_EVENT_RESPONSE_LIBRARY_INDEX);
+    uint32_t ResponseSciptNode = FindScriptNode(GDR_EDITOR_EVENT_RESPONSE_LIBRARY_INDEX);
     RunFromScriptNode(ResponseSciptNode);
     PROFILE_CPU_END();
   }
@@ -350,7 +350,7 @@ public:
   {
     LocalScope = InitedLocalScope;
     PROFILE_CPU_BEGIN("Response physics");
-    gdr_index ResponsePhysSciptNode = FindScriptNode(GDR_EDITOR_EVENT_RESPONSE_PHYS_LIBRARY_INDEX);
+    uint32_t ResponsePhysSciptNode = FindScriptNode(GDR_EDITOR_EVENT_RESPONSE_PHYS_LIBRARY_INDEX);
     RunFromScriptNode(ResponsePhysSciptNode);
     PROFILE_CPU_END();
   }
@@ -364,7 +364,7 @@ public:
   {
     LocalScope = InitedLocalScope;
     PROFILE_CPU_BEGIN("Deinitialisation");
-    gdr_index DeinitSciptNode = FindScriptNode(GDR_EDITOR_EVENT_DEINIT_LIBRARY_INDEX);
+    uint32_t DeinitSciptNode = FindScriptNode(GDR_EDITOR_EVENT_DEINIT_LIBRARY_INDEX);
     RunFromScriptNode(DeinitSciptNode);
     PROFILE_CPU_END();
   }

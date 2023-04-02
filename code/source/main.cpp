@@ -7,6 +7,7 @@
 #include "units/funk/unit_funk.h"
 #include "units/shooter/unit_shooter_scene.h"
 
+#include "units/unit_startup_launch.h"
 
 #include "units/stats/unit_log_time.h"
 #include "units/stats/unit_frame_times.h"
@@ -46,6 +47,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
   //Engine.UnitsManager->Add(new unit_shooter_scene());
   //Engine.UnitsManager->Add(new unit_fishes_scene());
   //Engine.UnitsManager->Add(new unit_funk());
+
+  Engine.UnitsManager->Add(new unit_startup_launch());
 
   Engine.UnitsManager->Add(new unit_editor());
   Engine.UnitsManager->Add(new unit_alex_apt());

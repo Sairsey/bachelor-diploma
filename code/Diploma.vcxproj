@@ -125,6 +125,7 @@
     <ClInclude Include="source\units\units_manager.h" />
     <ClInclude Include="source\units\unit_base.h" />
     <ClInclude Include="source\units\unit_scene_default.h" />
+    <ClInclude Include="source\units\unit_startup_launch.h" />
     <ClInclude Include="source\utils\editor\editors_modules_list.h" />
     <ClInclude Include="source\utils\resource_pool_subsystem.h" />
     <ClInclude Include="source\utils\math\mth.h" />

@@ -12,7 +12,7 @@ enum struct EditorArgsTypes
   editor_arg_float2,
   editor_arg_float3,
   editor_arg_float4,
-  editor_arg_matr, 
+  editor_arg_matr,
   editor_arg_gdr_index,
 
   editor_arg_count
@@ -65,7 +65,7 @@ GDR_BLUEPRINT_NODE(EditorNodeTypes::editor_node_function, "Animation", "Set anim
 GDR_BLUEPRINT_NODE(EditorNodeTypes::editor_node_function, "Texture", "Load", 1, 1, P99_PROTECT({ EditorArgsTypes::editor_arg_string }), P99_PROTECT({ EditorArgsTypes::editor_arg_gdr_index }), P99_PROTECT({ "Path" }), P99_PROTECT({ "Texture index" })) \
 GDR_BLUEPRINT_NODE(EditorNodeTypes::editor_node_function, "Texture", "Delete", 1, 0, P99_PROTECT({ EditorArgsTypes::editor_arg_gdr_index }), P99_PROTECT({}), P99_PROTECT({ "Texture index" }), P99_PROTECT({})) \
 \
-GDR_BLUEPRINT_NODE(EditorNodeTypes::editor_node_function, "Object Transform", "Create", 0, 1, P99_PROTECT({}), P99_PROTECT({ EditorArgsTypes::editor_arg_gdr_index }), P99_PROTECT({ "" }), P99_PROTECT({ "Object transform index" })) \
+GDR_BLUEPRINT_NODE(EditorNodeTypes::editor_node_function, "Object Transform", "Create", 0, 1, P99_PROTECT({}), P99_PROTECT({ EditorArgsTypes::editor_arg_gdr_index }), P99_PROTECT({ }), P99_PROTECT({ "Object transform index" })) \
 GDR_BLUEPRINT_NODE(EditorNodeTypes::editor_node_function, "Object Transform", "Delete", 1, 0, P99_PROTECT({ EditorArgsTypes::editor_arg_gdr_index }), P99_PROTECT({}), P99_PROTECT({ "Object transform index" }), P99_PROTECT({})) \
 GDR_BLUEPRINT_NODE(EditorNodeTypes::editor_node_function, "Object Transform", "Set", 2, 0, P99_PROTECT({ EditorArgsTypes::editor_arg_gdr_index, EditorArgsTypes::editor_arg_matr }), P99_PROTECT({}), P99_PROTECT({ "Object transform index", "Transformation Matrix"}), P99_PROTECT({})) \
 GDR_BLUEPRINT_NODE(EditorNodeTypes::editor_node_function, "Object Transform", "Get", 1, 1, P99_PROTECT({ EditorArgsTypes::editor_arg_gdr_index }), P99_PROTECT({ EditorArgsTypes::editor_arg_matr }), P99_PROTECT({ "Object transform index"}), P99_PROTECT({ "Transformation Matrix" })) \
